@@ -1,15 +1,15 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Observable } from 'rxjs';
-import { TournamentsService } from '../services/tournaments.service';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { TournamentsService } from '../services/tournaments.service';
 
 @Component({
-  selector: 'app-team-list',
-  templateUrl: './team-list.component.html',
-  styleUrls: ['./team-list.component.scss']
+  selector: 'app-team-add',
+  templateUrl: './team-add.component.html',
+  styleUrls: ['./team-add.component.scss']
 })
-export class TeamListComponent implements OnInit {
+export class TeamAddComponent implements OnInit {
 
   tournamentID: string;
   teams: Observable<any[]>;
@@ -18,7 +18,6 @@ export class TeamListComponent implements OnInit {
     link: '',
     tournament: ''
   };
-  filter = '';
 
   constructor(
     private route: ActivatedRoute,
@@ -29,23 +28,20 @@ export class TeamListComponent implements OnInit {
   ngOnInit(): void {
     this.route.params.subscribe(params => {
       this.tournamentID = params.id;
-      if (this.tournamentID !== undefined) {
-        this.teams = this.tournamentService.teams(this.tournamentID);
-        this.resetTeam();
-      }
+      this.team.tournament = this.tournamentID;
     });
   }
-  filterTeams(): void {
-    this.teams = this.tournamentService.teamsByContestant(this.tournamentID, this.filter);
+  filterTeams(filter: string): void {
+    this.teams = this.tournamentService.teamsByContestant(this.tournamentID, filter);
   }
   resetTeam(): void {
-    this.team.contestant = '';
     this.team.link = '';
     this.team.tournament = this.tournamentID;
   }
   add(): void {
     this.tournamentService.addTeam(this.team).then(r => {
       this.resetTeam();
+      this.filterTeams(this.team.contestant);
     });
   }
   getVideoID(link: string): SafeResourceUrl {

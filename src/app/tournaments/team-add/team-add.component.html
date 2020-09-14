@@ -1,10 +1,10 @@
 <ul>
   <li>
-    <input [(ngModel)]="filter" placeholder="filter by name"/>
-    <button (click)="filterTeams()">Filter</button>
+    <input [(ngModel)]="team.contestant" placeholder="name" />
+    <input [(ngModel)]="team.link" placeholder="youtube link"/>
+    <button (click)="add()">Add</button>
   </li>
   <li *ngFor="let team of teams | async">
-    <h1>{{ team.contestant }}</h1>
     <iframe width="560" height="315" [src]="getVideoID(team.link)" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
   </li>
 </ul>
