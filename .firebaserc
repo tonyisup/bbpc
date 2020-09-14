@@ -1,0 +1,14 @@
+{
+  "projects": {
+    "default": "badboyspodcast-dev"
+  },
+  "targets": {
+    "badboyspodcast-dev": {
+      "hosting": {
+        "bbpc": [
+          "badboyspodcast-dev"
+        ]
+      }
+    }
+  }
+}

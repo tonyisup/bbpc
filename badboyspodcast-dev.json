@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "badboyspodcast-dev",
+  "private_key_id": "741d19d14dd8cc3de60a0841a4c647d430edb0c6",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQDMzowbxoxsWh3V\ndg6w6wPQeTtWl/5+QZhOgnEycs0UhaNe8MJoZyCZjwZK/gcR95S/Orfkr1kveunb\nC+PWpltfV21mHL1D+2ta4tnjY5Wku3oDOsk87osTjDHnljXVhZ0XBd8TWzUMgOLD\naU4HgYQlMr721urjCL9rhiEzlrtvWMbk5DaxFA1uXbt3LIZDmkZx31LkAT0kvOWK\nDVLb1Ru4Q0FUBPo9RG8pYfxHTOCHS1LZkqykbV6bxtyv1aJzidpENdNGZG8yh3Be\nEtVtxMFNmH9i8nE6QG+DgVMOxcFLxjLBAEHgkkfi62QzNOlaTXKIk152aL+pFU9Q\ng8ylZT1RAgMBAAECggEAWp7Rs8CIhbDiHn9cRL/YMjhSHyClxKu1fpeNCqttPrVa\n8jlJa/Slogx81lXMPxDzSiHrGE7WAYI7U2bRazq0l10R1OrGe/wVJmPV0R1RK1Cg\nzikGveU2uHGB61y1eULjnTpF2ES1FlE5BQnlMsEF/YeUo5e42rgWKrdwnWkGil9M\nlHPh1moxdSh6FydwH3/PGOIJhJi5vS5z1UNcKwq5XRgOP65HAyjAsyjj1G/UqPHO\nxXuYMURIpMPyEXzT1Yh0f64l5QkR4gq1OepFEH9z5hRoMK1DdlQXLEXGqQegaVOW\nREUKYsj8dHY1Qmc4sq1qfcLnJ+sM9aeoQvKDFNjQ2QKBgQD1VtD1Qdz6OwHGLdxN\n+PucZarc0ZiEAYVFUuU57FVx/UBM8qoDEuNg3lJLWTxgH5FHOhAacPyDbyNEMxtN\nKDw6zY4O9tu3k+12jlX2+vkGKGn9cx9cr8TPfPM4+iOFfC96faUvSWjqpubpZ86b\nAnDpQjnrOVz9cg0hsXikncuXnwKBgQDVtNg1x1H8BgSnaETolQ9KAiqEYrnQ52VP\nxoQXm5ZvqQZZtm/USA/EXd501WJCNmiHQmeYUfJm4U/Kg0U98wBFHVNxlH3MKWkp\nkQbXL1OBUx7zLOKZVphAIWtzqXl81LoNxjafwT4HZNnTBKMs8C6gzOV+FwMidCcl\n8/tM+PbFDwKBgFq3fFKDxRr9wJ0wDfsC6r6c1T4LflKpYUcN7NarLbkVhLYvMHAs\nhskly9Yyq+F7KrPko1mzl5td9/Na1miETSkNIs8jtoC+ARtKbD0D9hqxzOc7r0gN\ncj+qmyDhVUshbUjktrSyd0n05wM9MCcfEvMdWt9AecL5biOcRNjRxBtPAoGAPTCb\n28Inkl7yxDBR0rqjdxBptiBCjjNDSfVQayYMjAo8nEFlgcXkZdhu0ssqaEUF5vy3\nhuCn5JdM7nJpyBQlFqUP+GyJHIUa7GDvMXwGj/gJ250VgMxPqcUn7CUxePG8GCeS\nCmodZaaVzBr+0eYvo7EnYNQb/Kh/cRmL8f0zQzcCgYBm2XsiX2ylR/JobUPseliT\nCo3Of0nqrfzhg/xi9glwpJnxSGbWUSWIimUSz3B2XUdvCGJgKrzdWpngsWadlA51\npaHj8a3NvJMh1jp55q4td2uH6Vww1O2KEvZw7p+NG/rFXAloZBmsC6ksEUfGObQq\ndfj18IEAWJRuNN11z9Jbaw==\n-----END PRIVATE KEY-----\n",
+  "client_email": "firebase-adminsdk-bp8th@badboyspodcast-dev.iam.gserviceaccount.com",
+  "client_id": "106017009297392747252",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-bp8th%40badboyspodcast-dev.iam.gserviceaccount.com"
+}

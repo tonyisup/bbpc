@@ -1,0 +1,7 @@
+<ul>
+  <li *ngFor="let tournament of tournaments | async">
+    <a [routerLink]="['teams', { id: tournament.id }]" routerLinkActive="router-link-active">
+      {{ tournament.name }}
+    </a>
+  </li>
+</ul>
