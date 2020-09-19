@@ -8,10 +8,13 @@ import { TournamentListComponent } from './tournament-list/tournament-list.compo
 import { TournamentsService } from './services/tournaments.service';
 import { TeamListComponent } from './team-list/team-list.component';
 import { TeamAddComponent } from './team-add/team-add.component';
+import { TeamEditComponent } from './team-edit/team-edit.component';
+import { SeedComponent } from './seed/seed.component';
+import { TournamentComponent } from './tournament/tournament.component';
 
 
 @NgModule({
-  declarations: [TournamentsComponent, TournamentListComponent, TeamListComponent, TeamAddComponent],
+  declarations: [TournamentsComponent, TournamentListComponent, TeamListComponent, TeamAddComponent, TeamEditComponent, SeedComponent, TournamentComponent],
   imports: [
     FormsModule,
     CommonModule,

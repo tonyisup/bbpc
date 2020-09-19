@@ -1,0 +1,11 @@
+<button (click)="seed()">
+  Seed
+</button>
+<button (click)="save()">
+  Save
+</button>
+<ol>
+  <li *ngFor="let team of teams">
+    <h1>[{{ team.seed }}] {{ team.contestant }} - {{ team.name }}</h1>
+  </li>
+</ol>

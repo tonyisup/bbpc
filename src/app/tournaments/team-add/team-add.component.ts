@@ -3,6 +3,7 @@ import { ActivatedRoute } from '@angular/router';
 import { Observable } from 'rxjs';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { TournamentsService } from '../services/tournaments.service';
+import { Team } from '../models/team';
 
 @Component({
   selector: 'app-team-add',
@@ -13,11 +14,7 @@ export class TeamAddComponent implements OnInit {
 
   tournamentID: string;
   teams: Observable<any[]>;
-  team = {
-    contestant: '',
-    link: '',
-    tournament: ''
-  };
+  team: Team;
 
   constructor(
     private route: ActivatedRoute,

@@ -1,7 +1,13 @@
 <ul>
   <li *ngFor="let tournament of tournaments | async">
-    <a [routerLink]="['teams', { id: tournament.id }]" routerLinkActive="router-link-active">
+    <a [routerLink]="['tournament', { id: tournament.id }]">
       {{ tournament.name }}
+    </a>
+    <a [routerLink]="['teams', { id: tournament.id }]">
+      teams
+    </a>
+    <a [routerLink]="['seed', { id: tournament.id }]">
+      seed
     </a>
   </li>
 </ul>
