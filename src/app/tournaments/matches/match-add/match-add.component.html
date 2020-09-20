@@ -1,0 +1,23 @@
+<p>match-add works!</p>
+<form>
+	<label for="teamA">Team A:
+		<select id="teamA" name="teamA" [(ngModel)]="match.teamA">
+			<option *ngFor="let team of teams | async" [ngValue]="team">{{ team.contestant }} - {{  team.name }}</option>
+		</select>
+	</label>
+	<br />
+	<label for="teamB">Team B:
+		<select id="teamB" name="teamB" [(ngModel)]="match.teamB">
+			<option *ngFor="let team of teams | async" [ngValue]="team">{{ team.contestant }} - {{ team.name }}</option>
+		</select>
+	</label>
+	<br />
+	<label for="winner">Winner:
+		<select id="winner" name="winner" [(ngModel)]="match.winner">
+			<option *ngFor="let team of teams | async" [ngValue]="team">{{ team.contestant }} - {{  team.name }}</option>
+		</select>
+	</label>
+	<br />
+	<button (click)="add()">Save</button>
+</form>
+<app-match-list></app-match-list>

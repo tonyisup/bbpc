@@ -1,4 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
+import { Tournament } from '../models/tournament';
+import { TournamentsService } from '../services/tournaments.service';
 
 @Component({
   selector: 'app-tournament',
@@ -7,9 +10,21 @@ import { Component, OnInit } from '@angular/core';
 })
 export class TournamentComponent implements OnInit {
 
-  constructor() { }
+	@Input() tournament = new Tournament();
+	tournamentID: string;
+
+  constructor(
+		private route: ActivatedRoute,
+		private api: TournamentsService
+	) { }
 
   ngOnInit(): void {
+		this.route.params.subscribe(params => {
+			this.tournamentID = params.tournament_id;
+			this.api.tournament(this.tournamentID).subscribe(t => {
+				this.tournament = t;
+				this.tournament.id = t.id;
+			})
+		})
   }
-
 }

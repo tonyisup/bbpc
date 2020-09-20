@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { TournamentsService } from '../services/tournaments.service';
 import { Observable } from 'rxjs';
+import { Tournament } from '../models/tournament';
 
 @Component({
   selector: 'app-tournament-list',
@@ -9,7 +10,7 @@ import { Observable } from 'rxjs';
 })
 export class TournamentListComponent implements OnInit {
 
-  tournaments: Observable<any[]>;
+  tournaments: Observable<Tournament[]>;
 
   constructor(
     private tournamentService: TournamentsService

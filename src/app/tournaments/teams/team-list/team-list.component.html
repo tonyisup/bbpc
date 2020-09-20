@@ -1,0 +1,9 @@
+<ul>
+  <li>
+    <input [(ngModel)]="filter" placeholder="filter by name"/>
+    <button (click)="filterTeams()">Filter</button>
+  </li>
+  <li *ngFor="let team of teams | async">
+		<app-team [team]="team"></app-team>
+  </li>
+</ul>

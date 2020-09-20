@@ -1,0 +1,19 @@
+<ng-container *ngIf="showingRound">
+	<h1>Round {{roundId}}</h1>
+</ng-container>
+<ng-container *ngIf="!showingRound">
+	<input [(ngModel)]="roundId" placeholder="Round" />
+	<button (click)="filter()">
+		Filter
+	</button>
+	<br />
+</ng-container>
+<ol>
+	<li *ngFor="let match of matches">
+		<app-match [match]="match" [show-entry]="showingRound"></app-match>
+		<ng-container *ngIf="!showingRound">
+			<a [routerLink]="['/tournaments/match', { match_id: match.id }]">View</a>
+			<a [routerLink]="['/tournaments/matches/edit', { tournament_id: tournamentID, match_id: match.id }]">Edit</a>
+		</ng-container>
+	</li>
+</ol>

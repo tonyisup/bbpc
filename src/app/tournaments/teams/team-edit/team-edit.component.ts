@@ -1,8 +1,8 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { TournamentsService } from '../services/tournaments.service';
+import { TournamentsService } from '../../services/tournaments.service';
 import { Observable, Subscription } from 'rxjs';
-import { Team } from '../models/team';
+import { Team } from '../../models/team';
 
 @Component({
   selector: 'app-team-edit',
@@ -24,7 +24,7 @@ export class TeamEditComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.route.params.subscribe(params => {
-      this.teamID = params.id;
+      this.teamID = params.team_id;
       this.teamSub = this.tournamentService.team(this.teamID).subscribe(t => {
         this.team = t;
         this.team.id = this.teamID;

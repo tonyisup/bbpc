@@ -5,7 +5,8 @@ import { Injectable } from '@angular/core';
 })
 export class UtilService {
 
-  constructor() { }
+  constructor(
+	) { }
 
   shuffle(array: any[]): any[] {
     let currentIndex = array.length;
@@ -22,5 +23,14 @@ export class UtilService {
       array[randomIndex] = temporaryValue;
     }
     return array;
+	}
+	
+  getVideoID(link: string): string {
+    let id = link.split('v=')[1];
+    const ampersandPosition = id.indexOf('&');
+    if (ampersandPosition !== -1) {
+      id = id.substring(0, ampersandPosition);
+    }
+    return `https://www.youtube.com/embed/${id}`;
   }
 }

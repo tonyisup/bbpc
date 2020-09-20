@@ -28,7 +28,7 @@ export class SeedComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.route.params.subscribe(params => {
-      this.tournamentID = params.id;
+      this.tournamentID = params.tournament_id;
       if (this.tournamentID !== undefined) {
         this.teamsSub = this.tournamentService.teams(this.tournamentID).subscribe(teams => {
           this.teams = teams.sort((a: Team, b: Team) => a.seed - b.seed);

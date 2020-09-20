@@ -1,9 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Observable } from 'rxjs';
-import { TournamentsService } from '../services/tournaments.service';
+import { TournamentsService } from '../../services/tournaments.service';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
-import { Team } from '../models/team';
+import { Team } from '../../models/team';
+import { UtilService } from 'src/app/services/util.service';
 
 @Component({
   selector: 'app-team-list',
@@ -13,18 +14,18 @@ import { Team } from '../models/team';
 export class TeamListComponent implements OnInit {
 
   tournamentID: string;
-  teams: Observable<any[]>;
+  teams: Observable<Team[]>;
   filter = '';
 
   constructor(
-    private route: ActivatedRoute,
-    private sanitizer: DomSanitizer,
+		private route: ActivatedRoute,
+		private util: UtilService,
     private tournamentService: TournamentsService
   ) { }
 
   ngOnInit(): void {
     this.route.params.subscribe(params => {
-      this.tournamentID = params.id;
+      this.tournamentID = params.tournament_id;
       if (this.tournamentID !== undefined) {
         this.teams = this.tournamentService.teams(this.tournamentID);
       }
@@ -34,11 +35,6 @@ export class TeamListComponent implements OnInit {
     this.teams = this.tournamentService.teamsByContestant(this.tournamentID, this.filter);
   }
   getVideoID(link: string): SafeResourceUrl {
-    let id = link.split('v=')[1];
-    const ampersandPosition = id.indexOf('&');
-    if (ampersandPosition !== -1) {
-      id = id.substring(0, ampersandPosition);
-    }
-    return this.sanitizer.bypassSecurityTrustResourceUrl(`https://www.youtube.com/embed/${id}`);
+		return this.util.getVideoID(link);
   }
 }

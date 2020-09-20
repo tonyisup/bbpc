@@ -1,27 +1,46 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 import { TournamentsRoutingModule } from './tournaments-routing.module';
 import { TournamentsComponent } from './tournaments.component';
 import { TournamentListComponent } from './tournament-list/tournament-list.component';
 import { TournamentsService } from './services/tournaments.service';
-import { TeamListComponent } from './team-list/team-list.component';
-import { TeamAddComponent } from './team-add/team-add.component';
-import { TeamEditComponent } from './team-edit/team-edit.component';
+import { TeamListComponent } from './teams/team-list/team-list.component';
+import { TeamAddComponent } from './teams/team-add/team-add.component';
+import { TeamEditComponent } from './teams/team-edit/team-edit.component';
 import { SeedComponent } from './seed/seed.component';
 import { TournamentComponent } from './tournament/tournament.component';
+import { MatchAddComponent } from './matches/match-add/match-add.component';
+import { MatchEditComponent } from './matches/match-edit/match-edit.component';
+import { MatchListComponent } from './matches/match-list/match-list.component';
+import { TeamComponent } from './teams/team/team.component';
+import { MatchComponent } from './matches/match/match.component';
 
 
 @NgModule({
-  declarations: [TournamentsComponent, TournamentListComponent, TeamListComponent, TeamAddComponent, TeamEditComponent, SeedComponent, TournamentComponent],
-  imports: [
-    FormsModule,
-    CommonModule,
-    TournamentsRoutingModule
-  ],
-  providers: [
-    TournamentsService
-  ]
+	declarations: [
+		TournamentsComponent, 
+		TournamentListComponent, 
+		TeamListComponent, 
+		TeamAddComponent, 
+		TeamEditComponent, 
+		SeedComponent, 
+		TournamentComponent, 
+		MatchAddComponent, 
+		MatchEditComponent, 
+		MatchListComponent, 
+		TeamComponent, 
+		MatchComponent
+	],
+	imports: [
+		FormsModule,
+		CommonModule,
+		ReactiveFormsModule,
+		TournamentsRoutingModule
+	],
+	providers: [
+		TournamentsService
+	]
 })
 export class TournamentsModule { }

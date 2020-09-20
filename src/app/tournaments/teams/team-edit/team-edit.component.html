@@ -1,7 +1,8 @@
-<a [routerLink]="['/tournaments/teams', { id: team.tournament }]">back</a><br />
+<a [routerLink]="['/tournaments/teams', { tournament_id: team.tournament }]">back</a><br />
 <input [(ngModel)]="team.contestant" placeholder="contestant" /><br />
 <input [(ngModel)]="team.name" placeholder="title/team name" /><br />
 <input [(ngModel)]="team.link" placeholder="youtube link" /><br />
 <input [(ngModel)]="team.tournament" placeholder="tournament id" /><br />
 <span>id: </span><span>{{ team.id }}</span><br />
 <button (click)="save()">save</button>
+<app-team [team]="team"></app-team>
