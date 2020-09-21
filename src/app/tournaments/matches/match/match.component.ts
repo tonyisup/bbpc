@@ -10,6 +10,7 @@ import { TournamentsService } from '../../services/tournaments.service';
 })
 export class MatchComponent implements OnInit {
 
+	@Input('tournament-id') tournamentId: string;
 	@Input('match-id') matchId: string;
 	@Input() match: Match;
 	@Input('show-entry') showEntry = true;
@@ -20,21 +21,23 @@ export class MatchComponent implements OnInit {
 	) { }
 
   ngOnInit(): void {
-		if (this.match !== undefined) {
-			return;
-		}
-
-		if (this.matchId !== undefined) {
-			this.api.match(this.matchId).subscribe(m => this.match = m);
-			return;
-		}
 		this.route.params.subscribe(params => {
+			this.tournamentId = params.tournament_id;
+			
+			if (this.match !== undefined) {
+				return;
+			}
+
+			if (this.matchId !== undefined) {
+				this.api.match(this.tournamentId, this.matchId).subscribe(m => this.match = m);
+				return;
+			}
 			if (params.match_id === undefined) {
 				console.log("no match info");
 				return;
 			}
 			this.matchId = params.match_id;
-			this.api.match(this.matchId).subscribe(m => this.match = m);
+			this.api.match(this.tournamentId, this.matchId).subscribe(m => this.match = m);
 		});
   }
 }

@@ -4,6 +4,7 @@
     <button (click)="filterTeams()">Filter</button>
   </li>
   <li *ngFor="let team of teams | async">
+		<a [routerLink]="['/tournaments/teams/edit', { tournament_id: team.tournament, team_id: team.id}]">edit</a>
 		<app-team [team]="team"></app-team>
   </li>
 </ul>

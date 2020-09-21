@@ -33,7 +33,7 @@ export class MatchEditComponent implements OnInit, OnDestroy {
 			this.tournamentService.teams(this.tournamentID).subscribe(t => {
 				this.teams = t;
 			});
-			this.matchSub = this.tournamentService.match(this.matchID).subscribe(m => {
+			this.matchSub = this.tournamentService.match(this.tournamentID, this.matchID).subscribe(m => {
 				this.match = m;
 				this.match.id = this.matchID;
 			})

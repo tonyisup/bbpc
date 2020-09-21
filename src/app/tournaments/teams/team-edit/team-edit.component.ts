@@ -11,12 +11,13 @@ import { Team } from '../../models/team';
 })
 export class TeamEditComponent implements OnInit, OnDestroy {
 
-  teamSub: Subscription;
+	teamSub: Subscription;
+	tournamentID: string;
   teamID: string;
-  team: Team;
+  team = new Team();
   constructor(
     private route: ActivatedRoute,
-    private tournamentService: TournamentsService
+    private api: TournamentsService
   ) { }
   ngOnDestroy(): void {
     this.teamSub.unsubscribe();
@@ -24,8 +25,9 @@ export class TeamEditComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.route.params.subscribe(params => {
-      this.teamID = params.team_id;
-      this.teamSub = this.tournamentService.team(this.teamID).subscribe(t => {
+			this.teamID = params.team_id;
+			this.tournamentID = params.tournament_id;
+      this.teamSub = this.api.team(this.tournamentID, this.teamID).subscribe(t => {
         this.team = t;
         this.team.id = this.teamID;
       });
@@ -33,6 +35,6 @@ export class TeamEditComponent implements OnInit, OnDestroy {
   }
 
   save(): void {
-    this.tournamentService.updateTeam(this.team).then(r => console.log(r));
-  }
+    this.api.updateTeam(this.team).then(r => console.log(r));
+	}
 }

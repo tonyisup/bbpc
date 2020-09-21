@@ -25,48 +25,64 @@ export class TournamentsService {
     return this.tournamentStore.collection<Tournament>('tournaments').valueChanges({ idField: 'id' });
 	}
 	//#region Teams
-  team(teamID: string): Observable<Team> {
-    return this.tournamentStore.collection('teams').doc<Team>(teamID).valueChanges();
+  team(tournamentID: string, teamID: string): Observable<Team> {		
+		return this.tournamentStore
+		.collection('tournaments').doc(tournamentID)
+		.collection('teams').doc<Team>(teamID).valueChanges();
   }
   teams(tournamentID: string): Observable<Team[]> {
-    return this.tournamentStore.collection<Team>('teams',
-      ref => ref.where('tournament', '==', tournamentID).orderBy('contestant')
-    ).valueChanges({ idField: 'id' });
+		return this.tournamentStore
+			.collection('tournaments').doc(tournamentID)
+			.collection<Team>('teams').valueChanges({ idField: 'id' });
   }
   teamsByContestant(tournamentID: string, contestant: string): Observable<Team[]> {
-    return this.tournamentStore.collection<Team>('teams',
-      ref => ref.where('tournament', '==', tournamentID).where('contestant', '==', contestant)
+		return this.tournamentStore
+			.collection('tournaments').doc(tournamentID)
+			.collection<Team>('teams',
+      ref => ref.where('contestant', '==', contestant)
     ).valueChanges({ idField: 'id' });
   }
   addTeam(team: Team): Promise<any> {
     team.addedOn = this.getServerTimestamp();
-    return this.tournamentStore.collection('teams').add(team);
+		return this.tournamentStore
+			.collection('tournaments').doc(team.tournament)
+			.collection('teams').add(team);
   }
   updateTeam(team: Team): Promise<any> {
-    team.updatedOn = this.getServerTimestamp();
-    return this.tournamentStore.collection('teams').doc(team.id).set(team);
+		team.updatedOn = this.getServerTimestamp();
+		return this.tournamentStore
+			.collection('tournaments').doc(team.tournament)
+			.collection('teams').doc(team.id).set(team);
 	}
 	//#endregion
 	//#region Matches
 	addMatch(match: Match): Promise<any> {
 		match.addedOn = this.getServerTimestamp();
-		return this.tournamentStore.collection('matches').add({...match}); 
+		return this.tournamentStore
+			.collection('tournaments').doc(match.tournamentId)
+			.collection('matches').add({...match}); 
 	}
 	updateMatch(match: Match): Promise<any> {
 		match.updatedOn = this.getServerTimestamp();
-		return this.tournamentStore.collection('matches').doc(match.id).set(match);
+		return this.tournamentStore
+			.collection('tournaments').doc(match.tournamentId)
+			.collection('matches').doc(match.id).set(match);
 	}
 	matches(tournamentID: string): Observable<Match[]> {
-		return this.tournamentStore.collection<Match>('matches',
-		ref => ref.where('tournamentId', '==', tournamentID)).valueChanges({ idField: 'id'});
+		return this.tournamentStore
+		.collection('tournaments').doc(tournamentID)
+		.collection<Match>('matches').valueChanges({ idField: 'id'});
 	}
-	match(matchID: string): Observable<Match> {
-		return this.tournamentStore.collection('matches').doc<Match>(matchID).valueChanges();
+	match(tournamentID: string, matchID: string): Observable<Match> {
+		return this.tournamentStore
+		.collection('tournaments').doc(tournamentID)
+		.collection('matches').doc<Match>(matchID).valueChanges();
 	}
 	round(tournamentID: string, roundID: string): Observable<Match[]> {
-		return this.tournamentStore.collection<Match>('matches',
-			ref => ref.where('tournamentId', '==', tournamentID)
-			.where('roundId', '==', roundID)
+		return this.tournamentStore
+			.collection('tournaments').doc(tournamentID)
+			.collection<Match>('matches',
+				ref => ref.where('roundId', '==', roundID)
 		).valueChanges({ idField: 'id'});
 	}
 	//#endregion

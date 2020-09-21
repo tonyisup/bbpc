@@ -12,7 +12,7 @@
 	<li *ngFor="let match of matches">
 		<app-match [match]="match" [show-entry]="showingRound"></app-match>
 		<ng-container *ngIf="!showingRound">
-			<a [routerLink]="['/tournaments/match', { match_id: match.id }]">View</a>
+			<a [routerLink]="['/tournaments/match', { tournament_id: tournamentID, match_id: match.id }]">View</a>
 			<a [routerLink]="['/tournaments/matches/edit', { tournament_id: tournamentID, match_id: match.id }]">Edit</a>
 		</ng-container>
 	</li>
