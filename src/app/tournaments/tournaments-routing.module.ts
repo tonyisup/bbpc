@@ -18,15 +18,15 @@ const routes: Routes = [
   { path: '', component: TournamentsComponent },
   { path: 'tournament', component: TournamentComponent },
   { path: 'list', component: TournamentListComponent },
-	{ path: 'seed', component: SeedComponent },
-	{ path: 'team', component: TeamComponent },
+  { path: 'seed', component: SeedComponent },
+  { path: 'team', component: TeamComponent },
   { path: 'teams', component: TeamListComponent },
   { path: 'teams/add', component: TeamAddComponent },
-	{ path: 'teams/edit', component: TeamEditComponent },
-	{ path: 'match', component: MatchComponent }, 
-	{ path: 'matches', component: MatchListComponent },
-	{ path: 'matches/add', component: MatchAddComponent },
-	{ path: 'matches/edit', component: MatchEditComponent },
+  { path: 'teams/edit', component: TeamEditComponent },
+  { path: 'match', component: MatchComponent },
+  { path: 'matches', component: MatchListComponent },
+  { path: 'matches/add', component: MatchAddComponent },
+  { path: 'matches/edit', component: MatchEditComponent },
 ];
 
 @NgModule({
