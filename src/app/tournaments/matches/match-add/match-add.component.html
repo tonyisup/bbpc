@@ -1,4 +1,3 @@
-<p>match-add works!</p>
 <form>
 	<label for="teamA">Team A:
 		<select id="teamA" name="teamA" [(ngModel)]="match.teamA">
@@ -18,6 +17,9 @@
 		</select>
 	</label>
 	<br />
+	<label for="round">Round:
+		<input id="roundId" name="roundId" [(ngModel)]="match.roundId" />
+	</label>
 	<button (click)="add()">Save</button>
 </form>
 <app-match-list></app-match-list>

@@ -36,6 +36,7 @@ export class MatchAddComponent implements OnInit {
 	add(): void {
 		this.match.teamIdA = this.match.teamA.id;
 		this.match.teamIdB = this.match.teamB.id;
+		
 		if (this.match.winner !== undefined) {
 			this.match.winnerId = this.match.winner.id;
 		}

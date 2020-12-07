@@ -2,6 +2,11 @@
 	<h1>Round {{roundId}}</h1>
 </ng-container>
 <ng-container *ngIf="!showingRound">
+	<p>
+		<a [routerLink]="['/tournaments/matches/add', { tournament_id: tournamentID }]">
+			Add
+		</a>
+	</p>
 	<input [(ngModel)]="roundId" placeholder="Round" />
 	<button (click)="filter()">
 		Filter

@@ -3,4 +3,5 @@ export class Tournament {
 	id: any;
 	addedOn: any;
 	updatedOn: any;
+	rounds: number[];
 }

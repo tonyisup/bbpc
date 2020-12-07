@@ -8,9 +8,13 @@
   <span>Bad Boys Podcast</span>
   <div class="spacer"></div>
   <nav>
-    <a class="button" routerLink="tournaments" routerLinkActive="activeButton">Tournaments</a>
+		<a class="button" routerLink="tournaments" routerLinkActive="activeButton">Tournaments</a>
+		<ng-container *ngIf="admin | async">
+			<a class="button" routerLink="admin" routerLinkActive="activeButton">Admin</a>
+		</ng-container>
   </nav>
-  <div class="spacer"></div>
+	<div class="spacer"></div>
+	<app-session-panel></app-session-panel>
 </div>
 
 <div class="content" role="main">

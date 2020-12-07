@@ -1,4 +1,7 @@
 <ul>
+	<li>
+		<a [routerLink]="['/tournaments/teams/add', { tournament_id: tournamentID }]">Add</a>
+	</li>
   <li>
     <input [(ngModel)]="filter" placeholder="filter by name"/>
     <button (click)="filterTeams()">Filter</button>

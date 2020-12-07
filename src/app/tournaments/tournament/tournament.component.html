@@ -6,13 +6,18 @@
 		</a>
 	</li>
 	<li>
-		<a [routerLink]="['/tournaments/matches', { tournament_id: tournamentID, round_id: '1' }]">
-			Round 1
+		<a [routerLink]="['/tournaments/seed', { tournament_id: tournamentID }]">
+			seed
 		</a>
 	</li>
 	<li>
-		<a [routerLink]="['/tournaments/matches', { tournament_id: tournamentID, round_id: '2' }]">
-			Round 2
+		<a [routerLink]="['/tournaments/matches', { tournament_id: tournamentID }]">
+			matches
+		</a>
+	</li>
+	<li *ngFor="let round of tournament.rounds">
+		<a [routerLink]="['/tournaments/matches', { tournament_id: tournamentID, round_id: round }]">
+			Round {{round}}
 		</a>
 	</li>
 </ul>

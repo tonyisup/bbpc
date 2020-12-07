@@ -43,6 +43,7 @@ export class TournamentsService {
     ).valueChanges({ idField: 'id' });
   }
   addTeam(team: Team): Promise<any> {
+		console.log('adding team', team);
     team.addedOn = this.getServerTimestamp();
 		return this.tournamentStore
 			.collection('tournaments').doc(team.tournament)

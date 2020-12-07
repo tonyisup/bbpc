@@ -14,7 +14,16 @@ export class TeamAddComponent implements OnInit {
 
   tournamentID: string;
   teams: Observable<Team[]>;
-  team: Team;
+  team: Team = {
+		id: null,
+		seed: 0,
+		contestant:"",
+		link:"",
+		name: "",
+		tournament: "",
+		addedOn: null,
+		updatedOn: null
+	};
 
   constructor(
     private route: ActivatedRoute,
