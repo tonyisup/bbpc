@@ -1,6 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Observable, Subscription } from 'rxjs';
+import { take } from 'rxjs/operators';
 import { UtilService } from 'src/app/services/util.service';
 import { Match } from '../../models/match';
 import { TournamentsService } from '../../services/tournaments.service';
@@ -14,7 +15,7 @@ export class MatchListComponent implements OnInit, OnDestroy {
 
 	tournamentID: string;
 	matchesSub: Subscription;
-	matches: Match[]
+	matches: Match[];
 	roundId: string;
 	showingRound = false;
 
@@ -40,6 +41,6 @@ export class MatchListComponent implements OnInit, OnDestroy {
 		})
 	}
 	filter(): void {
-		this.matchesSub = this.api.round(this.tournamentID, this.roundId).subscribe(m => this.matches = m);
+		this.matchesSub = this.api.round(this.tournamentID, this.roundId).pipe(take(1)).subscribe(m => this.matches = m);
 	}
 }
