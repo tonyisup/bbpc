@@ -1,13 +1,16 @@
 <!-- Toolbar -->
 <div class="toolbar" role="banner">
-  <img
-    width="40"
-    alt="Angular Logo"
-    src="../assets/cropped-BBPC-LOGO.png"
-  />
-  <span>Bad Boys Podcast</span>
+	<a routerLink="/">
+		<img
+			width="40"
+			alt="Angular Logo"
+			src="../assets/cropped-BBPC-LOGO.png"
+		/>
+		<span>Bad Boys Podcast</span>
+	</a>
   <div class="spacer"></div>
   <nav>
+		<a class="button" routerLink="episodes" routerLinkActive="activeButton">Episodes</a>
 		<a class="button" routerLink="tournaments" routerLinkActive="activeButton">Tournaments</a>
 		<ng-container *ngIf="admin | async">
 			<a class="button" routerLink="admin" routerLinkActive="activeButton">Admin</a>
@@ -18,5 +21,6 @@
 </div>
 
 <div class="content" role="main">
-  <router-outlet></router-outlet>
+	<router-outlet></router-outlet>
+	
 </div>
