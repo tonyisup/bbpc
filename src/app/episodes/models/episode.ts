@@ -1,10 +1,12 @@
 import { Segment } from './interfaces/segment';
 
 export class Episode {
+	number: number;
 	title: string;
-	segments: Segment[];
-	recordedOn: any;
+	html: string;
 	addedOn: any;
 	updatedOn: any;
+	recordedOn: any;
 	publishedOn: any;
+	// segments: Segment[];
 }
