@@ -1,7 +1,7 @@
 <ng-container *ngIf="signedIn; else signInPanel">
 	{{ email }}
-	<a class="button" (click)="signOut()" routerLink="auth">Sign Out</a>
+	<a (click)="signOut()" routerLink="auth">Sign Out</a>
 </ng-container>
 <ng-template #signInPanel>
-	<a class="button" routerLink="auth">Sign In</a>
+	<a class="auth" routerLink="auth">Sign In</a>
 </ng-template>
