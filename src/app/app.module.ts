@@ -8,6 +8,7 @@ import { environment } from '../environments/environment';
 import { AngularFirestoreModule } from '@angular/fire/firestore';
 import { UtilService } from './services/util.service';
 import { AuthModule } from './auth/auth.module';
+import { AuthService } from './auth/services/auth.service';
 
 @NgModule({
   declarations: [
@@ -21,7 +22,8 @@ import { AuthModule } from './auth/auth.module';
 		AuthModule
   ],
   providers: [
-    UtilService
+    UtilService,
+		AuthService
   ],
   bootstrap: [AppComponent]
 })

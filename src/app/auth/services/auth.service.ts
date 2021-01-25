@@ -1,26 +1,40 @@
-import { Injectable } from '@angular/core';
+import { Injectable, OnInit } from '@angular/core';
 import { AngularFireAuth } from '@angular/fire/auth';
 import { auth } from 'firebase/app';
-import { BehaviorSubject, ReplaySubject } from 'rxjs';
+import { BehaviorSubject, ReplaySubject, Subject } from 'rxjs';
 import { User } from '../models/user';
 import { UserService } from './user.service';
 
 @Injectable({
   providedIn: 'root'
 })
-export class AuthService {
+export class AuthService implements OnInit {
 
-	private loggedInUser$: BehaviorSubject<User> = new BehaviorSubject(null);
+	private _loggedInUser$: ReplaySubject<User> = new ReplaySubject(1);
 
   constructor(
 		private _auth: AngularFireAuth,
 		private _user: UserService
 	) { }
 
-	onUserLoggedIn(): BehaviorSubject<User> {
-		return this.loggedInUser$;
+	onUserLoggedIn(): ReplaySubject<User> {
+		return this._loggedInUser$;
 	}
 
+	ngOnInit() {
+		this._auth.onAuthStateChanged(result => {
+			const user: User = {
+				email: result.email,
+				displayName: '',
+				updatedOn: null
+			};
+			this._user.login(user)
+				.then(u => {
+					this._loggedInUser$.next(u);
+				})
+				.catch(e => console.error(`Auth Login Error: ${e}`));
+		});
+	}
 	//onAuth(): 
 	AuthLogin(provider: firebase.auth.AuthProvider) {
 		return this._auth.signInWithPopup(provider)
@@ -33,7 +47,7 @@ export class AuthService {
 					};
 					this._user.login(user)
 						.then(u => {
-							this.loggedInUser$.next(u);
+							this._loggedInUser$.next(u);
 						})
 						.catch(e => console.error(`Auth Login Error: ${e}`));
 				}

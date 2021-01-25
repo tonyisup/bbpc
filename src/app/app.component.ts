@@ -1,7 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { AngularFireAuth } from '@angular/fire/auth';
 import * as firebase from 'firebase';
-import { Observable, ReplaySubject, Subject } from 'rxjs';
+import { BehaviorSubject, Observable, ReplaySubject, Subject, Subscription } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { User } from './auth/models/user';
 import { AuthService } from './auth/services/auth.service';
@@ -14,13 +14,13 @@ import { AuthService } from './auth/services/auth.service';
 export class AppComponent implements OnInit {
 	title = 'bbpc';
 
-	admin: Observable<User> = new Observable<User>();
+	user$: Observable<User>;
 
   constructor(
 		private _auth: AuthService
 	) { }
 
 	ngOnInit() {
-		this.admin = this._auth.onUserLoggedIn();
+		this.user$ = this._auth.onUserLoggedIn();
 	}
 }

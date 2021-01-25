@@ -10,7 +10,7 @@
   <div class="spacer"></div>
   <nav>
 		<a class="button" routerLink="episodes" routerLinkActive="activeButton">Episodes</a>
-		<ng-container *ngIf="admin | async">
+		<ng-container *ngIf="(user$ | async)?.admin">
 			<a class="button" routerLink="tournaments" routerLinkActive="activeButton">Tournaments</a>
 			<a class="button" routerLink="admin" routerLinkActive="activeButton">Admin</a>
 		</ng-container>

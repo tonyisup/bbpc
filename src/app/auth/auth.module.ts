@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 
 import { AuthRoutingModule } from './auth-routing.module';
 import { AuthComponent } from './auth.component';
-import { AuthService } from './services/auth.service';
 import { SessionPanelComponent } from './session-panel/session-panel.component';
 
 
@@ -12,9 +11,6 @@ import { SessionPanelComponent } from './session-panel/session-panel.component';
   imports: [
     CommonModule,
     AuthRoutingModule
-	],
-	providers: [
-		AuthService
 	],
 	exports: [SessionPanelComponent]
 })

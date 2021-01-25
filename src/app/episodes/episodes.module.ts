@@ -9,7 +9,11 @@ import { EpisodeListComponent } from './episodes/episode-list/episode-list.compo
 
 
 @NgModule({
-  declarations: [EpisodesComponent, EpisodeComponent, EpisodeAddComponent, EpisodeListComponent],
+  declarations: [
+		EpisodesComponent, 
+		EpisodeComponent, 
+		EpisodeAddComponent, 
+		EpisodeListComponent],
   imports: [
     CommonModule,
     EpisodesRoutingModule
