@@ -1,6 +1,11 @@
 <h1>{{ tournament.name }}</h1>
 <ul>
 	<li>
+		<a [routerLink]="['/tournaments/register', { tournament_id: tournamentID }]">
+			register
+		</a>
+	</li>
+	<li>
 		<a [routerLink]="['/tournaments/teams', { tournament_id: tournamentID }]">
 			teams
 		</a>
@@ -13,6 +18,11 @@
 	<li>
 		<a [routerLink]="['/tournaments/matches', { tournament_id: tournamentID }]">
 			matches
+		</a>
+	</li>
+	<li>
+		<a [routerLink]="['/tournaments/users', { tournament_id: tournamentID }]">
+			users
 		</a>
 	</li>
 	<li *ngFor="let round of tournament.rounds">

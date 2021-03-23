@@ -10,6 +10,8 @@ import { User } from '../models/user';
 })
 export class UserService {
 
+	private _user: User;
+
   constructor(
 		private userStore: AngularFirestore
 	) { }
@@ -35,6 +37,14 @@ export class UserService {
 			});
 	}
 	load(email: string): Promise<User> {
-		return this.userStore.doc<User>(`users/${email}`).valueChanges().pipe(first()).toPromise();
+		return new Promise(resolve => {
+			this.userStore.doc<User>(`users/${email}`).valueChanges().pipe(first()).subscribe(u => {
+				this._user = u;
+				resolve(u);
+			});
+		});
+	}
+	currentUser(): User { 
+		return this._user;
 	}
 }
