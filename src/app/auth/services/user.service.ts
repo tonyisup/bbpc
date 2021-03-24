@@ -1,4 +1,5 @@
-import { Injectable } from '@angular/core';
+import { Injectable, OnInit } from '@angular/core';
+import { AngularFireAuth } from '@angular/fire/auth';
 import { AngularFirestore } from '@angular/fire/firestore';
 import * as firebase from 'firebase';
 import { Observable } from 'rxjs';
@@ -12,9 +13,18 @@ export class UserService {
 
 	private _user: User;
 
+	public isSignedIn: Observable<any>;
+
   constructor(
-		private userStore: AngularFirestore
-	) { }
+		private userStore: AngularFirestore,
+		private _ngFireAuth: AngularFireAuth
+	) { 
+		
+		this._ngFireAuth.onAuthStateChanged(user => this.load(user.email));
+		this.isSignedIn = new Observable((sub) => {
+			this._ngFireAuth.onAuthStateChanged(sub);
+		})
+	}
 
 	getServerTimestamp(): any {
 		return firebase.firestore.FieldValue.serverTimestamp();
@@ -46,5 +56,8 @@ export class UserService {
 	}
 	currentUser(): User { 
 		return this._user;
+	}
+	async signOut() {
+		await this._ngFireAuth.signOut();
 	}
 }

@@ -4,6 +4,7 @@ import { User } from "../../auth/models/user";
 
 export class Tournament {
 	name: string;
+	description: string;
 	id: any;
 	addedOn: any;
 	updatedOn: any;

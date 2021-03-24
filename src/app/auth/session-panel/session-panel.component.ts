@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { AngularFireAuth } from '@angular/fire/auth';
+import { UserService } from '../services/user.service';
 
 @Component({
   selector: 'app-session-panel',
@@ -9,22 +9,22 @@ import { AngularFireAuth } from '@angular/fire/auth';
 export class SessionPanelComponent implements OnInit {
 
   constructor(
-		private _ngFireAuth: AngularFireAuth
+		private _users: UserService
 	) { }
 
 	signedIn = false;
 	email: string;
 	ngOnInit() {
-		this._ngFireAuth.onAuthStateChanged(user => {
+		this._users.isSignedIn.subscribe(user => {
 			if (user) {
 				this.email = user.email;
 				this.signedIn = true;
 			}
-		})
+		});
 	}
 
 	signOut() {
-		this._ngFireAuth.signOut();
+		this._users.signOut();
 		this.signedIn = false;
 		this.email = null;
 	}

@@ -5,6 +5,7 @@ import * as firebase from 'firebase';
 import { Team } from '../models/team';
 import { Tournament } from '../models/tournament';
 import { Match } from '../models/match';
+import { User } from 'src/app/auth/models/user';
 
 @Injectable({
   providedIn: 'root'
@@ -85,6 +86,22 @@ export class TournamentsService {
 			.collection<Match>('matches',
 				ref => ref.where('roundId', '==', roundID)
 		).valueChanges({ idField: 'id'});
+	}
+	isRegistered(tournamentID: string, email: string): Promise<boolean> {
+		 return new Promise((resolve) => {
+			 this.tournamentStore
+			.collection('tournaments').doc(tournamentID)
+			.collection('users').doc(email).ref.get().then(d => resolve(d.exists));
+		 });
+	}
+	registerUser(tournamentID: string, user: User): Promise<any> {
+		const registeredUser = {
+			email: user.email,
+			addedOn: this.getServerTimestamp()
+		};
+		return this.tournamentStore
+			.collection('tournaments').doc(tournamentID)
+			.collection('users').add({...registeredUser}); 	
 	}
 	//#endregion
 }
