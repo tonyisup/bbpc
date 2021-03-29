@@ -18,6 +18,7 @@ import { TeamComponent } from './teams/team/team.component';
 import { MatchComponent } from './matches/match/match.component';
 import { UsersComponent } from './users/users.component';
 import { RegisterComponent } from './register/register.component';
+import { TeamRegisterComponent } from './teams/team-register/team-register.component';
 
 
 @NgModule({
@@ -33,7 +34,7 @@ import { RegisterComponent } from './register/register.component';
 		MatchEditComponent, 
 		MatchListComponent, 
 		TeamComponent, 
-		MatchComponent, UsersComponent, RegisterComponent
+		MatchComponent, UsersComponent, RegisterComponent, TeamRegisterComponent
 	],
 	imports: [
 		FormsModule,

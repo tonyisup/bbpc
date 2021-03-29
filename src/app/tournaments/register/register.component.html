@@ -1,7 +1,10 @@
 <h1>{{ tournament.name }}</h1>
 <p>{{ tournament.description }}</p>
-<div *ngIf="isRegistered() | async; else registerBlock">
+<div *ngIf="isRegistered; else registerBlock">
     <p>You're registered!</p>
+    <a [routerLink]="['/tournaments/teams/register', { tournament_id: tournamentID }]">
+        Submit your entries
+    </a>
 </div>
 <ng-template #registerBlock>
     <button (click)="registerForTournament()">Register for {{ tournament.name }} </button>

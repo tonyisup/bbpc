@@ -15,6 +15,7 @@ export class RegisterComponent implements OnInit {
 
 	@Input() tournament = new Tournament();
 	tournamentID: string;
+	isRegistered = false;
 
   constructor(
 		private _route: ActivatedRoute,
@@ -29,20 +30,20 @@ export class RegisterComponent implements OnInit {
 				this.tournament = t;
 				this.tournament.id = t.id;
 			})
-		})
-  }
+		});
 
-  isRegistered(): Observable<boolean> {
-		if (!this._users.currentUser()) return of(false);
-		return from(this._tournaments.isRegistered(
-			this.tournamentID,
-			this._users.currentUser().email
-		));
+		this._users.isSignedIn.subscribe(user => {
+			this._tournaments.isRegistered(
+				this.tournamentID,
+				user.email
+			).then(registered => this.isRegistered = registered);
+		})
   }
 
 	registerForTournament(): void {
 		this._tournaments.registerUser(this.tournamentID, this._users.currentUser()).then(r => {
 			console.log('registered', r);
+			this.isRegistered = true;
 		})
 	}
 }

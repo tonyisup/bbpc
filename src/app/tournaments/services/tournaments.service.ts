@@ -96,12 +96,11 @@ export class TournamentsService {
 	}
 	registerUser(tournamentID: string, user: User): Promise<any> {
 		const registeredUser = {
-			email: user.email,
 			addedOn: this.getServerTimestamp()
 		};
 		return this.tournamentStore
 			.collection('tournaments').doc(tournamentID)
-			.collection('users').add({...registeredUser}); 	
+			.collection('users').doc(user.email).set({...registeredUser}); 	
 	}
 	//#endregion
 }
