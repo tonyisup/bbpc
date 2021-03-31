@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
 import { Observable, of } from 'rxjs';
-import { switchMap } from 'rxjs/operators';
+import { map, reduce, scan, switchMap } from 'rxjs/operators';
 import { User } from 'src/app/auth/models/user';
 import { UserService } from 'src/app/auth/services/user.service';
 import { Team } from '../../models/team';
@@ -30,6 +30,7 @@ export class TeamRegisterComponent implements OnInit {
 		updatedOn: null
 	};
   user: User;
+	teamsFilled = false;
 
   constructor(
 		private _route: ActivatedRoute,
@@ -58,6 +59,7 @@ export class TeamRegisterComponent implements OnInit {
   }
   filterTeams(filter: string): void {
     this.teams = this._tournaments.teamsByContestant(this.tournamentID, filter);
+		this.teams.subscribe(t => this.teamsFilled = t.length >= this.tournament.teamlimit);
   }
   add(): void {
     this.team.tournament = this.tournamentID;

@@ -1,9 +1,12 @@
 <h1>{{ tournament.name }}</h1>
 <p>{{ tournament.description }}</p>
+<p>Team Limit: {{ tournament.teamlimit }}</p>
 
-<input [(ngModel)]="team.name" placeholder="title / team name" />
-<input [(ngModel)]="team.link" placeholder="youtube link"/>
-<button (click)="add()">Add</button>
+<ng-container *ngIf="!teamsFilled">
+	<input [(ngModel)]="team.name" placeholder="title / team name" />
+	<input [(ngModel)]="team.link" placeholder="youtube link"/>
+	<button (click)="add()">Add</button>
+</ng-container>
 
 <ul>
 	<li *ngFor="let team of teams | async">
