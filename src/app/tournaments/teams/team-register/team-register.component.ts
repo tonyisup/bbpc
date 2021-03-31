@@ -5,6 +5,7 @@ import { Observable, of } from 'rxjs';
 import { map, reduce, scan, switchMap } from 'rxjs/operators';
 import { User } from 'src/app/auth/models/user';
 import { UserService } from 'src/app/auth/services/user.service';
+import { UtilService } from 'src/app/services/util.service';
 import { Team } from '../../models/team';
 import { Tournament } from '../../models/tournament';
 import { TournamentsService } from '../../services/tournaments.service';
@@ -31,11 +32,13 @@ export class TeamRegisterComponent implements OnInit {
 	};
   user: User;
 	teamsFilled = false;
+	message = '';
 
   constructor(
 		private _route: ActivatedRoute,
 		private _tournaments: TournamentsService,
     private _users: UserService,
+		private _util: UtilService,
     private sanitizer: DomSanitizer,
   ) { }
 
@@ -65,28 +68,30 @@ export class TeamRegisterComponent implements OnInit {
     this.team.tournament = this.tournamentID;
     this.team.contestant = this.user.email;
 
-    this._tournaments.addTeam(this.team).then(r => {
+    this._tournaments.registerEntry(this.team).then(r => {
+			this.displayMessage(r);
+
       this.resetTeam();
       
       this.filterTeams(this.team.contestant);
-    });
+    }).catch(r => {
+			this.displayMessage(r);
+		});
   }
-  getVideoID(link: string): SafeResourceUrl {
-		if (!link) return null;
-		
-		if (link.indexOf('v=') > 0) {
-			let id = link.split('v=')[1];
-			const ampersandPosition = id.indexOf('&');
-			if (ampersandPosition !== -1) {
-				id = id.substring(0, ampersandPosition);
-			}
-			return this.sanitizer.bypassSecurityTrustResourceUrl(`https://www.youtube.com/embed/${id}`);
-		}
-
-		if (link.indexOf('.be/') > 0) {
-
-			let id = link.split('.be/')[1];
-			return this.sanitizer.bypassSecurityTrustResourceUrl(`https://www.youtube.com/embed/${id}`);
-		}
+	displayMessage(m: string) {
+		this.message = m;
+		setTimeout(() => {
+			this.message = '';
+		}, 3000);
+	}
+	remove(team: Team) {
+		this._tournaments.removeEntry(team).then(r => this.displayMessage(r)).catch(r => this.displayMessage(r));
+	}
+	isValidLink(link: string): boolean {
+		return (link.indexOf('v=') >= 0) || (link.indexOf('.be/') >= 0);
+	}
+  getVideoURL(link: string): SafeResourceUrl {
+		let id = this._util.getVideoID(link);
+		return this.sanitizer.bypassSecurityTrustResourceUrl(`https://www.youtube.com/embed/${id}`);
   }
 }

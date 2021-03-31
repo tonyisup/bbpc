@@ -24,13 +24,23 @@ export class UtilService {
     }
     return array;
 	}
-	
-  getVideoID(link: string): string {
-    let id = link.split('v=')[1];
-    const ampersandPosition = id.indexOf('&');
-    if (ampersandPosition !== -1) {
-      id = id.substring(0, ampersandPosition);
-    }
-    return `https://www.youtube.com/embed/${id}`;
-  }
+
+	getVideoID(link: string): string {
+		if (!link) return null;
+		
+		if (link.indexOf('v=') > 0) {
+			let id = link.split('v=')[1];
+			const ampersandPosition = id.indexOf('&');
+			if (ampersandPosition !== -1) {
+				id = id.substring(0, ampersandPosition);
+			}
+			return id;
+		}
+
+		if (link.indexOf('.be/') > 0) {
+
+			let id = link.split('.be/')[1];
+			return id;
+		}
+	}
 }

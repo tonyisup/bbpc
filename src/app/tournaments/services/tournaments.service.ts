@@ -6,6 +6,7 @@ import { Team } from '../models/team';
 import { Tournament } from '../models/tournament';
 import { Match } from '../models/match';
 import { User } from 'src/app/auth/models/user';
+import { UtilService } from 'src/app/services/util.service';
 
 @Injectable({
   providedIn: 'root'
@@ -13,7 +14,8 @@ import { User } from 'src/app/auth/models/user';
 export class TournamentsService {
 
   constructor(
-    private tournamentStore: AngularFirestore
+    private tournamentStore: AngularFirestore,
+		private _util: UtilService,
   ) { }
 
 	getServerTimestamp(): any {
@@ -46,7 +48,6 @@ export class TournamentsService {
     ).valueChanges({ idField: 'id' });
   }
   addTeam(team: Team): Promise<any> {
-		console.log('adding team', team);
     team.addedOn = this.getServerTimestamp();
 		return this.tournamentStore
 			.collection('tournaments').doc(team.tournament)
@@ -103,6 +104,31 @@ export class TournamentsService {
 		return this.tournamentStore
 			.collection('tournaments').doc(tournamentID)
 			.collection('users').doc(user.email).set({...registeredUser}); 	
+	}
+	registerEntry(team: Team): Promise<any> {
+		team.id = this._util.getVideoID(team.link);
+
+		return new Promise((resolve, reject) => {
+			team.addedOn = this.getServerTimestamp();
+			this.tournamentStore
+				.collection('tournaments').doc(team.tournament)
+				.collection('teams').doc(team.id).ref.get().then(d => {
+					if (d.exists) {
+						reject('Sorry, that entry is already registered!');
+					}
+					else {
+						this.tournamentStore
+						.collection('tournaments').doc(team.tournament)
+						.collection('teams').doc(team.id).set(team).then();
+						resolve('Entry successfully registered!');
+					}
+				});
+		});
+	}
+	removeEntry(team: Team): Promise<any> {
+		return this.tournamentStore
+			.collection('tournaments').doc(team.tournament)
+			.collection('teams').doc(team.id).delete();
 	}
 	//#endregion
 }

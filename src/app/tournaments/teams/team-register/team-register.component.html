@@ -1,16 +1,18 @@
 <h1>{{ tournament.name }}</h1>
 <p>{{ tournament.description }}</p>
-<p>Team Limit: {{ tournament.teamlimit }}</p>
+<p>Entry Limit: {{ tournament.teamlimit }}</p>
 
 <ng-container *ngIf="!teamsFilled">
-	<input [(ngModel)]="team.name" placeholder="title / team name" />
+	<input [(ngModel)]="team.name" placeholder="title / entry name" />
 	<input [(ngModel)]="team.link" placeholder="youtube link"/>
-	<button (click)="add()">Add</button>
+	<button (click)="add()" [disabled]="team.name == '' || !isValidLink(team.link)">Add</button>
 </ng-container>
-
+<h3>{{ message }}</h3>
 <ol>
 	<li *ngFor="let team of teams | async">
-		<p>{{ team.contestant }} - {{ team.name }}</p>
-		<iframe width="560" height="315" [src]="getVideoID(team.link)" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+		<p>{{ team.contestant }} - {{ team.name }}
+			<button (click)="remove(team)">Remove Entry</button>
+		</p>
+		<iframe width="560" height="315" [src]="getVideoURL(team.link)" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 	</li>
 </ol>
