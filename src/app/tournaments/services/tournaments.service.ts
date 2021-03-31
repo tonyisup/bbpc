@@ -22,7 +22,9 @@ export class TournamentsService {
 		return this.tournamentStore.collection('tournaments').doc<Tournament>(tournamentID).valueChanges();
 	}
   tournaments(): Observable<Tournament[]> {
-    return this.tournamentStore.collection<Tournament>('tournaments').valueChanges({ idField: 'id' });
+    return this.tournamentStore
+			.collection<Tournament>('tournaments', ref => ref.where('active', '==', true))
+			.valueChanges({ idField: 'id' });
 	}
 	//#region Teams
   team(tournamentID: string, teamID: string): Observable<Team> {		
