@@ -1,5 +1,12 @@
-<div class="formGroup">
-	<button type="button" (click)="auth()">
-		Log in with Facebook
-	</button>
-</div>
+<ng-container *ngIf="!(user$ | async); else signedIn">
+	<input 
+		type="image" 
+		(click)="auth()" 
+		src="assets/facebook_login.png" 
+		alt="Log in with Facebook" 
+		width="300" />
+</ng-container>
+
+<ng-template #signedIn>
+	Signed In
+</ng-template>

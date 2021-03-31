@@ -1,4 +1,6 @@
 import { Component, OnInit } from '@angular/core';
+import { Observable } from 'rxjs';
+import { User } from './models/user';
 import { AuthService } from './services/auth.service';
 
 @Component({
@@ -8,6 +10,7 @@ import { AuthService } from './services/auth.service';
 })
 export class AuthComponent implements OnInit {
 
+	user$: Observable<User>;
   constructor(
 		public _auth: AuthService
 	) { }
@@ -17,5 +20,6 @@ export class AuthComponent implements OnInit {
 
 	auth() {
 		this._auth.FacebookAuth();
+		this.user$ = this._auth.onUserLoggedIn();
 	}
 }
