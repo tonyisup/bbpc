@@ -72,11 +72,19 @@ export class TeamRegisterComponent implements OnInit {
     });
   }
   getVideoID(link: string): SafeResourceUrl {
-    let id = link.split('v=')[1];
-    const ampersandPosition = id.indexOf('&');
-    if (ampersandPosition !== -1) {
-      id = id.substring(0, ampersandPosition);
-    }
-    return this.sanitizer.bypassSecurityTrustResourceUrl(`https://www.youtube.com/embed/${id}`);
+		if (link.indexOf('v=') > 0) {
+			let id = link.split('v=')[1];
+			const ampersandPosition = id.indexOf('&');
+			if (ampersandPosition !== -1) {
+				id = id.substring(0, ampersandPosition);
+			}
+			return this.sanitizer.bypassSecurityTrustResourceUrl(`https://www.youtube.com/embed/${id}`);
+		}
+
+		if (link.indexOf('.be/') > 0) {
+
+			let id = link.split('.be/')[1];
+			return this.sanitizer.bypassSecurityTrustResourceUrl(`https://www.youtube.com/embed/${id}`);
+		}
   }
 }
