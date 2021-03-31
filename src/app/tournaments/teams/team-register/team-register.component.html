@@ -8,9 +8,9 @@
 	<button (click)="add()">Add</button>
 </ng-container>
 
-<ul>
+<ol>
 	<li *ngFor="let team of teams | async">
 		<p>{{ team.contestant }} - {{ team.name }}</p>
 		<iframe width="560" height="315" [src]="getVideoID(team.link)" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 	</li>
-</ul>
+</ol>

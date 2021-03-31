@@ -17,6 +17,7 @@ export class AuthService {
 		private _auth: AngularFireAuth,
 	) { 		
 		this._user.isSignedIn.subscribe(result => {
+			if (!result) return;
 			const user: User = {
 				email: result.email,
 				displayName: '',
