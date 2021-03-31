@@ -1,28 +1,22 @@
-import { Injectable, OnInit } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { AngularFireAuth } from '@angular/fire/auth';
 import { auth } from 'firebase/app';
-import { BehaviorSubject, ReplaySubject, Subject } from 'rxjs';
+import { ReplaySubject } from 'rxjs';
 import { User } from '../models/user';
 import { UserService } from './user.service';
 
 @Injectable({
   providedIn: 'root'
 })
-export class AuthService implements OnInit {
+export class AuthService {
 
 	private _loggedInUser$: ReplaySubject<User> = new ReplaySubject(1);
 
   constructor(
+		private _user: UserService,
 		private _auth: AngularFireAuth,
-		private _user: UserService
-	) { }
-
-	onUserLoggedIn(): ReplaySubject<User> {
-		return this._loggedInUser$;
-	}
-
-	ngOnInit() {
-		this._auth.onAuthStateChanged(result => {
+	) { 		
+		this._user.isSignedIn.subscribe(result => {
 			const user: User = {
 				email: result.email,
 				displayName: '',
@@ -34,6 +28,10 @@ export class AuthService implements OnInit {
 				})
 				.catch(e => console.error(`Auth Login Error: ${e}`));
 		});
+	}
+
+	onUserLoggedIn(): ReplaySubject<User> {
+		return this._loggedInUser$;
 	}
 	//onAuth(): 
 	AuthLogin(provider: firebase.auth.AuthProvider) {

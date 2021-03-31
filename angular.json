@@ -129,5 +129,8 @@
       }
     }
   },
-  "defaultProject": "bbpc"
+  "defaultProject": "bbpc",
+  "cli": {
+    "analytics": "da811ff9-cc91-41aa-80ce-8c62bcc1e8c9"
+  }
 }

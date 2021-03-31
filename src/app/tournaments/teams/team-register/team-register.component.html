@@ -1,0 +1,13 @@
+<h1>{{ tournament.name }}</h1>
+<p>{{ tournament.description }}</p>
+
+<input [(ngModel)]="team.name" placeholder="title / team name" />
+<input [(ngModel)]="team.link" placeholder="youtube link"/>
+<button (click)="add()">Add</button>
+
+<ul>
+	<li *ngFor="let team of teams | async">
+		<p>{{ team.contestant }} - {{ team.name }}</p>
+		<iframe width="560" height="315" [src]="getVideoID(team.link)" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+	</li>
+</ul>

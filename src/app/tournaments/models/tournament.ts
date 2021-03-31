@@ -1,14 +1,16 @@
 import { Match } from "../models/match";
 import { Team } from "../models/team";
-import { User } from "../../auth/models/user";
+import { RegisteredUser } from "./registered-user";
 
 export class Tournament {
 	name: string;
+	description: string;
 	id: any;
 	addedOn: any;
 	updatedOn: any;
+	teamlimit: number;
 	rounds: number[];
-	users: User[];
+	users: RegisteredUser[];
 	matches: Match[];
 	teams: Team[];
 }

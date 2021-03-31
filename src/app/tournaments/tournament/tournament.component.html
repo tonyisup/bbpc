@@ -26,10 +26,15 @@
 			users
 		</a>
 	</li>
-	<li *ngFor="let round of tournament.rounds">
-		<a [routerLink]="['/tournaments/matches', { tournament_id: tournamentID, round_id: round }]">
-			Round {{round}}
-		</a>
+	<li>
+		Rounds
+		<ol>
+			<li *ngFor="let round of tournament.rounds">
+				<a [routerLink]="['/tournaments/matches', { tournament_id: tournamentID, round_id: round }]">
+					Round {{round}}
+				</a>
+			</li>
+		</ol>
 	</li>
 </ul>
 </ng-container>
