@@ -1,10 +1,10 @@
 <h1>{{ tournament.name }}</h1>
 <p>{{ tournament.description }}</p>
 <p>Entry Limit: {{ tournament.teamlimit }}</p>
-
+<p>Find the video on youtube, then copy the url (or find the "share" button and create a link) Then paste it in the second edit box labeled "youtube link"</p>
 <ng-container *ngIf="!teamsFilled">
-	<input [(ngModel)]="team.name" placeholder="title / entry name" />
-	<input [(ngModel)]="team.link" placeholder="youtube link"/>
+	<p><input [(ngModel)]="team.name" placeholder="title / entry name" /></p>
+	<p><input [(ngModel)]="team.link" placeholder="youtube link"/></p>
 	<button (click)="add()" [disabled]="team.name == '' || !isValidLink(team.link)">Add</button>
 </ng-container>
 <h3>{{ message }}</h3>
