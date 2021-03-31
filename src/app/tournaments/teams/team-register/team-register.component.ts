@@ -72,6 +72,8 @@ export class TeamRegisterComponent implements OnInit {
     });
   }
   getVideoID(link: string): SafeResourceUrl {
+		if (!link) return null;
+		
 		if (link.indexOf('v=') > 0) {
 			let id = link.split('v=')[1];
 			const ampersandPosition = id.indexOf('&');
