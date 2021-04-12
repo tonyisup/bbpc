@@ -38,12 +38,6 @@ export class TeamComponent implements OnInit {
   }
 
   getVideoID(link: string): SafeResourceUrl {
-		console.log(link);
-		if (link === undefined) {
-			return;
-		}
-		const url = this.util.getVideoID(link)
-		console.log(url);
-		return this.sanitizer.bypassSecurityTrustResourceUrl(url);
+		return this.util.getVideoID(link);
   }
 }
