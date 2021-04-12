@@ -44,6 +44,6 @@ export class TeamComponent implements OnInit {
 		}
 		const url = this.util.getVideoID(link)
 		console.log(url);
-		return this.sanitizer.bypassSecurityTrustUrl(url);
+		return this.sanitizer.bypassSecurityTrustResourceUrl(url);
   }
 }
