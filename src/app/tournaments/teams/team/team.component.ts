@@ -1,5 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { DomSanitizer, SafeResourceUrl, SafeUrl } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
 import { UtilService } from 'src/app/services/util.service';
 import { Team } from '../../models/team';
@@ -32,18 +32,16 @@ export class TeamComponent implements OnInit {
 				return;
 			}
 			if (this.team === undefined) {
-				this.api.team(this.tournamentId, this.teamId).subscribe(t => this.team = t);
+				this.api.team(this.tournamentId, this.teamId).subscribe(t => {
+					this.team = t;
+					console.log(t);
+				});
 			}
 		});
   }
 
-  getVideoID(link: string): SafeResourceUrl {
+  getVideoLink(link: string): SafeUrl {
 		console.log(link);
-		if (link === undefined) {
-			return;
-		}
-		const url = this.util.getVideoID(link)
-		console.log(url);
-		return this.sanitizer.bypassSecurityTrustResourceUrl(url);
+		return this.sanitizer.bypassSecurityTrustUrl(link);
   }
 }

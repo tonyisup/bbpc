@@ -1,7 +1,7 @@
 <ng-container *ngIf="team !== undefined">
 	<div class="team">
 		<div class="title">
-			<span class="name"><a href="{{team.link}}">{{team.name}}</a></span>
+			<span class="name"><a [href]="getVideoLink(team.link)">{{team.name}}</a></span>
 			<a *ngIf="showEdit" [routerLink]="['/tournaments/teams/edit', { team_id: team.id }]">edit</a>
 		</div>
 		<!-- <div class="entry" *ngIf="showEntry && (team.link !== undefined)">
