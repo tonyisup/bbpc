@@ -1,12 +1,13 @@
 <ng-container *ngIf="team !== undefined">
 	<div class="team">
 		<div class="title">
-			<span class="name">{{ team.name }}</span>
+			<span class="name"><a href="{{team.link}}">{{team.name}}</a></span>
 			<a *ngIf="showEdit" [routerLink]="['/tournaments/teams/edit', { team_id: team.id }]">edit</a>
 		</div>
-		<div class="entry" *ngIf="showEntry && (team.link !== undefined)">
+		<!-- <div class="entry" *ngIf="showEntry && (team.link !== undefined)">
+			
 			<iframe width="560" height="315" [src]="getVideoID(team.link)" frameborder="0"
 				allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-		</div>
+		</div> -->
 	</div>
 </ng-container>
