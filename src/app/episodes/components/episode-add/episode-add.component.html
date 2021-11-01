@@ -1,1 +1,29 @@
-<p>episode-add works!</p>
+<div class="episode">
+	<div class="episode-header">
+		<h2>Add Episode</h2>
+	</div>
+	<div class="episode-body">
+		<form>
+			<div class="input-container">
+				<label for="number">Number</label>
+				<input type="number" name="number" [(ngModel)]="episode.number" required>
+			</div>
+			<div class="input-container">
+				<label for="title">Title</label>
+				<input type="text" name="title" [(ngModel)]="episode.title" required>
+			</div>
+			<div class="input-container">
+				<label for="current">Current Assignments</label>
+				<app-assignments-editor [(assignments)]="episode.current"></app-assignments-editor>
+			</div>
+			<div class="input-container">
+				<label for="next">Extras</label>
+				<app-extras-editor [(extras)]="episode.extras"></app-extras-editor>
+			</div>
+			<div class="input-container">
+				<label for="next">Next  Week's Assignments</label>
+				<app-assignments-editor [(assignments)]="episode.current"></app-assignments-editor>
+			</div>
+		</form>
+	</div>
+</div>

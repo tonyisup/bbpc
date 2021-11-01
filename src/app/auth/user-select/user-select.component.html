@@ -1,0 +1,9 @@
+<div class="user-select">
+	<div class="user" *ngIf="user">
+		<p class="email">{{ user.email }}</p>
+	</div>
+	<div class="users">
+		<select [(ngModel)]="user">
+			<option *ngFor="let user of users | async" [ngValue]="user">{{ user.email }}</option>
+		</select>
+	</div>

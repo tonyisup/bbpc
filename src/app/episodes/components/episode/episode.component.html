@@ -1,1 +1,30 @@
-<p>episode works!</p>
+<div class="episode" *ngIf="episode | async as e">
+	<h2>{{ e.number }} - {{ e.title }}</h2>
+	<h3>This week:</h3>
+	<ul>
+		<li *ngFor="let assignment of e.current">
+			{{ assignment.type }} [{{ assignment.assigner.displayName }}]:
+			<a href="https://www.imdb.com/title/{{ assignment.movie.imdb_id }}/">
+				{{ assignment.movie.title }} ({{ assignment.movie.releaseYear}})
+			</a>
+		</li>
+	</ul>
+	<h3>Extras:</h3>
+	<ul>
+		<li *ngFor="let extra of e.extras">
+			[{{ extra.watcher.displayName }}]:
+			<a href="https://www.imdb.com/title/{{ extra.movie.imdb_id }}/">
+				{{ extra.movie.title }} ({{ extra.movie.releaseYear}})
+			</a>
+		</li>
+	</ul>
+	<h3>Next week:</h3>
+	<ul>
+		<li *ngFor="let assignment of e.next">
+			{{ assignment.type }} [{{ assignment.assigner.displayName }}]:
+			<a href="https://www.imdb.com/title/{{ assignment.movie.imdb_id }}/">
+				{{ assignment.movie.title }} ({{ assignment.movie.releaseYear}})
+			</a>
+		</li>
+	</ul>
+</div>

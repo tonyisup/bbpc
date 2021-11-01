@@ -1,4 +1,5 @@
-import { Segment } from './interfaces/segment';
+import { User } from "src/app/auth/models/user";
+import { Movie } from "src/app/common/models/movie";
 
 export class Episode {
 	number: number;
@@ -8,5 +9,23 @@ export class Episode {
 	updatedOn: any;
 	recordedOn: any;
 	publishedOn: any;
-	// segments: Segment[];
+	current: Assignment[];
+	next: Assignment[];
+	extras: Extra[];
+}
+
+export class Assignment {
+	assigner: User;
+	type: AssigmentType;
+	movie: Movie;
+}
+
+export enum AssigmentType {
+	Homework,
+	ExtraCredit
+}
+
+export class Extra {
+	watcher: User;
+	movie: Movie;
 }

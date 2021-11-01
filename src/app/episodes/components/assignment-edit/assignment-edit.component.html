@@ -1,0 +1,14 @@
+<div class="assignment" *ngIf="assignment">
+	<div class="user">
+		<app-user-select [(user)]="assignment.assigner"></app-user-select>
+	</div>
+	<div class="type">
+		<select>
+			<option>Homework</option>
+			<option>Extra Credit</option>
+		</select>
+	</div>
+	<div class="movie">
+		<app-movie-select></app-movie-select>
+	</div>
+</div>

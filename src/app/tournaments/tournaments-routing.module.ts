@@ -16,7 +16,9 @@ import { TeamComponent } from './teams/team/team.component';
 import { MatchComponent } from './matches/match/match.component';
 import { RegisterComponent } from './register/register.component';
 import { TeamRegisterComponent } from './teams/team-register/team-register.component';
-import { RegisteredGuard } from './guards/registered.guard';
+import { RegisteredGuard } from '../guards/registered.guard';
+import { AdminGuard } from '../guards/admin.guard';
+
 
 const redirectUnauthorizedToLogin = () => redirectUnauthorizedTo(["auth"]);
 
@@ -24,17 +26,27 @@ const routes: Routes = [
   { path: '', component: TournamentsComponent },
   { path: 'tournament', component: TournamentComponent },
   { path: 'list', component: TournamentListComponent },
-  { path: 'seed', component: SeedComponent },
+  { path: 'seed', component: SeedComponent, canActivate: [AdminGuard] },
   { path: 'team', component: TeamComponent },
   { path: 'teams', component: TeamListComponent },
-  { path: 'teams/add', component: TeamAddComponent },
-  { path: 'teams/edit', component: TeamEditComponent },
+  { path: 'teams/add', component: TeamAddComponent, canActivate: [AdminGuard] },
+  { path: 'teams/edit', component: TeamEditComponent, canActivate: [AdminGuard] },
   { path: 'match', component: MatchComponent },
   { path: 'matches', component: MatchListComponent },
-  { path: 'matches/add', component: MatchAddComponent },
-  { path: 'matches/edit', component: MatchEditComponent },
-  { path: 'register', component: RegisterComponent, canActivate: [AngularFireAuthGuard], data: { authGuardPipe: redirectUnauthorizedToLogin } },
-  { path: 'teams/register', component: TeamRegisterComponent, canActivate: [AngularFireAuthGuard, RegisteredGuard], data: { authGuardPipe: redirectUnauthorizedToLogin } },
+  { path: 'matches/add', component: MatchAddComponent, canActivate: [AdminGuard] },
+  { path: 'matches/edit', component: MatchEditComponent, canActivate: [AdminGuard] },
+  { 
+		path: 'register',
+		component: RegisterComponent,
+		canActivate: [AngularFireAuthGuard],
+		data: { authGuardPipe: redirectUnauthorizedToLogin }
+	},
+  { 
+		path: 'teams/register',
+		component: TeamRegisterComponent,
+		canActivate: [AngularFireAuthGuard, RegisteredGuard], 
+		data: { authGuardPipe: redirectUnauthorizedToLogin }
+	},
 ];
 
 @NgModule({

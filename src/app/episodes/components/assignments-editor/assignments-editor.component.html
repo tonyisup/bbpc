@@ -1,0 +1,27 @@
+<div class="assignments">
+  <div class="assignment" *ngFor="let assignment of assignments">
+		<div class="assigner">
+			<p> {{ assignment.assigner.email }}</p>
+		</div>
+		<div class="type">
+			<p> {{ assignment.type }}</p>
+		</div>
+		<div class="movie">
+			<p> {{ assignment.movie.title }}</p>
+		</div>
+		<div class="remove" (onclick)="remove(assignment)">
+			<p>X</p>
+		</div>
+	</div>
+</div>
+<div class="add-assignment">
+	<button (click)="addAssignment()">Add Assignment</button>
+</div>
+<div class="new-assignment" *ngIf="assignment">
+	<div class="assignment">
+		<app-assignment-edit [(assignment)]="assignment"></app-assignment-edit>
+	</div>
+	<div class="cancel" (onclick)="assignment = null;">
+		<p>X</p>
+	</div>
+</div>

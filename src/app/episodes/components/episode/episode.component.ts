@@ -1,4 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
+import { Observable } from 'rxjs';
+import { Episode } from '../../models/episode';
 
 @Component({
   selector: 'app-episode',
@@ -7,7 +10,15 @@ import { Component, OnInit } from '@angular/core';
 })
 export class EpisodeComponent implements OnInit {
 
-  constructor() { }
+	@Input() episode: Observable<Episode> = new Observable();
+
+  constructor(
+		private route: ActivatedRoute
+	) { 
+		this.route.data.subscribe(data => {
+			this.episode = data.episode as Observable<Episode>;
+		});
+	}
 
   ngOnInit(): void {
   }

@@ -17,11 +17,14 @@ export class EpisodesService {
 		return firebase.firestore.FieldValue.serverTimestamp();
 	}
 
-	latest(): Observable<Episode[]> {
+	latest(limit: number = 1): Observable<Episode[]> {
 		return this.episodesStore.collection<Episode>('episodes',
-			ref => ref.orderBy('number', 'desc').limit(1)).valueChanges();
+			ref => ref.orderBy('number', 'desc').limit(limit)).valueChanges();
 	}
 	add(episode: Episode): Promise<DocumentReference> {
 		return this.episodesStore.collection<Episode>('episodees').add(episode);
+	}
+	getEpisode(id: string): Observable<Episode> {
+		return this.episodesStore.doc<Episode>(`episodes/${id}`).valueChanges();
 	}
 }

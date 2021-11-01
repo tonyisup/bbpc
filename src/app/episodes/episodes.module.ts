@@ -6,6 +6,13 @@ import { EpisodesComponent } from './episodes.component';
 import { EpisodeComponent } from './components/episode/episode.component';
 import { EpisodeAddComponent } from './components/episode-add/episode-add.component';
 import { EpisodeListComponent } from './components/episode-list/episode-list.component';
+import { EpisodeEditComponent } from './components/episode-edit/episode-edit.component';
+import { FormsModule } from '@angular/forms';
+import { AssignmentsEditorComponent } from './components/assignments-editor/assignments-editor.component';
+import { ExtrasEditorComponent } from './components/extras-editor/extras-editor.component';
+import { AssignmentEditComponent } from './components/assignment-edit/assignment-edit.component';
+import { AuthModule } from '../auth/auth.module';
+import { AppCommonModule } from '../common/app-common.module';
 
 
 @NgModule({
@@ -13,10 +20,18 @@ import { EpisodeListComponent } from './components/episode-list/episode-list.com
 		EpisodesComponent, 
 		EpisodeComponent, 
 		EpisodeAddComponent, 
-		EpisodeListComponent],
+		EpisodeListComponent, 
+		EpisodeEditComponent,
+		AssignmentsEditorComponent,
+		ExtrasEditorComponent,
+		AssignmentEditComponent
+	],
   imports: [
     CommonModule,
-    EpisodesRoutingModule
+		FormsModule,
+    EpisodesRoutingModule,
+		AuthModule,
+		AppCommonModule
   ]
 })
 export class EpisodesModule { }

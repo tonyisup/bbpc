@@ -9,21 +9,22 @@ import { AngularFirestoreModule } from '@angular/fire/firestore';
 import { UtilService } from './services/util.service';
 import { AuthModule } from './auth/auth.module';
 import { AuthService } from './auth/services/auth.service';
+import { AppCommonModule } from './common/app-common.module';
 
 @NgModule({
   declarations: [
-    AppComponent
+    AppComponent,
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
     AngularFireModule.initializeApp(environment.firebase),
 		AngularFirestoreModule,
-		AuthModule
+		AuthModule,
+		AppCommonModule
   ],
   providers: [
-    UtilService,
-		AuthService
+    UtilService
   ],
   bootstrap: [AppComponent]
 })
