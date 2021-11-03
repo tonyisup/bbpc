@@ -1,0 +1,13 @@
+<div class="card">
+	<img 
+    [src]="movie.Poster | defaultImage" 
+    class="card-img-top" 
+    [alt]="movie.Title">
+	<div class="card-body">
+		<a 
+      href="https://www.imdb.com/title/{{ movie.imdbID }}/" 
+      class="btn btn-primary">
+      {{ movie.Title | ellipsify: 25 }}
+		</a>
+	</div>
+</div>

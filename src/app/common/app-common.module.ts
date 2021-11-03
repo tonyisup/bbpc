@@ -3,13 +3,23 @@ import { CommonModule } from '@angular/common';
 import { MovieSelectComponent } from './components/movie-select/movie-select.component';
 import { FormsModule } from '@angular/forms';
 import { ListenOnComponent } from './components/listen-on/listen-on.component';
+import { MovieCardComponent } from './components/movie-card/movie-card.component';
+import { EllipsifyPipe } from './pipes/ellipsify.pipe';
+import { DefaultImagePipe } from './pipes/default-image.pipe';
+import { VideoSelectComponent } from './components/video-select/video-select.component';
+import { VideoListComponent } from './components/video-list/video-list.component';
 
 
 
 @NgModule({
   declarations: [
 		MovieSelectComponent,
-		ListenOnComponent
+		ListenOnComponent,
+		MovieCardComponent,
+		EllipsifyPipe,
+		DefaultImagePipe,
+		VideoSelectComponent,
+		VideoListComponent
 	],
   imports: [
     CommonModule,
@@ -17,7 +27,9 @@ import { ListenOnComponent } from './components/listen-on/listen-on.component';
   ],
 	exports: [
     MovieSelectComponent,
-		ListenOnComponent
+		ListenOnComponent,
+		MovieCardComponent,
+		VideoSelectComponent
 	],
 })
 export class AppCommonModule { }

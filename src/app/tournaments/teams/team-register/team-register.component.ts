@@ -28,7 +28,9 @@ export class TeamRegisterComponent implements OnInit {
 		name: "",
 		tournament: "",
 		addedOn: null,
-		updatedOn: null
+		updatedOn: null,
+		movie: null,
+		video: null
 	};
   user: User;
 	teamsFilled = false;
@@ -67,6 +69,8 @@ export class TeamRegisterComponent implements OnInit {
   add(): void {
     this.team.tournament = this.tournamentID;
     this.team.contestant = this.user.email;
+		this.team.link = this.team.video.videoUrl;
+		this.team.name = this.team.name || this.team.video.title;
 
     this._tournaments.registerEntry(this.team).then(r => {
 			this.displayMessage(r);
@@ -88,6 +92,7 @@ export class TeamRegisterComponent implements OnInit {
 		this._tournaments.removeEntry(team).then(r => this.displayMessage(r)).catch(r => this.displayMessage(r));
 	}
 	isValidLink(link: string): boolean {
+		if (!link) return false;
 		return (link.indexOf('v=') >= 0) || (link.indexOf('.be/') >= 0);
 	}
   getVideoURL(link: string): SafeResourceUrl {

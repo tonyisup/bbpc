@@ -19,6 +19,7 @@ import { MatchComponent } from './matches/match/match.component';
 import { UsersComponent } from './users/users.component';
 import { RegisterComponent } from './register/register.component';
 import { TeamRegisterComponent } from './teams/team-register/team-register.component';
+import { AppCommonModule } from '../common/app-common.module';
 
 
 @NgModule({
@@ -40,10 +41,14 @@ import { TeamRegisterComponent } from './teams/team-register/team-register.compo
 		FormsModule,
 		CommonModule,
 		ReactiveFormsModule,
-		TournamentsRoutingModule
+		TournamentsRoutingModule,
+		AppCommonModule
 	],
 	providers: [
 		TournamentsService
+	],
+	exports: [
+		TournamentListComponent
 	]
 })
 export class TournamentsModule { }

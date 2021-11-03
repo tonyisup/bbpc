@@ -41,7 +41,9 @@ export class RegisterComponent implements OnInit {
   }
 
 	registerForTournament(): void {
+		
 		this._users.currentUser$.subscribe(user => {
+			console.log('registering')
 			this._tournaments.registerUser(this.tournamentID, user).then(r => {
 				console.log('registered', r);
 				this.isRegistered = true;

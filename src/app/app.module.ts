@@ -8,8 +8,9 @@ import { environment } from '../environments/environment';
 import { AngularFirestoreModule } from '@angular/fire/firestore';
 import { UtilService } from './services/util.service';
 import { AuthModule } from './auth/auth.module';
-import { AuthService } from './auth/services/auth.service';
 import { AppCommonModule } from './common/app-common.module';
+import { HttpClientModule } from '@angular/common/http';
+import { TournamentsModule } from './tournaments/tournaments.module';
 
 @NgModule({
   declarations: [
@@ -21,7 +22,9 @@ import { AppCommonModule } from './common/app-common.module';
     AngularFireModule.initializeApp(environment.firebase),
 		AngularFirestoreModule,
 		AuthModule,
-		AppCommonModule
+		AppCommonModule,
+		HttpClientModule,
+		TournamentsModule
   ],
   providers: [
     UtilService

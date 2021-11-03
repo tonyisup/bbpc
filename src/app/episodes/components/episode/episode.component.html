@@ -4,8 +4,8 @@
 	<ul>
 		<li *ngFor="let assignment of e.current">
 			{{ assignment.type }} [{{ assignment.assigner.displayName }}]:
-			<a href="https://www.imdb.com/title/{{ assignment.movie.imdb_id }}/">
-				{{ assignment.movie.title }} ({{ assignment.movie.releaseYear}})
+			<a href="https://www.imdb.com/title/{{ assignment.movie.imdbID }}/">
+				{{ assignment.movie.Title }} ({{ assignment.movie.Year}})
 			</a>
 		</li>
 	</ul>
@@ -13,8 +13,8 @@
 	<ul>
 		<li *ngFor="let extra of e.extras">
 			[{{ extra.watcher.displayName }}]:
-			<a href="https://www.imdb.com/title/{{ extra.movie.imdb_id }}/">
-				{{ extra.movie.title }} ({{ extra.movie.releaseYear}})
+			<a href="https://www.imdb.com/title/{{ extra.movie.imdbID }}/">
+				{{ extra.movie.Title }} ({{ extra.movie.Year}})
 			</a>
 		</li>
 	</ul>
@@ -22,8 +22,8 @@
 	<ul>
 		<li *ngFor="let assignment of e.next">
 			{{ assignment.type }} [{{ assignment.assigner.displayName }}]:
-			<a href="https://www.imdb.com/title/{{ assignment.movie.imdb_id }}/">
-				{{ assignment.movie.title }} ({{ assignment.movie.releaseYear}})
+			<a href="https://www.imdb.com/title/{{ assignment.movie.imdbID }}/">
+				{{ assignment.movie.Title }} ({{ assignment.movie.Year}})
 			</a>
 		</li>
 	</ul>

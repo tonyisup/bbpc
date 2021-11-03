@@ -40,6 +40,12 @@
   .content-container {
 		display: flex;
 		flex-direction: row;
+		flex-wrap: wrap;
+		div {
+			margin-left:auto;
+			margin-right:auto;
+			padding: 1rem;
+		}
 
 		.content {
 			display: flex;

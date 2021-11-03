@@ -2,7 +2,7 @@ import { Injectable, OnInit } from '@angular/core';
 import { AngularFireAuth } from '@angular/fire/auth';
 import { AngularFirestore } from '@angular/fire/firestore';
 import * as firebase from 'firebase';
-import { Observable, Subject } from 'rxjs';
+import { Observable, ReplaySubject } from 'rxjs';
 import { first, map } from 'rxjs/operators';
 import { User } from '../models/user';
 
@@ -14,13 +14,13 @@ export class UserService {
 	private _user: User;
 
 	public isSignedIn: Observable<any>;
-	public currentUser$: Subject<User>;
+	public currentUser$: ReplaySubject<User>;
 
   constructor(
 		private userStore: AngularFirestore,
 		private _ngFireAuth: AngularFireAuth
 	) { 
-		this.currentUser$ = new Subject<User>();
+		this.currentUser$ = new ReplaySubject<User>();
 		this.isSignedIn = new Observable((sub) => {
 			this._ngFireAuth.onAuthStateChanged(sub);
 		})

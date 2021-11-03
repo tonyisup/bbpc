@@ -22,7 +22,9 @@ export class TeamAddComponent implements OnInit {
 		name: "",
 		tournament: "",
 		addedOn: null,
-		updatedOn: null
+		updatedOn: null,
+		movie: null,
+		video: null
 	};
 
   constructor(
