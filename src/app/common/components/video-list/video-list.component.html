@@ -2,13 +2,13 @@
   <div class="column" *ngFor="let video of videos">
     <div class="ui card">
 			<button (click)="select(video)">select</button>
-      <div class="image">
-        <img [src]="video.thumbnail">
-      </div>
       <div class="content">
 				<a [href]="video.videoUrl" target="_blank" class="extra content">
 					{{ video.title }}
 				</a>
+      </div>
+      <div class="image">
+        <img [src]="video.thumbnail">
       </div>
     </div>
   </div>
