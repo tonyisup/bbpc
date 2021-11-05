@@ -55,12 +55,16 @@ export class TeamRegisterComponent implements OnInit {
 				this.tournament = t;
 				this.tournament.id = t.id;
         this.filterTeams(this.user.email);
+				this.team.name = this.user.displayName;
 			})
 		});
   }
   resetTeam(): void {
-    this.team.link = '';
+		this.team.link = '';
+		this.team.video = null;
+		this.team.movie = null;
     this.team.tournament = this.tournamentID;
+		this.team.name = this.user.displayName;
   }
   filterTeams(filter: string): void {
     this.teams = this._tournaments.teamsByContestant(this.tournamentID, filter);
@@ -89,7 +93,10 @@ export class TeamRegisterComponent implements OnInit {
 		}, 3000);
 	}
 	remove(team: Team) {
-		this._tournaments.removeEntry(team).then(r => this.displayMessage(r)).catch(r => this.displayMessage(r));
+		this._tournaments.removeEntry(team).then(r => {
+			this.resetTeam();
+			console.log(r);
+		}).catch(r => this.displayMessage(r));
 	}
 	isValidLink(link: string): boolean {
 		if (!link) return false;
