@@ -8,6 +8,7 @@ import { EllipsifyPipe } from './pipes/ellipsify.pipe';
 import { DefaultImagePipe } from './pipes/default-image.pipe';
 import { VideoSelectComponent } from './components/video-select/video-select.component';
 import { VideoListComponent } from './components/video-list/video-list.component';
+import { VideoCardComponent } from './components/video-card/video-card.component';
 
 
 
@@ -19,7 +20,8 @@ import { VideoListComponent } from './components/video-list/video-list.component
 		EllipsifyPipe,
 		DefaultImagePipe,
 		VideoSelectComponent,
-		VideoListComponent
+		VideoListComponent,
+		VideoCardComponent
 	],
   imports: [
     CommonModule,
