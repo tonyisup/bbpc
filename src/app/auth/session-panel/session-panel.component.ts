@@ -1,4 +1,6 @@
 import { Component, OnInit } from '@angular/core';
+import { Observable } from 'rxjs';
+import { User } from '../models/user';
 import { UserService } from '../services/user.service';
 
 @Component({
@@ -8,16 +10,17 @@ import { UserService } from '../services/user.service';
 })
 export class SessionPanelComponent implements OnInit {
 
+	user: Observable<User> = new Observable();
   constructor(
 		private _users: UserService
 	) { }
 
 	signedIn = false;
-	email: string;
+	
 	ngOnInit() {
+		this.user = this._users.currentUser$;
 		this._users.isSignedIn.subscribe(user => {
 			if (user) {
-				this.email = user.email;
 				this.signedIn = true;
 			}
 		});
@@ -26,6 +29,5 @@ export class SessionPanelComponent implements OnInit {
 	signOut() {
 		this._users.signOut();
 		this.signedIn = false;
-		this.email = null;
 	}
 }
