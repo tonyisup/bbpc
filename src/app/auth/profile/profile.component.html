@@ -1,0 +1,16 @@
+<div class="profile" *ngIf="user | async as u">
+	<div class="input-container">
+		<label for="email">Email</label>
+		<input id="email" [disabled]="true" [ngModel]="u.email" />
+	</div>
+	<div class="input-container">
+		<label for="name">Display Name</label>
+		<input id="name" [(ngModel)]="u.displayName" placeholder="Display Name">
+	</div>
+	<div class="buttons">
+		<button class="btn" (click)="save(u)">Update</button>
+	</div>
+	<div class="messages">
+		<p class="message" *ngIf="message">{{ message }}</p>
+	</div>
+</div>

@@ -1,1 +1,4 @@
-<p>user works!</p>
+<div class="user" *ngIf="user | async as u">
+	<input [(ngModel)]="u.email" />
+	<input [(ngModel)]="u.displayName" placeholder="Display Name">
+</div>

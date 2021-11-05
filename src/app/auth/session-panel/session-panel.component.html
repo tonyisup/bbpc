@@ -1,5 +1,5 @@
 <ng-container *ngIf="signedIn; else signInPanel">
-	{{ email }}
+	<a routerLink="profile">{{ email }}</a>
 	<a (click)="signOut()" routerLink="auth">Sign Out</a>
 </ng-container>
 <ng-template #signInPanel>
