@@ -13,7 +13,7 @@
 	<div *ngIf="team.movie">
 		<app-movie-card [movie]="team.movie"></app-movie-card>
 	</div>
-	<button (click)="add()" [disabled]="team.name == '' || !isValidLink(team?.video?.videoUrl)">Add</button>
+	<button (click)="add()" [disabled]="team.name == '' || !isValidLink(team?.video?.videoUrl)">Submit entry by clicking here ya doofus</button>
 </ng-container>
 <h3>{{ message }}</h3>
 <ol>
