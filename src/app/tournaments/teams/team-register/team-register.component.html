@@ -1,7 +1,10 @@
 <h1>{{ tournament.name }}</h1>
 <p>{{ tournament.description }}</p>
 <p>Entry Limit: {{ tournament.teamlimit }}</p>
-<p>Find the video on youtube, then copy the url (or find the "share" button and create a link) Then paste it in the second edit box labeled "youtube link"</p>
+<p>Enter a name for your "entry". Make it unique to you, not the movie or video.</p>
+<p>Type to search for the music video. Select the video by clicking [select] ABOVE the thumbnail</p>
+<p>Type to search for the movie. Select the movie by clicking the [select] ABOVE the thumbnail</p>
+<p>Cick the button that says "submit"</p>
 <ng-container *ngIf="!teamsFilled">
 	<p><input [(ngModel)]="team.name" placeholder="title / entry name" /></p>
 	<!-- <p><input [(ngModel)]="team.link" placeholder="youtube link"/></p> -->
