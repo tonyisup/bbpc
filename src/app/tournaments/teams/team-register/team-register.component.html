@@ -6,20 +6,22 @@
 	<img src="https://media.giphy.com/media/111ebonMs90YLu/giphy.gif" />
 </div>
 <ng-container *ngIf="!teamsFilled">
-	<p>Y'all fucked this up so taking away the TEAM NAME priveleges. This is supposed to be what we use to judge the song without knowing the movie. Not spoil it by including the name! So, going to use y'alls names now instead. How champagne boring.</p>
 	<p>Type to search for the music video. Select the video by clicking [select] ABOVE the thumbnail</p>
 	<p>Type to search for the movie. Select the movie by clicking the [select] ABOVE the thumbnail</p>
 	<p>Then, once both are selected, click the button that says "submit"</p>
 	<p><input [disabled]="true" [(ngModel)]="team.name" placeholder="title / entry name" /></p>
 	<!-- <p><input [(ngModel)]="team.link" placeholder="youtube link"/></p> -->
+
 	<p><app-video-select [(video)]="team.video"></app-video-select></p>
 	<div *ngIf="team.video">
 		<iframe width="560" height="315" [src]="getVideoURL(team.video.videoUrl)" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 	</div>
+	
 	<p><app-movie-select [(movie)]="team.movie"></app-movie-select></p>
 	<div *ngIf="team.movie">
 		<app-movie-card [movie]="team.movie"></app-movie-card>
 	</div>
+	
 	<button (click)="add()" [disabled]="team.name == '' || !isValidLink(team?.video?.videoUrl)">Submit entry by clicking here ya doofus</button>
 </ng-container>
 <h3>{{ message }}</h3>

@@ -3,4 +3,5 @@ export class User {
 	displayName: string;
 	updatedOn: any;
 	admin?: boolean;
+	host?: boolean;
 }
