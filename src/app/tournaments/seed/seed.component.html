@@ -4,6 +4,7 @@
 <button (click)="save()">
   Save
 </button>
+<button (click)="createBracket()">Create Bracket</button>
 <ol>
   <li *ngFor="let team of teams">
     <h1>[{{ team.seed }}] {{ team.contestant }} - {{ team.name }}</h1>

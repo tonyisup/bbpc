@@ -48,4 +48,8 @@ export class SeedComponent implements OnInit, OnDestroy {
       this.tournamentService.updateTeam(team);
     }
   }
+
+	createBracket() {
+		this.tournamentService.createBracket(this.tournamentID, this.teams);
+	}
 }

@@ -20,6 +20,7 @@ import { UsersComponent } from './users/users.component';
 import { RegisterComponent } from './register/register.component';
 import { TeamRegisterComponent } from './teams/team-register/team-register.component';
 import { AppCommonModule } from '../common/app-common.module';
+import { BracketComponent } from './bracket/bracket.component';
 
 
 @NgModule({
@@ -35,7 +36,7 @@ import { AppCommonModule } from '../common/app-common.module';
 		MatchEditComponent, 
 		MatchListComponent, 
 		TeamComponent, 
-		MatchComponent, UsersComponent, RegisterComponent, TeamRegisterComponent
+		MatchComponent, UsersComponent, RegisterComponent, TeamRegisterComponent, BracketComponent
 	],
 	imports: [
 		FormsModule,

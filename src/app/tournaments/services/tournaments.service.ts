@@ -7,6 +7,8 @@ import { Tournament } from '../models/tournament';
 import { Match } from '../models/match';
 import { User } from 'src/app/auth/models/user';
 import { UtilService } from 'src/app/services/util.service';
+import { map } from 'rxjs/operators';
+import { Bracket } from '../models/bracket';
 
 @Injectable({
   providedIn: 'root'
@@ -82,6 +84,31 @@ export class TournamentsService {
 		return this.tournamentStore
 		.collection('tournaments').doc(tournamentID)
 		.collection('matches').doc<Match>(matchID).valueChanges();
+	}
+	bracket(tournamentID: string, round: number = 1): Observable<Bracket> {
+		return this.tournamentStore
+			.collection('tournaments').doc(tournamentID)
+			.collection<Match>('matches',
+				ref => ref.where('roundId', '==', round)
+		).valueChanges({ idField: 'id'})
+		.pipe(map(matches => {
+			const bracket = new Bracket();
+			bracket.matches = matches;
+			bracket.tournamentId = tournamentID;
+			return bracket;
+		}));
+	}
+	createBracket(tournamentID: string, teams: Team[]): Promise<any> {
+		const matches = [];
+		const round = 1;
+		const roundName = 'Round ' + round;
+
+		// go through teams in order of seeds
+		// every two teams, create a match
+		// matches.push(...roundMatches);
+		return this.tournamentStore
+			.collection('tournaments').doc(tournamentID)
+			.collection('matches').add(matches);
 	}
 	round(tournamentID: string, roundID: string): Observable<Match[]> {
 		return this.tournamentStore

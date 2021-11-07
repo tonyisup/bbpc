@@ -18,12 +18,21 @@ import { RegisterComponent } from './register/register.component';
 import { TeamRegisterComponent } from './teams/team-register/team-register.component';
 import { RegisteredGuard } from '../guards/registered.guard';
 import { AdminGuard } from '../guards/admin.guard';
+import { BracketComponent } from './bracket/bracket.component';
+import { BracketResolverService } from './services/bracket-resolver.service';
 
 
 const redirectUnauthorizedToLogin = () => redirectUnauthorizedTo(["auth"]);
 
 const routes: Routes = [
   { path: '', component: TournamentsComponent },
+	{ 
+		path: 'bracket/:tournament_id',
+		component: BracketComponent,
+		resolve: {
+			bracket: BracketResolverService
+		}
+	},
   { path: 'tournament', component: TournamentComponent },
   { path: 'list', component: TournamentListComponent },
   { path: 'seed', component: SeedComponent, canActivate: [AdminGuard] },
