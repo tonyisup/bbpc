@@ -50,6 +50,7 @@ export class SeedComponent implements OnInit, OnDestroy {
   }
 
 	createBracket() {
-		this.tournamentService.createBracket(this.tournamentID, this.teams);
+		this.tournamentService.createBracket(this.tournamentID, this.teams)
+			.then(r => console.log("bracket created", r));
 	}
 }

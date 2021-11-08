@@ -20,7 +20,7 @@ export class TeamComponent implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
-		private util: UtilService,
+		private _util: UtilService,
     private sanitizer: DomSanitizer,
 		private api: TournamentsService
 	) { }
@@ -43,5 +43,9 @@ export class TeamComponent implements OnInit {
   getVideoLink(link: string): SafeUrl {
 		console.log(link);
 		return this.sanitizer.bypassSecurityTrustUrl(link);
+  }
+  getVideoURL(link: string): SafeResourceUrl {
+		let id = this._util.getVideoID(link);
+		return this.sanitizer.bypassSecurityTrustResourceUrl(`https://www.youtube.com/embed/${id}`);
   }
 }

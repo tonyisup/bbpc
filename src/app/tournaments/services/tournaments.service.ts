@@ -99,16 +99,36 @@ export class TournamentsService {
 		}));
 	}
 	createBracket(tournamentID: string, teams: Team[]): Promise<any> {
-		const matches = [];
 		const round = 1;
-		const roundName = 'Round ' + round;
+		const grouped = teams.sort((a, b) => a.seed - b.seed)
+			.reduce((a, v, i, t) => {
+				if (i % 2 === 0) a.push(t.slice(i, i + 2));
+				return a;
+			}, []);
+		const matches = grouped.map(g => {
+			const match = new Match();
+			match.tournamentId = tournamentID;
+			match.roundId = '1';
+			match.teamA = g[0];
+			match.teamB = g[1];
+			match.addedOn = this.getServerTimestamp();
+			match.id = g[0].id + g[1].id;
+			return match;
+		});
 
 		// go through teams in order of seeds
 		// every two teams, create a match
 		// matches.push(...roundMatches);
-		return this.tournamentStore
+		const batch = firebase.firestore().batch();
+
+		matches.forEach(match => {
+			const docref = this.tournamentStore
 			.collection('tournaments').doc(tournamentID)
-			.collection('matches').add(matches);
+			.collection('matches').doc<Match>(match.id).ref;
+			batch.set(docref, {...match});
+		});
+
+		return batch.commit();
 	}
 	round(tournamentID: string, roundID: string): Observable<Match[]> {
 		return this.tournamentStore

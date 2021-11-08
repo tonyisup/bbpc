@@ -1,13 +1,13 @@
 <div class="match">
 	<div class="team team-a">
-		<ng-container *ngIf="match.teamIdA !== undefined">
-			<app-team [team-id]="match.teamIdA" [show-entry]="showEntry"></app-team>
+		<ng-container *ngIf="match.teamA !== undefined">
+			<app-team [team]="match.teamA" [show-entry]="showEntry"></app-team>
 		</ng-container>
 	</div>
 	<div class="versus"><img width="100" src="../../../../assets/vs.png"></div>
 	<div class="team team-b">
-		<ng-container *ngIf="match.teamIdB !== undefined">
-			<app-team [team-id]="match.teamIdB" [show-entry]="showEntry"></app-team>
+		<ng-container *ngIf="match.teamB !== undefined">
+			<app-team [team]="match.teamB" [show-entry]="showEntry"></app-team>
 		</ng-container>
 	</div>
 </div>
