@@ -43,4 +43,11 @@ export class MatchListComponent implements OnInit, OnDestroy {
 	filter(): void {
 		this.matchesSub = this.api.round(this.tournamentID, this.roundId).pipe(take(1)).subscribe(m => this.matches = m);
 	}
+
+	nextRound(): void {
+		const winners = this.matches.filter(m => m.winner !== null).map(m => m.winner);
+		if (winners.length < 2) return;
+		const nextRound = +this.roundId + 1;
+		this.api.createBracket(this.tournamentID, winners, nextRound).then();
+	}
 }

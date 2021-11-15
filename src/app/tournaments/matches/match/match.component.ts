@@ -1,6 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Match } from '../../models/match';
+import { Team } from '../../models/team';
 import { TournamentsService } from '../../services/tournaments.service';
 
 @Component({
@@ -40,4 +41,9 @@ export class MatchComponent implements OnInit {
 			this.api.match(this.tournamentId, this.matchId).subscribe(m => this.match = m);
 		});
   }
+
+	winner(team: Team) {
+		this.match.winner = team;
+		this.api.updateMatch(this.match).then();
+	}
 }

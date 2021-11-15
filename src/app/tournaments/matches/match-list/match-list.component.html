@@ -22,3 +22,13 @@
 		</ng-container>
 	</li>
 </ol>
+
+<h3>Winners</h3>
+<ol>
+	<button (click)="nextRound()">Next Round</button>
+	<li *ngFor="let match of matches">
+		<ng-container *ngIf="match.winner">
+			<app-team [team]="match.winner"></app-team>
+		</ng-container>
+	</li>
+</ol>
