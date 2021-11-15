@@ -5,6 +5,7 @@ import { RegisteredUser } from "./registered-user";
 export class Tournament {
 	name: string;
 	description: string;
+	rules: string[];
 	id: any;
 	addedOn: any;
 	updatedOn: any;
