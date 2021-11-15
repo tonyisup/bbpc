@@ -17,6 +17,7 @@ export class TeamComponent implements OnInit {
 	@Input() team: Team;
 	@Input('show-entry') showEntry = true;
 	@Input('show-eidt') showEdit = false;
+	@Input('show-name') showName = false;
 
   constructor(
     private route: ActivatedRoute,

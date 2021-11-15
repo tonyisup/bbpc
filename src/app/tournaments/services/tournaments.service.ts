@@ -98,17 +98,17 @@ export class TournamentsService {
 			return bracket;
 		}));
 	}
-	createBracket(tournamentID: string, teams: Team[]): Promise<any> {
-		const round = 1;
+	createBracket(tournamentID: string, teams: Team[], round: number = 1): Promise<any> {
 		const grouped = teams.sort((a, b) => a.seed - b.seed)
 			.reduce((a, v, i, t) => {
 				if (i % 2 === 0) a.push(t.slice(i, i + 2));
 				return a;
 			}, []);
 		const matches = grouped.map(g => {
+			if (g.length !== 2) return null;
 			const match = new Match();
 			match.tournamentId = tournamentID;
-			match.roundId = '1';
+			match.roundId = round.toString();
 			match.teamA = g[0];
 			match.teamB = g[1];
 			match.addedOn = this.getServerTimestamp();
@@ -122,6 +122,7 @@ export class TournamentsService {
 		const batch = firebase.firestore().batch();
 
 		matches.forEach(match => {
+			if (!match) return;
 			const docref = this.tournamentStore
 			.collection('tournaments').doc(tournamentID)
 			.collection('matches').doc<Match>(match.id).ref;
