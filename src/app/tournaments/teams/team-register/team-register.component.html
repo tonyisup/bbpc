@@ -15,14 +15,16 @@
 	<p><app-video-select [(video)]="team.video"></app-video-select></p>
 	<div *ngIf="team.video">
 		<iframe width="560" height="315" [src]="getVideoURL(team.video.videoUrl)" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+		<button (click)="changeSong()">Change Song</button>
 	</div>
 	
 	<p><app-movie-select [(movie)]="team.movie"></app-movie-select></p>
 	<div *ngIf="team.movie">
 		<app-movie-card [movie]="team.movie"></app-movie-card>
+		<button (click)="changeMovie()">Change Movie</button>
 	</div>
 	
-	<button (click)="add()" [disabled]="team.name == '' || !isValidLink(team?.video?.videoUrl) || !team?.movie?.imdbID">Submit entry by clicking here ya doofus</button>
+	<button (click)="add()" [disabled]="team.name == '' || !isValidLink(team?.video?.videoUrl) || !team?.movie?.imdbID">Submit Entry</button>
 </ng-container>
 <h3>{{ message }}</h3>
 <ol>

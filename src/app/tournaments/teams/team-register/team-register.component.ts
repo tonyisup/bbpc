@@ -86,6 +86,12 @@ export class TeamRegisterComponent implements OnInit {
 			this.displayMessage(r);
 		});
   }
+	changeSong() {
+		this.team.video = null;
+	}
+	changeMovie() {
+		this.team.movie = null;
+	}
 	displayMessage(m: string) {
 		this.message = m;
 		setTimeout(() => {
