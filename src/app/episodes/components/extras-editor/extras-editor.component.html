@@ -1,0 +1,18 @@
+<div class="extras">
+  <div class="extra" *ngFor="let e of extras">
+		<app-extra-link [extra]="e"></app-extra-link>
+		<p class="extra-remove" (click)="remove(e)">X</p>
+	</div>
+</div>
+<div class="add-extra">
+	<button (click)="addExtra()">Add Extra</button>
+</div>
+<div class="new-extra" *ngIf="extra">
+	<div class="extra">
+		<app-extra-edit [(extra)]="extra"></app-extra-edit>
+	</div>
+	<div class="commands">
+		<button (click)="add()">Save Extra</button>
+		<button (click)="extra = null">Cancel</button>
+	</div>
+</div>

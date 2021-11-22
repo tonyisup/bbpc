@@ -3,7 +3,8 @@
 		<p class="email">{{ user.email }}</p>
 	</div>
 	<div class="users">
-		<select [(ngModel)]="user">
-			<option *ngFor="let user of users | async" [ngValue]="user">{{ user.email }}</option>
+		<select [ngModel]="user" (ngModelChange)="save($event)" >
+			<option *ngFor="let u of users | async" [ngValue]="u">{{ u.email }}</option>
 		</select>
 	</div>
+</div>

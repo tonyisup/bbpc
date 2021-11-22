@@ -18,4 +18,14 @@ export class AssignmentEditComponent implements OnInit {
 	save() {
 		this.assignmentChange.emit(this.assignment);
 	}
+
+	removeUser() {
+		this.assignment.assigner = null;
+		this.save();
+	}
+
+	removeMovie() {
+		this.assignment.movie = null;
+		this.save();
+	}
 }

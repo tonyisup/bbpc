@@ -10,8 +10,8 @@
 			</div>
 		</div>
 	</div>
-  <div class="row" *ngIf="movies$ | async">
-		<div *ngFor="let m of movies$ | async" [ngClass]="{'active': (movie == m)}">
+  <div class="row results" *ngIf="movies$ | async">
+		<div class="result" *ngFor="let m of movies$ | async" [ngClass]="{'active': (movie == m)}">
 			<button (click)="select(m)">Select</button>
 			<app-movie-card
 				[movie]="m"

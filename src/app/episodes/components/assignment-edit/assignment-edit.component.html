@@ -1,14 +1,27 @@
 <div class="assignment" *ngIf="assignment">
 	<div class="user">
-		<app-user-select [(user)]="assignment.assigner"></app-user-select>
+		<div class="selected-watcher" *ngIf="assignment?.assigner">
+			<p>{{ assignment?.assigner.email }}</p>
+			<button (click)="removeUser()">Change User</button>
+		</div>
+		<div class="add-assignment" *ngIf="!assignment?.assigner">
+			<app-user-select [(user)]="assignment.assigner"></app-user-select>
+		</div>
 	</div>
 	<div class="type">
 		<select>
 			<option>Homework</option>
-			<option>Extra Credit</option>
+			<option>assignment Credit</option>
 		</select>
 	</div>
 	<div class="movie">
-		<app-movie-select></app-movie-select>
+		<div class="selected-movie" *ngIf="assignment?.movie">
+			<app-movie-card [movie]="assignment.movie"></app-movie-card>
+			<button (click)="removeMovie()">Change Movie</button>
+		</div>
+		
+		<div class="add-movie" *ngIf="!assignment?.movie">
+			<app-movie-select [(movie)]="assignment.movie"></app-movie-select>
+		</div>
 	</div>
 </div>

@@ -45,5 +45,7 @@ export class MovieSelectComponent implements AfterViewInit {
 		this.movie = movie;
 		this.movieChange.emit(movie);
 		this.movies$ = null;
+		this.query = '';
+		this.inputElement.nativeElement.value = '';
 	}
 }

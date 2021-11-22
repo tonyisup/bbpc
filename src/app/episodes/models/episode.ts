@@ -16,7 +16,7 @@ export class Episode {
 
 export class Assignment {
 	assigner: User;
-	type: AssigmentType;
+	type: string;
 	movie: Movie;
 }
 

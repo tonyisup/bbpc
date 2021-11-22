@@ -1,17 +1,7 @@
 <div class="assignments">
   <div class="assignment" *ngFor="let assignment of assignments">
-		<div class="assigner">
-			<p> {{ assignment.assigner.email }}</p>
-		</div>
-		<div class="type">
-			<p> {{ assignment.type }}</p>
-		</div>
-		<div class="movie">
-			<p> {{ assignment.movie.Title }}</p>
-		</div>
-		<div class="remove" (onclick)="remove(assignment)">
-			<p>X</p>
-		</div>
+		<app-assignment-link [assignment]="assignment"></app-assignment-link>
+		<p class="assignment-remove" (click)="remove(assignment)">X</p>
 	</div>
 </div>
 <div class="add-assignment">
@@ -21,7 +11,8 @@
 	<div class="assignment">
 		<app-assignment-edit [(assignment)]="assignment"></app-assignment-edit>
 	</div>
-	<div class="cancel" (onclick)="assignment = null;">
-		<p>X</p>
+	<div class="commands">
+		<button (click)="add()">Save Assignment</button>
+		<button (click)="assignment = null">Cancel</button>
 	</div>
 </div>

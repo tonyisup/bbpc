@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Episode } from '../../models/episode';
 
 @Component({
   selector: 'app-episode-edit',
@@ -7,9 +8,15 @@ import { Component, OnInit } from '@angular/core';
 })
 export class EpisodeEditComponent implements OnInit {
 
+	@Input() episode: Episode;
+	@Output() episodeChange = new EventEmitter<Episode>();
+
   constructor() { }
 
   ngOnInit(): void {
   }
 
+	save() {
+		this.episodeChange.emit(this.episode);
+	}
 }

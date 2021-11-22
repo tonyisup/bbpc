@@ -22,7 +22,8 @@ export class UserSelectComponent implements OnInit {
 		this.users = this._users.getUsers();
   }
 
-	save(): void {
+	save(user: any): void {
+		this.user = user as User;
 		this.userChange.emit(this.user);
 	}
 }

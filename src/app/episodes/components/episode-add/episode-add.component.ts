@@ -9,7 +9,7 @@ import { EpisodesService } from '../../services/episodes.service';
 })
 export class EpisodeAddComponent implements OnInit {
 
-	@Input() episode = new Episode();
+	episode = new Episode();
 	
   constructor(
 		private _episodesService: EpisodesService
@@ -21,10 +21,8 @@ export class EpisodeAddComponent implements OnInit {
 
   ngOnInit(): void {
   }
-	addCurrentAssignment(assignment: Assignment) {
-		this.episode.current.push(assignment);
-	}
-	onSubmit() {
+	save(event: any) {
+		this.episode = event as Episode;
 		this._episodesService.add(this.episode).then(r => {
 			console.log('episode added', r);
 		});

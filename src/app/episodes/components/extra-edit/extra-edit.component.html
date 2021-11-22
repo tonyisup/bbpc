@@ -1,0 +1,21 @@
+<div class="extra" *ngIf="extra">
+	<div class="user">
+		<div class="selected-watcher" *ngIf="extra?.watcher">
+			<p>{{ extra?.watcher.email }}</p>
+			<button (click)="removeUser()">Change User</button>
+		</div>
+		<div class="add-extra" *ngIf="!extra?.watcher">
+			<app-user-select [(user)]="extra.watcher"></app-user-select>
+		</div>
+	</div>
+	<div class="movie">
+		<div class="selected-movie" *ngIf="extra?.movie">
+			<app-movie-card [movie]="extra.movie"></app-movie-card>
+			<button (click)="removeMovie()">Change Movie</button>
+		</div>
+		
+		<div class="add-movie" *ngIf="!extra?.movie">
+			<app-movie-select [(movie)]="extra.movie"></app-movie-select>
+		</div>
+	</div>
+</div>

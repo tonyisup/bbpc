@@ -21,8 +21,18 @@ export class EpisodesService {
 		return this.episodesStore.collection<Episode>('episodes',
 			ref => ref.orderBy('number', 'desc').limit(limit)).valueChanges();
 	}
-	add(episode: Episode): Promise<DocumentReference> {
-		return this.episodesStore.collection<Episode>('episodees').add(episode);
+	add(episode: Episode): Promise<any> {
+		const newEpisode = {
+			number: episode.number,
+			title: episode.title,
+		}
+		return this.episodesStore.collection('episodes').add({...newEpisode}).then(ref => {
+			return ref.update({
+				current: firebase.firestore.FieldValue.arrayUnion({...episode.current}),
+				next: firebase.firestore.FieldValue.arrayUnion({...episode.next}),
+				extras: firebase.firestore.FieldValue.arrayUnion({...episode.extras})
+			})
+		});
 	}
 	getEpisode(id: string): Observable<Episode> {
 		return this.episodesStore.doc<Episode>(`episodes/${id}`).valueChanges();

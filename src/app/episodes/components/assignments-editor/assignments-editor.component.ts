@@ -22,9 +22,10 @@ export class AssignmentsEditorComponent implements OnInit {
 		this.assignment = new Assignment();
 	}
 
-	add(assignment: Assignment) {
-		this.assignments.push(assignment);
+	add() {
+		this.assignments.push(this.assignment);
 		this.assignmentsChange.emit(this.assignments);
+		this.assignment = null;
 	}
 
 	remove(assignment: Assignment) {

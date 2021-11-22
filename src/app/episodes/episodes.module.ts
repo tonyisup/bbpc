@@ -13,6 +13,10 @@ import { ExtrasEditorComponent } from './components/extras-editor/extras-editor.
 import { AssignmentEditComponent } from './components/assignment-edit/assignment-edit.component';
 import { AuthModule } from '../auth/auth.module';
 import { AppCommonModule } from '../common/app-common.module';
+import { ExtraEditComponent } from './components/extra-edit/extra-edit.component';
+import { ExtraLinkComponent } from './components/extra-link/extra-link.component';
+import { MovieLinkComponent } from './components/movie-link/movie-link.component';
+import { AssignmentLinkComponent } from './components/assignment-link/assignment-link.component';
 
 
 @NgModule({
@@ -24,7 +28,11 @@ import { AppCommonModule } from '../common/app-common.module';
 		EpisodeEditComponent,
 		AssignmentsEditorComponent,
 		ExtrasEditorComponent,
-		AssignmentEditComponent
+		AssignmentEditComponent,
+		ExtraEditComponent,
+		ExtraLinkComponent,
+		MovieLinkComponent,
+		AssignmentLinkComponent
 	],
   imports: [
     CommonModule,
