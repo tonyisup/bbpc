@@ -9,7 +9,8 @@ import { Movie } from 'src/app/common/models/movie';
 export class MovieLinkComponent implements OnInit {
 
 	@Input() movie: Movie;
-	
+	@Input() hidden = true;
+
   constructor() { }
 
   ngOnInit(): void {

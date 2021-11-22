@@ -1,4 +1,4 @@
-<ng-container *ngIf="team !== undefined">
+<ng-container *ngIf="team">
 	<div class="team">
 		<div class="title">
 			<span class="name"><a [href]="getVideoLink(team.link)">
@@ -17,7 +17,7 @@
 		</div>
 		<div>
 			<span class="movie">
-				<a href="">movie</a>
+				<app-movie-link [movie]="team.movie" [hidden]="true"></app-movie-link>
 			</span>
 		</div>
 	</div>

@@ -9,6 +9,7 @@ import { DefaultImagePipe } from './pipes/default-image.pipe';
 import { VideoSelectComponent } from './components/video-select/video-select.component';
 import { VideoListComponent } from './components/video-list/video-list.component';
 import { VideoCardComponent } from './components/video-card/video-card.component';
+import { MovieLinkComponent } from './components/movie-link/movie-link.component';
 
 
 
@@ -21,7 +22,8 @@ import { VideoCardComponent } from './components/video-card/video-card.component
 		DefaultImagePipe,
 		VideoSelectComponent,
 		VideoListComponent,
-		VideoCardComponent
+		VideoCardComponent,
+		MovieLinkComponent
 	],
   imports: [
     CommonModule,
@@ -31,7 +33,8 @@ import { VideoCardComponent } from './components/video-card/video-card.component
     MovieSelectComponent,
 		ListenOnComponent,
 		MovieCardComponent,
-		VideoSelectComponent
+		VideoSelectComponent,
+		MovieLinkComponent
 	],
 })
 export class AppCommonModule { }

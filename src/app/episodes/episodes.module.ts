@@ -15,7 +15,6 @@ import { AuthModule } from '../auth/auth.module';
 import { AppCommonModule } from '../common/app-common.module';
 import { ExtraEditComponent } from './components/extra-edit/extra-edit.component';
 import { ExtraLinkComponent } from './components/extra-link/extra-link.component';
-import { MovieLinkComponent } from './components/movie-link/movie-link.component';
 import { AssignmentLinkComponent } from './components/assignment-link/assignment-link.component';
 
 
@@ -31,7 +30,6 @@ import { AssignmentLinkComponent } from './components/assignment-link/assignment
 		AssignmentEditComponent,
 		ExtraEditComponent,
 		ExtraLinkComponent,
-		MovieLinkComponent,
 		AssignmentLinkComponent
 	],
   imports: [

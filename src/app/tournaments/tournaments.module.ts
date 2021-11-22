@@ -37,7 +37,12 @@ import { RulesComponent } from './rules/rules.component';
 		MatchEditComponent, 
 		MatchListComponent, 
 		TeamComponent, 
-		MatchComponent, UsersComponent, RegisterComponent, TeamRegisterComponent, BracketComponent, RulesComponent
+		MatchComponent,
+		UsersComponent,
+		RegisterComponent,
+		TeamRegisterComponent,
+		BracketComponent,
+		RulesComponent
 	],
 	imports: [
 		FormsModule,
