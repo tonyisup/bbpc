@@ -25,14 +25,37 @@ export class EpisodesService {
 		const newEpisode = {
 			number: episode.number,
 			title: episode.title,
+			addedOn: this.getServerTimestamp(),
+			recordedOn: episode.recordedOn,
 		}
-		return this.episodesStore.collection('episodes').add({...newEpisode}).then(ref => {
-			return ref.update({
-				current: firebase.firestore.FieldValue.arrayUnion({...episode.current}),
-				next: firebase.firestore.FieldValue.arrayUnion({...episode.next}),
-				extras: firebase.firestore.FieldValue.arrayUnion({...episode.extras})
-			})
-		});
+		return this.episodesStore.collection('episodes')
+			.add({...newEpisode})
+			.then(ref => {
+				firebase.firestore.FieldValue
+				const promises = [];
+				episode.current.forEach(assignment => {
+					const newAssignment = {
+						episode: ref.id,
+						...assignment
+					};
+					promises.push(this.episodesStore.collection('assignments').add(newAssignment));
+				});				
+				episode.next.forEach(assignment => {
+					const newAssignment = {
+						episode: ref.id,
+						...assignment
+					};
+					promises.push(this.episodesStore.collection('assignments').add(newAssignment));
+				});
+				episode.extras.forEach(extra => {
+					const newExtra = {
+						episode: ref.id,
+						...extra
+					};
+					promises.push(this.episodesStore.collection('extras').add(newExtra));
+				})
+				return Promise.all(promises);
+			});
 	}
 	getEpisode(id: string): Observable<Episode> {
 		return this.episodesStore.doc<Episode>(`episodes/${id}`).valueChanges();

@@ -17,11 +17,12 @@ export class EpisodeResolverService implements Resolve<Observable<Episode>> {
 
 	resolve(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<Observable<Episode>>{
 		const id = route.paramMap.get('id');
+		var result = null;
 		if (!id) {
-			this.router.navigate(['/episodes']);
-			return EMPTY;
+			result = this._episodesService.latest(1);
+		}	else {
+			result = this._episodesService.getEpisode(id);
 		}
-		const result = this._episodesService.getEpisode(id);
 		if (!result) {
 			this.router.navigate(['/episodes']);
 			return EMPTY;

@@ -59,6 +59,13 @@ export class UserService {
 			});
 		});
 	}
+	deleteData(email: string): Promise<any> {
+		return new Promise(resolve => {
+			this.userStore.doc<User>(`users/${email}`).delete().then(r => {
+				resolve(r);
+			});
+		})
+	}
 	async signOut() {
 		await this._ngFireAuth.signOut();
 	}

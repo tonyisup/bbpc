@@ -29,4 +29,15 @@ export class ProfileComponent implements OnInit {
 			}, 2000);
 		});
 	}
+
+	deleteData(user: User) {
+		if(confirm("Are you sure you want to delete your data?")) {
+			this.userService.deleteData(user.email).then(r => {
+				this.message = 'Deleted';
+				setTimeout(() => {
+					this.message = '';
+				}, 2000);
+			});
+		}
+	}
 }

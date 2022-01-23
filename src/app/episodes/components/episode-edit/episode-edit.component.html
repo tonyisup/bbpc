@@ -9,6 +9,10 @@
 			<input type="text" name="title" [(ngModel)]="episode.title" required>
 		</div>
 		<div class="input-container">
+			<label for="recordedOn">Recorded On</label>
+			<input type="date" name="recordedOn" [(ngModel)]="episode.recordedOn" required>
+		</div>
+		<div class="input-container">
 			<label for="current">Current Assignments</label>
 			<app-assignments-editor [(assignments)]="episode.current"></app-assignments-editor>
 		</div>

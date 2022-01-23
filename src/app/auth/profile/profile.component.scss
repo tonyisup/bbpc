@@ -7,4 +7,18 @@
 		flex-direction: row;
     justify-content: space-between;
 	}
+	.delete-data {
+		margin-top: 1rem;
+		.btn {
+			background: none!important;
+			border: none;
+			padding: 0!important;
+			/*optional*/
+			font-family: arial, sans-serif;
+			/*input has OS specific font-family*/
+			color: #f22;
+			text-decoration: underline;
+			cursor: pointer;
+		}
+	}
 }
