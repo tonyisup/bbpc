@@ -1,7 +1,10 @@
-<ul>
-  <li *ngFor="let tournament of tournaments | async">
-    <a [routerLink]="['tournament', { tournament_id: tournament.id }]">
-      {{ tournament.name }}
-    </a>
-  </li>
-</ul>
+<div *ngIf="tournaments && (tournaments.length > 0)">
+	<h4>Check out the latest tournament!</h4>
+	<ul>
+		<li *ngFor="let tournament of tournaments | async">
+			<a [routerLink]="['tournament', { tournament_id: tournament.id }]">
+				{{ tournament.name }}
+			</a>
+		</li>
+	</ul>
+</div>
