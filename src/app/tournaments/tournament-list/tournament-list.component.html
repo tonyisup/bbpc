@@ -1,4 +1,4 @@
-<div *ngIf="tournaments && (tournaments.length > 0)">
+<div *ngIf="tournaments && ((tournaments | async).length > 0)">
 	<h4>Check out the latest tournament!</h4>
 	<ul>
 		<li *ngFor="let tournament of tournaments | async">
