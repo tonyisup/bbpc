@@ -11,7 +11,8 @@ export const environment = {
     projectId: 'badboyspodcast-dev',
     storageBucket: 'badboyspodcast-dev.appspot.com',
     messagingSenderId: '641246162267',
-    appId: '1:641246162267:web:a305d0b12a26b430ebbe7e'
+    appId: '1:641246162267:web:a305d0b12a26b430ebbe7e',
+		measurementId: "G-PR1K2H0C73"
   }
 };
 
