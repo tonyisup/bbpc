@@ -11,10 +11,13 @@ import { AuthModule } from './auth/auth.module';
 import { AppCommonModule } from './common/app-common.module';
 import { HttpClientModule } from '@angular/common/http';
 import { TournamentsModule } from './tournaments/tournaments.module';
+import { FaqComponent } from './components/faq/faq.component';
+import { FormsModule } from '@angular/forms';
 
 @NgModule({
   declarations: [
     AppComponent,
+    FaqComponent,
   ],
   imports: [
     BrowserModule,
@@ -24,7 +27,8 @@ import { TournamentsModule } from './tournaments/tournaments.module';
 		AuthModule,
 		AppCommonModule,
 		HttpClientModule,
-		TournamentsModule
+		TournamentsModule,
+		FormsModule
   ],
   providers: [
     UtilService
