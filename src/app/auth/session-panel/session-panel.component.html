@@ -1,9 +1,0 @@
-<div class="session-panel">
-	<ng-container *ngIf="user | async as u; else signInPanel">
-		<a routerLink="profile">{{ u.displayName }}</a>
-		<a (click)="signOut()" routerLink="auth">Sign Out</a>
-	</ng-container>
-	<ng-template #signInPanel>
-		<a class="auth" routerLink="auth">Sign In</a>
-	</ng-template>
-</div>
