@@ -16,7 +16,7 @@ const ListenHere: FC = () => {
   return <section>
     <div className="flex gap-4 items-center">
       <div>
-        <a target="_blank"
+        <a target="_blank" rel="noreferrer"
           href="https://podcasts.apple.com/us/podcast/bad-boys-podcast/id937655279?itsct=podcast_box_badge&amp;itscg=30200&amp;ls=1"
           style={styleAApple}
         >
@@ -28,12 +28,12 @@ const ListenHere: FC = () => {
         </a>
       </div>
       <div>
-        <a target="_blank" href="https://soundcloud.com/badboyspodcast">
+        <a target="_blank" rel="noreferrer" href="https://soundcloud.com/badboyspodcast">
           Listen on <img src="https://a-v2.sndcdn.com/assets/images/brand-1b72dd82.svg" /> Soundcloud
         </a>
       </div>
       <div>
-        <a target="_blank" href="https://open.spotify.com/show/7kNwGU5aJhw4IZ7x7V6jsl">
+        <a target="_blank" rel="noreferrer" href="https://open.spotify.com/show/7kNwGU5aJhw4IZ7x7V6jsl">
           <svg width="165px" height="40px" viewBox="0 0 165 40" version="1.1" xmlns="http://www.w3.org/2000/svg"
             xmlnsXlink="http://www.w3.org/1999/xlink">
             <title>spotify-podcast-badge-blk-grn-165x40</title>
@@ -56,7 +56,7 @@ const ListenHere: FC = () => {
         </a>
       </div>
       <div>
-        <a target="_blank"
+        <a target="_blank" rel="noreferrer"
           href="https://podcasts.google.com/feed/aHR0cDovL2ZlZWRzLnNvdW5kY2xvdWQuY29tL3VzZXJzL3NvdW5kY2xvdWQ6dXNlcnM6OTMwMDc4NS9zb3VuZHMucnNz">
           <img 
             src="https://www.gstatic.com/podcasts_console/promote/English_EN/EN_Google_Podcasts_Badge.svg"

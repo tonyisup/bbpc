@@ -25,7 +25,7 @@ const Episode: FC<EpisodeProps> = ({episodeId}) => {
         <h3>Assignments</h3>
         <div className="flex gap-2 justify-around">
           {episode?.Assignment?.sort((a,b) => a.homework && !b.homework ? -1 : a.homework && b.homework ? 0 : 1).map((assignment) => {
-            return <div className="flex flex-col items-center gap-2">
+            return <div key={assignment.id} className="flex flex-col items-center gap-2">
               <HomeworkFlag homework={assignment.homework ?? false} />
               {/* <UserTag user={assignment.User} /> */}
               {assignment.Movie && <MovieInlinePreview movie={assignment.Movie} />}
@@ -40,7 +40,7 @@ const Episode: FC<EpisodeProps> = ({episodeId}) => {
         <h3>Extras</h3>
         <div className="flex gap-2">
           {episode?.Review?.map((review) => {
-            return <div className="flex items-center gap-2">
+            return <div key={review.id} className="flex items-center gap-2">
               {/* <UserTag user={review.User} /> */}
               {review.Movie && <MovieInlinePreview movie={review.Movie} />}
             </div>
