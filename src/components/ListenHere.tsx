@@ -14,7 +14,7 @@ const ListenHere: FC = () => {
     height: "83px",
   }
   return <section>
-    <div className="flex gap-4 items-center">
+    <div className="flex gap-4 items-center flex-wrap">
       <div>
         <a target="_blank" rel="noreferrer"
           href="https://podcasts.apple.com/us/podcast/bad-boys-podcast/id937655279?itsct=podcast_box_badge&amp;itscg=30200&amp;ls=1"

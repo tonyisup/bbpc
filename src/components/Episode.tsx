@@ -3,14 +3,14 @@ import { HiExternalLink } from "react-icons/hi";
 import { trpc } from "../utils/trpc";
 import HomeworkFlag from "./HomeworkFlag";
 import MovieInlinePreview from "./MovieInlinePreview";
-import UserTag from "./UserTag";
 
 interface EpisodeProps {
   episodeId: string
 }
 
 const Episode: FC<EpisodeProps> = ({episodeId}) => {
-  const { data: episode } = trpc.episode.get.useQuery({id: episodeId})
+  const { data: episode, isLoading } = trpc.episode.get.useQuery({id: episodeId})
+  if (isLoading) return <span>Loading...</span>;
   return <section className="flex flex-col w-full mb-8">
     <div className="w-full">
       <div className="flex w-full justify-center items-center gap-2">
@@ -38,9 +38,9 @@ const Episode: FC<EpisodeProps> = ({episodeId}) => {
     <div className="w-full">
       {episode?.Review && <>
         <h3>Extras</h3>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap md:flex-nowrap">
           {episode?.Review?.map((review) => {
-            return <div key={review.id} className="flex items-center gap-2">
+            return <div key={review.id} className="flex items-center gap-2 w-20">
               {/* <UserTag user={review.User} /> */}
               {review.Movie && <MovieInlinePreview movie={review.Movie} />}
             </div>

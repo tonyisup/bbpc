@@ -17,12 +17,12 @@ const Home: NextPage = () => {
         <meta name="description" content="Random rants on all things movie" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <header>
-        <nav className="flex items-center justify-center flex-wrap bg-[#020202]">
-          <div className="flex items-center flex-shrink-0 text-white mr-6">
+      <header className="w-full">
+        <nav className="w-full flex items-center justify-center flex-wrap bg-[#020202]">
+          <div className="flex flex-col sm:flex-row items-center flex-shrink-0 text-white mr-6">
             <span className="text-2xl text-red-900">Bad Boys</span>
             <Link href="/"> 
-              <img src="/logo-short.png" width="400" />
+              <img src="/logo-short.png" className="w-48 sm:w-64" />
             </Link>
             <span className="text-2xl text-red-900">Podcast</span>
             {/* <svg
