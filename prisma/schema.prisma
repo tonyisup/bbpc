@@ -1,0 +1,150 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlserver"
+  url      = env("DATABASE_URL")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id            String       @id @default(cuid())
+  name          String?
+  email         String?      @unique
+  emailVerified DateTime?
+  image         String?
+  accounts      Account[]
+  Assignment    Assignment[]
+  Banger        Banger[]
+  Review        Review[]
+  sessions      Session[]
+  UserRole      UserRole[]
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Assignment {
+  id        String   @id @default(dbgenerated("newid()")) @db.UniqueIdentifier
+  userId    String
+  homework  Boolean?
+  episodeId String?  @db.UniqueIdentifier
+  movieId   String?  @db.UniqueIdentifier
+  Episode   Episode? @relation(fields: [episodeId], references: [id])
+  Movie     Movie?   @relation(fields: [movieId], references: [id])
+  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  Review    Review[]
+}
+
+model Banger {
+  id        String   @id @default(dbgenerated("newid()")) @db.UniqueIdentifier
+  title     String
+  artist    String
+  url       String
+  episodeId String?  @db.UniqueIdentifier
+  userId    String?
+  Episode   Episode? @relation(fields: [episodeId], references: [id], onDelete: Cascade)
+  User      User?    @relation(fields: [userId], references: [id])
+}
+
+model Episode {
+  id         String       @id @default(dbgenerated("newid()")) @db.UniqueIdentifier
+  number     Int          @db.SmallInt
+  title      String
+  recording  String?
+  date       DateTime?    @db.Date
+  Assignment Assignment[]
+  Banger     Banger[]
+  Review     Review[]
+  Show       Show[]
+}
+
+model Movie {
+  id         String       @id @default(dbgenerated("newid()")) @db.UniqueIdentifier
+  title      String
+  year       Int          @db.SmallInt
+  poster     String?
+  url        String
+  Assignment Assignment[]
+  Review     Review[]
+}
+
+model Rating {
+  id       String   @id @default(dbgenerated("newid()")) @db.UniqueIdentifier
+  name     String
+  value    Int      @db.TinyInt
+  sound    String?
+  icon     String?
+  category String?
+  Review   Review[]
+}
+
+model Review {
+  id           String      @id @default(dbgenerated("newid()")) @db.UniqueIdentifier
+  userId       String
+  movieId      String      @db.UniqueIdentifier
+  episodeId    String      @db.UniqueIdentifier
+  ratingId     String?     @db.UniqueIdentifier
+  assignmentId String?     @db.UniqueIdentifier
+  Assignment   Assignment? @relation(fields: [assignmentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  Episode      Episode     @relation(fields: [episodeId], references: [id], onDelete: Cascade)
+  Movie        Movie       @relation(fields: [movieId], references: [id], onDelete: Cascade)
+  Rating       Rating?     @relation(fields: [ratingId], references: [id])
+  User         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Role {
+  id          Int        @id @default(autoincrement()) @db.TinyInt
+  name        String
+  description String
+  UserRole    UserRole[]
+}
+
+model Show {
+  id        String   @id @default(dbgenerated("newid()")) @db.UniqueIdentifier
+  title     String
+  year      Int      @db.SmallInt
+  poster    String?
+  url       String
+  episodeId String?  @db.UniqueIdentifier
+  Episode   Episode? @relation(fields: [episodeId], references: [id], onDelete: Cascade)
+}
+
+model UserRole {
+  id     String @id @default(dbgenerated("newid()")) @db.UniqueIdentifier
+  userId String
+  roleId Int    @db.TinyInt
+  Role   Role   @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  User   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
