@@ -12,7 +12,7 @@ const Episode: FC<EpisodeProps> = ({episodeId}) => {
   const { data: episode, isLoading } = trpc.episode.get.useQuery({id: episodeId})
   if (isLoading) return <span>Loading...</span>;
   return <section className="flex flex-col w-full mb-8">
-    <div className="w-full">
+    <div className="mt-4 w-full">
       <div className="flex w-full justify-center items-center gap-2">
         <h2 className="text-2xl font-bold">          
           {episode?.number} - {episode?.title}
@@ -22,7 +22,7 @@ const Episode: FC<EpisodeProps> = ({episodeId}) => {
         </a>}
       </div>
       {episode?.Assignment && <>
-        <h3>Assignments</h3>
+        <div className="mt-4 w-full text-center"><h3>Assignments</h3></div>
         <div className="flex gap-2 justify-around">
           {episode?.Assignment?.sort((a,b) => a.homework && !b.homework ? -1 : a.homework && b.homework ? 0 : 1).map((assignment) => {
             return <div key={assignment.id} className="flex flex-col items-center gap-2">
@@ -35,10 +35,10 @@ const Episode: FC<EpisodeProps> = ({episodeId}) => {
       </>}
     </div>
 
-    <div className="w-full">
+    <div className="mt-4 w-full">
       {episode?.Review && <>
-        <h3>Extras</h3>
-        <div className="flex gap-2 flex-wrap md:flex-nowrap">
+        <div className="w-full text-center"><h3>Extras</h3></div>
+        <div className="flex justify-center gap-2 flex-wrap md:flex-nowrap">
           {episode?.Review?.map((review) => {
             return <div key={review.id} className="flex items-center gap-2 w-20">
               {/* <UserTag user={review.User} /> */}
