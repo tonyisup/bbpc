@@ -1,6 +1,6 @@
 import { protectedProcedure, router } from "../trpc";
 
-const userRouter = router({
+export const userRouter = router({
   me: protectedProcedure.query(async ({ ctx }) => 
     await ctx.prisma.user.findUnique({
       where: { id: ctx.session.user.id },

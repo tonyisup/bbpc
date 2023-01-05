@@ -1,15 +1,19 @@
 import { FC } from "react";
 import { HiExternalLink } from "react-icons/hi";
 import { trpc } from "../utils/trpc";
+import AddEpisodeExtraModal from "./AddEpisodeExtraModal";
 import HomeworkFlag from "./HomeworkFlag";
 import MovieInlinePreview from "./MovieInlinePreview";
 
 interface EpisodeProps {
-  episodeId: string
+  episodeId: string,
+  allowMoreExtras?: boolean
 }
 
-const Episode: FC<EpisodeProps> = ({episodeId}) => {
-  const { data: episode, isLoading } = trpc.episode.get.useQuery({id: episodeId})
+const Episode: FC<EpisodeProps> = ({episodeId, allowMoreExtras = false}) => {
+	const { data: isAdmin } = trpc.auth.isAdmin.useQuery();
+  const { data: episode, isLoading, refetch } = trpc.episode.get.useQuery({id: episodeId})
+  const handleRefresh = () => refetch();
   if (isLoading) return <span>Loading...</span>;
   return <section className="flex flex-col w-full mb-8">
     <div className="mt-4 w-full">
@@ -45,6 +49,9 @@ const Episode: FC<EpisodeProps> = ({episodeId}) => {
               {review.Movie && <MovieInlinePreview movie={review.Movie} />}
             </div>
           })}
+          {allowMoreExtras && isAdmin && episode && <div className="flex items-center gap-2 w-20">
+            <AddEpisodeExtraModal episode={episode} refreshItems={handleRefresh} />
+          </div>}
         </div>
       </>}
     </div>

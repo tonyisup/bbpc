@@ -41,7 +41,7 @@ const Home: NextPage = () => {
         <div className="flex p-2 justify-evenly w-full">
           <div className="flex flex-col items-center justify-center gap-4">
             {latestEpisode && <Episode episodeId={latestEpisode.id} />}
-            {nextEpisode && <Episode episodeId={nextEpisode.id} />}
+            {nextEpisode && <Episode episodeId={nextEpisode.id} allowMoreExtras={true} />}
           </div>
         </div>
         
