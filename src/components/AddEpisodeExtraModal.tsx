@@ -33,7 +33,7 @@ const AddEpisodeExtraModal: FC<AddEpisodeExtraModalProps> = ({refreshItems, epis
 			})
 		}
 	}
-	return <Modal  isOpen={modalOpen} setIsOpen={setModalOpen} openText="+" titleText="New Extra">
+	return <Modal  isOpen={modalOpen} setIsOpen={setModalOpen} openText="Add Extra" titleText="New Extra">
 		<div className="p-3 space-y-4 bg-gray-800">
 			<div className="flex flex-col gap-2">
 				<label htmlFor="movie">Movie</label>
