@@ -4,6 +4,7 @@ import { trpc } from "../utils/trpc";
 import AddEpisodeExtraModal from "./AddEpisodeExtraModal";
 import HomeworkFlag from "./HomeworkFlag";
 import MovieInlinePreview from "./MovieInlinePreview";
+import UserTag from "./UserTag";
 
 interface EpisodeProps {
   episodeId: string,
@@ -30,8 +31,10 @@ const Episode: FC<EpisodeProps> = ({episodeId, allowMoreExtras = false}) => {
         <div className="flex gap-2 justify-around">
           {episode?.Assignment?.sort((a,b) => a.homework && !b.homework ? -1 : a.homework && b.homework ? 0 : 1).map((assignment) => {
             return <div key={assignment.id} className="flex flex-col items-center gap-2">
-              <HomeworkFlag homework={assignment.homework ?? false} />
-              {/* <UserTag user={assignment.User} /> */}
+              <div className="flex gap-4">
+                <HomeworkFlag homework={assignment.homework ?? false} />
+                <UserTag user={assignment.User} />
+              </div>
               {assignment.Movie && <MovieInlinePreview movie={assignment.Movie} />}
             </div>
           })}
