@@ -58,7 +58,7 @@ export const episodeRouter = router({
       return await req.ctx.prisma.episode.findFirst({
         where: {
           date: {
-            gte: new Date()
+            gte: new Date(new Date().toLocaleDateString("en", { timeZone: 'America/Los_Angeles'}))
           }
         },
         include: {

@@ -45,7 +45,7 @@ const Episode: FC<EpisodeProps> = ({episodeId, allowMoreExtras = false}) => {
     <div className="mt-4 w-full">
       {episode?.Review && <>
         <div className="w-full text-center"><h3>Extras</h3></div>
-        <div className="flex justify-center gap-2 flex-wrap md:flex-nowrap">
+        <div className="flex justify-center gap-2 flex-wrap">
           {episode?.Review?.map((review) => {
             return <div key={review.id} className="flex items-center gap-2 w-20">
               {/* <UserTag user={review.User} /> */}
