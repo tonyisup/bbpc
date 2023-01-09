@@ -8,8 +8,9 @@ import ListenHere from "../components/ListenHere";
 import Episode from "../components/Episode";
 
 const Home: NextPage = () => {
-  const { data: nextEpisode } = trpc.episode.next.useQuery();
   const { data: latestEpisode } = trpc.episode.latest.useQuery();
+  const { data: nextEpisode } = trpc.episode.next.useQuery();
+
   return (
     <>
       <Head>
@@ -25,15 +26,6 @@ const Home: NextPage = () => {
               <img src="/logo-short.png" className="w-48 sm:w-64" />
             </Link>
             <span className="text-2xl text-red-900">Podcast</span>
-            {/* <svg
-              className="fill-current h-8 w-8 mr-2"
-              width="54"
-              height="54"
-              viewBox="0 0 54 54"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path d="M27 0C12.088 0 0 12.088 0 27s12.088 27 27 27 27-12.088 27-27S41.912 0 27 0zm0 51C13.745 51 3 40.255 3 27S13.745 3 27 3s24 10.745 24 24-10.745 24-24 24z" />
-            </svg> */}
           </div>
         </nav>
       </header>

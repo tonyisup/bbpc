@@ -79,15 +79,16 @@ model Banger {
 }
 
 model Episode {
-  id         String       @id @default(dbgenerated("newid()")) @db.UniqueIdentifier
-  number     Int          @db.SmallInt
-  title      String
-  recording  String?
-  date       DateTime?    @db.Date
-  Assignment Assignment[]
-  Banger     Banger[]
-  Review     Review[]
-  Show       Show[]
+  id          String       @id @default(dbgenerated("newid()")) @db.UniqueIdentifier
+  number      Int          @db.SmallInt
+  title       String
+  description String?
+  recording   String?
+  date        DateTime?    @db.Date
+  Assignment  Assignment[]
+  Banger      Banger[]
+  Review      Review[]
+  Show        Show[]
 }
 
 model Movie {

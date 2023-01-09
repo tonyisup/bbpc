@@ -26,7 +26,10 @@ const Episode: FC<EpisodeProps> = ({episodeId, allowMoreExtras = false}) => {
           <HiExternalLink className="text-2xl" />
         </a>}
       </div>
-      {episode?.Assignment && <>
+      {episode?.description && <div className="mt-4 w-full text-center">
+        <p>{episode.description}</p>
+      </div>}
+      {episode?.Assignment && episode.Assignment.length > 0 && <>
         <div className="mt-4 w-full text-center"><h3>Assignments</h3></div>
         <div className="flex gap-2 justify-around">
           {episode?.Assignment?.sort((a,b) => a.homework && !b.homework ? -1 : a.homework && b.homework ? 0 : 1).map((assignment) => {
@@ -43,7 +46,7 @@ const Episode: FC<EpisodeProps> = ({episodeId, allowMoreExtras = false}) => {
     </div>
 
     <div className="mt-4 w-full">
-      {episode?.Review && <>
+      {episode?.Review && episode.Review.length > 0 && <>
         <div className="w-full text-center"><h3>Extras</h3></div>
         <div className="flex justify-center gap-2 flex-wrap">
           {episode?.Review?.map((review) => {
