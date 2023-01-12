@@ -1,26 +1,24 @@
-import { Dispatch, FC, SetStateAction, useEffect, useState } from "react";
-import { Title } from "../server/tmdb/client";
+import { type Dispatch, type FC, type SetStateAction, useState } from "react";
 import { trpc } from "../utils/trpc";
 import Search from "./common/Search";
+import Image from "next/image";
 
 import { CarouselProvider, Slider, Slide, ButtonBack, ButtonNext } from 'pure-react-carousel';
 import 'pure-react-carousel/dist/react-carousel.es.css';
-import TitleCard from "./TitleCard";
+import { type VideoSearchResult } from "../server/yt/client";
+import { HiX } from "react-icons/hi";
 
-interface TitleSearchProps {
-	setTitle: Dispatch<SetStateAction<Title | null>>;
-	open: boolean
+interface VideoSearchProps {
+	setVideo: Dispatch<SetStateAction<VideoSearchResult | undefined>>;
+	open?: boolean
 }
 
-const TitleSearch: FC<TitleSearchProps> = ({ setTitle, open }) => {
+const VideoSearch: FC<VideoSearchProps> = ({ setVideo, open = false }) => {
 	const [modalOpen, setModalOpen] = useState<boolean>(open);
 	const [searchQuery, setSearchQuery] = useState<string>("");
-	const { data: resp } = trpc.movie.search.useQuery({
-		page: 1,
-		searchTerm: searchQuery,
-	});
-	const selectTitle = function(title: Title) {
-		setTitle(title);
+  const { data: resp } = trpc.video.search.useQuery({ searchTerm: searchQuery })
+	const selectVideo = function(snippet: VideoSearchResult) {
+    setVideo(snippet);
 		setSearchQuery("");
 		setModalOpen(false);
 	}
@@ -47,22 +45,22 @@ const TitleSearch: FC<TitleSearchProps> = ({ setTitle, open }) => {
 			{ modalOpen &&
 				<div className="text-white w-full inset-0 flex items-center justify-center bg-black/75">
 					<div className="p-3 w-full bg-gray-800">
-						<div className="relative w-full flex">
+						<div className="relative w-full flex justify-end">
 							<button
 								type="button"
 								title="close movie title search modal"
 								onClick={closeModal}
-								className="absolute right-4 focus:outline-none flex items-center"
+								className="focus:outline-none flex items-center"
 							>
-								<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                <HiX />
 							</button>
 						</div>
 						<div>
 							<Search setSearch={setSearchQuery} />
 							<CarouselProvider
-								naturalSlideWidth={150}
-								naturalSlideHeight={300}
-								totalSlides={resp?.results.length || 0}
+								naturalSlideWidth={120}
+								naturalSlideHeight={90}
+								totalSlides={resp?.items.length || 0}
 								visibleSlides={5}
 								step={5}
 								infinite={true}
@@ -72,14 +70,19 @@ const TitleSearch: FC<TitleSearchProps> = ({ setTitle, open }) => {
 									<ButtonNext>Next</ButtonNext>
 								</div>
 								<Slider>
-									{resp?.results.map((title, index) => (
-										<Slide index={index} key={title.id}>
+									{resp?.items.map((video, index) => (
+										<Slide index={index} key={video.id.videoId}>
 											<button 
 												type="button"
 												title="select movie title"
-												onClick={() => selectTitle(title)}
+												onClick={() => selectVideo(video)}
 											>
-												<TitleCard title={title} />
+												<Image 
+                          src={video.snippet.thumbnails.default.url} 
+                          width={video.snippet.thumbnails.default.width} 
+                          height={video.snippet.thumbnails.default.height}
+                          alt={video.snippet.title}
+                        />  
 											</button>
 										</Slide>
 									))}
@@ -92,4 +95,4 @@ const TitleSearch: FC<TitleSearchProps> = ({ setTitle, open }) => {
 	);
 };
 
-export default TitleSearch;
+export default VideoSearch;

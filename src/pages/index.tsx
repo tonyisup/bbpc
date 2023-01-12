@@ -6,6 +6,7 @@ import { signIn, signOut, useSession } from "next-auth/react";
 import { trpc } from "../utils/trpc";
 import ListenHere from "../components/ListenHere";
 import Episode from "../components/Episode";
+import Image from "next/image";
 
 const Home: NextPage = () => {
   const { data: latestEpisode } = trpc.episode.latest.useQuery();
@@ -23,7 +24,7 @@ const Home: NextPage = () => {
           <div className="flex flex-col sm:flex-row items-center flex-shrink-0 text-white mr-6">
             <span className="text-2xl text-red-900">Bad Boys</span>
             <Link href="/"> 
-              <img src="/logo-short.png" className="w-48 sm:w-64" />
+              <Image src="/logo-short.png" alt="BBPC Logo" width={300} height={100} />
             </Link>
             <span className="text-2xl text-red-900">Podcast</span>
           </div>

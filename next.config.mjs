@@ -13,5 +13,15 @@ const config = {
     locales: ["en"],
     defaultLocale: "en",
   },
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        port: "",
+        hostname: "i.ytimg.com",
+        pathname: "/vi/**/*",
+      }
+    ]
+  }
 };
 export default config;
