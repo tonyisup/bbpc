@@ -55,11 +55,11 @@ const Episode: FC<EpisodeProps> = ({episodeId, allowMoreExtras = false}) => {
               {review.Movie && <MovieInlinePreview movie={review.Movie} />}
             </div>
           })}
-          {allowMoreExtras && isAdmin && episode && <div className="flex items-center gap-2 w-20">
+        </div>
+      </>}      
+      {allowMoreExtras && isAdmin && episode && <div className="flex justify-center items-center gap-2 w-full p-2">
             <AddEpisodeExtraModal episode={episode} refreshItems={handleRefresh} />
           </div>}
-        </div>
-      </>}
     </div>
   </section>
 }
