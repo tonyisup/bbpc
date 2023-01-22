@@ -20,6 +20,12 @@ const config = {
         port: "",
         hostname: "i.ytimg.com",
         pathname: "/vi/**/*",
+      },
+      {
+        protocol: "https",
+        port: "",
+        hostname: "image.tmdb.org",
+        pathname: "/t/p/**/*",
       }
     ]
   }

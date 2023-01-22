@@ -11,7 +11,7 @@ const MovieInlinePreview: FC<MovieInlinePreviewProps> = ({movie}) => {
     className="inline-flex w-full items-center justify-between" 
     href={movie.url}>
       {movie.poster && 
-        <Image src={movie.poster} alt={movie.title} className="w-36" />
+        <Image src={movie.poster} alt={movie.title} width={144} height={216} />
       }
   </a>
 }

@@ -20,13 +20,13 @@ const Assignment: FC<AssignmentProps> = ({ assignment }) => {
     <HomeworkFlag homework={assignment.homework ?? false} />
     <UserTag user={assignment.User} />
   </div>
-  {assignment.Movie && 
-    <ReactCardFlip isFlipped={flipped} flipDirection="vertical">
-      <MovieInlinePreview movie={assignment.Movie} />
-      <div>
-        {/* page peel effect in tailwindcss */}
-      </div>
-    </ReactCardFlip>
+  {assignment.Movie &&   
+    <MovieInlinePreview movie={assignment.Movie} />
+    // <ReactCardFlip isFlipped={flipped} flipDirection="vertical">
+    //   <div>
+    //     {/* page peel effect in tailwindcss */}
+    //   </div>
+    // </ReactCardFlip>
   }
 </div>
 }
