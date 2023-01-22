@@ -1,10 +1,16 @@
-import { prisma } from "@prisma/client";
-import { Input } from "postcss";
 import { z } from "zod";
 
 import { router, publicProcedure } from "../trpc";
 
 export const movieRouter = router({
+  ratings: publicProcedure
+    .query(async ({ ctx }) => {
+      return await ctx.prisma.rating.findMany({
+        orderBy: {
+          value: 'asc'
+        }
+      })
+    }),
   find: publicProcedure
     .input(z.object({
       searchTerm: z.string(),

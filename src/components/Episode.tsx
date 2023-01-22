@@ -1,17 +1,18 @@
-import { FC } from "react";
+import { type FC } from "react";
 import { HiExternalLink } from "react-icons/hi";
 import { trpc } from "../utils/trpc";
 import AddEpisodeExtraModal from "./AddEpisodeExtraModal";
+import Assignment from "./Assignment";
 import HomeworkFlag from "./HomeworkFlag";
 import MovieInlinePreview from "./MovieInlinePreview";
 import UserTag from "./UserTag";
 
 interface EpisodeProps {
   episodeId: string,
-  allowMoreExtras?: boolean
+  isNextEpisode?: boolean
 }
 
-const Episode: FC<EpisodeProps> = ({episodeId, allowMoreExtras = false}) => {
+const Episode: FC<EpisodeProps> = ({episodeId, isNextEpisode = false}) => {
 	const { data: isAdmin } = trpc.auth.isAdmin.useQuery();
   const { data: episode, isLoading, refetch } = trpc.episode.get.useQuery({id: episodeId})
   const handleRefresh = () => refetch();
@@ -33,13 +34,7 @@ const Episode: FC<EpisodeProps> = ({episodeId, allowMoreExtras = false}) => {
         <div className="mt-4 w-full text-center"><h3>Assignments</h3></div>
         <div className="flex gap-2 justify-around">
           {episode?.Assignment?.sort((a,b) => a.homework && !b.homework ? -1 : a.homework && b.homework ? 0 : 1).map((assignment) => {
-            return <div key={assignment.id} className="flex flex-col items-center gap-2">
-              <div className="flex gap-4">
-                <HomeworkFlag homework={assignment.homework ?? false} />
-                <UserTag user={assignment.User} />
-              </div>
-              {assignment.Movie && <MovieInlinePreview movie={assignment.Movie} />}
-            </div>
+            return <Assignment assignment={assignment} showRatings={isNextEpisode} key={assignment.id} />
           })}
         </div>
       </>}
@@ -51,13 +46,12 @@ const Episode: FC<EpisodeProps> = ({episodeId, allowMoreExtras = false}) => {
         <div className="flex justify-center gap-2 flex-wrap">
           {episode?.Review?.map((review) => {
             return <div key={review.id} className="flex items-center gap-2 w-20">
-              {/* <UserTag user={review.User} /> */}
               {review.Movie && <MovieInlinePreview movie={review.Movie} />}
             </div>
           })}
         </div>
       </>}      
-      {allowMoreExtras && isAdmin && episode && <div className="flex justify-center items-center gap-2 w-full p-2">
+      {isNextEpisode && isAdmin && episode && <div className="flex justify-center items-center gap-2 w-full p-2">
             <AddEpisodeExtraModal episode={episode} refreshItems={handleRefresh} />
           </div>}
     </div>

@@ -1,16 +1,19 @@
-import { Movie } from "@prisma/client";
-import { FC } from "react";
+import type { Movie } from "@prisma/client";
+import Image from "next/image";
+import type { FC } from "react";
 
 interface MovieInlinePreviewProps {
   movie: Movie
 }
 
 const MovieInlinePreview: FC<MovieInlinePreviewProps> = ({movie}) => {
-  return <a className="inline-flex w-full items-center justify-between" href={movie.url}>
-      {movie.poster && <img src={movie.poster} alt={movie.title} className="w-36" />}
-        {/* <span className="px-2">{movie.title}</span>
-        <span className="text-xs"> ({movie.year})</span> */}
-    </a>
+  return <a 
+    className="inline-flex w-full items-center justify-between" 
+    href={movie.url}>
+      {movie.poster && 
+        <Image src={movie.poster} alt={movie.title} className="w-36" />
+      }
+  </a>
 }
 
 export default MovieInlinePreview;

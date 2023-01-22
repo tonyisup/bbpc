@@ -1,25 +1,21 @@
 import type { NextPage } from "next";
-import Image from "next/image";
-import { useState } from "react";
-import VideoSearch from "../components/VideoSearch";
-import { type VideoSearchResult } from "../server/yt/client";
+import { FaPoop } from "react-icons/fa"
+import RatingIcon from "../components/RatingIcon";
+import { trpc } from "../utils/trpc";
 
 const Test: NextPage = () => {
-  const [video, setVideo] = useState<VideoSearchResult>()
+  const { data: ratings } = trpc.movie.ratings.useQuery();
+
   return (
-    <main className="bg-black flex flex-col w-full">
-      <h1>Test</h1>
-      {video && <div className="bg-slate-800 p-2 w-full flex justify-center">
-        <a href={`https://www.youtube.com/watch?v=${video.id.videoId}`} title={video.snippet.title}>
-          <Image 
-            src={video.snippet.thumbnails.default.url} 
-            width={video.snippet.thumbnails.default.width} 
-            height={video.snippet.thumbnails.default.height}
-            alt={video.snippet.title}
-          />              
-        </a>
-      </div>}
-      <VideoSearch setVideo={setVideo} />
+    <main className="bg-black flex flex-col w-full min-h-screen text-white items-center">
+      <ul>
+      {ratings && ratings.map((rating) => {
+        return (<li key={rating.id} className="p-2 text-xl">
+            <RatingIcon rating={rating} />
+          </li>
+        )
+      })}
+      </ul>
     </main>
   );
 };

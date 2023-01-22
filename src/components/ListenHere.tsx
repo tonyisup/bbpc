@@ -38,7 +38,7 @@ const ListenHere: FC = () => {
             xmlnsXlink="http://www.w3.org/1999/xlink">
             <title>spotify-podcast-badge-blk-grn-165x40</title>
             <desc>Created with Sketch.</desc>
-            <g id="spotify-podcast-badge-blk-grn-165x40" stroke="none" stroke-width="1" fill="none"
+            <g id="spotify-podcast-badge-blk-grn-165x40" stroke="none" strokeWidth="1" fill="none"
               fill-rule="evenodd">
               <g id="Group-2">
                 <path
