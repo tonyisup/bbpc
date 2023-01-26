@@ -1,8 +1,35 @@
+import { Rating } from "@prisma/client";
 import { z } from "zod";
 
 import { router, publicProcedure } from "../trpc";
 
 export const movieRouter = router({
+	assignment: publicProcedure
+		.input(z.object({
+			id: z.string()
+		}))
+		.query(async ({ ctx, input }) => {
+			return await ctx.prisma.assignment.findUnique({
+				where: {
+					id: input.id
+				},
+				include: {
+					Review: {
+						include: {
+							Rating: true,
+						}
+					},
+				}
+			})
+		}),
+	assignmentRatings: publicProcedure
+		.input(z.object({
+			assignmentId: z.string(),
+		}))
+		.query(async ({ ctx, input }) => {
+			return await ctx.prisma.$queryRaw<Rating[]>`select * from [dbo].[AssignmentRatings] where [assignmentId] = ${input.assignmentId}` 
+		}),
+	
   ratings: publicProcedure
     .query(async ({ ctx }) => {
       return await ctx.prisma.rating.findMany({
