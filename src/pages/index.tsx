@@ -21,13 +21,18 @@ const Home: NextPage = () => {
       </Head>
       <header className="w-full">
         <nav className="w-full flex items-center justify-center flex-wrap bg-[#020202]">
-          <div className="flex flex-col sm:flex-row items-center flex-shrink-0 text-white mr-6">
-            <span className="text-2xl text-red-900">Bad Boys</span>
-            <Link href="/"> 
-              <Image src="/logo-short.png" alt="BBPC Logo" width={300} height={100} />
-            </Link>
-            <span className="text-2xl text-red-900">Podcast</span>
-          </div>
+          <div className="flex flex-col items-center">
+						<div className="flex flex-col sm:flex-row items-center flex-shrink-0 text-white mr-6">
+							<span className="text-2xl text-red-900">Bad Boys</span>
+							<Link href="/"> 
+								<Image src="/logo-short.png" alt="BBPC Logo" width={300} height={100} />
+							</Link>
+							<span className="text-2xl text-red-900">Podcast</span>
+						</div>
+						<div>
+							<p className="text-xs text-red-900">Random rants on all things movie</p>
+						</div>
+					</div>
         </nav>
       </header>
       <main className="flex min-h-screen flex-col items-center bg-gradient-to-b from-[#020202] to-[#424242] text-white ">
