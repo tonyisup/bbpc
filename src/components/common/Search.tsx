@@ -24,8 +24,10 @@ const Search: FC<SearchProps> = ({ setSearch }) => {
 	const clearSearch = () => {
 		setSearchQuery("");
 	}
-
-	const handleSearch = () => {
+	const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		setSearchQuery(e.target.value);
+	}
+	const handleSearchClick = () => {
 		setSearch(searchQuery);
 	}
 	return (
@@ -35,10 +37,10 @@ const Search: FC<SearchProps> = ({ setSearch }) => {
 				value={searchQuery}
 				placeholder="Search..."
 				className="bg-black w-full rounded-md border-gray-300 shadow-sm focus:border-violet-300 focus:ring focus:ring-inset"
-				onChange={(e) => setSearchQuery(e.target.value)}
+				onChange={handleSearchChange}
 			/>
 			<span>
-				<HiSearch onClick={handleSearch} />
+				<HiSearch onClick={handleSearchClick} />
 			</span>
 			{searchQuery && (
 				<button

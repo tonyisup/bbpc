@@ -73,7 +73,7 @@ const TitleSearch: FC<TitleSearchProps> = ({ setTitle, open }) => {
 								</div>
 								<Slider>
 									{resp?.results.map((title, index) => (
-										<Slide index={index} key={title.id}>
+										title?.poster_path && <Slide index={index} key={title.id}>
 											<button 
 												type="button"
 												title="select movie title"

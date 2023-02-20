@@ -69,7 +69,7 @@ const MovieSearch: FC<MovieSearchProps> = ({ setMovie: setMovie }) => {
 								</div>
 								<Slider>
 									{movies?.map((movie, index) => (
-										<Slide index={index} key={movie.id}>
+										movie?.poster && <Slide index={index} key={movie.id}>
 											<button onClick={() => selectMovie(movie)}>
 												<MovieCard movie={movie} />
 											</button>

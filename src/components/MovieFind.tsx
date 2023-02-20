@@ -20,8 +20,11 @@ const MovieFind: FC<MovieFindProps> = ({
     id: title?.id ?? 0 
   }, {
     onSuccess: (result) => {
+			console.log(title, result);
       if (!title) return;
       if (!result) return;
+			if (!title.poster_path) return;
+			if (!title.imdb_path) return;
 
       const year = (new Date(result.release_date)).getFullYear()
 
