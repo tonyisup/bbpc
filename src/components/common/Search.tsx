@@ -15,7 +15,7 @@ const Search: FC<SearchProps> = ({ setSearch }) => {
 			return;
 		}
 		const searchDebounce = setTimeout(() => {
-			handleSearch()
+			setSearch(searchQuery);
 		}, 500);
 
 		return () => clearTimeout(searchDebounce);
