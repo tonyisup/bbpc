@@ -3,7 +3,6 @@ import { Dispatch, FC, SetStateAction, useEffect, useState } from "react";
 import { Title } from "../server/tmdb/client";
 import { trpc } from "../utils/trpc";
 import MovieCard from "./MovieCard";
-import MovieSearch from "./MovieSearch";
 import TitleCard from "./TitleCard";
 import TitleSearch from "./TitleSearch";
 
@@ -20,11 +19,11 @@ const MovieFind: FC<MovieFindProps> = ({
     id: title?.id ?? 0 
   }, {
     onSuccess: (result) => {
-			console.log(title, result);
+      
       if (!title) return;
       if (!result) return;
 			if (!title.poster_path) return;
-			if (!title.imdb_path) return;
+			if (!result.imdb_path) return;
 
       const year = (new Date(result.release_date)).getFullYear()
 
@@ -34,6 +33,7 @@ const MovieFind: FC<MovieFindProps> = ({
         poster: result.poster_path,
         url: result.imdb_path
       })
+
     }
   })
   const { mutate: addMovie } = trpc.movie.add.useMutation({
