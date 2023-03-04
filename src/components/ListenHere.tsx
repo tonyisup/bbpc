@@ -1,6 +1,6 @@
 import { FC } from "react";
 
-const ListenHere: FC = () => {
+export const ListenHere: FC = () => {
   const styleImgApple = {
     borderRadius: "13px",
     width: "250px",
@@ -67,5 +67,3 @@ const ListenHere: FC = () => {
     </div>
   </section>
 };
-
-export default ListenHere;

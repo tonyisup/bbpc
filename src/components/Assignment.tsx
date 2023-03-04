@@ -11,13 +11,10 @@ interface AssignmentProps {
   assignment: Assignment & {
     User: User,
     Movie: Movie | null
-  },
-  showRatings: boolean
+  }
 }
 
 const Assignment: FC<AssignmentProps> = ({ assignment }) => {
-  const [flipped, setFlipped] = useState(false);
-	const { data: assignmentData } = trpc.movie.assignment.useQuery({ id: assignment.id });
   return <div key={assignment.id} className="flex flex-col items-center gap-2">
   <div className="flex gap-4">
     <HomeworkFlag homework={assignment.homework ?? false} />

@@ -1,22 +1,20 @@
-import { Episode, Movie, User } from ".prisma/client";
-import React, { DispatchWithoutAction, FC, useState } from "react";
+import type { Episode, Movie } from ".prisma/client";
+import { type FC, useState } from "react";
 
 import { trpc } from "../utils/trpc";
 import Modal from "./common/Modal";
 import MovieFind from "./MovieFind";
 
 interface AddEpisodeExtraModalProps {
-	refreshItems: DispatchWithoutAction,
 	episode: Episode
 }
 
-const AddEpisodeExtraModal: FC<AddEpisodeExtraModalProps> = ({refreshItems, episode}) => {
+const AddEpisodeExtraModal: FC<AddEpisodeExtraModalProps> = ({ episode }) => {
 	const reviewer = trpc.user.me.useQuery();
 	const [modalOpen, setModalOpen] = useState(false)
 	const [movie, setMovie] = useState<Movie | null>(null)
 	const {mutate: addExtra} = trpc.review.add.useMutation({
 		onSuccess: () => {
-			refreshItems()
 			closeModal()
 		}
 	})
