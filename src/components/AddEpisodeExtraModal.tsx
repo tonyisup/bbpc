@@ -1,20 +1,22 @@
 import type { Episode, Movie } from ".prisma/client";
-import { type FC, useState } from "react";
+import { type FC, useState, Dispatch } from "react";
 
 import { trpc } from "../utils/trpc";
 import Modal from "./common/Modal";
 import MovieFind from "./MovieFind";
 
 interface AddEpisodeExtraModalProps {
-	episode: Episode
+	episode: Episode,
+	setMovieAdded?: Dispatch<Movie>
 }
 
-const AddEpisodeExtraModal: FC<AddEpisodeExtraModalProps> = ({ episode }) => {
+const AddEpisodeExtraModal: FC<AddEpisodeExtraModalProps> = ({ episode, setMovieAdded }) => {
 	const reviewer = trpc.user.me.useQuery();
 	const [modalOpen, setModalOpen] = useState(false)
 	const [movie, setMovie] = useState<Movie | null>(null)
 	const {mutate: addExtra} = trpc.review.add.useMutation({
 		onSuccess: () => {
+			if (setMovieAdded && movie) setMovieAdded(movie)
 			closeModal()
 		}
 	})
