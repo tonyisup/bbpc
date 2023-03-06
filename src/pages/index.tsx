@@ -1,15 +1,15 @@
-import type { InferGetServerSidePropsType, NextPage } from "next";
+import type { InferGetServerSidePropsType, InferGetStaticPropsType, NextPage } from "next";
 import { ListenHere } from "../components/ListenHere";
 import { Episode } from "../components/Episode";
 import { Auth } from "../components/Auth";
 import { ssr } from "../server/db/ssr";
 import { AddExtraToNext } from "../components/AddExtraToNext";
 
-export async function getServerSideProps() {
+export async function getStaticProps() {
   const latestEpisode = await ssr.getLatestEpisode();
   const nextEpisode = await ssr.getNextEpisode();
-
   return {
+    revalidate: 1440,
     props: {
       latest: JSON.parse(JSON.stringify(latestEpisode)),
       next: JSON.parse(JSON.stringify(nextEpisode))
@@ -17,7 +17,7 @@ export async function getServerSideProps() {
   }
 }
 
-const Home: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>> = ({ latest, next }) => {
+const Home: NextPage<InferGetStaticPropsType<typeof getStaticProps>> = ({ latest, next }) => {
 
   return (
     <>
