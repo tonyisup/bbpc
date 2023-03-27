@@ -9,7 +9,6 @@ export async function getServerSideProps() {
   const latestEpisode = await ssr.getLatestEpisode();
   const nextEpisode = await ssr.getNextEpisode();
   return {
-    revalidate: 1440,
     props: {
       latest: JSON.parse(JSON.stringify(latestEpisode)),
       next: JSON.parse(JSON.stringify(nextEpisode))
