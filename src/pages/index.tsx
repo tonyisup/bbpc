@@ -1,11 +1,11 @@
-import type { InferGetServerSidePropsType, InferGetStaticPropsType, NextPage } from "next";
+import type { InferGetServerSidePropsType, NextPage } from "next";
 import { ListenHere } from "../components/ListenHere";
 import { Episode } from "../components/Episode";
 import { Auth } from "../components/Auth";
 import { ssr } from "../server/db/ssr";
 import { AddExtraToNext } from "../components/AddExtraToNext";
 
-export async function getStaticProps() {
+export async function getServerSideProps() {
   const latestEpisode = await ssr.getLatestEpisode();
   const nextEpisode = await ssr.getNextEpisode();
   return {
@@ -17,7 +17,7 @@ export async function getStaticProps() {
   }
 }
 
-const Home: NextPage<InferGetStaticPropsType<typeof getStaticProps>> = ({ latest, next }) => {
+const Home: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>> = ({ latest, next }) => {
 
   return (
     <>
