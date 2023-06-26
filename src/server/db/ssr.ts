@@ -45,10 +45,8 @@ export const ssr = {
 			}
 		});
 	},
-	getEpisodeHistory: async function(page: number, size: number) {
+	getEpisodeHistory: async function() {
 		return await prisma.episode.findMany({
-			skip: page * size,
-			take: size,
 			orderBy: {
 				date: 'desc',
 			},

@@ -1,35 +1,20 @@
-import type { InferGetServerSidePropsType, NextPage } from "next";
-import { ssr } from "../server/db/ssr";
-import { Episode } from "../components/Episode";
-import type { Assignment as AssignmentType, Episode as EpisodeType, Movie, User, Review } from '@prisma/client';
+import type { NextPage } from "next";
+import { FaPoop } from "react-icons/fa"
+import RatingIcon from "../components/RatingIcon";
+import { trpc } from "../utils/trpc";
 
-export async function getServerSideProps() {
-  const episodes = await ssr.getEpisodeHistory(0, 10);
-  return {
-    props: {
-      episodes: JSON.parse(JSON.stringify(episodes)),
-    }
-  }
-}
+const Test: NextPage = () => {
+  const { data: ratings } = trpc.movie.ratings.useQuery();
 
-const Test: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>> = ({episodes}) => {
   return (
     <main className="bg-black flex flex-col w-full min-h-screen text-white items-center">
       <ul>
-				{episodes.map((episode:(EpisodeType & {
-					Assignment: (AssignmentType & {
-							User: User;
-							Movie: Movie | null;
-					})[];
-					Review: (Review & {
-							User: User;
-							Movie: Movie;
-					})[];
-				})) => (
-					<li key={episode.id}>
-						<Episode episode={episode} />
-					</li>
-				))}
+      {ratings && ratings.map((rating) => {
+        return (<li key={rating.id} className="p-2 text-xl">
+            <RatingIcon rating={rating} />
+          </li>
+        )
+      })}
       </ul>
     </main>
   );

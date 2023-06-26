@@ -4,19 +4,19 @@ import { Episode } from "../components/Episode";
 import type { Assignment as AssignmentType, Episode as EpisodeType, Movie, User, Review } from '@prisma/client';
 
 export async function getServerSideProps() {
-  const episodes = await ssr.getEpisodeHistory(0, 10);
+  const episodes = await ssr.getEpisodeHistory();
   return {
     props: {
-      episodes: JSON.parse(JSON.stringify(episodes)),
+      recent: JSON.parse(JSON.stringify(episodes)),
     }
   }
 }
 
-const Test: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>> = ({episodes}) => {
+const Test: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>> = ({recent}) => {
   return (
     <main className="bg-black flex flex-col w-full min-h-screen text-white items-center">
       <ul>
-				{episodes.map((episode:(EpisodeType & {
+				{recent.map((episode:(EpisodeType & {
 					Assignment: (AssignmentType & {
 							User: User;
 							Movie: Movie | null;
@@ -31,7 +31,6 @@ const Test: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>> = (
 					</li>
 				))}
       </ul>
-
     </main>
   );
 };
