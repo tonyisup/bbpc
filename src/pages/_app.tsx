@@ -23,7 +23,7 @@ const MyApp: AppType<{ session: Session | null }> = ({
       </Head>
       <header className="w-full">
         <nav className="w-full flex items-center justify-center flex-wrap bg-[#020202]">
-          <div className="flex flex-col items-center">
+          <div className="flex flex-col items-center gap-4">
 						<div className="flex flex-col sm:flex-row items-center flex-shrink-0 text-white mr-6">
 							<span className="text-2xl text-red-900">Bad Boys</span>
 							<Link href="/"> 
@@ -33,6 +33,9 @@ const MyApp: AppType<{ session: Session | null }> = ({
 						</div>
 						<div>
 							<p className="text-xs text-red-900">Random rants on all things movie</p>
+						</div>
+						<div>
+							<Link className="text-md text-red-500" href="/history">Episode History</Link>
 						</div>
 					</div>
         </nav>

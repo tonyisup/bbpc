@@ -2,14 +2,11 @@ import { prisma } from "./client";
 
 export const ssr = {
 	getLatestEpisode: async function () {
-		return await prisma.episode.findFirst({
-			where: {
-				date: {
-					lt: new Date(new Date().toLocaleDateString("en", { timeZone: 'America/Los_Angeles' }))
-				}
-			},
+		return await prisma.episode.findMany({
+			take: 2,
+			skip: 1,
 			orderBy: {
-				date: 'desc',
+				number: "desc"
 			},
 			include: {
 				Assignment: {
@@ -29,20 +26,29 @@ export const ssr = {
 	},
 	getNextEpisode: async function () {
 		return await prisma.episode.findFirst({
-			where: {
-				OR: [
-					{
-						date: {
-							gte: new Date(new Date().toLocaleDateString("en", { timeZone: 'America/Los_Angeles' }))
-						},
-					},
-					{
-						date: {
-							equals: null
-						},
-					},
-				]
+			orderBy: {
+				number: "desc"
 			},
+			include: {
+				Assignment: {
+					include: {
+						User: true,
+						Movie: true
+					}
+				},
+				Review: {
+					include: {
+						Movie: true,
+						User: true,
+					}
+				}
+			}
+		});
+	},
+	getEpisodeHistory: async function(page: number, size: number) {
+		return await prisma.episode.findMany({
+			skip: page * size,
+			take: size,
 			orderBy: {
 				date: 'desc',
 			},

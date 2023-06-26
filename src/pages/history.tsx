@@ -31,6 +31,7 @@ const Test: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>> = (
 					</li>
 				))}
       </ul>
+
     </main>
   );
 };

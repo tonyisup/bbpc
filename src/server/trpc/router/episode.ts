@@ -28,14 +28,11 @@ export const episodeRouter = router({
     }),
   latest: publicProcedure
     .query(async (req) => {
-      return await req.ctx.prisma.episode.findFirst({
-        where: {
-          date: {
-            lt: new Date(new Date().toLocaleDateString("en", { timeZone: 'America/Los_Angeles'}))
-          }
-        },
+      return await req.ctx.prisma.episode.findMany({
+				take: 2,
+				skip: 1,
         orderBy: {
-          date: "desc"
+					number: "desc"
         },
         include: {
           Assignment: {
@@ -56,10 +53,8 @@ export const episodeRouter = router({
   next: publicProcedure
     .query(async (req) => {
       return await req.ctx.prisma.episode.findFirst({
-        where: {
-          date: {
-            gte: new Date(new Date().toLocaleDateString("en", { timeZone: 'America/Los_Angeles'}))
-          }
+        orderBy: {
+					number: "desc"
         },
         include: {
           Assignment: {
@@ -76,5 +71,30 @@ export const episodeRouter = router({
           }
         }
       })  
-    })
+    }),		
+	history: publicProcedure
+		.input(z.object({page: z.number(), size: z.number()}))
+		.query(async (req) => {
+			return await req.ctx.prisma.episode.findMany({
+				skip: req.input.page * req.input.size,
+				take: req.input.size,
+				orderBy: {
+					number: "desc"
+				},
+				include: {
+					Assignment: {
+						include: {
+							User: true,
+							Movie: true
+						}
+					},
+					Review: {
+						include: {
+							Movie: true,
+							User: true,
+						}
+					}
+				}
+			})
+		}),
 });

@@ -29,9 +29,10 @@ export const Episode: FC<EpisodeProps> = ({ episode }) => {
           <HiExternalLink className="text-2xl" />
         </a>}
       </div>
-      {episode?.description && <div className="mt-4 w-full text-center">
-        <p>{episode.description}</p>
-      </div>}
+			<div className="mt-4 w-full text-center">
+				{episode?.date && <p>{new Date(episode.date).toLocaleDateString()}</p>}
+      	{episode?.description && <p>{episode.description}</p>}
+      </div>
       {episode?.Assignment && episode.Assignment.length > 0 && <>
         <div className="mt-4 w-full text-center"><h3>Assignments</h3></div>
         <div className="flex gap-2 justify-around">
