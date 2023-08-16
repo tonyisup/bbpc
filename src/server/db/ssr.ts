@@ -9,6 +9,7 @@ export const ssr = {
 				number: "desc"
 			},
 			include: {
+				Link: true,
 				Assignment: {
 					include: {
 						User: true,
@@ -30,6 +31,7 @@ export const ssr = {
 				number: "desc"
 			},
 			include: {
+				Link: true,
 				Assignment: {
 					include: {
 						User: true,

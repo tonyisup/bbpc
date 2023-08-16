@@ -2,7 +2,7 @@ import { type FC } from "react";
 import { HiExternalLink } from "react-icons/hi";
 import Assignment from "./Assignment";
 import MovieInlinePreview from "./MovieInlinePreview";
-import type { Assignment as AssignmentType, Episode as EpisodeType, Movie, User, Review } from '@prisma/client';
+import type { Assignment as AssignmentType, Episode as EpisodeType, Link as EpisodeLink, Movie, User, Review } from '@prisma/client';
 
 
 interface EpisodeProps {
@@ -15,6 +15,7 @@ interface EpisodeProps {
         User: User;
         Movie: Movie;
     })[];
+		Link: EpisodeLink[];
 	});
 }
 
@@ -53,7 +54,18 @@ export const Episode: FC<EpisodeProps> = ({ episode }) => {
             </div>
           })}
         </div>
-      </>}      
+      </>}
     </div>
+
+		<div className="mt-4 w-full">
+			{episode?.Link && episode.Link.length > 0 && <>
+				<div className="w-full text-center"><h3>Links</h3></div>
+				<div className="flex flex-col items-center justify-center gap-2 flex-wrap">
+					{episode?.Link?.map((link) => {
+						return <a key={link.id}  href={link.url}>{link.text}</a>
+					})}
+				</div>
+			</>}
+		</div>
   </section>
 }

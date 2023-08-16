@@ -45,7 +45,6 @@ model User {
   Review        Review[]
   sessions      Session[]
   UserRole      UserRole[]
-  Guesses       Guess[]
 }
 
 model VerificationToken {
@@ -59,14 +58,13 @@ model VerificationToken {
 model Assignment {
   id        String   @id @default(dbgenerated("newid()")) @db.UniqueIdentifier
   userId    String
-  homework  Boolean?
   episodeId String?  @db.UniqueIdentifier
   movieId   String?  @db.UniqueIdentifier
+  homework  Boolean?
   Episode   Episode? @relation(fields: [episodeId], references: [id])
   Movie     Movie?   @relation(fields: [movieId], references: [id])
   User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   Review    Review[]
-  Guesses   Guess[]
 }
 
 model Banger {
@@ -84,11 +82,12 @@ model Episode {
   id          String       @id @default(dbgenerated("newid()")) @db.UniqueIdentifier
   number      Int          @db.SmallInt
   title       String
-  description String?
   recording   String?
   date        DateTime?    @db.Date
+  description String?
   Assignment  Assignment[]
   Banger      Banger[]
+  Link        Link[]
   Review      Review[]
   Show        Show[]
 }
@@ -111,7 +110,6 @@ model Rating {
   icon     String?
   category String?
   Review   Review[]
-  Guesses  Guess[]
 }
 
 model Review {
@@ -154,12 +152,10 @@ model UserRole {
   User   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-model Guess {
-  id           String      @id @default(dbgenerated("newid()")) @db.UniqueIdentifier
-  User         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId       String      
-  Assignment   Assignment? @relation(fields: [assignmentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  assignmentId String?     @db.UniqueIdentifier
-  Rating       Rating?     @relation(fields: [ratingId], references: [id])
-  ratingId     String?     @db.UniqueIdentifier
+model Link {
+  id        String   @id @default(dbgenerated("newid()")) @db.UniqueIdentifier
+  url       String
+  text      String
+  episodeId String?  @db.UniqueIdentifier
+  Episode   Episode? @relation(fields: [episodeId], references: [id], onDelete: Cascade)
 }
