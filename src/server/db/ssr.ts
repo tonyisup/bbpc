@@ -53,6 +53,7 @@ export const ssr = {
 				date: 'desc',
 			},
 			include: {
+				Link: true,
 				Assignment: {
 					include: {
 						User: true,
