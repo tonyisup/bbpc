@@ -1,6 +1,12 @@
 import { FC } from "react";
 
 export const ListenHere: FC = () => {
+	const stylePatreonLogo = {
+		width: "40px"
+	}
+	const stylePatreonWordmark = {
+		width: "200px"
+	}
   const styleImgApple = {
     borderRadius: "13px",
     width: "250px",
@@ -16,9 +22,20 @@ export const ListenHere: FC = () => {
   return <section>
     <div className="flex gap-4 justify-center items-center flex-wrap">
 			<div>
-				<a target="_blank" rel="noreferrer"
+				<a target="_blank" rel="noreferrer" className="flex items-center"
 					href="https://www.patreon.com/badboyspodcast"
-				>Patreon</a>
+				>
+					<img
+						src="PATREON_SYMBOL_1_WHITE_RGB.png"
+						alt="Patreon"
+          	style={stylePatreonLogo}
+					/>
+					<img
+						src="PATREON_WORDMARK_1_BLACK_RGB.svg"
+						alt="Patreon"
+          	style={stylePatreonWordmark}
+					/>
+				</a>
 			</div>
       <div>
         <a target="_blank" rel="noreferrer"
