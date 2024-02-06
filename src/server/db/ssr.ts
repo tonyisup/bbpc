@@ -21,7 +21,7 @@ export const ssr = {
 						Review: {
 							include: {
 								User: true,
-								movie: true
+								Movie: true
 							}
 						}
 					}
@@ -47,7 +47,7 @@ export const ssr = {
 						Review: {
 							include: {
 								User: true,
-								movie: true
+								Movie: true
 							}
 						}
 					}
@@ -73,7 +73,7 @@ export const ssr = {
 						Review: {
 							include: {
 								User: true,
-								movie: true
+								Movie: true
 							}
 						}
 					}

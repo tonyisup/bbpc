@@ -4,17 +4,23 @@ import { publicProcedure, router } from "../trpc";
 export const reviewRouter = router({
 	add: publicProcedure
 		.input(z.object({
-			ratingId: z.string(),
+			ratingId: z.string().optional(),
 			movieId: z.string(),
-			userId: z.string()
+			userId: z.string(),
+			episodeId: z.string()
 		}))
 		.mutation(async (req) => {
 			return await req.ctx.prisma.review.create({
 				data: {
 					ratingId: req.input.ratingId,
 					movieId: req.input.movieId,
-					userId: req.input.userId
-				}
+					userId: req.input.userId,
+					extraReviews: {
+						create: {
+							episodeId: req.input.episodeId
+						}
+					}
+				},
 			})
 		}),
 	remove: publicProcedure
@@ -31,7 +37,7 @@ export const reviewRouter = router({
 		.query(async (req) => {
 			return await req.ctx.prisma.review.findMany({
 				include: {
-					movie: true,
+					Movie: true,
 					User: true,
 					assignmentReviews: {
 						where: {
