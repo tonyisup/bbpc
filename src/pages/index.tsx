@@ -1,4 +1,4 @@
-import type { InferGetServerSidePropsType, NextPage } from "next";
+import type { InferGetServerSidePropsType, NextPage } from "next/types";
 import { ListenHere } from "../components/ListenHere";
 import { Episode } from "../components/Episode";
 import { Auth } from "../components/Auth";

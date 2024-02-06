@@ -1,6 +1,6 @@
 import { type FC, useState } from "react";
 import AddEpisodeExtraModal from "./AddEpisodeExtraModal";
-import type { Assignment as AssignmentType, Episode as EpisodeType, Movie, User, Review } from '@prisma/client';
+import type { Assignment as AssignmentType, Episode as EpisodeType, Movie, User, Review, ExtraReview } from '@prisma/client';
 import { trpc } from "../utils/trpc";
 import MovieInlinePreview from "./MovieInlinePreview";
 
@@ -10,10 +10,11 @@ interface AddExtraToNextProps {
         User: User;
         Movie: Movie | null;
     })[];
-    Review: (Review & {
+    extras: (ExtraReview & {
+      Review: (Review & {
         User: User;
         Movie: Movie;
-    })[];
+    })})[];
 	});
 }
 export const AddExtraToNext: FC<AddExtraToNextProps> = ({ episode }) => {  

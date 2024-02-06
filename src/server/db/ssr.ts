@@ -9,17 +9,21 @@ export const ssr = {
 				number: "desc"
 			},
 			include: {
-				Link: true,
-				Assignment: {
+				links: true,
+				assignments: {
 					include: {
 						User: true,
 						Movie: true
 					}
 				},
-				Review: {
+				extras: {
 					include: {
-						Movie: true,
-						User: true,
+						Review: {
+							include: {
+								User: true,
+								movie: true
+							}
+						}
 					}
 				}
 			}
@@ -31,17 +35,21 @@ export const ssr = {
 				number: "desc"
 			},
 			include: {
-				Link: true,
-				Assignment: {
+				links: true,
+				assignments: {
 					include: {
 						User: true,
 						Movie: true
 					}
 				},
-				Review: {
+				extras: {
 					include: {
-						Movie: true,
-						User: true,
+						Review: {
+							include: {
+								User: true,
+								movie: true
+							}
+						}
 					}
 				}
 			}
@@ -53,17 +61,21 @@ export const ssr = {
 				date: 'desc',
 			},
 			include: {
-				Link: true,
-				Assignment: {
+				links: true,
+				assignments: {
 					include: {
 						User: true,
 						Movie: true
 					}
 				},
-				Review: {
+				extras: {
 					include: {
-						Movie: true,
-						User: true,
+						Review: {
+							include: {
+								User: true,
+								movie: true
+							}
+						}
 					}
 				}
 			}

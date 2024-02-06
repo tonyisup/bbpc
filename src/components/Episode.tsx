@@ -2,20 +2,21 @@ import { type FC } from "react";
 import { HiExternalLink } from "react-icons/hi";
 import Assignment from "./Assignment";
 import MovieInlinePreview from "./MovieInlinePreview";
-import type { Assignment as AssignmentType, Episode as EpisodeType, Link as EpisodeLink, Movie, User, Review } from '@prisma/client';
+import type { Assignment as AssignmentType, Episode as EpisodeType, Link as EpisodeLink, Movie, User, Review, ExtraReview } from '@prisma/client';
 
 
 interface EpisodeProps {
   episode: (EpisodeType & {
-    Assignment: (AssignmentType & {
+    assignments: (AssignmentType & {
         User: User;
         Movie: Movie | null;
     })[];
-    Review: (Review & {
+    extras: (ExtraReview & {
+      Review: (Review & {
         User: User;
         Movie: Movie;
-    })[];
-		Link: EpisodeLink[];
+    })})[];
+		links: EpisodeLink[];
 	});
 }
 
@@ -34,10 +35,10 @@ export const Episode: FC<EpisodeProps> = ({ episode }) => {
 				{episode?.date && <p>{new Date(episode.date).toLocaleDateString()}</p>}
       	{episode?.description && <p>{episode.description}</p>}
       </div>
-      {episode?.Assignment && episode.Assignment.length > 0 && <>
+      {episode?.assignments && episode.assignments.length > 0 && <>
         <div className="mt-4 w-full text-center"><h3>Assignments</h3></div>
         <div className="flex gap-2 justify-around">
-          {episode?.Assignment?.sort((a,b) => a.homework && !b.homework ? -1 : a.homework && b.homework ? 0 : 1).map((assignment) => {
+          {episode?.assignments?.sort((a,b) => a.homework && !b.homework ? -1 : a.homework && b.homework ? 0 : 1).map((assignment) => {
             return <Assignment assignment={assignment} key={assignment.id} />
           })}
         </div>
@@ -45,12 +46,12 @@ export const Episode: FC<EpisodeProps> = ({ episode }) => {
     </div>
 
     <div className="mt-4 w-full">
-      {episode?.Review && episode.Review.length > 0 && <>
+      {episode?.extras && episode.extras.length > 0 && <>
         <div className="w-full text-center"><h3>Extras</h3></div>
         <div className="flex justify-center gap-2 flex-wrap">
-          {episode?.Review?.map((review) => {
-            return <div key={review.id} className="flex items-center gap-2 w-20">
-              {review.Movie && <MovieInlinePreview movie={review.Movie} />}
+          {episode?.extras?.map((extra) => {
+            return <div key={extra.id} className="flex items-center gap-2 w-20">
+              {extra.Review.Movie && <MovieInlinePreview movie={extra.Review.Movie} />}
             </div>
           })}
         </div>
@@ -58,10 +59,10 @@ export const Episode: FC<EpisodeProps> = ({ episode }) => {
     </div>
 
 		<div className="mt-4 w-full">
-			{episode?.Link && episode.Link.length > 0 && <>
+			{episode?.links && episode.links.length > 0 && <>
 				<div className="w-full text-center"><h3>Links</h3></div>
 				<div className="flex flex-col items-center justify-center gap-2 flex-wrap">
-					{episode?.Link?.map((link) => {
+					{episode?.links?.map((link) => {
 						return <a key={link.id}  href={link.url}>{link.text}</a>
 					})}
 				</div>

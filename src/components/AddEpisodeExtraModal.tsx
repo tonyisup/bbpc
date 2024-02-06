@@ -27,7 +27,7 @@ const AddEpisodeExtraModal: FC<AddEpisodeExtraModalProps> = ({ episode, setMovie
 	const handleAddExtra = function() {
 		if (reviewer?.data && movie) {
 			addExtra({
-				episodeId: episode.id,
+				ratingId: '',
 				userId: reviewer.data.id,
 				movieId: movie.id
 			})

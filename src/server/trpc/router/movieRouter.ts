@@ -13,13 +13,6 @@ export const movieRouter = router({
 				where: {
 					id: input.id
 				},
-				include: {
-					Review: {
-						include: {
-							Rating: true,
-						}
-					},
-				}
 			})
 		}),
 	assignmentRatings: publicProcedure

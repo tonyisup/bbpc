@@ -11,18 +11,12 @@ export const episodeRouter = router({
           id: req.input.id
         },
         include: {
-          Assignment: {
+          assignments: {
             include: {
               User: true,
               Movie: true
             }
           },
-          Review: {
-            include: {
-              Movie: true,
-              User: true,
-            }
-          }
         }
       })
     }),
@@ -35,16 +29,10 @@ export const episodeRouter = router({
 					number: "desc"
         },
         include: {
-          Assignment: {
+          assignments: {
             include: {
               User: true,
               Movie: true
-            }
-          },
-          Review: {
-            include: {
-              Movie: true,
-              User: true,
             }
           }
         }
@@ -57,18 +45,12 @@ export const episodeRouter = router({
 					number: "desc"
         },
         include: {
-          Assignment: {
+          assignments: {
             include: {
               User: true,
               Movie: true
             }
           },
-          Review: {
-            include: {
-              Movie: true,
-              User: true,
-            }
-          }
         }
       })  
     }),		
@@ -82,18 +64,12 @@ export const episodeRouter = router({
 					number: "desc"
 				},
 				include: {
-					Assignment: {
+					assignments: {
 						include: {
 							User: true,
 							Movie: true
 						}
 					},
-					Review: {
-						include: {
-							Movie: true,
-							User: true,
-						}
-					}
 				}
 			})
 		}),
