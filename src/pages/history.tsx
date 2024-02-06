@@ -1,7 +1,7 @@
 import type { InferGetServerSidePropsType, NextPage } from "next";
 import { ssr } from "../server/db/ssr";
 import { Episode } from "../components/Episode";
-import type { Assignment as AssignmentType, Episode as EpisodeType, Link as EpisodeLink, Movie, User, Review } from '@prisma/client';
+import type { Assignment as AssignmentType, Episode as EpisodeType, Link as EpisodeLink, Movie, User, Review, ExtraReview } from '@prisma/client';
 
 export async function getServerSideProps() {
   const episodes = await ssr.getEpisodeHistory();
@@ -17,15 +17,16 @@ const Test: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>> = (
     <main className="bg-black flex flex-col w-full min-h-screen text-white items-center">
       <ul>
 				{recent.map((episode:(EpisodeType & {
-					Assignment: (AssignmentType & {
-							User: User;
-							Movie: Movie | null;
-					})[];
+					assignments: (AssignmentType & {
+						User: User;
+						Movie: Movie | null;
+				})[];
+				extras: (ExtraReview & {
 					Review: (Review & {
-							User: User;
-							Movie: Movie;
-					})[];
-					Link: EpisodeLink[];
+						User: User;
+						Movie: Movie;
+				})})[];
+				links: EpisodeLink[];
 				})) => (
 					<li key={episode.id}>
 						<Episode episode={episode} />
