@@ -52,13 +52,13 @@ const AssignmentPage: NextPage<InferGetServerSidePropsType<typeof getServerSideP
 
 	return (
 		<div>
-			<div className="m-4 p-4 text-2xl">
+			<div className="flex flex-col m-4 p-4 text-2xl items-center">
 				<Link href="/">
 					<HiChevronLeft className="inline-block m-2" />
 					Back
 				</Link>
+				<Assignment assignment={assignment} />
 			</div>
-			<Assignment assignment={assignment} />
 			{session && guesses?.length && <ShowAssignmentGuesses guesses={guesses} resetGuesses={handleResubmitGuesses} />}
 			{session && (guesses?.length == 0 || setGuesses) && <SetAssignmentGuesses assignment={assignment} guesserId={session?.user?.id} guessesSaved={handleSavedGuesses} />}
 		</div>
