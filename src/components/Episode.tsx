@@ -60,11 +60,9 @@ const EpisodeAssignments: FC<EpisodeAssignments> = ({ assignments, allowGuesses 
 		<div className="w-full text-center"><h3>Assignments</h3></div>
 		<div className="flex gap-2 justify-around">
 			{assignments.sort((a,b) => a.homework && !b.homework ? -1 : a.homework && b.homework ? 0 : 1).map((assignment) => {
-				return <div key={assignment.id}>
+				return <div key={assignment.id} className="flex flex-col items-center justify-between gap-2">
 					<Assignment assignment={assignment} key={assignment.id} />
-					<div className="my-2">
-						{allowGuesses && <Link className="px-4 bg-blue-600 rounded-sm" href={`/assignment/${assignment.id}`}>Submit Guesses</Link>}
-					</div>
+					{allowGuesses && <Link className="p-4 bg-blue-600 rounded-md" href={`/assignment/${assignment.id}`}>Submit Guesses</Link>}
 				</div>
 			})}
 		</div>
