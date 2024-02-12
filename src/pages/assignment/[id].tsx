@@ -6,7 +6,8 @@ import { Dispatch, DispatchWithoutAction, FC, SetStateAction, useEffect, useStat
 import { trpc } from "../../utils/trpc";
 import RatingIcon from "../../components/RatingIcon";
 import UserTag from "../../components/UserTag";
-import { HiRefresh, HiUpload } from "react-icons/hi";
+import { HiBackspace, HiChevronLeft, HiRefresh, HiUpload } from "react-icons/hi";
+import Link from "next/link";
 
 export async function getServerSideProps({ params }: { params: { id: string } }) {
 	const id = params.id;
@@ -50,11 +51,17 @@ const AssignmentPage: NextPage<InferGetServerSidePropsType<typeof getServerSideP
 	);
 
 	return (
-		<>
+		<div>
+			<div className="m-4 p-4 text-2xl">
+				<Link href="/">
+					<HiChevronLeft className="inline-block m-2" />
+					Back
+				</Link>
+			</div>
 			<Assignment assignment={assignment} />
 			{session && guesses?.length && <ShowAssignmentGuesses guesses={guesses} resetGuesses={handleResubmitGuesses} />}
 			{session && (guesses?.length == 0 || setGuesses) && <SetAssignmentGuesses assignment={assignment} guesserId={session?.user?.id} guessesSaved={handleSavedGuesses} />}
-		</>
+		</div>
 	)
 }
 interface ShowAssignmentGuessesProps {
