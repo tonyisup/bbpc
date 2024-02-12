@@ -1,4 +1,4 @@
-import { Dispatch, FC, SetStateAction, useEffect, useRef, useState } from "react";
+import { type Dispatch, type FC, type SetStateAction, useEffect, useRef, useState } from "react";
 import { HiSearch, HiX } from "react-icons/hi";
 
 interface SearchProps {

@@ -5,7 +5,7 @@ import { trpc } from "../utils/trpc";
 import MovieInlinePreview from "./MovieInlinePreview";
 
 interface AddExtraToNextProps {
-  episode:  (EpisodeType & {
+  episode: null | (EpisodeType & {
     Assignment: (AssignmentType & {
         User: User;
         Movie: Movie | null;
@@ -18,12 +18,15 @@ interface AddExtraToNextProps {
 	});
 }
 export const AddExtraToNext: FC<AddExtraToNextProps> = ({ episode }) => {  
+
 	const { data: isAdmin } = trpc.auth.isAdmin.useQuery();
   const [addedExtras, setAddedExtras] = useState<Movie[]>([]);
   
   const addExtra = (movie: Movie) => {
     setAddedExtras([...addedExtras, movie]);
   }
+	
+	if (!episode) return null;
   return (
     <>
       {addedExtras && addedExtras.length > 0 && addedExtras.map((movie) => {

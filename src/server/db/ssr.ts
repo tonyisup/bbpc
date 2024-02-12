@@ -1,6 +1,26 @@
 import { prisma } from "./client";
 
 export const ssr = {
+	getAssignment: async function (id: string) {
+		return await prisma.assignment.findUnique({
+			where: {
+				id: id
+			},
+			include: {
+				User: true,
+				Movie: true,
+				assignmentReviews: {
+					include: {
+						Review: {
+							include: {
+								User: true
+							}
+						}
+					}
+				}
+			}
+		});
+	},
 	getLatestEpisode: async function () {
 		return await prisma.episode.findMany({
 			take: 2,

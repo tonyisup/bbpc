@@ -3,10 +3,12 @@ import Image from "next/image";
 import type { FC } from "react";
 
 interface MovieInlinePreviewProps {
-  movie: Movie
+  movie: Movie | null
 }
 
 const MovieInlinePreview: FC<MovieInlinePreviewProps> = ({movie}) => {
+	if (!movie) return null;
+	
   return <a 
     className="inline-flex w-full items-center justify-between" 
     href={movie.url}>

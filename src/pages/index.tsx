@@ -1,7 +1,6 @@
 import type { InferGetServerSidePropsType, NextPage } from "next/types";
 import { ListenHere } from "../components/ListenHere";
 import { Episode } from "../components/Episode";
-import { Auth } from "../components/Auth";
 import { ssr } from "../server/db/ssr";
 import { AddExtraToNext } from "../components/AddExtraToNext";
 
@@ -22,15 +21,13 @@ const Home: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>> = (
     <>
       <div className="flex p-2 justify-evenly w-full">
         <div className="flex flex-col items-center justify-center gap-4">
-          {latest && <Episode episode={latest} /> }
-          {next && <Episode episode={next} /> }
-          {next && <AddExtraToNext episode={next} /> }
+          <Episode episode={latest} />
+          <Episode episode={next} allowGuesses={true} />
+          <AddExtraToNext episode={next} />
         </div>
       </div>
       
       <ListenHere />
-      
-      <Auth />
     </>
   );
 };

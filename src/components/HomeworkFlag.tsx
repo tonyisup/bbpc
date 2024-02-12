@@ -1,6 +1,6 @@
-import { FC } from "react";
+import { type FC } from "react";
 
-import { HiBookOpen, HiClipboardCheck, HiClipboardCopy, HiClipboardList, HiOutlineClipboardList, HiOutlinePaperClip } from "react-icons/hi"
+import { HiOutlineClipboardList, HiOutlinePaperClip } from "react-icons/hi"
 
 interface HomeworkFlagProps {
   homework: boolean

@@ -2,6 +2,86 @@ import { z } from "zod";
 import { publicProcedure, router } from "../trpc";
 
 export const reviewRouter = router({
+	addGuess: publicProcedure
+		.input(z.object({
+			userId: z.string(),
+			ratingId: z.string(),
+			assignmentReviewId: z.string()
+		}))
+		.mutation(async (req) => {
+			return await req.ctx.prisma.guess.create({
+				data: {
+					ratingId: req.input.ratingId,
+					userId: req.input.userId,
+					assignmntReviewId: req.input.assignmentReviewId,
+					points: 0,
+					created: new Date(),
+					seasonId: '83024ECB-D6AA-403A-966C-DF53E24ABB0B' /* TODO: get seasonId from episodeId */
+				}
+			})
+		}),
+	getGuessesForAssignmentForUser: publicProcedure
+		.input(z.object({ 
+			assignmentId: z.string(),
+			userId: z.string().optional()
+		}))
+		.query(async (req) => {
+			return await req.ctx.prisma.guess.findMany({
+				where: {
+					AssignmentReview: {
+						Assignment: {
+							id: req.input.assignmentId
+						}
+					},
+					userId: req.input.userId
+				},
+				include: {
+					Rating: true,
+					AssignmentReview: {
+						include: {
+							Review: {
+								include: {
+									User: true,
+								}
+							}
+						}
+					}
+				}
+			})
+		}),
+	submitGuess: publicProcedure
+		.input(z.object({
+			assignmentId: z.string(),
+			hostId: z.string(),
+			guesserId: z.string(),
+			ratingId: z.string()
+		}))
+		.mutation(async (req) => {
+			return await req.ctx.prisma.$executeRaw`EXEC [SubmitGuess] @assignmentId=${req.input.assignmentId}, @hostId=${req.input.hostId}, @guesserId=${req.input.guesserId}, @ratingId=${req.input.ratingId}`
+		}),
+	getRating: publicProcedure
+		.input(z.object({id: z.string()}))
+		.query(async (req) => {
+			return await req.ctx.prisma.rating.findUnique({
+				where: {
+					id: req.input.id
+				}
+			})
+		}),
+	getRatingByValue: publicProcedure
+		.input(z.object({value: z.number()}))
+		.query(async (req) => {
+			const results = await req.ctx.prisma.rating.findMany({
+				where: {
+					value: req.input.value
+				}
+			})
+			return results[0]
+		}),
+	getRatings: publicProcedure
+		.query(async (req) => {
+			return await req.ctx.prisma.rating.findMany()
+		}),
 	add: publicProcedure
 		.input(z.object({
 			ratingId: z.string().optional(),

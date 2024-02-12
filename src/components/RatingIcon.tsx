@@ -2,24 +2,27 @@ import { type Rating } from "@prisma/client";
 import { type FC } from "react";
 import { FaDollarSign, FaPoo, FaTrashAlt } from "react-icons/fa";
 import { BiCameraMovie } from "react-icons/bi";
+import { trpc } from "../utils/trpc";
 
 interface RatingProps {
-  rating: Rating
+	value: number | undefined,
 }
 
-const RatingIcon: FC<RatingProps> = ({rating}) => {
+const RatingIcon: FC<RatingProps> = ({value}) => {
   const renderRating = () => {
-    switch(rating.value) {
-      case 1: return <FaPoo />
-      case 2: return <FaTrashAlt />
-      case 3: return <FaDollarSign />
-      case 4: return <BiCameraMovie />
+		if (!value) return null;
+    switch(value) {
+      case 1: return <span title="Goldbloom"><FaPoo /></span>
+      case 2: return <span title="Waste"><FaTrashAlt /></span>
+      case 3: return <span title="Dollar"><FaDollarSign /></span>
+      case 4: return <span title="Slater"><BiCameraMovie /></span>
+			default: return null;
     }
   }
   return (
-    <div className="flex items-center gap-2">
-      {renderRating()}
-    </div>
+		<>
+    	{renderRating()}
+		</>
   )
 }
 
