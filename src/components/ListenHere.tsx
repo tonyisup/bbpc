@@ -51,7 +51,7 @@ export const ListenHere: FC = () => {
       </div>
       <div>
         <a target="_blank" rel="noreferrer" href="https://soundcloud.com/badboyspodcast">
-          Listen on <img src="https://a-v2.sndcdn.com/assets/images/brand-1b72dd82.svg" /> Soundcloud
+          Listen on <img alt="Listen on soundcloud" src="https://a-v2.sndcdn.com/assets/images/brand-1b72dd82.svg" /> Soundcloud
         </a>
       </div>
       <div>

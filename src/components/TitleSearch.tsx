@@ -1,5 +1,5 @@
-import { Dispatch, FC, SetStateAction, useEffect, useState } from "react";
-import { Title } from "../server/tmdb/client";
+import { type Dispatch, type FC, type SetStateAction, useState } from "react";
+import type { Title } from "../server/tmdb/client";
 import { trpc } from "../utils/trpc";
 import Search from "./common/Search";
 

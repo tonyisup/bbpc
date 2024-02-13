@@ -1,4 +1,4 @@
-import { Rating } from "@prisma/client";
+import type { Rating } from "@prisma/client";
 import { z } from "zod";
 
 import { router, publicProcedure } from "../trpc";

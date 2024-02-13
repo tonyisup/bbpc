@@ -1,12 +1,12 @@
-import { InferGetServerSidePropsType, NextPage } from "next";
+import type { InferGetServerSidePropsType, NextPage } from "next";
 import { ssr } from "../../server/db/ssr";
 import Assignment from "../../components/Assignment";
-import { AssignmentReview, Guess, Movie, Rating, Review, User } from "@prisma/client";
-import { Dispatch, DispatchWithoutAction, FC, SetStateAction, useEffect, useState } from "react";
+import type { AssignmentReview, Guess, Rating, Review, User } from "@prisma/client";
+import { type Dispatch, type DispatchWithoutAction, type FC, useEffect, useState } from "react";
 import { trpc } from "../../utils/trpc";
 import RatingIcon from "../../components/RatingIcon";
 import UserTag from "../../components/UserTag";
-import { HiBackspace, HiChevronLeft, HiRefresh, HiUpload } from "react-icons/hi";
+import { HiChevronLeft, HiRefresh, HiUpload } from "react-icons/hi";
 import Link from "next/link";
 
 export async function getServerSideProps({ params }: { params: { id: string } }) {
@@ -58,8 +58,8 @@ const AssignmentPage: NextPage<InferGetServerSidePropsType<typeof getServerSideP
 					Back
 				</Link>
 				<Assignment assignment={assignment} />
-			</div>
-			{session && guesses?.length && <ShowAssignmentGuesses guesses={guesses} resetGuesses={handleResubmitGuesses} />}
+			</div> 
+			{session && (guesses?.length != undefined && guesses.length > 0) && <ShowAssignmentGuesses guesses={guesses} resetGuesses={handleResubmitGuesses} />}
 			{session && (guesses?.length == 0 || setGuesses) && <SetAssignmentGuesses assignment={assignment} guesserId={session?.user?.id} guessesSaved={handleSavedGuesses} />}
 		</div>
 	)
@@ -112,7 +112,7 @@ const SetAssignmentGuesses: FC<SetAssignmentGuessesProps> = ({ assignment, guess
 	useEffect(() => {
 		if (!hosts) return;
 		setCanSubmitGuesses(Object.keys(pendingGuesses).length == hosts.length);
-	}, [pendingGuesses]);
+	}, [hosts, pendingGuesses]);
 	
 	const handleSubmitGuesses = function() 
 	{
@@ -179,7 +179,7 @@ interface GuessSelectProps {
 	setGuess: Dispatch<PendingGuess>
 }
 const GuessSelect: FC<GuessSelectProps> = ({ host, setGuess }) => {
-	const [guessedRating, setGuessedRating] = useState<Rating | null>(null);
+	const [, setGuessedRating] = useState<Rating | null>(null);
 
 	const handleRatingSelection = function(rating: Rating) {
 		setGuessedRating(rating);
@@ -232,15 +232,15 @@ interface RatingButtonProps {
 }
 const RatingButton: FC<RatingButtonProps> = ({ value, selected, click }) => {
 	if (selected) {
-		return <button className="p-4 text-2xl rounded-sm ring-red-900 ring-2 hover:ring-2">
+		return <div className="p-4 text-2xl rounded-sm ring-red-900 ring-2 hover:ring-2">
 			<RatingIcon value={value} />
-		</button>
+		</div>
 	}
 	const handleClick = function() {
 		click(value);
 	}
-	return <button className="p-4 text-2xl rounded-sm ring-red-900 hover:ring-2" onClick={handleClick}>
+	return <div className="p-4 text-2xl rounded-sm ring-red-900 hover:ring-2" onClick={handleClick}>
 		<RatingIcon value={value} />
-	</button>
+	</div>
 }
 export default AssignmentPage;

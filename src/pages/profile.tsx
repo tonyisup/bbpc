@@ -1,10 +1,8 @@
-import { GetServerSideProps, InferGetServerSidePropsType, NextPage } from "next";
+import type { GetServerSideProps, NextPage } from "next";
 import { useState } from "react";
 import { getServerAuthSession } from "../server/common/get-server-auth-session";
 import { useSession } from "next-auth/react";
 import { trpc } from "../utils/trpc";
-import { set } from "zod";
-
 
 export const getServerSideProps: GetServerSideProps = async (ctx) => {
   const session = await getServerAuthSession(ctx);

@@ -1,6 +1,6 @@
-import { Movie } from "@prisma/client";
-import { Dispatch, FC, SetStateAction, useEffect, useState } from "react";
-import { Title } from "../server/tmdb/client";
+import type { Movie } from "@prisma/client";
+import { type Dispatch, type FC, type SetStateAction, useState } from "react";
+import type { Title } from "../server/tmdb/client";
 import { trpc } from "../utils/trpc";
 import MovieCard from "./MovieCard";
 import TitleCard from "./TitleCard";
@@ -15,7 +15,7 @@ const MovieFind: FC<MovieFindProps> = ({
 }) => {
   const [ selectedMovie, setSelectedMovie ] = useState<Movie | null>(null)
   const [ title, setTitle ] = useState<Title | null>(null)
-  const { data: temp_title } = trpc.movie.getTitle.useQuery({ 
+  const { } = trpc.movie.getTitle.useQuery({ 
     id: title?.id ?? 0 
   }, {
     onSuccess: (result) => {

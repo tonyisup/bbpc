@@ -1,8 +1,6 @@
-import { type Rating } from "@prisma/client";
 import { type FC } from "react";
 import { FaDollarSign, FaPoo, FaTrashAlt } from "react-icons/fa";
 import { BiCameraMovie } from "react-icons/bi";
-import { trpc } from "../utils/trpc";
 
 interface RatingProps {
 	value: number | undefined,

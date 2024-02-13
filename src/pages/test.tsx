@@ -1,5 +1,4 @@
 import type { NextPage } from "next";
-import { FaPoop } from "react-icons/fa"
 import RatingIcon from "../components/RatingIcon";
 import { trpc } from "../utils/trpc";
 
@@ -11,7 +10,7 @@ const Test: NextPage = () => {
       <ul>
       {ratings && ratings.map((rating) => {
         return (<li key={rating.id} className="p-2 text-xl">
-            <RatingIcon rating={rating} />
+            <RatingIcon value={rating.value} />
           </li>
         )
       })}

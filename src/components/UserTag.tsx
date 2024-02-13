@@ -1,5 +1,5 @@
-import { User } from "@prisma/client";
-import { FC } from "react";
+import type { User } from "@prisma/client";
+import type { FC } from "react";
 
 interface UserTagProps {
   user: User | null

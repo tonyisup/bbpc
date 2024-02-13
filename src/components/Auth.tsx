@@ -1,7 +1,7 @@
-import { Session } from "next-auth";
+import type { Session } from "next-auth";
 import { signIn, signOut, useSession } from "next-auth/react";
 import Link from "next/link";
-import { FC } from "react";
+import type { FC } from "react";
 import { HiCog } from "react-icons/hi";
 
 export const Auth: React.FC = () => {

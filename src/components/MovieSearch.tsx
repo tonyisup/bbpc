@@ -1,12 +1,9 @@
-import { Dispatch, FC, SetStateAction, useEffect, useState } from "react";
-import { Title } from "../server/tmdb/client";
+import { type Dispatch, type FC, type SetStateAction, useState } from "react";
 import { trpc } from "../utils/trpc";
 import Search from "./common/Search";
-
 import { CarouselProvider, Slider, Slide, ButtonBack, ButtonNext } from 'pure-react-carousel';
 import 'pure-react-carousel/dist/react-carousel.es.css';
-import TitleCard from "./TitleCard";
-import { Movie } from "@prisma/client";
+import type { Movie } from "@prisma/client";
 import MovieCard from "./MovieCard";
 
 interface MovieSearchProps {
@@ -32,26 +29,26 @@ const MovieSearch: FC<MovieSearchProps> = ({ setMovie: setMovie }) => {
 		<>
 			{ !modalOpen &&
 				<div>
-					<button
+					<div
 					className="rounded-md bg-violet-500 p-1 text-xs transition hover:bg-violet-600"
 						onClick={() => setModalOpen(true)}
 					>
 						<span className="focus:outline-none inset-y-0 left-0 flex items-center pl-3">
 							<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
 						</span>
-					</button>
+					</div>
 				</div>
 			}
 			{ modalOpen &&
 				<div className="text-white w-full inset-0 flex items-center justify-center bg-black/75">
 					<div className="p-3 w-full bg-gray-800">
 						<div className="relative w-full flex">
-							<button
+							<div
 								onClick={closeModal}
 								className="absolute right-4 focus:outline-none flex items-center"
 							>
 								<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-							</button>
+							</div>
 						</div>
 						<div>
 							<Search setSearch={setSearchQuery} />
@@ -70,9 +67,9 @@ const MovieSearch: FC<MovieSearchProps> = ({ setMovie: setMovie }) => {
 								<Slider>
 									{movies?.map((movie, index) => (
 										movie?.poster && <Slide index={index} key={movie.id}>
-											<button onClick={() => selectMovie(movie)}>
+											<div onClick={() => selectMovie(movie)}>
 												<MovieCard movie={movie} />
-											</button>
+											</div>
 										</Slide>
 									))}
 								</Slider>
