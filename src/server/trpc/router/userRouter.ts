@@ -1,3 +1,4 @@
+import { z } from "zod";
 import { protectedProcedure, publicProcedure, router } from "../trpc";
 
 export const userRouter = router({
@@ -11,6 +12,18 @@ export const userRouter = router({
 						}
 					}
 				}
+			}
+		})
+	}),
+	update: protectedProcedure
+		.input(z.object({
+			name: z.string()
+		}))
+		.mutation(async ({ ctx, input }) => {
+		return await ctx.prisma.user.update({
+			where: { id: ctx.session.user.id },
+			data: {
+				name: input.name
 			}
 		})
 	}),
