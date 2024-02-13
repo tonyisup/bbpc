@@ -31,6 +31,8 @@ const AssignmentPage: NextPage<InferGetServerSidePropsType<typeof getServerSideP
 	const [ setGuesses, setSetGuesses ] = useState<boolean>(false);
 
 	const { mutate: addVote } = trpc.feature.addVoteForFeature.useMutation();
+	
+	const [voted, setVoted] = useState<boolean>(false);
 
 	const handleResubmitGuesses = function() {
 		setSetGuesses(true);
@@ -43,6 +45,7 @@ const AssignmentPage: NextPage<InferGetServerSidePropsType<typeof getServerSideP
 
 	const handleAnonymousSignIn = function() {
 		addVote({ lookupID: "ANONYMOUS_GUESSES_WTFIR" });
+		setVoted(true);
 	}
 
 	if (!assignment) return null;
@@ -53,7 +56,8 @@ const AssignmentPage: NextPage<InferGetServerSidePropsType<typeof getServerSideP
 			<div className="flex flex-col items-center gap-4 m-4">
 				<h2 className="text-2xl">Please sign in to submit guesses</h2>
 				<p>We can&apos;t assign points if we don&apos;t know who you are!</p>
-				<p>Would you rather play along anonymously without competing in the game? <span className="cursor-pointer font-bold" onClick={handleAnonymousSignIn}>Click Here to vote for this feature!</span></p>
+				{!voted && <p>Would you rather play along anonymously without competing in the game? <span className="cursor-pointer font-bold" onClick={handleAnonymousSignIn}>Click Here to vote for this feature!</span></p>}
+				{voted && <p>Thanks for voting! We&apos;ll let you know if we add this feature!</p>}
 			</div>
 		</>
 	);
