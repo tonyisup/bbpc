@@ -62,7 +62,7 @@ const EpisodeAssignments: FC<EpisodeAssignments> = ({ assignments, allowGuesses 
 			{assignments.sort((a,b) => a.homework && !b.homework ? -1 : a.homework && b.homework ? 0 : 1).map((assignment) => {
 				return <div key={assignment.id} className="flex flex-col items-center justify-between gap-2">
 					<Assignment assignment={assignment} key={assignment.id} />
-					{allowGuesses && <Link className="p-4 bg-red-900 text-gray-300 rounded-md" href={`/assignment/${assignment.id}`}>Submit Guesses</Link>}
+					{allowGuesses && <Link className="p-4 bg-red-900 text-gray-300 rounded-md hover:bg-red-400" href={`/assignment/${assignment.id}`}>Submit Guesses</Link>}
 				</div>
 			})}
 		</div>

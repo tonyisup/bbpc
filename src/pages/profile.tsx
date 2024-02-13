@@ -46,7 +46,7 @@ const Profile: NextPage = () => {
         />
       </div>
 			<div>
-				<button className="rounded-md bg-violet-500 p-4 transition hover:bg-violet-600"
+				<button className="rounded-md bg-red-800 p-4 transition hover:bg-violet-600"
 					onClick={handleSave}
 				>
 					Save

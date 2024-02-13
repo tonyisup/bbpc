@@ -35,7 +35,7 @@ const TitleSearch: FC<TitleSearchProps> = ({ setTitle, open }) => {
 					<button
 						type="button"
 						title="open movie title search modal"
-						className="rounded-md bg-violet-500 p-1 text-xs transition hover:bg-violet-600"
+						className="rounded-md bg-red-800 p-4 text-xs transition hover:bg-red-400"
 						onClick={() => setModalOpen(true)}
 					>
 						<span className="focus:outline-none inset-y-0 left-0 flex items-center pl-3">
