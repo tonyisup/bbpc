@@ -12,7 +12,7 @@ export async function getServerSideProps() {
   }
 }
 
-const Test: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>> = ({recent}) => {
+const History: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>> = ({recent}) => {
   return (
     <main className="bg-black flex flex-col w-full min-h-screen text-white items-center">
       <ul>
@@ -37,4 +37,4 @@ const Test: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>> = (
   );
 };
 
-export default Test;
+export default History;

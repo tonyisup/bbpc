@@ -210,3 +210,11 @@ model GameType {
   description String?
   seasons     Season[]
 }
+
+model Feature {
+  id          String  @id @default(dbgenerated("newid()")) @db.UniqueIdentifier
+  lookupID    String  @unique
+  title       String
+  description String?
+  votes       Int     @db.SmallInt
+}

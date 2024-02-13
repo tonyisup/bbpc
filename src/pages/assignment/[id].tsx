@@ -24,10 +24,13 @@ const AssignmentPage: NextPage<InferGetServerSidePropsType<typeof getServerSideP
 	const { data: session } = trpc.auth.getSession.useQuery();
 
 	const { data: guesses, refetch } = trpc.review.getGuessesForAssignmentForUser.useQuery(
+
 		{ assignmentId: assignment.id, userId: session?.user?.id }
 	);
 
 	const [ setGuesses, setSetGuesses ] = useState<boolean>(false);
+
+	const { mutate: addVote } = trpc.feature.addVoteForFeature.useMutation();
 
 	const handleResubmitGuesses = function() {
 		setSetGuesses(true);
@@ -38,14 +41,19 @@ const AssignmentPage: NextPage<InferGetServerSidePropsType<typeof getServerSideP
 		refetch();
 	}
 
-	
+	const handleAnonymousSignIn = function() {
+		addVote({ lookupID: "ANONYMOUS_GUESSES_WTFIR" });
+	}
+
 	if (!assignment) return null;
 	
 	if (!session?.user?.id) return (
 		<>
 			<Assignment assignment={assignment} />
-			<div className="flex flex-col items-center gap-4">
+			<div className="flex flex-col items-center gap-4 m-4">
 				<h2 className="text-2xl">Please sign in to submit guesses</h2>
+				<p>We can&apos;t assign points if we don't know who you are!</p>
+				<p>Would you rather play along anonymously without competing in the game? <span className="cursor-pointer font-bold" onClick={handleAnonymousSignIn}>Click Here to vote for this feature!</span></p>
 			</div>
 		</>
 	);
