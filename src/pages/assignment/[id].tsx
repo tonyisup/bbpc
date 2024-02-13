@@ -82,7 +82,7 @@ const ShowAssignmentGuesses: FC<ShowAssignmentGuessesProps> = ({ guesses, resetG
 			{guesses && guesses.map((guess) => {
 				return <SelectedGuess key={guess.id} host={guess?.AssignmentReview?.Review?.User} rating={guess?.Rating} />
 			})}
-			<button className="py-2 px-4 bg-blue-500 text-white rounded-md disabled:bg-gray-500 disabled:text-gray-800"
+			<button className="py-2 px-4 bg-red-900 text-gray-300 rounded-md disabled:bg-gray-500 disabled:text-gray-800"
 				onClick={resetGuesses}
 			>
 				<HiRefresh className="inline-block m-2" />
@@ -145,7 +145,7 @@ const SetAssignmentGuesses: FC<SetAssignmentGuessesProps> = ({ assignment, guess
 					<GuessSelect host={host} setGuess={handleSetGuess} />
 				</div>
 			})}
-			<button disabled={!canSubmitGuesses} className="py-2 px-4 bg-blue-500 text-white rounded-md disabled:bg-gray-500 disabled:text-gray-800"
+			<button disabled={!canSubmitGuesses} className="py-2 px-4 bg-red-900 text-gray-300 rounded-md disabled:bg-gray-500 disabled:text-gray-800"
 				onClick={handleSubmitGuesses}
 			>
 				<HiUpload className="inline-block m-2" />
@@ -167,7 +167,7 @@ const SelectedGuess: FC<SelectedGuessProps> = ({ host, rating }) => {
 	return <div  className="flex items-center gap-2">
 		<UserTag user={host} />
 		<RatingIcon value={rating?.value} />
-		<span>{rating?.name}</span>
+		<span>{rating?.name} - {rating?.category}</span>
 	</div>
 }
 class PendingGuess {
@@ -232,14 +232,14 @@ interface RatingButtonProps {
 }
 const RatingButton: FC<RatingButtonProps> = ({ value, selected, click }) => {
 	if (selected) {
-		return <button className="p-4 text-2xl rounded-sm ring-2 hover:ring-2">
+		return <button className="p-4 text-2xl rounded-sm ring-red-900 ring-2 hover:ring-2">
 			<RatingIcon value={value} />
 		</button>
 	}
 	const handleClick = function() {
 		click(value);
 	}
-	return <button className="p-4 text-2xl rounded-sm hover:ring-2" onClick={handleClick}>
+	return <button className="p-4 text-2xl rounded-sm ring-red-900 hover:ring-2" onClick={handleClick}>
 		<RatingIcon value={value} />
 	</button>
 }
