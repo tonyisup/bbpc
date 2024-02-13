@@ -18,7 +18,7 @@ const Modal: FC<ModalProps> = ({ isOpen, openText, titleText, children, setIsOpe
 				<button
 						type="button" 
 						onClick={() => setIsOpen(true)}
-						className="bg-red-800 text-white text-sm p-2 rounded-md transition hover:bg-red-400">
+						className="bg-red-800 text-white text-sm p-4 rounded-md transition hover:bg-red-400">
 						{openText}
 				</button>
 			}
