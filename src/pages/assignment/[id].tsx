@@ -52,7 +52,7 @@ const AssignmentPage: NextPage<InferGetServerSidePropsType<typeof getServerSideP
 			<Assignment assignment={assignment} />
 			<div className="flex flex-col items-center gap-4 m-4">
 				<h2 className="text-2xl">Please sign in to submit guesses</h2>
-				<p>We can&apos;t assign points if we don't know who you are!</p>
+				<p>We can&apos;t assign points if we don&apos;t know who you are!</p>
 				<p>Would you rather play along anonymously without competing in the game? <span className="cursor-pointer font-bold" onClick={handleAnonymousSignIn}>Click Here to vote for this feature!</span></p>
 			</div>
 		</>
