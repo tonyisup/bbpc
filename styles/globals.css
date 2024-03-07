@@ -1,24 +1,7 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-body {
-  background-color: black;
-}
-.hero-image {
-  background-image: url('/bbpc-mcp-fonso-harley.jpg');;
-
-  /* Position and center the image to scale nicely on all screens */
-  background-repeat: no-repeat;
-  background-size: cover;
-  background-position-y: -125px;
-  position: relative;
-}
-.main-mask {
-  
-  background-image: linear-gradient(to top, rgba(0,0,0,0), rgba(0,0,0,1));
-}
-
+ 
 @layer base {
   :root {
     --background: 0 0% 100%;

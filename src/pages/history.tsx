@@ -28,7 +28,7 @@ const History: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>> 
 				})})[];
 				links: EpisodeLink[];
 				})) => (
-					<li key={episode.id}>
+					<li className="p-2" key={episode.id}>
 						<Episode episode={episode} />
 					</li>
 				))}
