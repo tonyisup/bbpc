@@ -1,7 +1,7 @@
 import type { GetServerSideProps, NextPage } from "next";
 import { useState } from "react";
 import { getServerAuthSession } from "../server/common/get-server-auth-session";
-import { useSession } from "next-auth/react";
+import { useSession, signOut } from "next-auth/react";
 import { trpc } from "../utils/trpc";
 
 export const getServerSideProps: GetServerSideProps = async (ctx) => {
@@ -29,8 +29,15 @@ const Profile: NextPage = () => {
 		</div>
 	)
 
-	return (
-		<div className="flex flex-col gap-2 mb-8">
+	return <div className="flex flex-col gap-2 mb-8">
+		<button
+			type="button"
+			title="Sign Out"
+			className="rounded-full bg-white/10 p-2 font-semibold text-red-600 no-underline transition hover:bg-white/20"
+			onClick={() => signOut()}
+		>
+			Sign Out
+		</button>
 			<h1 className="text-2xl">Profile</h1>
       <div>
         <label htmlFor="name">Name</label>
@@ -52,7 +59,6 @@ const Profile: NextPage = () => {
 				{saved && <p className="p-4 text-green-500">Saved! - Refresh to see changes</p>}
 			</div>
 		</div>
-	)
 }
 
 export default Profile;
