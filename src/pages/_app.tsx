@@ -66,12 +66,14 @@ function NavMenu() {
       {showMenu && <div className="flex flex-col fixed p-4 justify-center items-center right-0 gap-4 sm:hidden bg-black">
         <HiX onClick={handleClick} />
         <Link href="/">Home</Link>
-        <Link href="/history">History</Link>  
+        <Link href="/history">History</Link>
+        <Link href="/points">Points</Link>
         <Auth />
       </div>}
       <div className="gap-4 hidden sm:flex">
         <Link href="/">Home</Link>
         <Link href="/history">History</Link>
+        <Link href="/points">Points</Link>
         <Auth />
       </div>
     </div>
