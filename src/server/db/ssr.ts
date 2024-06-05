@@ -7,6 +7,9 @@ export const ssr = {
 				points: {
 					not: null
 				}
+			},
+			orderBy: {
+				points: "desc"
 			}
 		});
 	},
