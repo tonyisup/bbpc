@@ -73,4 +73,43 @@ export const episodeRouter = router({
 				}
 			})
 		}),
+		search: publicProcedure
+		.input(z.object({query: z.string()}))
+		.query(async (req) => {
+			return await req.ctx.prisma.episode.findMany({
+				where: {
+					OR: [
+						{
+							assignments: {
+								some: {
+									Movie: {
+										title: {
+											contains: req.input.query
+										}
+									}
+								}
+							}
+						}
+					]
+				},
+				include: {
+					assignments: {
+						include: {
+							User: true,
+							Movie: true
+						}
+					},
+					extras: {
+						include: {
+							Review: {
+								include: {
+									User: true,
+									Movie: true
+								}
+							}
+						}
+					}
+				}
+			})
+		})
 });

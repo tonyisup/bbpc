@@ -168,7 +168,7 @@ model User {
   email         String?      @unique
   emailVerified DateTime?
   image         String?
-  points        Int?         @db.SmallInt
+  points       	Decimal
   accounts      Account[]
   assignments   Assignment[]
   bangers       Banger[]
