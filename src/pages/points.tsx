@@ -15,7 +15,7 @@ const Points: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>> =
 			<table>
 				<tr><th>Username</th><th>Points</th></tr>
 				{users.map((user: {name: string, points: number}) => (
-					<tr key={user.name}><td>{user.name}</td><td>{user.points}</td></tr>
+					<tr key={user.name}><td className="p-2">{user.name}</td><td className="p-2">{user.points}</td></tr>
 				))}
 			</table>
     </div>
