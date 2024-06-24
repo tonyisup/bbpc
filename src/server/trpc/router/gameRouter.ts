@@ -9,6 +9,26 @@ export const gameRouter = router({
 				points: {
 					not: null
 				}
+			},
+			orderBy: {
+				points: "desc"
+			}
+		})
+	}),
+	addPointsToUser: protectedProcedure
+		.input(z.object({
+			userId: z.string(),
+			points: z.number()
+		}))
+		.mutation(async ({ ctx, input }) => {
+		return ctx.prisma.user.update({
+			where: {
+				id: input.userId
+			},
+			data: {
+				points: {
+					increment: input.points
+				}
 			}
 		})
 	})
