@@ -73,7 +73,7 @@ export const episodeRouter = router({
 				}
 			})
 		}),
-		search: publicProcedure
+	search: publicProcedure
 		.input(z.object({query: z.string()}))
 		.query(async (req) => {
 			return await req.ctx.prisma.episode.findMany({
@@ -85,6 +85,19 @@ export const episodeRouter = router({
 									Movie: {
 										title: {
 											contains: req.input.query
+										}
+									}
+								}
+							}
+						},
+						{
+							extras: {
+								some: {
+									Review: {
+										Movie: {
+											title: {
+												contains: req.input.query
+											}
 										}
 									}
 								}

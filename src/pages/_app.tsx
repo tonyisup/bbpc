@@ -24,7 +24,7 @@ const MyApp: AppType<{ session: Session | null }> = ({
         <meta name="description" content="Random rants on all things movie" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <section className="bg-black flex flex-col justify-between items-stretch">
+      <div className="bg-black flex flex-col justify-between items-stretch min-h-screen">
         <header>
           <nav className="w-full flex items-center justify-between bg-[#020202]">
             <div className="p-4">
@@ -37,7 +37,7 @@ const MyApp: AppType<{ session: Session | null }> = ({
             </div>
             <div>
               <NavMenu />
-            </div>            
+            </div>
           </nav>
         </header>
         <main className="flex-grow p-4 bg-gradient-to-b from-[#020202] to-[#424242]">
@@ -45,10 +45,10 @@ const MyApp: AppType<{ session: Session | null }> = ({
             <Component {...pageProps} />
           </div>
         </main>
-        <footer>        
+        <footer>
           <ListenHere />
         </footer>
-      </section>
+      </div>
     </SessionProvider>
   );
 };
@@ -61,19 +61,19 @@ function NavMenu() {
   return (
     <div className="flex flex-between gap-8 text-red-500 mr-4">
       <div className="sm:hidden">
-        <HiMenu onClick={handleClick} />
+        <HiMenu className="transition hover:text-red-400 cursor-pointer" onClick={handleClick} />
       </div>
       {showMenu && <div className="flex flex-col fixed p-4 justify-center items-center right-0 gap-4 sm:hidden bg-black">
-        <HiX onClick={handleClick} />
-        <Link href="/">Home</Link>
-        <Link href="/history">History</Link>
-        <Link href="/points">Points</Link>
+        <HiX className="transition hover:text-red-400 cursor-pointer" onClick={handleClick} />
+        <Link className="transition hover:text-red-400" href="/">Home</Link>
+        <Link className="transition hover:text-red-400" href="/history">History</Link>
+        <Link className="transition hover:text-red-400" href="/points">Points</Link>
         <Auth />
       </div>}
       <div className="gap-4 hidden sm:flex">
-        <Link href="/">Home</Link>
-        <Link href="/history">History</Link>
-        <Link href="/points">Points</Link>
+        <Link className="transition hover:text-red-400" href="/">Home</Link>
+        <Link className="transition hover:text-red-400" href="/history">History</Link>
+        <Link className="transition hover:text-red-400" href="/points">Points</Link>
         <Auth />
       </div>
     </div>
