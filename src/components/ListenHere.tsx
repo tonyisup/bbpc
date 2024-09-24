@@ -32,7 +32,7 @@ export const ListenHere: FC = () => {
 					height={43}
         />
         <Image
-          src="PATREON_WORDMARK_1_BLACK_RGB.svg"
+          src="/PATREON_WORDMARK_1_BLACK_RGB.svg"
           alt="Patreon"
 					width={200}
 					height={67}
@@ -83,7 +83,7 @@ export const ListenHere: FC = () => {
       <a target="_blank" rel="noreferrer noopener"
         href="https://music.youtube.com/playlist?list=PL5tJGBZ94i2eX66kGUk1dO1SxZiWC5J95">
         <Image 
-          src="ListenonYouTubeMusic-black-SVG.svg"
+          src="/ListenonYouTubeMusic-black-SVG.svg"
           width="150" height="38" alt="Listen on Google Podcasts"
         />
       </a>
