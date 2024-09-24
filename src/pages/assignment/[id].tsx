@@ -55,14 +55,16 @@ const AssignmentPage: NextPage<InferGetServerSidePropsType<typeof getServerSideP
 		<>
 			<Assignment assignment={assignment} />
 			<div className="flex flex-col items-center gap-4 m-4">
-				<p className="text-2xl">Please <button
-    type="button"
-    title="Sign in"
-    className="font-semibold text-red-600 no-underline transition hover:text-red-400"
-    onClick={() => signIn()}
-  >
-    Sign in
-  </button> to submit guesses</p>
+				<p className="text-2xl">Please
+					<button
+						type="button"
+						title="Sign in"
+						className="font-semibold text-red-600 no-underline transition hover:text-red-400"
+						onClick={() => signIn()}
+					>
+						Sign in
+					</button> to submit guesses
+				</p>
 			</div>
 		</>
 	);
