@@ -56,7 +56,7 @@ const AssignmentPage: NextPage<InferGetServerSidePropsType<typeof getServerSideP
 		<>
 			<Assignment assignment={assignment} />
 			<div className="flex flex-col items-center gap-4 m-4">
-				<p className="text-2xl">Please
+				<p className="text-2xl">Please 
 					<button
 						type="button"
 						title="Sign in"
