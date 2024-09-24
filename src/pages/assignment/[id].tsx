@@ -8,6 +8,7 @@ import RatingIcon from "../../components/RatingIcon";
 import UserTag from "../../components/UserTag";
 import { HiChevronLeft, HiRefresh, HiUpload } from "react-icons/hi";
 import Link from "next/link";
+import { signIn } from "next-auth/react";
 
 export async function getServerSideProps({ params }: { params: { id: string } }) {
 	const id = params.id;
@@ -54,10 +55,14 @@ const AssignmentPage: NextPage<InferGetServerSidePropsType<typeof getServerSideP
 		<>
 			<Assignment assignment={assignment} />
 			<div className="flex flex-col items-center gap-4 m-4">
-				<h2 className="text-2xl">Please sign in to submit guesses</h2>
-				<p>We can&apos;t assign points if we don&apos;t know who you are!</p>
-				{!voted && <p>Would you rather play along anonymously without competing in the game? <span className="cursor-pointer font-bold" onClick={handleAnonymousSignIn}>Click Here to vote for this feature!</span></p>}
-				{voted && <p>Thanks for voting! We&apos;ll let you know if we add this feature!</p>}
+				<p className="text-2xl">Please <button
+    type="button"
+    title="Sign in"
+    className="font-semibold text-red-600 no-underline transition hover:text-red-400"
+    onClick={() => signIn()}
+  >
+    Sign in
+  </button> to submit guesses</p>
 			</div>
 		</>
 	);

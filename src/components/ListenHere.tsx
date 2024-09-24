@@ -1,4 +1,5 @@
 import { type FC } from "react";
+import Image from "next/image";
 
 export const ListenHere: FC = () => {
 	const stylePatreonLogo = {
@@ -24,15 +25,17 @@ export const ListenHere: FC = () => {
       <a target="_blank" rel="noreferrer noopener" className="flex items-center"
         href="https://www.patreon.com/badboyspodcast"
       >
-        <img
-          src="PATREON_SYMBOL_1_WHITE_RGB.png"
+        <Image
+          src="/PATREON_SYMBOL_1_WHITE_RGB.png"
           alt="Patreon"
-          style={stylePatreonLogo}
+					width={40}
+					height={43}
         />
-        <img
+        <Image
           src="PATREON_WORDMARK_1_BLACK_RGB.svg"
           alt="Patreon"
-          style={stylePatreonWordmark}
+					width={200}
+					height={67}
         />
       </a>
     </div>
@@ -79,7 +82,7 @@ export const ListenHere: FC = () => {
     <div>
       <a target="_blank" rel="noreferrer noopener"
         href="https://music.youtube.com/playlist?list=PL5tJGBZ94i2eX66kGUk1dO1SxZiWC5J95">
-        <img 
+        <Image 
           src="ListenonYouTubeMusic-black-SVG.svg"
           width="150" height="38" alt="Listen on Google Podcasts"
         />
