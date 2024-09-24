@@ -9,6 +9,7 @@ import UserTag from "../../components/UserTag";
 import { HiChevronLeft, HiRefresh, HiUpload } from "react-icons/hi";
 import Link from "next/link";
 import { signIn } from "next-auth/react";
+import { Decimal } from "@prisma/client/runtime/library";
 
 export async function getServerSideProps({ params }: { params: { id: string } }) {
 	const id = params.id;
@@ -21,7 +22,7 @@ export async function getServerSideProps({ params }: { params: { id: string } })
 }
 
 const AssignmentPage: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>> = ({ assignment }) => {
-	
+
 	const { data: session } = trpc.auth.getSession.useQuery();
 
 	const { data: guesses, refetch } = trpc.review.getGuessesForAssignmentForUser.useQuery(
@@ -29,28 +30,28 @@ const AssignmentPage: NextPage<InferGetServerSidePropsType<typeof getServerSideP
 		{ assignmentId: assignment.id, userId: session?.user?.id }
 	);
 
-	const [ setGuesses, setSetGuesses ] = useState<boolean>(false);
+	const [setGuesses, setSetGuesses] = useState<boolean>(false);
 
 	const { mutate: addVote } = trpc.feature.addVoteForFeature.useMutation();
-	
+
 	const [voted, setVoted] = useState<boolean>(false);
 
-	const handleResubmitGuesses = function() {
+	const handleResubmitGuesses = function () {
 		setSetGuesses(true);
 	}
 
-	const handleSavedGuesses = function() {
+	const handleSavedGuesses = function () {
 		setSetGuesses(false);
 		refetch();
 	}
 
-	const handleAnonymousSignIn = function() {
+	const handleAnonymousSignIn = function () {
 		addVote({ lookupID: "ANONYMOUS_GUESSES_WTFIR" });
 		setVoted(true);
 	}
 
 	if (!assignment) return null;
-	
+
 	if (!session?.user?.id) return (
 		<>
 			<Assignment assignment={assignment} />
@@ -77,7 +78,7 @@ const AssignmentPage: NextPage<InferGetServerSidePropsType<typeof getServerSideP
 					Back
 				</Link>
 				<Assignment assignment={assignment} />
-			</div> 
+			</div>
 			{session && (guesses?.length != undefined && guesses.length > 0) && <ShowAssignmentGuesses guesses={guesses} resetGuesses={handleResubmitGuesses} />}
 			{session && (guesses?.length == 0 || setGuesses) && <SetAssignmentGuesses assignment={assignment} guesserId={session?.user?.id} guessesSaved={handleSavedGuesses} />}
 		</div>
@@ -85,13 +86,27 @@ const AssignmentPage: NextPage<InferGetServerSidePropsType<typeof getServerSideP
 }
 interface ShowAssignmentGuessesProps {
 	guesses: (Guess & {
-    Rating: Rating;
-    AssignmentReview: AssignmentReview & {
-        Review: Review & {
-            User: User;
-        };
-    };
-})[] | null | undefined,
+		Rating: {
+			id: string;
+			name: string;
+			value: number;
+			sound: string | null;
+			icon: string | null;
+			category: string | null;
+		};
+		AssignmentReview: {
+			Review: {
+				User: {
+					id: string;
+					name: string | null;
+					email: string | null;
+					emailVerified: Date | null;
+					image: string | null;
+					points: Decimal | null;
+				} | null;
+			};
+		};
+	})[] | null | undefined,
 	resetGuesses: DispatchWithoutAction
 }
 const ShowAssignmentGuesses: FC<ShowAssignmentGuessesProps> = ({ guesses, resetGuesses }) => {
@@ -121,20 +136,19 @@ const SetAssignmentGuesses: FC<SetAssignmentGuessesProps> = ({ assignment, guess
 	const [canSubmitGuesses, setCanSubmitGuesses] = useState<boolean>(false);
 	const { mutate: submitGuess } = trpc.review.submitGuess.useMutation();
 
-	const handleSetGuess = function(guess: PendingGuess) {
+	const handleSetGuess = function (guess: PendingGuess) {
 		if (!guess) return;
 		if (!guess.host) return;
 		if (guess.host == null) return;
 		const host = guess.host;
-		setPendingGuesses(prevGuesses => ({...prevGuesses, [host.id]: guess}));
-}
+		setPendingGuesses(prevGuesses => ({ ...prevGuesses, [host.id]: guess }));
+	}
 	useEffect(() => {
 		if (!hosts) return;
 		setCanSubmitGuesses(Object.keys(pendingGuesses).length == hosts.length);
 	}, [hosts, pendingGuesses]);
-	
-	const handleSubmitGuesses = function() 
-	{
+
+	const handleSubmitGuesses = function () {
 		if (!pendingGuesses) return;
 
 		Object.keys(pendingGuesses).forEach(key => {
@@ -175,7 +189,7 @@ const SetAssignmentGuesses: FC<SetAssignmentGuessesProps> = ({ assignment, guess
 				return <SelectedGuess key={key} host={guess?.host} rating={guess?.rating} />
 			})}
 		</div>
-	) 
+	)
 }
 interface SelectedGuessProps {
 	host: User | null | undefined,
@@ -183,7 +197,7 @@ interface SelectedGuessProps {
 }
 const SelectedGuess: FC<SelectedGuessProps> = ({ host, rating }) => {
 	if (!host) return null;
-	return <div  className="flex items-center gap-2">
+	return <div className="flex items-center gap-2">
 		<UserTag user={host} />
 		<RatingIcon value={rating?.value} />
 		<span>{rating?.name} - {rating?.category}</span>
@@ -200,7 +214,7 @@ interface GuessSelectProps {
 const GuessSelect: FC<GuessSelectProps> = ({ host, setGuess }) => {
 	const [, setGuessedRating] = useState<Rating | null>(null);
 
-	const handleRatingSelection = function(rating: Rating) {
+	const handleRatingSelection = function (rating: Rating) {
 		setGuessedRating(rating);
 		setGuess({ host, rating });
 	}
@@ -219,25 +233,25 @@ const RatingSelect: FC<RatingSelectProps> = ({ selectRating }) => {
 
 	const [ratingValue, setRatingValue] = useState<number>(0);
 
-	const isSelectedByValue = function(value: number) {
-			return ratingValue == value;
+	const isSelectedByValue = function (value: number) {
+		return ratingValue == value;
 	}
-	const handleRatingSelection: Dispatch<number> = function(value: number) {
-			setRatingValue(value);
-			if (!ratings) return;
-			const selectedRating = ratings.find(rating => rating.value == value);
-			if (!selectedRating) return;
-			selectRating(selectedRating);
+	const handleRatingSelection: Dispatch<number> = function (value: number) {
+		setRatingValue(value);
+		if (!ratings) return;
+		const selectedRating = ratings.find(rating => rating.value == value);
+		if (!selectedRating) return;
+		selectRating(selectedRating);
 	}
-	
+
 	if (!ratings) return null;
 	return (
-		<div className="ml-2 flex gap-2">			
-			{ratings.sort((a,b) => a.value - b.value).map((rating) => {
-				return <RatingButton 
-					key={rating.id} 
-					value={rating.value} 
-					selected={isSelectedByValue(rating.value)} 
+		<div className="ml-2 flex gap-2">
+			{ratings.sort((a, b) => a.value - b.value).map((rating) => {
+				return <RatingButton
+					key={rating.id}
+					value={rating.value}
+					selected={isSelectedByValue(rating.value)}
 					click={handleRatingSelection}
 				/>
 			})}
@@ -255,7 +269,7 @@ const RatingButton: FC<RatingButtonProps> = ({ value, selected, click }) => {
 			<RatingIcon value={value} />
 		</div>
 	}
-	const handleClick = function() {
+	const handleClick = function () {
 		click(value);
 	}
 	return <div className="p-4 text-2xl rounded-sm ring-red-900 hover:ring-2" onClick={handleClick}>
