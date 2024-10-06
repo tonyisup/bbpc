@@ -62,14 +62,15 @@ model Rating {
 
 model Review {
   id                String             @id @default(dbgenerated("newid()")) @db.UniqueIdentifier
-  userId            String
+  userId            String?
   movieId           String             @db.UniqueIdentifier
   ratingId          String?            @db.UniqueIdentifier
+  ReviewdOn         DateTime?          @default(now(), map: "DF__Review__ReviewdO__0C1BC9F9") @db.DateTime
   assignmentReviews AssignmentReview[]
   extraReviews      ExtraReview[]
   Movie             Movie              @relation(fields: [movieId], references: [id], onDelete: Cascade)
   Rating            Rating?            @relation(fields: [ratingId], references: [id])
-  User              User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  User              User?              @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model ExtraReview {
@@ -168,7 +169,7 @@ model User {
   email         String?      @unique
   emailVerified DateTime?
   image         String?
-  points       	Decimal?
+  points        Decimal?     @db.Decimal(5, 2)
   accounts      Account[]
   assignments   Assignment[]
   bangers       Banger[]

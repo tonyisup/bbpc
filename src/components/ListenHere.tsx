@@ -1,4 +1,5 @@
 import { type FC } from "react";
+import Image from "next/image";
 
 export const ListenHere: FC = () => {
 	const stylePatreonLogo = {
@@ -19,20 +20,22 @@ export const ListenHere: FC = () => {
     width: "250px",
     height: "83px",
   }
-  return <div className="flex gap-4 justify-center items-center flex-wrap">
+  return <div className="flex gap-4 pb-4 justify-center items-center flex-wrap">
     <div>
       <a target="_blank" rel="noreferrer noopener" className="flex items-center"
         href="https://www.patreon.com/badboyspodcast"
       >
-        <img
-          src="PATREON_SYMBOL_1_WHITE_RGB.png"
+        <Image
+          src="/PATREON_SYMBOL_1_WHITE_RGB.png"
           alt="Patreon"
-          style={stylePatreonLogo}
+					width={40}
+					height={43}
         />
-        <img
-          src="PATREON_WORDMARK_1_BLACK_RGB.svg"
+        <Image
+          src="/PATREON_WORDMARK_1_BLACK_RGB.svg"
           alt="Patreon"
-          style={stylePatreonWordmark}
+					width={200}
+					height={67}
         />
       </a>
     </div>
@@ -78,9 +81,9 @@ export const ListenHere: FC = () => {
     </div>
     <div>
       <a target="_blank" rel="noreferrer noopener"
-        href="https://podcasts.google.com/feed/aHR0cDovL2ZlZWRzLnNvdW5kY2xvdWQuY29tL3VzZXJzL3NvdW5kY2xvdWQ6dXNlcnM6OTMwMDc4NS9zb3VuZHMucnNz">
-        <img 
-          src="https://www.gstatic.com/podcasts_console/promote/English_EN/EN_Google_Podcasts_Badge.svg"
+        href="https://music.youtube.com/playlist?list=PL5tJGBZ94i2eX66kGUk1dO1SxZiWC5J95">
+        <Image 
+          src="/ListenonYouTubeMusic-black-SVG.svg"
           width="150" height="38" alt="Listen on Google Podcasts"
         />
       </a>

@@ -17,10 +17,10 @@ const LoggedInAs: FC<LoggedInAsProps> = ({ session }) => {
 	if (!session || !session.user) return <button
     type="button"
     title="Sign in"
-    className="rounded-full bg-white/10 p-2 font-semibold text-red-600 no-underline transition hover:bg-white/20"
+    className="font-semibold text-red-600 no-underline transition hover:text-red-400"
     onClick={() => signIn()}
   >
-    <HiLogin />
+    Sign in
   </button>;
 
   const getInitials = function() {
@@ -30,10 +30,10 @@ const LoggedInAs: FC<LoggedInAsProps> = ({ session }) => {
     if (name === undefined) return "";
     return name.split(" ").map((n) => n[0]).join("");
   }
-	return <Link href="/profile">
+	return <Link className="transition hover:text-red-400 cursor-pointer" href="/profile">
     <Avatar>
       <AvatarImage src={session.user.image ?? ""} alt={(session.user.name || session.user.email) ?? ""} />
-      <AvatarFallback><HiCog /></AvatarFallback>
+      <AvatarFallback>Profile</AvatarFallback>
     </Avatar>
   </Link>
 }

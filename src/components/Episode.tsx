@@ -24,9 +24,9 @@ interface EpisodeProps {
 	});
 }
 
-export const Episode: FC<EpisodeProps> = ({ episode, allowGuesses }) => {
+export const Episode: FC<EpisodeProps> = ({ episode, allowGuesses: isNextEpisode }) => {
 	if (!episode) return null;
-	if (allowGuesses == null) allowGuesses = false;
+	if (isNextEpisode == null) isNextEpisode = false;
 
   return <section className="px-2 bg-transparent outline-2 outline-gray-500 outline rounded-2xl">
     <div className="">
@@ -47,10 +47,10 @@ export const Episode: FC<EpisodeProps> = ({ episode, allowGuesses }) => {
 			<div className="w-full text-center">
       	<p>{episode?.description}</p>
       </div>
-      <EpisodeAssignments assignments={episode.assignments} allowGuesses={allowGuesses} />
+      <EpisodeAssignments assignments={episode.assignments} allowGuesses={isNextEpisode} />
     </div>
     <EpisodeExtras extras={episode.extras} />		
-		{allowGuesses && <AddExtraToNext episode={episode} />}
+		{isNextEpisode && <AddExtraToNext episode={episode} />}
 		<EpisodeLinks links={episode.links} />
   </section>
 }
