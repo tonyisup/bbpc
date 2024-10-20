@@ -45,6 +45,7 @@ const Search: FC<SearchProps> = ({ setSearch }) => {
 			{searchQuery && (
 				<button
 					onClick={clearSearch}
+					title="Clear search"
 					className="absolute right-4 focus:outline-none flex items-center"
 				>
 					<HiX />

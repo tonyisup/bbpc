@@ -1,4 +1,5 @@
 import { type FC } from "react";
+import Image from "next/image";
 import { type Title } from "../server/tmdb/client";
 
 interface TitleCardProps {
@@ -10,7 +11,11 @@ const TitleCard: FC<TitleCardProps> = ({ title }) => {
     <div className="w-full flex justify-center">
       <div>
         <figure>
-          <img width={100} src={title?.poster_path} alt={title?.title} />
+          <Image
+            width={100}
+            src={title?.poster_path}
+            alt={title?.title}
+          />
           {/* <figcaption className="text-center">
             {title.title} 
             <span className="text-xs"> ({(new Date(title.release_date)).getFullYear()})</span>

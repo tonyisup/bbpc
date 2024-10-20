@@ -1,7 +1,7 @@
 import type { User } from "@prisma/client";
-import type { InferGetServerSidePropsType, NextPage } from "next";
+import { type NextPage } from "next";
 import { type FC, useState } from "react";
-import { HiArrowCircleLeft, HiArrowSmLeft, HiCheck, HiMinusCircle, HiOutlineArrowCircleLeft, HiOutlineMinusCircle, HiOutlinePlusCircle, HiPlusCircle, HiUpload } from "react-icons/hi";
+import { HiMinusCircle, HiOutlineArrowCircleLeft, HiOutlineMinusCircle, HiOutlinePlusCircle, HiPlusCircle } from "react-icons/hi";
 import { ssr } from "../server/db/ssr";
 import { trpc } from "../utils/trpc";
 

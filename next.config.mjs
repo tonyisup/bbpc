@@ -26,6 +26,12 @@ const config = {
         port: "",
         hostname: "image.tmdb.org",
         pathname: "/t/p/**/*",
+      },
+      {
+        protocol: "https",
+        port: "",
+        hostname: "tools.applemediaservices.com",
+        pathname: "/api/badges/**/*",
       }
     ]
   }

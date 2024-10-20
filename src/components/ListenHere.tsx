@@ -2,28 +2,11 @@ import { type FC } from "react";
 import Image from "next/image";
 
 export const ListenHere: FC = () => {
-	const stylePatreonLogo = {
-		width: "40px"
-	}
-	const stylePatreonWordmark = {
-		width: "200px"
-	}
-  const styleImgApple = {
-    borderRadius: "13px",
-    width: "250px",
-    height: "83px",
-  }
-  const styleAApple = {
-    display: "inline-block",
-    overflow: "hidden",
-    borderRadius: "13px",
-    width: "250px",
-    height: "83px",
-  }
   return <div className="flex gap-4 pb-4 justify-center items-center flex-wrap">
     <div>
       <a target="_blank" rel="noreferrer noopener" className="flex items-center"
         href="https://www.patreon.com/badboyspodcast"
+        title="Patreon"
       >
         <Image
           src="/PATREON_SYMBOL_1_WHITE_RGB.png"
@@ -42,22 +25,40 @@ export const ListenHere: FC = () => {
     <div>
       <a target="_blank" rel="noreferrer noopener"
         href="https://podcasts.apple.com/us/podcast/bad-boys-podcast/id937655279?itsct=podcast_box_badge&amp;itscg=30200&amp;ls=1"
-        style={styleAApple}
+        title="Listen on Apple Podcasts"
       >
-        <img
-          src="https://tools.applemediaservices.com/api/badges/listen-on-apple-podcasts/standard-white/en-us?size=250x83&amp;releaseDate=1568907180&h=46e91b7c640e1dbfd6effb144fb212f7"
-          alt="Listen on Apple Podcasts" 
-          style={styleImgApple}
+        <Image
+          src="/apple-badge.svg"
+        alt="Listen on Apple Podcasts" 
+          width={250}
+          height={83}
         />
       </a>
     </div>
     <div>
-      <a target="_blank" rel="noreferrer noopener" href="https://soundcloud.com/badboyspodcast">
-        Listen on <img alt="Listen on soundcloud" src="https://a-v2.sndcdn.com/assets/images/brand-1b72dd82.svg" /> Soundcloud
+      <a 
+        target="_blank" 
+        rel="noreferrer noopener" 
+        href="https://soundcloud.com/badboyspodcast"
+        title="Listen on Soundcloud"
+        className="text-orange-400 flex flex-col items-center py-4"
+      >
+        <Image
+          alt="Listen on soundcloud" 
+          src="https://a-v2.sndcdn.com/assets/images/brand-1b72dd82.svg" 
+          title="Listen on Soundcloud"
+          width={150}
+          height={38}
+        /> Soundcloud
       </a>
     </div>
     <div>
-      <a target="_blank" rel="noreferrer noopener" href="https://open.spotify.com/show/7kNwGU5aJhw4IZ7x7V6jsl">
+      <a 
+        target="_blank" 
+        rel="noreferrer noopener" 
+        href="https://open.spotify.com/show/7kNwGU5aJhw4IZ7x7V6jsl"
+        title="Listen on Spotify"
+      >
         <svg width="165px" height="40px" viewBox="0 0 165 40" version="1.1" xmlns="http://www.w3.org/2000/svg"
           xmlnsXlink="http://www.w3.org/1999/xlink">
           <title>spotify-podcast-badge-blk-grn-165x40</title>
@@ -80,11 +81,16 @@ export const ListenHere: FC = () => {
       </a>
     </div>
     <div>
-      <a target="_blank" rel="noreferrer noopener"
-        href="https://music.youtube.com/playlist?list=PL5tJGBZ94i2eX66kGUk1dO1SxZiWC5J95">
+      <a 
+        target="_blank" 
+        rel="noreferrer noopener"
+        href="https://music.youtube.com/playlist?list=PL5tJGBZ94i2eX66kGUk1dO1SxZiWC5J95"
+        title="Listen on YouTube Music"
+      >
         <Image 
           src="/ListenonYouTubeMusic-black-SVG.svg"
-          width="150" height="38" alt="Listen on Google Podcasts"
+          width="150" height="38"
+          alt="Listen on YouTube Music"
         />
       </a>
     </div>

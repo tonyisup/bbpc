@@ -1,11 +1,9 @@
 import { type FC } from "react";
-import { HiExternalLink } from "react-icons/hi";
 import Assignment from "./Assignment";
 import MovieInlinePreview from "./MovieInlinePreview";
 import type { Assignment as AssignmentType, Episode as EpisodeType, Link as EpisodeLink, Movie, User, Review, ExtraReview } from '@prisma/client';
 import Link from "next/link";
 import { AddExtraToNext } from "./AddExtraToNext";
-import RatingIcon from "./RatingIcon";
 
 
 interface EpisodeProps {

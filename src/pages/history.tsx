@@ -18,7 +18,7 @@ export async function getServerSideProps() {
 const History: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>> = ({ initialEpisodes }) => {
   const [episodes, setEpisodes] = useState(initialEpisodes);	
 	const [searchQuery, setSearchQuery] = useState('');
-	const { data: searchResults, refetch: refetchSearch } = trpc.episode.search.useQuery({ query: searchQuery }, {
+	const { } = trpc.episode.search.useQuery({ query: searchQuery }, {
     onSuccess: (data) => {
 			if (searchQuery.trim() === "") return;
       setEpisodes(data);

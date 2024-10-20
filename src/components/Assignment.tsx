@@ -1,5 +1,4 @@
 import { type Assignment, type Movie, type User } from "@prisma/client";
-import Link from "next/link";
 import { type FC } from "react";
 import HomeworkFlag from "./HomeworkFlag";
 import MovieInlinePreview from "./MovieInlinePreview";
