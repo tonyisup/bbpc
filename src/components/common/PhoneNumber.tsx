@@ -13,9 +13,9 @@ const PhoneNumber: FC = () => {
   return (
     <div>
       {phoneNumber && (
-        <>
+        <a href={`tel:${phoneNumber}`} className="text-blue-500 hover:underline">
           ({phoneNumber.slice(0, 3)}) {phoneNumber.slice(3, 6)}-{phoneNumber.slice(6)}
-        </>
+        </a>
       )}
     </div>
   );
