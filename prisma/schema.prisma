@@ -100,6 +100,7 @@ model Assignment {
   Movie             Movie              @relation(fields: [movieId], references: [id])
   User              User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   assignmentReviews AssignmentReview[]
+  audioMessages     AudioMessage[]
 }
 
 model Banger {
@@ -164,12 +165,12 @@ model VerificationToken {
 }
 
 model User {
-  id            String       @id @default(cuid())
+  id            String         @id @default(cuid())
   name          String?
-  email         String?      @unique
+  email         String?        @unique
   emailVerified DateTime?
   image         String?
-  points        Decimal?     @db.Decimal(5, 2)
+  points        Decimal?       @db.Decimal(5, 2)
   accounts      Account[]
   assignments   Assignment[]
   bangers       Banger[]
@@ -178,6 +179,7 @@ model User {
   reviews       Review[]
   sessions      Session[]
   roles         UserRole[]
+  audioMessages AudioMessage[]
 }
 
 model Guess {
@@ -230,4 +232,14 @@ model Point {
   earnedOn DateTime @db.DateTime
   Season   Season   @relation(fields: [seasonId], references: [id], onDelete: Cascade)
   User     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model AudioMessage {
+  id           Int        @id @default(autoincrement())
+  url          String
+  createdAt    DateTime   @default(now())
+  userId       String
+  assignmentId String?     @db.UniqueIdentifier
+  User         User       @relation(fields: [userId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  Assignment   Assignment? @relation(fields: [assignmentId], references: [id], onUpdate: NoAction, onDelete: NoAction)
 }

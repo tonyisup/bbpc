@@ -1,8 +1,8 @@
 import { z } from "zod";
-import { publicProcedure, router } from "../trpc";
+import { publicProcedure, protectedProcedure, router } from "../trpc";
 
 export const reviewRouter = router({
-	addGuess: publicProcedure
+	addGuess: protectedProcedure
 		.input(z.object({
 			userId: z.string(),
 			ratingId: z.string(),
@@ -20,7 +20,7 @@ export const reviewRouter = router({
 				}
 			})
 		}),
-	getGuessesForAssignmentForUser: publicProcedure
+	getGuessesForAssignmentForUser: protectedProcedure
 		.input(z.object({ 
 			assignmentId: z.string(),
 			userId: z.string().optional()
@@ -49,7 +49,7 @@ export const reviewRouter = router({
 				}
 			})
 		}),
-	submitGuess: publicProcedure
+	submitGuess: protectedProcedure
 		.input(z.object({
 			assignmentId: z.string(),
 			hostId: z.string(),
@@ -82,7 +82,7 @@ export const reviewRouter = router({
 		.query(async (req) => {
 			return await req.ctx.prisma.rating.findMany()
 		}),
-	add: publicProcedure
+	add: protectedProcedure
 		.input(z.object({
 			ratingId: z.string().optional(),
 			movieId: z.string(),
@@ -103,7 +103,7 @@ export const reviewRouter = router({
 				},
 			})
 		}),
-	remove: publicProcedure
+	remove: protectedProcedure
 		.input(z.object({id: z.string()}))
 		.mutation(async (req) => {
 			return await req.ctx.prisma.review.delete({
@@ -135,4 +135,23 @@ export const reviewRouter = router({
 				}
 			})
 		}),
+	updateAudioMessage: protectedProcedure
+		.input(z.object({id: z.number(), assignmentId: z.string()}))
+		.mutation(async (req) => {
+			return await req.ctx.prisma.audioMessage.update({
+				where: {
+					id: req.input.id
+				},
+				data: {
+					assignmentId: req.input.assignmentId
+				}
+			})
+		}),
+	getCountOfUserAudioMessagesForAssignment: publicProcedure
+		.input(z.object({assignmentId: z.string(), userId: z.string()}))
+		.query(async (req) => {
+			return await req.ctx.prisma.audioMessage.count({
+				where: { assignmentId: req.input.assignmentId, userId: req.input.userId }
+			})
+		})
 })
