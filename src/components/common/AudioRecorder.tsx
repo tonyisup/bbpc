@@ -24,7 +24,11 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ userId, assignmentId }) =
       const uploadedFile = data[0];
       if (!uploadedFile) return;
       if (!uploadedFile.serverData.uploadedId) return;
-      updateAudio({ id: uploadedFile.serverData.uploadedId, assignmentId: assignmentId }, { onSuccess: () => {
+      updateAudio({ 
+        id: uploadedFile.serverData.uploadedId, 
+        assignmentId: assignmentId,
+        fileKey: uploadedFile.key
+      }, { onSuccess: () => {
         refetch();
         setIsUploaded(true);
         setTimeout(() => setIsUploaded(false), 5000);

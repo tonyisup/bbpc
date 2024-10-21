@@ -136,14 +136,20 @@ export const reviewRouter = router({
 			})
 		}),
 	updateAudioMessage: protectedProcedure
-		.input(z.object({id: z.number(), assignmentId: z.string()}))
+		.input(
+			z.object({
+				id: z.number(), 
+				assignmentId: z.string(),
+				fileKey: z.string()
+		}))
 		.mutation(async (req) => {
 			return await req.ctx.prisma.audioMessage.update({
 				where: {
 					id: req.input.id
 				},
 				data: {
-					assignmentId: req.input.assignmentId
+					assignmentId: req.input.assignmentId,
+					fileKey: req.input.fileKey
 				}
 			})
 		}),

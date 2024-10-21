@@ -238,6 +238,7 @@ model AudioMessage {
   id           Int        @id @default(autoincrement())
   url          String
   createdAt    DateTime   @default(now())
+  fileKey      String?
   userId       String
   assignmentId String?     @db.UniqueIdentifier
   User         User       @relation(fields: [userId], references: [id], onUpdate: NoAction, onDelete: NoAction)
