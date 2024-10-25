@@ -3,12 +3,12 @@ import { BsRecordFill, BsStopFill, BsX } from "react-icons/bs";
 import { trpc } from '../../utils/trpc';
 import { useUploadThing } from '../../utils/uploadthing';
 
-interface AudioRecorderProps {
+interface RecordAssignmentAudioProps {
   userId: string;
   assignmentId: string;
 }
 
-const AudioRecorder: React.FC<AudioRecorderProps> = ({ userId, assignmentId }) => {
+const RecordAssignmentAudio: React.FC<RecordAssignmentAudioProps> = ({ userId, assignmentId }) => {
   const [isRecording, setIsRecording] = useState(false);
   const [isUploaded, setIsUploaded] = useState(false);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
@@ -99,7 +99,10 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ userId, assignmentId }) =
 
       const formData = new FormData();
       formData.append('audio', audioFile);
-      await startUpload([audioFile]);
+      await startUpload(
+        [audioFile],
+        { assignmentId: assignmentId }
+      );
     }
   };
 
@@ -173,4 +176,4 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ userId, assignmentId }) =
   );
 };
 
-export default AudioRecorder;
+export default RecordAssignmentAudio;

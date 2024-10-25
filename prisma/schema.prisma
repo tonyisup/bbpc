@@ -19,6 +19,8 @@ model Episode {
   extras      ExtraReview[]
   links       Link[]
   shows       Show[]
+
+  AudioEpisodeMessage AudioEpisodeMessage[]
 }
 
 model Link {
@@ -180,6 +182,8 @@ model User {
   sessions      Session[]
   roles         UserRole[]
   audioMessages AudioMessage[]
+
+  AudioEpisodeMessage AudioEpisodeMessage[]
 }
 
 model Guess {
@@ -243,4 +247,15 @@ model AudioMessage {
   assignmentId String?     @db.UniqueIdentifier
   User         User       @relation(fields: [userId], references: [id], onUpdate: NoAction, onDelete: NoAction)
   Assignment   Assignment? @relation(fields: [assignmentId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+}
+
+model AudioEpisodeMessage {
+  id        Int      @id @default(autoincrement())
+  url       String
+  createdAt DateTime @default(now())
+  fileKey   String?
+  userId    String
+  episodeId String?   @db.UniqueIdentifier
+  User      User     @relation(fields: [userId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+  Episode   Episode?  @relation(fields: [episodeId], references: [id], onUpdate: NoAction, onDelete: NoAction)
 }

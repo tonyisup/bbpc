@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { router, publicProcedure } from "../trpc";
+import { router, publicProcedure, protectedProcedure } from "../trpc";
 
 export const episodeRouter = router({
   get: publicProcedure
@@ -124,5 +124,18 @@ export const episodeRouter = router({
 					}
 				}
 			})
+		}),
+	updateAudioMessage: protectedProcedure
+		.input(z.object({id: z.number(), episodeId: z.string(), fileKey: z.string()}))
+		.mutation(async (req) => {
+			return await req.ctx.prisma.audioEpisodeMessage.update({
+				where: { id: req.input.id },
+				data: { episodeId: req.input.episodeId, fileKey: req.input.fileKey }
+			});
+		}),
+	getCountOfUserEpisodeAudioMessages: publicProcedure
+		.input(z.object({episodeId: z.string(), userId: z.string()}))
+		.query(async (req) => {
+			return await req.ctx.prisma.audioEpisodeMessage.count({ where: { episodeId: req.input.episodeId, userId: req.input.userId } });
 		})
 });

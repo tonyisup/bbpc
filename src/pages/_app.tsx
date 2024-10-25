@@ -12,6 +12,7 @@ import "../styles/globals.css";
 import { ListenHere } from "../components/ListenHere";
 import { HiMenu, HiX } from "react-icons/hi";
 import { useState } from "react";
+import LeaveMessage from "../components/LeaveMessage";
 
 const MyApp: AppType<{ session: Session | null }> = ({
   Component,
@@ -31,6 +32,9 @@ const MyApp: AppType<{ session: Session | null }> = ({
               <Link href="/"> 
                 <Image src="/logo-short.png" alt="BBPC Logo" width={120} height={40} />
               </Link>
+            </div>
+            <div className="px-4">
+              <LeaveMessage />
             </div>
             <div className="flex-grow">
               <p className="text-center text-xs sm:text-lg text-red-900">Random rants on all things movie</p>

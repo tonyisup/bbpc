@@ -4,7 +4,7 @@ import { HiX } from "react-icons/hi"
 
 interface ModalProps {
 	isOpen: boolean,
-	openText: string,
+	openText?: string,
 	titleText: string,
 	children: ReactNode,
 	setIsOpen: Dispatch<SetStateAction<boolean>>
@@ -14,7 +14,7 @@ const Modal: FC<ModalProps> = ({ isOpen, openText, titleText, children, setIsOpe
 	
 	return (
 		<>
-			{!isOpen && 
+			{!isOpen && openText &&
 				<button
 						type="button" 
 						onClick={() => setIsOpen(true)}
@@ -27,7 +27,7 @@ const Modal: FC<ModalProps> = ({ isOpen, openText, titleText, children, setIsOpe
       <div className="fixed inset-0 bg-black/70" aria-hidden="true" />
 
 				<div className="fixed inset-0 flex items-center justify-center p-4">
-					<Dialog.Panel className="w-full self-center mx-auto max-w-sm rounded bg-white">
+					<Dialog.Panel className="w-full self-center mx-auto max-w-sm rounded bg-gray-900 text-white">
 						<Dialog.Title className="flex justify-between items-center px-2">
 							{titleText}
 							

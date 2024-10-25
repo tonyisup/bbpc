@@ -159,5 +159,5 @@ export const reviewRouter = router({
 			return await req.ctx.prisma.audioMessage.count({
 				where: { assignmentId: req.input.assignmentId, userId: req.input.userId }
 			})
-		})
+	})
 })

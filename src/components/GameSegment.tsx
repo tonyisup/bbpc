@@ -1,14 +1,14 @@
 import { type Dispatch, type DispatchWithoutAction, type FC, useState, useEffect } from "react";
 import { type Assignment, type Guess, type Rating, type User } from "@prisma/client";
-import { type Decimal } from "@prisma/client/runtime/library";
 import { trpc } from "../utils/trpc";
 import { HiRefresh, HiUpload } from "react-icons/hi";
-import AudioRecorder from "./common/AudioRecorder";
+import RecordAssignmentAudio from "./common/RecordAssignmentAudio";
 import UserTag from "./UserTag";
 import RatingIcon from "./RatingIcon";
 import { signIn } from "next-auth/react";
 import PhoneNumber from "./common/PhoneNumber";
 import { type Session } from "next-auth";
+import { type Decimal } from "@prisma/client/runtime";
 
 interface GameSegmentProps {
 	assignment: Assignment
@@ -47,7 +47,7 @@ const GameSegment: FC<GameSegmentProps> = ({ assignment }) => {
 			<div className="p-4 cursor-pointer bg-red-900 text-gray-300 rounded-md hover:bg-red-800" onClick={() => setGameChoice(GameChoice.ClickButtons)}><span>Click some buttons</span></div>
 		</div>
 		{gameChoice == GameChoice.PhoneMessage && <PhoneNumber />}
-		{gameChoice == GameChoice.VoiceRecording && <AudioRecorder userId={session.user.id} assignmentId={assignment.id} />}
+		{gameChoice == GameChoice.VoiceRecording && <RecordAssignmentAudio userId={session.user.id} assignmentId={assignment.id} />}
     {gameChoice == GameChoice.ClickButtons && <GamePanel session={session} assignment={assignment} />}
 	</div>
 }
