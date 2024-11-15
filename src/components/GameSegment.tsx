@@ -8,7 +8,7 @@ import RatingIcon from "./RatingIcon";
 import { signIn } from "next-auth/react";
 import PhoneNumber from "./common/PhoneNumber";
 import { type Session } from "next-auth";
-import { type Decimal } from "@prisma/client/runtime";
+import { Decimal } from "@prisma/client/runtime/library";
 
 interface GameSegmentProps {
 	assignment: Assignment
