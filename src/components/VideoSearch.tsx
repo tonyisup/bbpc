@@ -77,10 +77,10 @@ const VideoSearch: FC<VideoSearchProps> = ({ setVideo, open = false }) => {
 												title="select movie title"
 												onClick={() => selectVideo(video)}
 											>
-												<Image 
-                          src={video.snippet.thumbnails.default.url} 
-                          width={video.snippet.thumbnails.default.width} 
-                          height={video.snippet.thumbnails.default.height}
+												<Image unoptimized
+                          src={video.snippet.thumbnails.default?.url} 
+                          width={video.snippet.thumbnails.default?.width ?? 90} 
+                          height={video.snippet.thumbnails.default?.height ?? 120}
                           alt={video.snippet.title}
                         />  
 											</button>

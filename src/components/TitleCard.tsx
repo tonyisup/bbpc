@@ -12,7 +12,9 @@ const TitleCard: FC<TitleCardProps> = ({ title }) => {
       <div>
         <figure>
           <Image
+            unoptimized
             width={100}
+            height={150}
             src={title?.poster_path}
             alt={title?.title}
           />
