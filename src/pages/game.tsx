@@ -2,7 +2,7 @@ import { type NextPage } from "next";
 import RatingIcon from "../components/RatingIcon";
 
 const Game: NextPage = () => {
-  // .
+  // ..
   return (
     <div className="min-h-screen bg-gray-900 text-white py-12 px-4">
       <div className="max-w-2xl mx-auto">
