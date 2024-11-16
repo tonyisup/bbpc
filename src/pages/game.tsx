@@ -65,13 +65,10 @@ const Game: NextPage = () => {
                   Players who guess incorrectly for all hosts will lose <span className="text-red-400 font-semibold">1 point</span>.
                 </p>
                 <p className="leading-relaxed">
-                  Players who guess incorrectly for some hosts will not earn or lose points.
+                  Players may only double down on either <span className="text-green-400 font-semibold">Slater</span> or <span className="text-red-400 font-semibold">Goldbloom</span> guesses.
                 </p>
                 <p className="leading-relaxed">
-                  Players may double down on either <span className="text-green-400 font-semibold">Slater</span> or <span className="text-red-400 font-semibold">Goldbloom</span> guesses.
-                </p>
-                <p className="leading-relaxed">
-                  If a player doubles down on a guess and it is correct, they will earn an extra<span className="text-green-400 font-semibold">1 point</span>.
+                  If a player doubles down on a guess and it is correct, they will earn an extra <span className="text-green-400 font-semibold">1 point</span>.
                 </p>
                 <p className="leading-relaxed">
                   If a player doubles down on a guess and it is incorrect, they will not lose a point.

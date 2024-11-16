@@ -72,12 +72,14 @@ function NavMenu() {
         <Link className="transition hover:text-red-400" href="/">Home</Link>
         <Link className="transition hover:text-red-400" href="/history">History</Link>
         <Link className="transition hover:text-red-400" href="/points">Points</Link>
+        <Link className="transition hover:text-red-400" href="/game">Game</Link>
         <Auth />
       </div>}
       <div className="gap-4 hidden sm:flex">
         <Link className="transition hover:text-red-400" href="/">Home</Link>
         <Link className="transition hover:text-red-400" href="/history">History</Link>
         <Link className="transition hover:text-red-400" href="/points">Points</Link>
+        <Link className="transition hover:text-red-400" href="/game">Game</Link>
         <Auth />
       </div>
     </div>
