@@ -80,6 +80,11 @@ export const episodeRouter = router({
 				where: {
 					OR: [
 						{
+							title: {
+								contains: req.input.query
+							}
+						},
+						{
 							assignments: {
 								some: {
 									Movie: {
