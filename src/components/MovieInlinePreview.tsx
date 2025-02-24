@@ -16,20 +16,16 @@ export default function MovieInlinePreview({ movie }: MovieInlinePreviewProps) {
       rel="noopener noreferrer"
       className="flex items-center gap-2 hover:opacity-80"
     >
-      {movie.poster && (
-        <div className="relative h-12 w-8 overflow-hidden rounded">
-          <Image
-            src={movie.poster}
-            alt={movie.title}
-            fill
-            className="object-cover"
-            sizes="32px"
-          />
-        </div>
-      )}
-      <span className="text-sm">
-        {movie.title} ({movie.year})
-      </span>
+    {movie.poster && 
+      <Image 
+        unoptimized
+        className="rounded-2xl" 
+        src={movie.poster} 
+        alt={movie.title} 
+        width={144} 
+        height={216} 
+      />
+    }
     </Link>
   );
 }

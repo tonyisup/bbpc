@@ -1,15 +1,13 @@
 import { z } from "zod";
 import { Decimal } from "@prisma/client/runtime/library";
-import { createTRPCRouter, protectedProcedure, adminProcedure } from "@/server/api/trpc";
+import { createTRPCRouter, protectedProcedure, adminProcedure, publicProcedure } from "@/server/api/trpc";
 
 export const appRouter = createTRPCRouter({
   episode: createTRPCRouter({
-    next: protectedProcedure.query(async ({ ctx }) => {
+    next: publicProcedure.query(async ({ ctx }) => {
       return ctx.db.episode.findFirst({
-        where: {
-          date: {
-            gt: new Date(),
-          },
+        orderBy: {
+          number: 'desc',
         },
         include: {
           assignments: {
@@ -31,7 +29,7 @@ export const appRouter = createTRPCRouter({
             include: {
               Review: {
                 include: {
-                  Rating: true,
+                  Movie: true,
                   User: true,
                 },
               },
@@ -39,8 +37,82 @@ export const appRouter = createTRPCRouter({
           },
           links: true,
         },
+      });
+    }),
+    search: publicProcedure
+      .input(z.object({ query: z.string() }))
+      .query(async ({ ctx, input }) => {
+        if (!input.query.trim()) {
+          return [];
+        }
+        return ctx.db.episode.findMany({
+          where: {
+            OR: [
+              {
+                title: {
+                  contains: input.query,
+                },
+              },
+              {
+                assignments: {
+                  some: {
+                    Movie: {
+                      title: {
+                        contains: input.query,
+                      },
+                    },
+                  },
+                },
+              },
+            ],
+          },
+          include: {
+            assignments: {
+              include: {
+                Movie: true,
+                User: true,
+              },
+            },
+            extras: {
+              include: {
+                Review: {
+                  include: {
+                    User: true,
+                    Movie: true,
+                  },
+                },
+              },
+            },
+            links: true,
+          },
+          orderBy: {
+            date: 'desc',
+          },
+        });
+      }),
+    history: publicProcedure.query(async ({ ctx }) => {
+      return ctx.db.episode.findMany({
         orderBy: {
-          date: 'asc',
+          date: 'desc',
+        },
+        include: {
+          assignments: {
+            include: {
+              Movie: true,
+              User: true,
+            },
+          },
+          extras: {
+            include: {
+              Review: {
+                include: {
+                  User: true,
+                  Movie: true,
+                },
+              },
+            },
+          },
+          links: true,
         },
       });
     }),

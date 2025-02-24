@@ -5,18 +5,22 @@ import { api } from "@/trpc/server";
 
 export default async function PointsPage() {
   const session = await getServerAuthSession();
-  const isAdmin = session?.user?.role === "ADMIN";
+  const isAdmin = session?.user?.role?.admin ?? false;
   
   const users = await db.user.findMany({
     orderBy: {
       points: 'desc',
     },
+    where: {
+      points: {
+        not: null,
+      },
+    },
   });
 
   return (
-    <div className="flex min-h-screen flex-col items-center bg-gradient-to-b from-[#2e026d] to-[#15162c] text-white">
       <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16">
-        <h1 className="text-5xl font-extrabold tracking-tight">
+        <h1 className="text-5xl font-extrabold tracking-tight text-red-600">
           Current Standings
         </h1>
         
@@ -51,6 +55,5 @@ export default async function PointsPage() {
           </table>
         </div>
       </div>
-    </div>
   );
 } 

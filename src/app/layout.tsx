@@ -16,8 +16,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "BBPC",
-  description: "BBPC Application",
+  title: "Bad Boys Podcast",
+  description: "Random rants on all things movie",
   icons: [{ rel: "icon", url: "/favicon.ico" }],
 };
 
@@ -30,11 +30,6 @@ export default async function RootLayout({
   
   return (
     <html lang="en">
-      <Head>
-        <title>Bad Boys Podcast</title>
-        <meta name="description" content="Random rants on all things movie" />
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
       <body className={`font-sans ${inter.variable}`}>
         <Providers session={session} headers={headers()}>
           <div className="bg-black flex flex-col justify-between items-stretch min-h-screen">

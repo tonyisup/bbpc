@@ -8,6 +8,7 @@ import { AddExtraToNext } from "./AddExtraToNext";
 
 interface EpisodeProps {
 	allowGuesses?: boolean,
+	showMovieTitles?: boolean,
   episode: null | (EpisodeType & {
     assignments: (AssignmentType & {
         User: User;
@@ -22,7 +23,7 @@ interface EpisodeProps {
 	});
 }
 
-export const Episode: FC<EpisodeProps> = ({ episode, allowGuesses: isNextEpisode }) => {
+export const Episode: FC<EpisodeProps> = ({ episode, allowGuesses: isNextEpisode, showMovieTitles = false }) => {
 	if (!episode) return null;
 	if (isNextEpisode == null) isNextEpisode = false;
 
@@ -45,26 +46,27 @@ export const Episode: FC<EpisodeProps> = ({ episode, allowGuesses: isNextEpisode
 			<div className="w-full text-center">
       	<p>{episode?.description}</p>
       </div>
-      <EpisodeAssignments assignments={episode.assignments} allowGuesses={isNextEpisode} />
+      <EpisodeAssignments assignments={episode.assignments} allowGuesses={isNextEpisode} showMovieTitles={showMovieTitles} />
     </div>
-    <EpisodeExtras extras={episode.extras} />		
+    <EpisodeExtras extras={episode.extras} showMovieTitles={showMovieTitles} />		
 		{isNextEpisode && <AddExtraToNext episode={episode} />}
 		<EpisodeLinks links={episode.links} />
   </section>
 }
 interface EpisodeAssignments {
 	allowGuesses?: boolean,
+	showMovieTitles?: boolean,
 	assignments: (AssignmentType & {
 		User: User;
 		Movie: Movie | null;
 	})[];
 }
-const EpisodeAssignments: FC<EpisodeAssignments> = ({ assignments, allowGuesses }) => {
+const EpisodeAssignments: FC<EpisodeAssignments> = ({ assignments, allowGuesses, showMovieTitles = false }) => {
 	if (!assignments || assignments.length == 0) return null;
 	return <div className="flex gap-2 justify-around">
 		{assignments.sort((a,b) => a.homework && !b.homework ? -1 : a.homework && b.homework ? 0 : 1).map((assignment) => {
 			return <div key={assignment.id} className="flex flex-col items-center justify-between gap-2">
-				<Assignment assignment={assignment} key={assignment.id} />
+				<Assignment assignment={assignment} key={assignment.id} showMovieTitles={showMovieTitles} />
 				
 				{allowGuesses && <Link className="bg-red-600 hover:bg-red-500 text-white py-1 px-4 text-2xl border-b-4 border-red-800 hover:border-red-600 rounded-xl" href={`/assignment/${assignment.id}`}>
 					<div className="flex">
@@ -77,6 +79,7 @@ const EpisodeAssignments: FC<EpisodeAssignments> = ({ assignments, allowGuesses 
 }
 
 interface EpisodeExtras {
+	showMovieTitles?: boolean,
 	extras: (ExtraReview & {
 		Review: (Review & {
 			User: User;
@@ -84,13 +87,16 @@ interface EpisodeExtras {
 	})})[];
 }
 
-const EpisodeExtras: FC<EpisodeExtras> = ({ extras }) => {
+const EpisodeExtras: FC<EpisodeExtras> = ({ extras, showMovieTitles = false }) => {
 	if (!extras || extras.length == 0) return null;
 	return <div className="py-2 w-full">
 		<div className="flex justify-center gap-2 flex-wrap">
 			{extras.map((extra) => {
 				return <div key={extra.id} className="flex items-center gap-2 w-20">
-					{extra.Review.Movie && <MovieInlinePreview movie={extra.Review.Movie} />}
+					<div className="flex flex-col items-center gap-2">
+						{extra.Review.Movie && <MovieInlinePreview movie={extra.Review.Movie} />}
+						{showMovieTitles && <div className="text-sm text-gray-500">{extra.Review.Movie?.title} ({extra.Review.Movie?.year})</div>}
+					</div>
 				</div>
 			})}
 		</div>

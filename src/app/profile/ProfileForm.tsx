@@ -49,7 +49,7 @@ export function ProfileForm({ initialName }: ProfileFormProps) {
       <button
         onClick={handleSave}
         disabled={updateUser.isLoading}
-        className="rounded-md bg-purple-600 px-4 py-2 font-medium text-white transition hover:bg-purple-700 disabled:opacity-50"
+        className="rounded-md px-4 py-2 font-medium text-white transition disabled:opacity-50 outline outline-2 outline-gray-400 hover:outline-gray-300"
       >
         {updateUser.isLoading ? "Saving..." : "Save Changes"}
       </button>

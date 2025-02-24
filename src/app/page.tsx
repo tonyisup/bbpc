@@ -1,4 +1,5 @@
 import { Episode } from "@/components/Episode";
+import { NextEpisode } from "@/components/NextEpisode";
 import { db } from "@/server/db";
 
 export default async function HomePage() {
@@ -28,7 +29,7 @@ export default async function HomePage() {
         include: {
           Review: {
             include: {
-              Rating: true,
+              Movie: true,
               User: true,
             },
           },
@@ -41,46 +42,12 @@ export default async function HomePage() {
     },
   });
 
-  const nextEpisode = await db.episode.findFirst({
-    orderBy: {
-      number: "desc"
-    },
-    include: {
-      assignments: {
-        include: {
-          Movie: true,
-          User: true,
-          assignmentReviews: {
-            include: {
-              Review: {
-                include: {
-                  Rating: true,
-                },
-              },
-            },
-          },
-        },
-      },
-      extras: {
-        include: {
-          Review: {
-            include: {
-              Rating: true,
-              User: true,
-            },
-          },
-        },
-      },
-      links: true,
-    },
-  });
-
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#020202] to-[#424242] text-white">
       <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16">        
         <div className="flex flex-wrap gap-12 justify-evenly">
           {latestEpisode && <Episode episode={latestEpisode} />}
-          {nextEpisode && <Episode episode={nextEpisode} allowGuesses={true} />}
+          <NextEpisode />
         </div>
       </div>
     </main>

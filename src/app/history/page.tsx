@@ -1,63 +1,76 @@
-import { db } from "@/server/db";
-import { getServerAuthSession } from "@/server/auth";
-import { redirect } from "next/navigation";
+'use client';
 
-export default async function HistoryPage() {
-  const session = await getServerAuthSession();
+import { api } from "@/trpc/react";
+import { ExtraReview, Movie, Review, User, Episode as EpisodeType, Link as EpisodeLink, Assignment as AssignmentType } from "@prisma/client";
+import { Episode } from "@/components/Episode";
+import SearchFilter from "@/components/common/SearchFilter";
+import { useState, Suspense } from "react";
+import Link from "next/link";
 
-  if (!session) {
-    redirect("/api/auth/signin");
+function SearchResults({ query }: { query: string }) {
+  const { data: episodes } = api.episode.search.useQuery(
+    { query },
+    {
+      enabled: query.length > 0,
+      initialData: [],
+      suspense: true,
+    }
+  );
+
+  if (!query) {
+    return <p className="text-center text-gray-400">Enter a search term to find episodes.</p>;
   }
 
-  const userGuesses = await db.guess.findMany({
-    where: {
-      userId: session.user.id,
-    },
-    include: {
-      episode: true,
-      movie: true,
-      rating: true,
-    },
-    orderBy: {
-      createdAt: 'desc',
-    },
-  });
+  if (episodes.length === 0) {
+    return <p className="text-gray-400">No episodes found matching your search.</p>;
+  }
 
   return (
-    <div className="flex min-h-screen flex-col items-center bg-gradient-to-b from-[#2e026d] to-[#15162c] text-white">
-      <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16">
-        <h1 className="text-5xl font-extrabold tracking-tight">Your History</h1>
-        
-        <div className="w-full max-w-2xl">
-          <div className="grid gap-4">
-            {userGuesses.map((guess) => (
-              <div
-                key={guess.id}
-                className="rounded-lg bg-white/10 p-4 hover:bg-white/20"
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="text-lg font-semibold">
-                      {guess.movie.title}
-                    </h3>
-                    <p className="text-sm text-gray-400">
-                      Episode {guess.episode.number}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-2xl font-bold text-purple-400">
-                      {guess.value}/4
-                    </div>
-                    <div className="text-sm text-gray-400">
-                      Actual: {guess.rating?.value ?? "Not rated yet"}/4
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+    <>
+      {episodes.map((episode: EpisodeType & {
+        assignments: (AssignmentType & {
+          User: User;
+          Movie: Movie | null;
+        })[];
+        extras: (ExtraReview & {
+          Review: (Review & {
+            User: User;
+            Movie: Movie;
+          })
+        })[];
+        links: EpisodeLink[];
+      }) => (
+        <li className="mb-8" key={episode.id}>
+          <Episode episode={episode} showMovieTitles={true} />
+        </li>
+      ))}
+    </>
+  );
+}
+
+export default function HistoryPage() {
+  const [query, setQuery] = useState("");
+  const trimmedQuery = query.trim();
+
+  return (
+    <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16">
+      <div className="flex justify-between items-center w-full max-w-4xl">
+        <h2 className="text-2xl font-bold">Search Episodes</h2>
+        <Link 
+          href="/episodes" 
+          className="text-red-600 hover:text-red-700"
+        >
+          View All Episodes
+        </Link>
       </div>
+      <div className="w-full max-w-4xl">
+        <SearchFilter onSearch={setQuery} />
+      </div>
+      <ul className="w-full max-w-4xl">
+        <Suspense fallback={<p className="text-center">Loading...</p>}>
+          <SearchResults query={trimmedQuery} />
+        </Suspense>
+      </ul>
     </div>
   );
 } 
