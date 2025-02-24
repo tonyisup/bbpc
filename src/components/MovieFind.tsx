@@ -1,53 +1,70 @@
-import type { Movie } from "@prisma/client";
-import { type Dispatch, type FC, type SetStateAction, useState } from "react";
-import type { Title } from "../server/tmdb/client";
-import { trpc } from "../utils/trpc";
-import MovieCard from "./MovieCard";
-import TitleCard from "./TitleCard";
-import TitleSearch from "./TitleSearch";
+'use client';
+
+import { type Movie } from "@prisma/client";
+import { type FC, useState, type Dispatch } from "react";
+import { api } from "@/trpc/react";
+import MovieInlinePreview from "./MovieInlinePreview";
 
 interface MovieFindProps {
-  selectMovie: Dispatch<SetStateAction<Movie | null>>;
+  selectMovie: Dispatch<Movie>;
 }
 
-const MovieFind: FC<MovieFindProps> = ({ 
-  selectMovie: selectMovie 
-}) => {
-  const [ selectedMovie, setSelectedMovie ] = useState<Movie | null>(null)
-  const [ title, setTitle ] = useState<Title | null>(null)
-  const { } = trpc.movie.getTitle.useQuery({ 
-    id: title?.id ?? 0 
-  }, {
-    onSuccess: (result) => {
-      
-      if (!title) return;
-      if (!result) return;
-			if (!title.poster_path) return;
-			if (!result.imdb_path) return;
+const MovieFind: FC<MovieFindProps> = ({ selectMovie }) => {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
+  
+  const { data: movies } = api.movie.search.useQuery(
+    { term: searchTerm },
+    { enabled: searchTerm.length > 2 }
+  );
 
-      const year = (new Date(result.release_date)).getFullYear()
+  const handleMovieSelect = (movie: Movie) => {
+    setSelectedMovie(movie);
+    selectMovie(movie);
+    setSearchTerm("");
+  };
 
-      addMovie({
-        title: result.title,
-        year: year,
-        poster: result.poster_path,
-        url: result.imdb_path
-      })
-
-    }
-  })
-  const { mutate: addMovie } = trpc.movie.add.useMutation({
-    onSuccess: (result) => {
-      setSelectedMovie(result)
-      selectMovie(result)
-    }
-  })
   return (
-    <div className="w-full flex flex-col justify-center">
-      {selectedMovie && <MovieCard movie={selectedMovie} />}
-      {!selectedMovie && title && <TitleCard title={title} />}
-      {!selectedMovie && !title && <div className="col-span-2">No movie selected</div>}
-      <TitleSearch setTitle={setTitle} open={true} />
+    <div className="flex flex-col gap-2">
+      {selectedMovie ? (
+        <div className="flex items-center gap-2">
+          <MovieInlinePreview movie={selectedMovie} />
+          <button
+            onClick={() => {
+              setSelectedMovie(null);
+              selectMovie(null as unknown as Movie);
+            }}
+            className="text-red-500 hover:text-red-400"
+          >
+            Clear
+          </button>
+        </div>
+      ) : (
+        <>
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Search for a movie..."
+            className="rounded-md border border-gray-700 bg-gray-800 px-4 py-2 text-white focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
+          />
+          {movies && movies.length > 0 && (
+            <div className="mt-2 max-h-60 overflow-y-auto rounded-md border border-gray-700 bg-gray-800">
+              {movies.map((movie) => (
+                <button
+                  key={movie.id}
+                  onClick={() => handleMovieSelect(movie)}
+                  className="w-full p-2 text-left hover:bg-gray-700"
+                >
+                  {movie.title} ({movie.year})
+                </button>
+              ))}
+            </div>
+          )}
+        </>
+      )}
     </div>
-)}
-export default MovieFind
+  );
+};
+
+export default MovieFind;

@@ -1,3 +1,4 @@
+'use client'
 import { useState, type FC } from "react";
 import { trpc } from "../utils/trpc";
 import { signIn, useSession } from "next-auth/react";
