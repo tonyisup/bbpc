@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { Decimal } from "@prisma/client/runtime/library";
+import { type Rating } from "@prisma/client";
 import { createTRPCRouter, protectedProcedure, adminProcedure, publicProcedure } from "@/server/api/trpc";
 
 export const appRouter = createTRPCRouter({
@@ -171,6 +172,21 @@ export const appRouter = createTRPCRouter({
       }
       return phoneNumber;
     }),
+    getSecretMessage: protectedProcedure
+      .query(() => {
+        return "you can now see this secret message!";
+      }),
+    verifyRecaptcha: publicProcedure
+      .input(z.object({ token: z.string() }))
+      .mutation(async ({ input }) => {
+        const secretKey = process.env.RECAPTCHA_SECRET_KEY;
+        const verificationUrl = `https://www.google.com/recaptcha/api/siteverify?secret=${secretKey}&response=${input.token}`;
+
+        const response = await fetch(verificationUrl, { method: 'POST' });
+        const data = await response.json();
+
+        return { success: data.success };
+      }),
   }),
 
   user: createTRPCRouter({
@@ -202,6 +218,11 @@ export const appRouter = createTRPCRouter({
         }
       }); 
     }),
+    myRoles: protectedProcedure
+      .query(async ({ ctx }) => 
+        await ctx.db.userRole.findMany({
+          where: { userId: ctx.session.user.id },
+        }))
   }),
 
   movie: createTRPCRouter({
@@ -221,6 +242,60 @@ export const appRouter = createTRPCRouter({
           },
           take: 10,
         });
+      }),
+    assignment: publicProcedure
+      .input(z.object({
+        id: z.string()
+      }))
+      .query(async ({ ctx, input }) => {
+        return await ctx.db.assignment.findUnique({
+          where: {
+            id: input.id
+          },
+        });
+      }),
+    assignmentRatings: publicProcedure
+      .input(z.object({
+        assignmentId: z.string(),
+      }))
+      .query(async ({ ctx, input }) => {
+        return await ctx.db.$queryRaw<Rating[]>`select * from [dbo].[AssignmentRatings] where [assignmentId] = ${input.assignmentId}`;
+      }),
+    ratings: publicProcedure
+      .query(async ({ ctx }) => {
+        return await ctx.db.rating.findMany({
+          orderBy: {
+            value: 'asc'
+          }
+        });
+      }),
+    find: publicProcedure
+      .input(z.object({
+        searchTerm: z.string(),
+      }))
+      .query(async ({ ctx, input }) => {
+        return await ctx.db.movie.findMany({
+          where: {
+            title: {
+              contains: input.searchTerm,            
+            }
+          }
+        });
+      }),
+    get: publicProcedure
+      .input(z.object({ id: z.string() }))
+      .query(({ ctx, input }) => {
+        return ctx.db.movie.findUnique({
+          where: { id: input.id },
+        });
+      }),
+    getAll: publicProcedure
+      .query(({ ctx }) => {
+        return ctx.db.movie.findMany();
+      }),
+    getSummary: publicProcedure
+      .query(({ ctx }) => {
+        return ctx.db.movie.count();
       }),
   }),
 
@@ -311,10 +386,23 @@ export const appRouter = createTRPCRouter({
 		.mutation(async ({ctx, input}) => {
 			return await ctx.db.$executeRaw`EXEC [SubmitGuess] @assignmentId=${input.assignmentId}, @hostId=${input.hostId}, @guesserId=${input.guesserId}, @ratingId=${input.ratingId}`
 		}),
-    getRatings: publicProcedure
-      .query(async ({ctx}) => {
-        return await ctx.db.rating.findMany()
-      }),
+  }),
+
+  video: createTRPCRouter({
+    search: publicProcedure
+      .input(z.object({searchTerm: z.string()}))
+      .query(async ({ ctx, input }) => {
+        // Note: This will need to be implemented with proper YouTube API integration
+        throw new Error("YouTube API integration not implemented");
+      })
+  }),
+
+  feature: createTRPCRouter({
+    addVoteForFeature: publicProcedure
+      .input(z.object({ lookupID: z.string() }))
+      .mutation(async ({ ctx, input }) => {
+        return await ctx.db.$executeRaw`EXEC [AddVoteForFeature] @lookupID=${input.lookupID}`;
+      })
   }),
 });
 

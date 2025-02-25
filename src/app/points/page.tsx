@@ -1,11 +1,10 @@
 import { db } from "@/server/db";
 import { getServerAuthSession } from "@/server/auth";
 import { UserPointsEdit } from "./UserPointsEdit";
-import { api } from "@/trpc/server";
 
 export default async function PointsPage() {
   const session = await getServerAuthSession();
-  const isAdmin = session?.user?.role?.admin ?? false;
+  const isAdmin = session?.user?.isAdmin ?? false;
   
   const users = await db.user.findMany({
     orderBy: {
