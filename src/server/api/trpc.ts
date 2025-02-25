@@ -6,6 +6,8 @@ import { ZodError } from "zod";
 
 import { getServerAuthSession } from "@/server/auth";
 import { db } from "@/server/db";
+import { tmdb } from "../tmdb/client";
+import { yt } from "../yt/client";
 
 interface CreateContextOptions {
   session: Session | null;
@@ -15,6 +17,8 @@ const createInnerTRPCContext = (opts: CreateContextOptions) => {
   return {
     session: opts.session,
     db,
+    tmdb,
+    yt,
   };
 };
 
@@ -58,7 +62,7 @@ const enforceUserIsAuthed = t.middleware(({ ctx, next }) => {
 export const protectedProcedure = t.procedure.use(enforceUserIsAuthed);
 
 const enforceUserIsAdmin = t.middleware(({ ctx, next }) => {
-  if (!ctx.session?.user?.role || ctx.session.user.role !== "ADMIN") {
+  if (!ctx.session?.user?.isAdmin) {
     throw new TRPCError({ code: "UNAUTHORIZED", message: "Admin access required" });
   }
   return next({

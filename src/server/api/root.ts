@@ -226,6 +226,14 @@ export const appRouter = createTRPCRouter({
   }),
 
   movie: createTRPCRouter({
+    searchByPage: publicProcedure
+      .input(z.object({
+        page: z.number(),
+        term: z.string(),
+      }))
+      .query(async ({ ctx, input }) => {        
+        return ctx.tmdb.getMovies(input.page, input.term)
+      }),
     search: protectedProcedure
       .input(z.object({
         term: z.string(),
@@ -386,14 +394,32 @@ export const appRouter = createTRPCRouter({
 		.mutation(async ({ctx, input}) => {
 			return await ctx.db.$executeRaw`EXEC [SubmitGuess] @assignmentId=${input.assignmentId}, @hostId=${input.hostId}, @guesserId=${input.guesserId}, @ratingId=${input.ratingId}`
 		}),
+  
+	updateAudioMessage: protectedProcedure
+    .input(
+      z.object({
+        id: z.number(), 
+        assignmentId: z.string(),
+        fileKey: z.string()
+    }))
+    .mutation(async ({ctx, input}) => {
+      return await ctx.db.audioMessage.update({
+        where: {
+          id: input.id
+        },
+        data: {
+          assignmentId: input.assignmentId,
+          fileKey: input.fileKey
+        }
+      })
+    }),
   }),
 
   video: createTRPCRouter({
     search: publicProcedure
       .input(z.object({searchTerm: z.string()}))
       .query(async ({ ctx, input }) => {
-        // Note: This will need to be implemented with proper YouTube API integration
-        throw new Error("YouTube API integration not implemented");
+        return ctx.yt.getVideos(input.searchTerm);
       })
   }),
 

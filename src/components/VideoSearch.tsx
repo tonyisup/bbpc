@@ -7,6 +7,7 @@ import { CarouselProvider, Slider, Slide, ButtonBack, ButtonNext } from 'pure-re
 import 'pure-react-carousel/dist/react-carousel.es.css';
 import { type VideoSearchResult } from "../server/yt/client";
 import { HiX } from "react-icons/hi";
+import { api } from "@/trpc/react";
 
 interface VideoSearchProps {
 	setVideo: Dispatch<SetStateAction<VideoSearchResult | undefined>>;
@@ -16,7 +17,7 @@ interface VideoSearchProps {
 const VideoSearch: FC<VideoSearchProps> = ({ setVideo, open = false }) => {
 	const [modalOpen, setModalOpen] = useState<boolean>(open);
 	const [searchQuery, setSearchQuery] = useState<string>("");
-  const { data: resp } = trpc.video.search.useQuery({ searchTerm: searchQuery })
+  const { data: resp } = api.video.search.useQuery({ searchTerm: searchQuery })
 	const selectVideo = function(snippet: VideoSearchResult) {
     setVideo(snippet);
 		setSearchQuery("");

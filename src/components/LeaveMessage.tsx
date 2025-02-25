@@ -5,11 +5,11 @@ import { signIn, useSession } from "next-auth/react";
 import { FaMicrophoneAlt } from "react-icons/fa";
 import Modal from "./common/Modal";
 import RecordEpisodeAudio from "./common/RecordEpisodeAudio";
-
+import { api } from "@/trpc/react";
 
 const LeaveMessage: FC = () => {
   const session = useSession();
-  const { data: episode } = trpc.episode.next.useQuery();
+  const { data: episode } = api.episode.next.useQuery();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   if (!session.data?.user) return (<>

@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { BsRecordFill, BsStopFill, BsX } from "react-icons/bs";
-import { trpc } from '../../utils/trpc';
 import { useUploadThing } from '../../utils/uploadthing';
+import { api } from '@/trpc/react';
 
 interface RecordAssignmentAudioProps {
   userId: string;
@@ -14,8 +14,8 @@ const RecordAssignmentAudio: React.FC<RecordAssignmentAudioProps> = ({ userId, a
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
-  const { mutate: updateAudio } = trpc.review.updateAudioMessage.useMutation();
-  const { data: countOfUserAudioMessagesForAssignment, refetch } = trpc.review.getCountOfUserAudioMessagesForAssignment.useQuery({ assignmentId: assignmentId, userId: userId });
+  const { mutate: updateAudio } = api.review.updateAudioMessage.useMutation();
+  const { data: countOfUserAudioMessagesForAssignment, refetch } = api.review.getCountOfUserAudioMessagesForAssignment.useQuery({ assignmentId: assignmentId, userId: userId });
   const { startUpload, isUploading } = useUploadThing("audioUploader", {
     onUploadError: (error: Error) => {
       console.error("Error uploading audio:", error);
