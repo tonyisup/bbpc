@@ -127,7 +127,7 @@ export const appRouter = createTRPCRouter({
       });
     }),
     
-    addPointsToUser: adminProcedure
+    addPointsToUser: protectedProcedure
       .input(z.object({
         userId: z.string(),
         points: z.number(),
@@ -154,12 +154,22 @@ export const appRouter = createTRPCRouter({
   }),
 
   auth: createTRPCRouter({
+    getSession: publicProcedure.query(({ ctx }) => {
+      return ctx.session;
+    }),
     isAdmin: protectedProcedure.query(async ({ ctx }) => {
       const userRoles = await ctx.db.userRole.findMany({
         where: { userId: ctx.session.user.id },
         include: { role: true },
       });
       return userRoles.some(ur => ur.role.admin);
+    }),
+    getPhoneNumber: publicProcedure.query(async () => {
+      const phoneNumber = process.env.PHONE_NUMBER;
+      if (!phoneNumber) {
+        return null;
+      }
+      return phoneNumber;
     }),
   }),
 
@@ -179,6 +189,19 @@ export const appRouter = createTRPCRouter({
           data: { name: input.name },
         });
       }),
+    hosts: publicProcedure.query(async ({ ctx }) => {
+      return ctx.db.user.findMany({
+        where: {
+          roles: {
+            some: { 
+              role: {
+                admin: true
+              }
+            }
+          }
+        }
+      }); 
+    }),
   }),
 
   movie: createTRPCRouter({
@@ -224,6 +247,73 @@ export const appRouter = createTRPCRouter({
         });
 
         return review;
+      }),
+    
+    getCountOfUserAudioMessagesForAssignment: protectedProcedure
+      .input(z.object({
+        userId: z.string(),
+        assignmentId: z.string(),
+      }))
+      .query(async ({ ctx, input }) => {
+        return ctx.db.audioMessage.count({
+          where: {
+            userId: input.userId,
+            assignmentId: input.assignmentId,
+          },
+        });
+      }),
+    
+    getGuessesForAssignmentForUser: protectedProcedure
+      .input(z.object({
+        assignmentId: z.string(),
+        userId: z.string().optional(),
+      }))
+      .query(async ({ ctx, input }) => {
+        const assignmentReviews = await ctx.db.assignmentReview.findMany({
+          where: {
+            assignmentId: input.assignmentId
+          },
+          select: {
+            id: true
+          }
+        });
+
+        const guesses = await ctx.db.guess.findMany({
+          where: {
+            assignmntReviewId: {
+              in: assignmentReviews.map(ar => ar.id)
+            },
+            userId: input.userId ?? undefined
+          },
+          include: {
+            Rating: true,
+            AssignmentReview: {
+              include: {
+                Review: {
+                  include: {
+                    User: true
+                  }
+                }
+              }
+            }
+          }
+        });
+        return guesses;
+      }),
+      
+	submitGuess: protectedProcedure
+		.input(z.object({
+			assignmentId: z.string(),
+			hostId: z.string(),
+			guesserId: z.string(),
+			ratingId: z.string()
+		}))
+		.mutation(async ({ctx, input}) => {
+			return await ctx.db.$executeRaw`EXEC [SubmitGuess] @assignmentId=${input.assignmentId}, @hostId=${input.hostId}, @guesserId=${input.guesserId}, @ratingId=${input.ratingId}`
+		}),
+    getRatings: publicProcedure
+      .query(async ({ctx}) => {
+        return await ctx.db.rating.findMany()
       }),
   }),
 });

@@ -26,14 +26,24 @@ export const reviewRouter = router({
 			userId: z.string().optional()
 		}))
 		.query(async (req) => {
-			return await req.ctx.prisma.guess.findMany({
+			// First find the assignment review IDs for this assignment
+			const assignmentReviews = await req.ctx.prisma.assignmentReview.findMany({
 				where: {
-					AssignmentReview: {
-						Assignment: {
-							id: req.input.assignmentId
-						}
+					assignmentId: req.input.assignmentId
+				},
+				select: {
+					id: true
+				}
+			});
+
+			console. log('assignmentreviews', assignmentReviews);
+			// Then find guesses for these assignment reviews
+			const guesses = await req.ctx.prisma.guess.findMany({
+				where: {
+					assignmntReviewId: {
+						in: assignmentReviews.map(ar => ar.id)
 					},
-					userId: req.input.userId
+					userId: req.input.userId ?? undefined
 				},
 				include: {
 					Rating: true,
@@ -41,13 +51,14 @@ export const reviewRouter = router({
 						include: {
 							Review: {
 								include: {
-									User: true,
+									User: true
 								}
 							}
 						}
 					}
 				}
-			})
+			});
+			return guesses;
 		}),
 	submitGuess: protectedProcedure
 		.input(z.object({

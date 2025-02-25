@@ -1,10 +1,10 @@
-import { createUploadthing, type FileRouter } from "uploadthing/next-legacy";
+import { createUploadthing, type FileRouter } from "uploadthing/next";
 import { UploadThingError } from "uploadthing/server";
-import { getServerAuthSession } from "../common/get-server-auth-session";
-import { prisma } from "../db/client";
+import { getServerAuthSession } from "@/server/auth";
+import { db } from "@/server/db";
 import { z } from "zod";
-const f = createUploadthing();
 
+const f = createUploadthing();
 
 // FileRouter for your app, can contain multiple FileRoutes
 export const ourFileRouter = {
@@ -12,40 +12,43 @@ export const ourFileRouter = {
   audioUploader: f({ audio: { maxFileSize: "8MB" } })
     .input(z.object({ episodeId: z.string().optional(), assignmentId: z.string().optional() }))
     // Set permissions and file types for this FileRoute
-    .middleware(async ({ req, res, input }) => {
+    .middleware(async ({ input }) => {
       // This code runs on your server before upload
       console.log("middleware");
       
-      const session = await getServerAuthSession({ req, res });
+      const session = await getServerAuthSession();
       const user = session?.user;
 
       // If you throw, the user will not be able to upload
       if (!user?.id) throw new UploadThingError("Unauthorized");
 
-      const episodeId = input.episodeId;
-      const assignmentId = input.assignmentId;
-
       // Whatever is returned here is accessible in onUploadComplete as `metadata`
-      return { userId: user.id, episodeId: episodeId, assignmentId: assignmentId };
+      return { 
+        userId: user.id, 
+        episodeId: input.episodeId, 
+        assignmentId: input.assignmentId 
+      };
     })
     .onUploadComplete(async ({ metadata, file }) => {
       // This code RUNS ON YOUR SERVER after upload
       let savedAudioMessageId;
       if (metadata.episodeId) {
-        const savedAudioMessage = await prisma.audioEpisodeMessage.create({
-          data: {
-          userId: metadata.userId,
-          url: file.url,
-          }
-        })
-        savedAudioMessageId = savedAudioMessage.id;
-      } else if (metadata.assignmentId) {
-        const savedAudioMessage = await prisma.audioMessage.create({
+        const savedAudioMessage = await db.audioEpisodeMessage.create({
           data: {
             userId: metadata.userId,
             url: file.url,
+            episodeId: metadata.episodeId,
           }
-        })
+        });
+        savedAudioMessageId = savedAudioMessage.id;
+      } else if (metadata.assignmentId) {
+        const savedAudioMessage = await db.audioMessage.create({
+          data: {
+            userId: metadata.userId,
+            url: file.url,
+            assignmentId: metadata.assignmentId,
+          }
+        });
         savedAudioMessageId = savedAudioMessage.id;
       }
 

@@ -1,14 +1,17 @@
+'use client'
 import { type Dispatch, type DispatchWithoutAction, type FC, useState, useEffect } from "react";
 import { type Assignment, type Guess, type Rating, type User } from "@prisma/client";
-import { trpc } from "../utils/trpc";
+
 import { HiRefresh, HiUpload } from "react-icons/hi";
 import RecordAssignmentAudio from "./common/RecordAssignmentAudio";
 import UserTag from "./UserTag";
 import RatingIcon from "./RatingIcon";
-import { signIn } from "next-auth/react";
 import PhoneNumber from "./common/PhoneNumber";
 import { type Session } from "next-auth";
 import { Decimal } from "@prisma/client/runtime/library";
+import { SignInButton } from "./Auth";
+import { useSession } from "next-auth/react";
+import { api } from "@/trpc/react";
 
 interface GameSegmentProps {
 	assignment: Assignment
@@ -20,25 +23,23 @@ enum GameChoice {
 	ClickButtons = "click-buttons"
 }
 const GameSegment: FC<GameSegmentProps> = ({ assignment }) => {
-
-	const { data: session } = trpc.auth.getSession.useQuery();
+	const { data: session, status } = useSession();
 	const [gameChoice, setGameChoice] = useState<GameChoice>(GameChoice.None);
+
+	if (status === "loading") {
+		return <div className="flex flex-col items-center gap-4 m-4">
+			<p className="text-2xl animate-pulse">Loading...</p>
+		</div>;
+	}
 
 	if (!session?.user?.id) return (
 		<>
 			<div className="flex flex-col items-center gap-4 m-4">
-				<p className="text-2xl">Please <button
-						type="button"
-						title="Sign in"
-						className="font-semibold text-red-600 no-underline transition hover:text-red-400"
-						onClick={() => signIn()}
-					>
-						Sign in
-					</button> to submit guesses
-				</p>
+				<p className="text-2xl">Please <SignInButton /> to submit guesses</p>
 			</div>
 		</>
 	);
+
 	return <div className="flex flex-col gap-4 items-center py-4">
 		<h3 className="text-2xl">Submit your guesses!</h3>
 		<div className="flex gap-4 items-center">
@@ -57,7 +58,7 @@ interface GamePanelProps {
 }
 const GamePanel: FC<GamePanelProps> = ({ session, assignment }) => {
   
-	const { data: guesses, refetch } = trpc.review.getGuessesForAssignmentForUser.useQuery(
+	const { data: guesses, refetch } = api.review.getGuessesForAssignmentForUser.useQuery(
 
 		{ assignmentId: assignment.id, userId: session?.user?.id }
 	);
@@ -125,10 +126,10 @@ interface SetAssignmentGuessesProps {
 	guessesSaved: DispatchWithoutAction
 }
 const SetAssignmentGuesses: FC<SetAssignmentGuessesProps> = ({ assignment, guesserId, guessesSaved }) => {
-	const { data: hosts } = trpc.user.hosts.useQuery();
+	const { data: hosts } = api.user.hosts.useQuery();
 	const [pendingGuesses, setPendingGuesses] = useState<Record<string, PendingGuess>>({});
 	const [canSubmitGuesses, setCanSubmitGuesses] = useState<boolean>(false);
-	const { mutate: submitGuess } = trpc.review.submitGuess.useMutation();
+	const { mutate: submitGuess } = api.review.submitGuess.useMutation();
 
 	const handleSetGuess = function (guess: PendingGuess) {
 		if (!guess) return;
@@ -222,7 +223,7 @@ interface RatingSelectProps {
 	selectRating: Dispatch<Rating>
 }
 const RatingSelect: FC<RatingSelectProps> = ({ selectRating }) => {
-	const { data: ratings } = trpc.review.getRatings.useQuery();
+	const { data: ratings } = api.review.getRatings.useQuery();
 
 	const [ratingValue, setRatingValue] = useState<number>(0);
 
