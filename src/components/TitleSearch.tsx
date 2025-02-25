@@ -1,11 +1,11 @@
 import { type Dispatch, type FC, type SetStateAction, useState } from "react";
 import type { Title } from "../server/tmdb/client";
-import { trpc } from "../utils/trpc";
 import Search from "./common/Search";
 
 import { CarouselProvider, Slider, Slide, ButtonBack, ButtonNext } from 'pure-react-carousel';
 import 'pure-react-carousel/dist/react-carousel.es.css';
 import TitleCard from "./TitleCard";
+import { api } from "@/trpc/react";
 
 interface TitleSearchProps {
 	setTitle: Dispatch<SetStateAction<Title | null>>;
@@ -15,9 +15,9 @@ interface TitleSearchProps {
 const TitleSearch: FC<TitleSearchProps> = ({ setTitle, open }) => {
 	const [modalOpen, setModalOpen] = useState<boolean>(open);
 	const [searchQuery, setSearchQuery] = useState<string>("");
-	const { data: resp } = trpc.movie.search.useQuery({
+	const { data: resp } = api.movie.searchByPage.useQuery({
 		page: 1,
-		searchTerm: searchQuery,
+		term: searchQuery,
 	});
 	const selectTitle = function(title: Title) {
 		setTitle(title);

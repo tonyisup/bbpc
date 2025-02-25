@@ -1,7 +1,9 @@
+'use client';
+
 import { type FC, useState } from "react";
 import AddEpisodeExtraModal from "./AddEpisodeExtraModal";
 import type { Assignment as AssignmentType, Episode as EpisodeType, Movie, User, Review, ExtraReview, Link as EpisodeLink } from '@prisma/client';
-import { trpc } from "../utils/trpc";
+import { api } from "@/trpc/react";
 import MovieInlinePreview from "./MovieInlinePreview";
 
 interface AddExtraToNextProps {
@@ -20,7 +22,7 @@ interface AddExtraToNextProps {
 }
 export const AddExtraToNext: FC<AddExtraToNextProps> = ({ episode }) => {  
 
-	const { data: isAdmin } = trpc.auth.isAdmin.useQuery();
+	const { data: isAdmin } = api.auth.isAdmin.useQuery();
   const [addedExtras, setAddedExtras] = useState<Movie[]>([]);
   
   const addExtra = (movie: Movie) => {

@@ -5,6 +5,7 @@ import { CarouselProvider, Slider, Slide, ButtonBack, ButtonNext } from 'pure-re
 import 'pure-react-carousel/dist/react-carousel.es.css';
 import type { Movie } from "@prisma/client";
 import MovieCard from "./MovieCard";
+import { api } from "@/trpc/react";
 
 interface MovieSearchProps {
 	setMovie: Dispatch<SetStateAction<Movie | null>>;
@@ -13,7 +14,7 @@ interface MovieSearchProps {
 const MovieSearch: FC<MovieSearchProps> = ({ setMovie: setMovie }) => {
 	const [ modalOpen, setModalOpen ] = useState<boolean>(false);
 	const [ searchQuery, setSearchQuery ] = useState<string>("");
-	const { data: movies } = trpc.movie.find.useQuery({
+	const { data: movies } = api.movie.find.useQuery({
 		searchTerm: searchQuery,
 	})
 	const selectMovie = function(movie: Movie) {

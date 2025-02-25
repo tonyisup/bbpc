@@ -1,7 +1,8 @@
-import type { Episode, Movie } from ".prisma/client";
-import { type FC, useState, type Dispatch } from "react";
+'use client';
 
-import { trpc } from "../utils/trpc";
+import type { Episode, Movie } from "@prisma/client";
+import { type FC, useState, type Dispatch } from "react";
+import { api } from "@/trpc/react";
 import Modal from "./common/Modal";
 import MovieFind from "./MovieFind";
 
@@ -11,10 +12,10 @@ interface AddEpisodeExtraModalProps {
 }
 
 const AddEpisodeExtraModal: FC<AddEpisodeExtraModalProps> = ({ episode, setMovieAdded }) => {
-	const reviewer = trpc.user.me.useQuery();
+	const reviewer = api.user.me.useQuery();
 	const [modalOpen, setModalOpen] = useState(false)
 	const [movie, setMovie] = useState<Movie | null>(null)
-	const {mutate: addExtra} = trpc.review.add.useMutation({
+	const addExtra = api.review.add.useMutation({
 		onSuccess: () => {
 			if (setMovieAdded && movie) setMovieAdded(movie)
 			closeModal()
@@ -26,7 +27,7 @@ const AddEpisodeExtraModal: FC<AddEpisodeExtraModalProps> = ({ episode, setMovie
 	}
 	const handleAddExtra = function() {
 		if (reviewer?.data && movie) {
-			addExtra({
+			addExtra.mutate({
 				userId: reviewer.data.id,
 				movieId: movie.id,
 				episodeId: episode.id

@@ -9,11 +9,13 @@ interface AssignmentProps {
     User: User,
     Movie: Movie | null
   }
+	showMovieTitles?: boolean,
 }
 
-const Assignment: FC<AssignmentProps> = ({ assignment }) => {
+const Assignment: FC<AssignmentProps> = ({ assignment, showMovieTitles = false }) => {
   return <div className="flex flex-col items-center gap-2 p-2">
-    <MovieInlinePreview movie={assignment.Movie} />
+    {assignment.Movie && <MovieInlinePreview movie={assignment.Movie} />}
+    {showMovieTitles && <div className="text-sm text-gray-500">{assignment.Movie?.title} ({assignment.Movie?.year})</div>}
     <div className="flex items-center justify-between gap-4">
 			<HomeworkFlag homework={assignment.homework ?? false} />
 			<UserTag user={assignment.User} />
