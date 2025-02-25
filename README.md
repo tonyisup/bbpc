@@ -1,28 +1,73 @@
-# Create T3 App
+# BBPC (Bad Boys Podcast)
 
-This is a [T3 Stack](https://create.t3.gg/) project bootstrapped with `create-t3-app`.
+A modern web application built with the T3 Stack, combining powerful technologies for a robust full-stack experience.
 
-## What's next? How do I make an app with this?
+## ��� Tech Stack
 
-We try to keep this project as simple as possible, so you can start with just the scaffolding we set up for you, and add additional things later when they become necessary.
+- **Framework**: [Next.js 14](https://nextjs.org/) with TypeScript
+- **Authentication**: [NextAuth.js](https://next-auth.js.org/) for secure user authentication
+- **Database**: [Prisma](https://prisma.io) as the ORM
+- **API**: [tRPC](https://trpc.io) for end-to-end typesafe APIs
+- **Styling**: [Tailwind CSS](https://tailwindcss.com) with additional utilities:
+  - Headless UI components
+  - Radix UI primitives
+  - Class Variance Authority
+  - Tailwind Merge
+  - Tailwind Animate
+- **UI Components**:
+  - Pure React Carousel
+  - React Card Flip
+  - React Icons
+  - React Responsive
+- **File Uploads**: Uploadthing integration
+- **Form Validation**: Zod
+- **Security**: Google ReCAPTCHA integration
 
-If you are not familiar with the different technologies used in this project, please refer to the respective docs. If you still are in the wind, please join our [Discord](https://t3.gg/discord) and ask for help.
+## 🛠️ Development
 
-- [Next.js](https://nextjs.org)
-- [NextAuth.js](https://next-auth.js.org)
-- [Prisma](https://prisma.io)
-- [Tailwind CSS](https://tailwindcss.com)
-- [tRPC](https://trpc.io)
+1. Clone the repository
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Copy `.env.example` to `.env` and fill in your environment variables
+4. Initialize the database:
+   ```bash
+   npx prisma generate
+   npx prisma db push
+   ```
+5. Start the development server:
+   ```bash
+   npm run dev
+   ```
 
-## Learn More
+## 📦 Scripts
 
-To learn more about the [T3 Stack](https://create.t3.gg/), take a look at the following resources:
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm start` - Start production server
+- `npm run lint` - Run ESLint
+- `npm run postinstall` - Generate Prisma client
 
-- [Documentation](https://create.t3.gg/)
-- [Learn the T3 Stack](https://create.t3.gg/en/faq#what-learning-resources-are-currently-available) — Check out these awesome tutorials
+## 🔒 Environment Variables
 
-You can check out the [create-t3-app GitHub repository](https://github.com/t3-oss/create-t3-app) — your feedback and contributions are welcome!
+Required environment variables can be found in `.env.example`. Make sure to set these up before running the application.
 
-## How do I deploy this?
+## 📱 Features
 
-Follow our deployment guides for [Vercel](https://create.t3.gg/en/deployment/vercel) and [Docker](https://create.t3.gg/en/deployment/docker) for more information.
+- Full-stack TypeScript integration
+- End-to-end type safety with tRPC
+- Secure authentication with NextAuth.js
+- Database management with Prisma
+- Responsive design with Tailwind CSS
+- Modern UI components and animations
+- File upload capabilities
+- Form validation and security measures
+
+## 📝 License
+
+[Your chosen license]
+
+## 🤝 Contributing
+
+Contributions, issues, and feature requests are welcome!
