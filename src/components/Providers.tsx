@@ -3,6 +3,7 @@
 import { SessionProvider } from "next-auth/react";
 import { TRPCReactProvider } from "@/trpc/react";
 import { type Session } from "next-auth";
+import { PostHogProvider } from "./PostHogProvider";
 
 export function Providers({
   children,
@@ -16,7 +17,9 @@ export function Providers({
   return (
     <SessionProvider session={session}>
       <TRPCReactProvider headers={headers}>
-        {children}
+        <PostHogProvider>
+          {children}
+        </PostHogProvider>
       </TRPCReactProvider>
     </SessionProvider>
   );
