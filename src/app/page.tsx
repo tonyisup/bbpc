@@ -1,6 +1,7 @@
 import { Episode } from "@/components/Episode";
 import { NextEpisode } from "@/components/NextEpisode";
 import { db } from "@/server/db";
+import { Suspense } from "react";
 
 export default async function HomePage() {
   const latestEpisode = await db.episode.findFirst({
@@ -47,7 +48,9 @@ export default async function HomePage() {
       <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16">        
         <div className="flex flex-wrap gap-12 justify-evenly">
           {latestEpisode && <Episode episode={latestEpisode} />}
-          <NextEpisode />
+          <Suspense fallback={<div className="text-white">Loading next episode...</div>}>
+            <NextEpisode />
+          </Suspense>
         </div>
       </div>
     </main>

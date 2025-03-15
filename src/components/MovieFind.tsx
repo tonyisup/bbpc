@@ -15,7 +15,7 @@ const MovieFind: FC<MovieFindProps> = ({ selectMovie }) => {
   
   const { data: movies } = api.movie.search.useQuery(
     { term: searchTerm },
-    { enabled: searchTerm.length > 2 }
+    { enabled: searchTerm.length > 0 }
   );
 
   const handleMovieSelect = (movie: Movie) => {

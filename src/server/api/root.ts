@@ -242,7 +242,7 @@ export const appRouter = createTRPCRouter({
         return ctx.db.movie.findMany({
           where: {
             title: {
-              startsWith: input.term,
+              contains: input.term,
             },
           },
           orderBy: {
