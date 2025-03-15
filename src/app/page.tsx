@@ -48,7 +48,11 @@ export default async function HomePage() {
       <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16">        
         <div className="flex flex-wrap gap-12 justify-evenly">
           {latestEpisode && <Episode episode={latestEpisode} />}
-          <Suspense fallback={<div className="text-white">Loading next episode...</div>}>
+          <Suspense fallback={
+            <div className="flex items-center justify-center p-8 rounded-lg bg-gray-800 min-w-[300px] min-h-[200px]">
+              <div className="text-white text-lg">Loading next episode...</div>
+            </div>
+          }>
             <NextEpisode />
           </Suspense>
         </div>
