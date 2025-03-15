@@ -239,18 +239,90 @@ export const appRouter = createTRPCRouter({
         term: z.string(),
       }))
       .query(async ({ ctx, input }) => {
-        return ctx.db.movie.findMany({
-          where: {
-            title: {
-              contains: input.term,
-            },
+        if (input.term.length === 0) {
+          return [];
+        }
+        if (!isNaN(parseInt(input.term)) && input.term.length === 4) {
+          const year = parseInt(input.term);
+          return ctx.db.movie.findMany({
+            where: {
+            OR: [
+              {
+                title: {
+                  contains: input.term,
+                },
+              },
+              {
+                year: {
+                  equals: parseInt(input.term),
+                },
+              },
+            ],
           },
           orderBy: {
             title: 'asc',
           },
           take: 10,
         });
-      }),
+      }
+      return ctx.db.movie.findMany({
+        where: {
+          title: {
+            contains: input.term,
+          },
+        },
+        orderBy: {
+          title: 'asc',
+        },
+        take: 10,
+      });
+    }),
+    searchByNext10Page: protectedProcedure
+      .input(z.object({
+        term: z.string(),
+        page: z.number(),
+      }))
+      .query(async ({ ctx, input }) => {
+        if (input.term.length === 0) {
+          return [];
+        }
+        if (!isNaN(parseInt(input.term)) && input.term.length === 4) {
+          const year = parseInt(input.term);
+          return ctx.db.movie.findMany({
+            where: {
+            OR: [
+              {
+                title: {
+                  contains: input.term,
+                },
+              },
+              {
+                year: {
+                  equals: parseInt(input.term),
+                },
+              },
+            ],
+          },
+          orderBy: {
+            title: 'asc',
+          },
+          take: 10,
+          skip: input.page * 10,
+        });
+      }
+      return ctx.db.movie.findMany({
+        where: {
+          title: {
+            contains: input.term,
+          },
+        },
+        orderBy: {
+          title: 'asc',
+        },
+        take: 10,
+        skip: input.page * 10,
+      });
+    }),
     assignment: publicProcedure
       .input(z.object({
         id: z.string()
