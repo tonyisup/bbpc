@@ -127,7 +127,7 @@ export const appRouter = createTRPCRouter({
         },
       });
     }),
-    
+
     addPointsToUser: protectedProcedure
       .input(z.object({
         userId: z.string(),
@@ -209,17 +209,17 @@ export const appRouter = createTRPCRouter({
       return ctx.db.user.findMany({
         where: {
           roles: {
-            some: { 
+            some: {
               role: {
                 admin: true
               }
             }
           }
         }
-      }); 
+      });
     }),
     myRoles: protectedProcedure
-      .query(async ({ ctx }) => 
+      .query(async ({ ctx }) =>
         await ctx.db.userRole.findMany({
           where: { userId: ctx.session.user.id },
         }))
@@ -231,7 +231,7 @@ export const appRouter = createTRPCRouter({
         page: z.number(),
         term: z.string(),
       }))
-      .query(async ({ ctx, input }) => {        
+      .query(async ({ ctx, input }) => {
         return ctx.tmdb.getMovies(input.page, input.term)
       }),
     search: protectedProcedure
@@ -246,37 +246,37 @@ export const appRouter = createTRPCRouter({
           const year = parseInt(input.term);
           return ctx.db.movie.findMany({
             where: {
-            OR: [
-              {
-                title: {
-                  contains: input.term,
+              OR: [
+                {
+                  title: {
+                    contains: input.term,
+                  },
                 },
-              },
-              {
-                year: {
-                  equals: parseInt(input.term),
+                {
+                  year: {
+                    equals: parseInt(input.term),
+                  },
                 },
-              },
-            ],
+              ],
+            },
+            orderBy: {
+              title: 'asc',
+            },
+            take: 10,
+          });
+        }
+        return ctx.db.movie.findMany({
+          where: {
+            title: {
+              contains: input.term,
+            },
           },
           orderBy: {
             title: 'asc',
           },
           take: 10,
         });
-      }
-      return ctx.db.movie.findMany({
-        where: {
-          title: {
-            contains: input.term,
-          },
-        },
-        orderBy: {
-          title: 'asc',
-        },
-        take: 10,
-      });
-    }),
+      }),
     searchByNext10Page: protectedProcedure
       .input(z.object({
         term: z.string(),
@@ -290,18 +290,31 @@ export const appRouter = createTRPCRouter({
           const year = parseInt(input.term);
           return ctx.db.movie.findMany({
             where: {
-            OR: [
-              {
-                title: {
-                  contains: input.term,
+              OR: [
+                {
+                  title: {
+                    contains: input.term,
+                  },
                 },
-              },
-              {
-                year: {
-                  equals: parseInt(input.term),
+                {
+                  year: {
+                    equals: parseInt(input.term),
+                  },
                 },
-              },
-            ],
+              ],
+            },
+            orderBy: {
+              title: 'asc',
+            },
+            take: 10,
+            skip: input.page * 10,
+          });
+        }
+        return ctx.db.movie.findMany({
+          where: {
+            title: {
+              contains: input.term,
+            },
           },
           orderBy: {
             title: 'asc',
@@ -309,20 +322,7 @@ export const appRouter = createTRPCRouter({
           take: 10,
           skip: input.page * 10,
         });
-      }
-      return ctx.db.movie.findMany({
-        where: {
-          title: {
-            contains: input.term,
-          },
-        },
-        orderBy: {
-          title: 'asc',
-        },
-        take: 10,
-        skip: input.page * 10,
-      });
-    }),
+      }),
     assignment: publicProcedure
       .input(z.object({
         id: z.string()
@@ -357,7 +357,7 @@ export const appRouter = createTRPCRouter({
         return await ctx.db.movie.findMany({
           where: {
             title: {
-              contains: input.searchTerm,            
+              contains: input.searchTerm,
             }
           }
         });
@@ -403,7 +403,7 @@ export const appRouter = createTRPCRouter({
 
         return review;
       }),
-    
+
     getCountOfUserAudioMessagesForAssignment: protectedProcedure
       .input(z.object({
         userId: z.string(),
@@ -417,7 +417,7 @@ export const appRouter = createTRPCRouter({
           },
         });
       }),
-    
+
     getGuessesForAssignmentForUser: protectedProcedure
       .input(z.object({
         assignmentId: z.string(),
@@ -455,41 +455,64 @@ export const appRouter = createTRPCRouter({
         });
         return guesses;
       }),
-      
-	submitGuess: protectedProcedure
-		.input(z.object({
-			assignmentId: z.string(),
-			hostId: z.string(),
-			guesserId: z.string(),
-			ratingId: z.string()
-		}))
-		.mutation(async ({ctx, input}) => {
-			return await ctx.db.$executeRaw`EXEC [SubmitGuess] @assignmentId=${input.assignmentId}, @hostId=${input.hostId}, @guesserId=${input.guesserId}, @ratingId=${input.ratingId}`
-		}),
-  
-	updateAudioMessage: protectedProcedure
-    .input(
-      z.object({
-        id: z.number(), 
+
+    submitGuess: protectedProcedure
+      .input(z.object({
         assignmentId: z.string(),
-        fileKey: z.string()
-    }))
-    .mutation(async ({ctx, input}) => {
-      return await ctx.db.audioMessage.update({
-        where: {
-          id: input.id
-        },
-        data: {
-          assignmentId: input.assignmentId,
-          fileKey: input.fileKey
-        }
-      })
-    }),
+        hostId: z.string(),
+        guesserId: z.string(),
+        ratingId: z.string()
+      }))
+      .mutation(async ({ ctx, input }) => {
+        return await ctx.db.$executeRaw`EXEC [SubmitGuess] @assignmentId=${input.assignmentId}, @hostId=${input.hostId}, @guesserId=${input.guesserId}, @ratingId=${input.ratingId}`
+      }),
+
+    updateAudioMessage: protectedProcedure
+      .input(
+        z.object({
+          id: z.number(),
+          assignmentId: z.string(),
+          fileKey: z.string()
+        }))
+      .mutation(async ({ ctx, input }) => {
+        return await ctx.db.audioMessage.update({
+          where: {
+            id: input.id
+          },
+          data: {
+            assignmentId: input.assignmentId,
+            fileKey: input.fileKey
+          }
+        })
+      }),
+    getRating: publicProcedure
+      .input(z.object({ id: z.string() }))
+      .query(async ({ ctx, input }) => {
+        return await ctx.db.rating.findUnique({
+          where: {
+            id: input.id
+          }
+        })
+      }),
+    getRatingByValue: publicProcedure
+      .input(z.object({ value: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const results = await ctx.db.rating.findMany({
+          where: {
+            value: input.value
+          }
+        })
+        return results[0]
+      }),
+    getRatings: publicProcedure
+      .query(async ({ ctx }) => {
+        return await ctx.db.rating.findMany()
+      }),
   }),
 
   video: createTRPCRouter({
     search: publicProcedure
-      .input(z.object({searchTerm: z.string()}))
+      .input(z.object({ searchTerm: z.string() }))
       .query(async ({ ctx, input }) => {
         return ctx.yt.getVideos(input.searchTerm);
       })
