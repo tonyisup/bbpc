@@ -1,24 +1,35 @@
 'use client';
 
 import { api } from "@/trpc/react";
-import { ExtraReview, Movie, Review, User, Episode as EpisodeType, Link as EpisodeLink, Assignment as AssignmentType } from "@prisma/client";
+import type { 
+  ExtraReview, 
+  Movie, 
+  Review, 
+  User, 
+  Episode as EpisodeType, 
+  Link as EpisodeLink, 
+  Assignment as AssignmentType } from "@prisma/client";
 import { Episode } from "@/components/Episode";
 import SearchFilter from "@/components/common/SearchFilter";
-import { useState, Suspense } from "react";
+import { useState } from "react";
 import Link from "next/link";
 
 function SearchResults({ query }: { query: string }) {
-  const { data: episodes } = api.episode.search.useQuery(
+  const { data: episodes, isLoading } = api.episode.search.useQuery(
     { query },
     {
       enabled: query.length > 0,
       initialData: [],
-      suspense: true,
+      
     }
   );
 
   if (!query) {
     return <p className="text-center text-gray-400">Enter a search term to find episodes.</p>;
+  }
+
+  if (isLoading) {
+    return <p className="text-center">Loading...</p>;
   }
 
   if (episodes.length === 0) {
@@ -67,9 +78,7 @@ export default function HistoryPage() {
         <SearchFilter onSearch={setQuery} />
       </div>
       <ul className="w-full max-w-4xl">
-        <Suspense fallback={<p className="text-center">Loading...</p>}>
-          <SearchResults query={trimmedQuery} />
-        </Suspense>
+        <SearchResults query={trimmedQuery} />
       </ul>
     </div>
   );
