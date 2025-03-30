@@ -30,12 +30,12 @@ const SearchFilter = ({
             setSearchQuery(e.target.value);
             onSearch(e.target.value);
           }}
-          className="flex-grow p-2 border text-black border-gray-300 rounded-l-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+          className="flex-grow p-2 border border-gray-300 rounded-l-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
         />
         <button
           type="submit"
           title="Search"
-          className="bg-red-600 text-white p-2 rounded-r-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+          className="bg-red-600 p-2 rounded-r-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
         >
           <HiSearch className="w-6 h-6" />
         </button>

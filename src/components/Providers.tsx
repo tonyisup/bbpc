@@ -5,7 +5,7 @@ import { TRPCReactProvider } from "@/trpc/react";
 import { type Session } from "next-auth";
 import { PostHogProvider } from "./PostHogProvider";
 import { ThemeProvider } from "next-themes";
-
+import SideBarProvider from "./SideBarProvider";
 export function Providers({
   children,
   session,
@@ -20,7 +20,9 @@ export function Providers({
       <TRPCReactProvider headers={headers}>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
           <PostHogProvider>
-            {children}
+            <SideBarProvider>
+              {children}
+            </SideBarProvider>
           </PostHogProvider>
         </ThemeProvider>
       </TRPCReactProvider>

@@ -33,9 +33,9 @@ export default async function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={`font-sans ${inter.variable} dark`}>
         <Providers session={session} headers={headers()}>
-          <div className="bg-black flex flex-col justify-between items-stretch min-h-screen">
+          <div className="bg-black flex flex-col min-h-screen">
             <header>
-              <nav className="w-full flex items-center justify-between bg-[#020202]">
+              <nav className="w-full flex items-center justify-around bg-[#020202]">
                 <div className="p-4">
                   <Link href="/"> 
                     <Image src="/logo-short.png" alt="BBPC Logo" width={120} height={40} />
@@ -52,7 +52,7 @@ export default async function RootLayout({
                 </div>
               </nav>
             </header>
-            <main className="flex-grow p-4 bg-gradient-to-b from-[#020202] to-[#424242]">
+            <main className="flex-grow p-4">
               <div className="flex flex-col text-white main-mask">                
                 {children}
               </div>

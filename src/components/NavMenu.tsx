@@ -1,37 +1,52 @@
 'use client'
 
-import { FC, useState } from "react";
-import { HiMenu } from "react-icons/hi";
-import { Auth } from "@/components/Auth";
-import { HiX } from "react-icons/hi";
+import type { FC } from "react";
 import Link from "next/link";
-
+import { Auth } from "@/components/Auth";
+import { Sidebar, SidebarContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarGroup, SidebarGroupLabel, SidebarGroupContent } from "@/components/ui/sidebar";
+import { HomeIcon, HistoryIcon, TrophyIcon, GamepadIcon, UserIcon } from "lucide-react";
 const NavMenu: FC = () => {
-  const [showMenu, setShowMenu] = useState(false);
-  function handleClick() {
-    setShowMenu(!showMenu);
-  }
   return (
-    <div className="flex flex-between gap-8 text-red-500 mr-4">
-      <div className="sm:hidden">
-        <HiMenu className="transition hover:text-red-400 cursor-pointer" onClick={handleClick} />
-      </div>
-      {showMenu && <div className="flex flex-col fixed p-4 justify-center items-center right-0 gap-4 sm:hidden bg-black">
-        <HiX className="transition hover:text-red-400 cursor-pointer" onClick={handleClick} />
-        <Link className="transition hover:text-red-400" href="/">Home</Link>
-        <Link className="transition hover:text-red-400" href="/history">History</Link>
-        <Link className="transition hover:text-red-400" href="/points">Points</Link>
-        <Link className="transition hover:text-red-400" href="/game">Game</Link>
-        <Auth />
-      </div>}
-      <div className="gap-4 hidden sm:flex">
-        <Link className="transition hover:text-red-400" href="/">Home</Link>
-        <Link className="transition hover:text-red-400" href="/history">History</Link>
-        <Link className="transition hover:text-red-400" href="/points">Points</Link>
-        <Link className="transition hover:text-red-400" href="/game">Game</Link>
-        <Auth />
-      </div>
-    </div>
+    <Sidebar variant="sidebar" collapsible="offcanvas">
+      <SidebarContent>
+        <SidebarGroup>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton size="lg">
+                  <HomeIcon className="w-4 h-4" />
+                  <Link className="transition hover:text-red-400" href="/">Home</Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton size="lg">
+                  <HistoryIcon className="w-4 h-4" />
+                  <Link className="transition hover:text-red-400" href="/history">History</Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton size="lg">
+                  <TrophyIcon className="w-4 h-4" />
+                  <Link className="transition hover:text-red-400" href="/points">Points</Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton size="lg">
+                  <GamepadIcon className="w-4 h-4" size="lg" />
+                  <Link className="transition hover:text-red-400" href="/game">Game</Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton size="lg">
+                  <UserIcon className="w-4 h-4" />
+                  <Auth />
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+      </SidebarContent>
+    </Sidebar>
   );
 }
 
