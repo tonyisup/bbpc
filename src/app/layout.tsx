@@ -5,6 +5,7 @@ import { getServerAuthSession } from "@/server/auth";
 import "@/styles/globals.css";
 import Head from "next/head";
 import Link from "next/link";
+import Image from "next/image";
 import LeaveMessage from "@/components/LeaveMessage";
 import { ListenHere } from "@/components/ListenHere";
 import NavMenu from "@/components/NavMenu";
@@ -37,7 +38,7 @@ export default async function RootLayout({
               <nav className="w-full flex items-center justify-between bg-[#020202]">
                 <div className="p-4">
                   <Link href="/"> 
-                    <img src="/logo-short.png" alt="BBPC Logo" width={120} height={40} />
+                    <Image src="/logo-short.png" alt="BBPC Logo" width={120} height={40} />
                   </Link>
                 </div>
                 <div className="px-4">
