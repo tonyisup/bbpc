@@ -117,6 +117,36 @@ export const appRouter = createTRPCRouter({
         },
       });
     }),
+    getCountOfUserEpisodeAudioMessages: protectedProcedure
+      .input(z.object({
+        userId: z.string(),
+        episodeId: z.string(),
+      }))
+      .query(async ({ ctx, input }) => {
+        return ctx.db.audioEpisodeMessage.count({
+          where: {
+            userId: input.userId,
+            episodeId: input.episodeId,
+          },
+        });
+      }),
+    updateAudioMessage: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        episodeId: z.string(),
+        fileKey: z.string()
+      }))
+      .mutation(async ({ ctx, input }) => {
+        return await ctx.db.audioEpisodeMessage.update({
+          where: {
+            id: input.id
+          },
+          data: {
+            episodeId: input.episodeId,
+            fileKey: input.fileKey
+          }
+        });
+      }),
   }),
 
   game: createTRPCRouter({

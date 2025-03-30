@@ -3,7 +3,7 @@ import { useState, type FC } from "react";
 import { signIn, useSession } from "next-auth/react";
 import { FaMicrophoneAlt } from "react-icons/fa";
 import Modal from "./common/Modal";
-import RecordEpisodeAudio from "./common/RecordEpisodeAudio";
+import VoiceMailRecorder from "./voice-mail-recorder";
 import { api } from "@/trpc/react";
 
 const LeaveMessage: FC = () => {
@@ -38,7 +38,10 @@ const LeaveMessage: FC = () => {
         titleText="Leave a message"
         setIsOpen={setIsModalOpen}
       >
-        <RecordEpisodeAudio userId={session.data.user.id} episodeId={episode.id} />
+        <VoiceMailRecorder 
+          episodeId={episode.id} 
+          userId={session.data.user.id} 
+        />
       </Modal>
     </>
   );

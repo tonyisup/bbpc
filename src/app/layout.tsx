@@ -30,8 +30,8 @@ export default async function RootLayout({
   const session = await getServerAuthSession();
   
   return (
-    <html lang="en">
-      <body className={`font-sans ${inter.variable}`}>
+    <html lang="en" suppressHydrationWarning>
+      <body className={`font-sans ${inter.variable} dark`}>
         <Providers session={session} headers={headers()}>
           <div className="bg-black flex flex-col justify-between items-stretch min-h-screen">
             <header>

@@ -3,19 +3,61 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Mic, Square, Play, Send, Loader2 } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { api } from "@/trpc/react"
+import { useUploadThing } from "@/utils/uploadthing"
 
-export default function VoiceMailRecorder() {
+interface VoiceMailRecorderProps {
+  episodeId: string;
+  userId: string;
+}
+
+export default function VoiceMailRecorder({ episodeId, userId }: VoiceMailRecorderProps) {
   const [isRecording, setIsRecording] = useState(false)
   const [recordingTime, setRecordingTime] = useState(0)
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null)
   const [isPlaying, setIsPlaying] = useState(false)
   const [permissionDenied, setPermissionDenied] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isUploaded, setIsUploaded] = useState(false)
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
   const audioChunksRef = useRef<Blob[]>([])
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const timerRef = useRef<NodeJS.Timeout | null>(null)
+
+  const { mutate: updateAudio } = api.episode.updateAudioMessage.useMutation();
+  const { data: countOfUserAudioMessagesForEpisode, refetch } = api.episode.getCountOfUserEpisodeAudioMessages.useQuery({ 
+    episodeId: episodeId, 
+    userId: userId 
+  });
+
+  const { startUpload, isUploading } = useUploadThing("audioUploader", {
+    onUploadError: (error: Error) => {
+      console.error("Error uploading audio:", error);
+      setIsSubmitting(false);
+      alert("Failed to upload audio. Please try again.");
+    },
+    onClientUploadComplete: (data) => {
+      const uploadedFile = data[0];
+      if (!uploadedFile) return;
+      if (!uploadedFile.serverData.uploadedId) return;
+      
+      updateAudio({ 
+        id: uploadedFile.serverData.uploadedId, 
+        episodeId: episodeId,
+        fileKey: uploadedFile.key
+      }, { 
+        onSuccess: () => {
+          refetch();
+          setIsUploaded(true);
+          setTimeout(() => setIsUploaded(false), 5000);
+          setAudioBlob(null);
+          setIsSubmitting(false);
+          alert("Voice message submitted successfully!");
+        }
+      });
+    },
+  });
 
   useEffect(() => {
     // Create audio element for playback
@@ -116,18 +158,17 @@ export default function VoiceMailRecorder() {
 
     setIsSubmitting(true)
 
-    // Simulate sending the voice mail
-    await new Promise((resolve) => setTimeout(resolve, 1500))
-
-    // Here you would typically upload the audioBlob to your server
-    // const formData = new FormData()
-    // formData.append('audio', audioBlob, 'voicemail.wav')
-    // await fetch('/api/voicemail', { method: 'POST', body: formData })
-
-    // Reset the component
-    setAudioBlob(null)
-    setIsSubmitting(false)
-    alert("Voice mail submitted successfully!")
+    try {
+      const audioFile = new File([audioBlob], 'audio-message.wav', { type: 'audio/wav' });
+      await startUpload(
+        [audioFile],
+        { episodeId: episodeId }
+      );
+    } catch (error) {
+      console.error("Error submitting audio:", error)
+      setIsSubmitting(false)
+      alert("Failed to submit voice message. Please try again.")
+    }
   }
 
   const handleCancel = () => {
@@ -155,6 +196,9 @@ export default function VoiceMailRecorder() {
         <CardTitle className="text-center">Record Voice Message</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
+        <div className="flex items-center justify-between text-sm text-muted-foreground">
+          <span>Recordings for this episode: {countOfUserAudioMessagesForEpisode}</span>
+        </div>
         {permissionDenied && (
           <Alert variant="destructive">
             <AlertDescription>
