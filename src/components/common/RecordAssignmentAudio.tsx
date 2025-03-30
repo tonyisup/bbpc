@@ -1,5 +1,8 @@
-import React, { useState, useRef } from 'react';
-import { BsRecordFill, BsStopFill, BsX } from "react-icons/bs";
+import React, { useState, useRef, useEffect } from 'react';
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Mic, Square, Play, Send, Loader2 } from "lucide-react"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 import { useUploadThing } from '../../utils/uploadthing';
 import { api } from '@/trpc/react';
 
@@ -10,169 +13,263 @@ interface RecordAssignmentAudioProps {
 
 const RecordAssignmentAudio: React.FC<RecordAssignmentAudioProps> = ({ userId, assignmentId }) => {
   const [isRecording, setIsRecording] = useState(false);
+  const [recordingTime, setRecordingTime] = useState(0);
+  const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [permissionDenied, setPermissionDenied] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploaded, setIsUploaded] = useState(false);
-  const [audioUrl, setAudioUrl] = useState<string | null>(null);
+
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+
   const { mutate: updateAudio } = api.review.updateAudioMessage.useMutation();
-  const { data: countOfUserAudioMessagesForAssignment, refetch } = api.review.getCountOfUserAudioMessagesForAssignment.useQuery({ assignmentId: assignmentId, userId: userId });
+  const { data: countOfUserAudioMessagesForAssignment, refetch } = api.review.getCountOfUserAudioMessagesForAssignment.useQuery({ 
+    assignmentId: assignmentId, 
+    userId: userId 
+  });
+
   const { startUpload, isUploading } = useUploadThing("audioUploader", {
     onUploadError: (error: Error) => {
       console.error("Error uploading audio:", error);
+      setIsSubmitting(false);
+      alert("Failed to upload audio. Please try again.");
     },
     onClientUploadComplete: (data) => {
       const uploadedFile = data[0];
       if (!uploadedFile) return;
       if (!uploadedFile.serverData.uploadedId) return;
+      
       updateAudio({ 
         id: uploadedFile.serverData.uploadedId, 
         assignmentId: assignmentId,
         fileKey: uploadedFile.key
-      }, { onSuccess: () => {
-        refetch();
-        setIsUploaded(true);
-        setTimeout(() => setIsUploaded(false), 5000);
-        setAudioUrl(null);
-      }});
+      }, { 
+        onSuccess: () => {
+          refetch();
+          setIsUploaded(true);
+          setTimeout(() => setIsUploaded(false), 5000);
+          setAudioBlob(null);
+          setIsSubmitting(false);
+          alert("Voice message submitted successfully!");
+        }
+      });
     },
   });
-  // const [loudness, setLoudness] = useState(0);
+
+  useEffect(() => {
+    // Create audio element for playback
+    audioRef.current = new Audio()
+    audioRef.current.onended = () => setIsPlaying(false)
+
+    // Clean up on unmount
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current)
+        timerRef.current = null
+      }
+
+      if (mediaRecorderRef.current && isRecording) {
+        mediaRecorderRef.current.stop()
+      }
+
+      if (audioRef.current) {
+        audioRef.current.pause()
+        audioRef.current.src = ""
+      }
+    }
+  }, [])
 
   const startRecording = async () => {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    const mediaRecorder = new MediaRecorder(stream);
-    mediaRecorderRef.current = mediaRecorder;
-    audioChunksRef.current = [];
+    audioChunksRef.current = []
+    setAudioBlob(null)
+    setRecordingTime(0)
 
-    // Create an audio context and analyzer
-    const audioContext = new AudioContext();
-    const source = audioContext.createMediaStreamSource(stream);
-    const analyser = audioContext.createAnalyser();
-    analyser.fftSize = 256;
-    source.connect(analyser);
-/* 
-    const dataArray = new Uint8Array(analyser.frequencyBinCount);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      mediaRecorderRef.current = new MediaRecorder(stream)
 
-    const updateLoudness = () => {
-      analyser.getByteFrequencyData(dataArray);
-      const sum = dataArray.reduce((a, b) => a + b, 0);
-      const average = sum / dataArray.length;
-      setLoudness(average);
-      if (isRecording) {
-        requestAnimationFrame(updateLoudness);
+      mediaRecorderRef.current.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data)
+        }
       }
-    };
 
-    updateLoudness(); */
+      mediaRecorderRef.current.onstop = () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: "audio/wav" })
+        setAudioBlob(audioBlob)
 
-    mediaRecorder.ondataavailable = (event) => {
-      audioChunksRef.current.push(event.data);
-    };
+        // Stop all tracks on the stream to release the microphone
+        stream.getTracks().forEach((track) => track.stop())
+      }
 
-    mediaRecorder.onstop = () => {
-      const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' });
-      const audioUrl = URL.createObjectURL(audioBlob);
-      setAudioUrl(audioUrl);
-      audioContext.close(); // Close the audio context when done
-    };
+      mediaRecorderRef.current.start()
+      setIsRecording(true)
+      setPermissionDenied(false)
 
-    mediaRecorder.start();
-    setIsRecording(true);
-  };
+      // Clear any existing timer first
+      if (timerRef.current) {
+        clearInterval(timerRef.current)
+      }
+
+      // Start timer to track recording duration
+      timerRef.current = setInterval(() => {
+        setRecordingTime((prevTime) => prevTime + 1)
+      }, 1000)
+    } catch (error) {
+      console.error("Error accessing microphone:", error)
+      setPermissionDenied(true)
+    }
+  }
 
   const stopRecording = () => {
-    if (mediaRecorderRef.current) {
-      mediaRecorderRef.current.stop();
-      setIsRecording(false);
-    }
-  };
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop()
+      setIsRecording(false)
 
-  const cancelRecording = () => {
-    setAudioUrl(null);
-    stopRecording();
+      if (timerRef.current) {
+        clearInterval(timerRef.current)
+        timerRef.current = null
+      }
+    }
+  }
+
+  const playRecording = () => {
+    if (audioBlob && audioRef.current) {
+      const audioUrl = URL.createObjectURL(audioBlob)
+      audioRef.current.src = audioUrl
+      audioRef.current.play()
+      setIsPlaying(true)
+    }
+  }
+
+  const stopPlayback = () => {
+    if (audioRef.current) {
+      audioRef.current.pause()
+      audioRef.current.currentTime = 0
+      setIsPlaying(false)
+    }
   }
 
   const handleSubmit = async () => {
-    if (audioChunksRef.current.length) {
-      const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' });
-      const audioFile = new File([audioBlob], 'audio-message.wav', { type: 'audio/wav' });
+    if (!audioBlob) return
 
-      const formData = new FormData();
-      formData.append('audio', audioFile);
+    setIsSubmitting(true)
+
+    try {
+      const audioFile = new File([audioBlob], 'audio-message.wav', { type: 'audio/wav' });
       await startUpload(
         [audioFile],
         { assignmentId: assignmentId }
       );
+    } catch (error) {
+      console.error("Error submitting audio:", error)
+      setIsSubmitting(false)
+      alert("Failed to submit voice message. Please try again.")
     }
-  };
+  }
 
-  return (<>
-    <div className="flex flex-col items-center">
-      <p>
-        You have submitted {countOfUserAudioMessagesForAssignment} messages for this assignment
-      </p>
-      <div className="flex flex-wrap items-center">
-        <button
-          type="button"
-          className="cursor-pointer p-2 text-red-600 disabled:text-gray-600 rounded-md flex items-center justify-center text-8xl"
-          onClick={startRecording}
-          disabled={isRecording}
-          title="Start Recording"
-        >
-          <BsRecordFill className="inline-block" />
-        </button>
-        <button
-          type="button"
-          className="cursor-pointer p-2 text-black disabled:text-gray-600 rounded-md flex items-center justify-center text-8xl"
-          onClick={stopRecording}
-          disabled={!isRecording}
-          title="Stop Recording"
-        >
-          <BsStopFill className="inline-block" />
-        </button>
-        <button
-          type="button"
-          className="cursor-pointer p-2 text-red-600 disabled:text-gray-600 rounded-md flex items-center justify-center text-8xl"
-          onClick={cancelRecording}
-          disabled={!audioUrl}
-          title="Cancel Recording"
-        >
-          <BsX className="inline-block" />
-        </button>
-      </div>
-      <div className="min-h-6">
-        {!isUploading && !isUploaded && !isRecording && audioUrl && !isUploading && 
-          <p className="text-gray-600 text-2xl font-bold">
-            Send it!
-          </p>
-        }
-        {!isUploading && !isUploaded && !isRecording && !audioUrl &&
-          <p className="text-gray-600 text-2xl font-bold">
-            Standby...
-          </p>
-        }
-        {isUploading && 
-          <p className="text-yellow-600 text-2xl font-bold animate-pulse">
-            Uploading...
-          </p>
-        }
-        {isUploaded && 
-          <p className="text-green-600 text-2xl font-bold">
-            Uploaded!
-          </p>
-        }      
-        {isRecording && 
-          <p className="text-red-600 text-2xl font-bold animate-pulse">
-            Recording... 
-          </p>
-        }
-      </div>
-      <div className="p-4">{<audio controls src={audioUrl ?? ""}></audio>}</div>
-      <button className="cursor-pointer p-4 bg-red-600 text-gray-300 rounded-md disabled:bg-gray-500 disabled:text-gray-800" onClick={handleSubmit} disabled={!audioUrl}>
-        Submit
-      </button>
-    </div>
-  </>
+  const handleCancel = () => {
+    // Reset the component state
+    setAudioBlob(null)
+    setRecordingTime(0)
+
+    // If there's any playback happening, stop it
+    if (audioRef.current) {
+      audioRef.current.pause()
+      audioRef.current.currentTime = 0
+      setIsPlaying(false)
+    }
+  }
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60)
+    const secs = seconds % 60
+    return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`
+  }
+
+  return (
+    <Card className="w-full max-w-md mx-auto">
+      <CardHeader>
+        <CardTitle className="text-center">Record Assignment Audio</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="flex items-center justify-between text-sm text-muted-foreground">
+          <span>Recordings for this assignment: {countOfUserAudioMessagesForAssignment}</span>
+        </div>
+        {permissionDenied && (
+          <Alert variant="destructive">
+            <AlertDescription>
+              Microphone access was denied. Please allow microphone access to record a voice message.
+            </AlertDescription>
+          </Alert>
+        )}
+
+        <div className="flex justify-center items-center h-32 bg-muted rounded-md relative">
+          {isRecording ? (
+            <div className="text-center">
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <span className="h-3 w-3 rounded-full bg-red-500 animate-pulse"></span>
+                <span className="text-lg font-medium">Recording...</span>
+              </div>
+              <div className="text-2xl font-bold">{formatTime(recordingTime)}</div>
+            </div>
+          ) : audioBlob ? (
+            <div className="text-center">
+              <div className="text-lg mb-2">Recording complete</div>
+              <div className="text-sm text-muted-foreground">{formatTime(recordingTime)} recorded</div>
+            </div>
+          ) : (
+            <div className="text-center text-muted-foreground">Press record to start your voice message</div>
+          )}
+        </div>
+      </CardContent>
+      <CardFooter className="flex justify-between">
+        {isRecording ? (
+          <Button variant="destructive" onClick={stopRecording} className="w-full">
+            <Square className="mr-2 h-4 w-4" />
+            Stop Recording
+          </Button>
+        ) : audioBlob ? (
+          <div className="w-full grid grid-cols-3 gap-2">
+            <Button variant="outline" onClick={handleCancel} className="col-span-1">
+              Cancel
+            </Button>
+            {isPlaying ? (
+              <Button variant="outline" onClick={stopPlayback} className="col-span-1">
+                <Square className="mr-2 h-4 w-4" />
+                Stop
+              </Button>
+            ) : (
+              <Button variant="outline" onClick={playRecording} className="col-span-1">
+                <Play className="mr-2 h-4 w-4" />
+                Preview
+              </Button>
+            )}
+            <Button onClick={handleSubmit} disabled={isSubmitting} className="col-span-1">
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Sending...
+                </>
+              ) : (
+                <>
+                  <Send className="mr-2 h-4 w-4" />
+                  Submit
+                </>
+              )}
+            </Button>
+          </div>
+        ) : (
+          <Button onClick={startRecording} className="w-full">
+            <Mic className="mr-2 h-4 w-4" />
+            Record Voice Message
+          </Button>
+        )}
+      </CardFooter>
+    </Card>
   );
 };
 
