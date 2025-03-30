@@ -1,8 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { HiSearch } from 'react-icons/hi';
 
-const SearchFilter = ({ onSearch }: { onSearch: (query: string) => void }) => {
-  const [searchQuery, setSearchQuery] = useState('');
+const SearchFilter = ({ 
+  onSearch, 
+  initialValue = '' 
+}: { 
+  onSearch: (query: string) => void;
+  initialValue?: string;
+}) => {
+  const [searchQuery, setSearchQuery] = useState(initialValue);
+
+  useEffect(() => {
+    setSearchQuery(initialValue);
+  }, [initialValue]);
 
   const handleSearch = (e: { preventDefault: () => void; }) => {
     e.preventDefault();

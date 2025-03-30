@@ -3,12 +3,15 @@
 import { type Movie } from "@prisma/client";
 import Image from "next/image";
 import Link from "next/link";
+import type { FC } from "react";
+import { highlightText } from "@/utils/text";
 
 interface MovieInlinePreviewProps {
   movie: Movie;
+  searchQuery?: string;
 }
 
-export default function MovieInlinePreview({ movie }: MovieInlinePreviewProps) {
+const MovieInlinePreview: FC<MovieInlinePreviewProps> = ({ movie, searchQuery = "" }) => {
   return (
     <Link
       href={movie.url}
@@ -26,6 +29,11 @@ export default function MovieInlinePreview({ movie }: MovieInlinePreviewProps) {
         height={216} 
       />
     }
+    <div className="text-sm">
+      {highlightText(movie.title, searchQuery)}
+    </div>
     </Link>
   );
 }
+
+export default MovieInlinePreview;

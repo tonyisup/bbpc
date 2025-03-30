@@ -4,11 +4,12 @@ import MovieInlinePreview from "./MovieInlinePreview";
 import type { Assignment as AssignmentType, Episode as EpisodeType, Link as EpisodeLink, Movie, User, Review, ExtraReview } from '@prisma/client';
 import Link from "next/link";
 import { AddExtraToNext } from "./AddExtraToNext";
-
+import { highlightText } from "@/utils/text";
 
 interface EpisodeProps {
 	allowGuesses?: boolean,
 	showMovieTitles?: boolean,
+  searchQuery?: string,
   episode: null | (EpisodeType & {
     assignments: (AssignmentType & {
         User: User;
@@ -23,7 +24,7 @@ interface EpisodeProps {
 	});
 }
 
-export const Episode: FC<EpisodeProps> = ({ episode, allowGuesses: isNextEpisode, showMovieTitles = false }) => {
+export const Episode: FC<EpisodeProps> = ({ episode, allowGuesses: isNextEpisode, showMovieTitles = false, searchQuery = "" }) => {
 	if (!episode) return null;
 	if (isNextEpisode == null) isNextEpisode = false;
 
@@ -34,9 +35,9 @@ export const Episode: FC<EpisodeProps> = ({ episode, allowGuesses: isNextEpisode
           {episode?.number}
         </div>
 				<div className="text-2xl p-2 flex-grow flex justify-center items-center gap-2">
-					{!episode?.recording && episode?.title}
+					{!episode?.recording && highlightText(episode?.title ?? "", searchQuery)}
 					{episode?.recording && <a className="underline" title={episode?.title} href={episode.recording ?? ""} target="_blank" rel="noreferrer">
-						{episode?.title}
+						{highlightText(episode?.title ?? "", searchQuery)}
 					</a>}
 				</div>
 				<div className="text-md p-2">					
@@ -44,11 +45,11 @@ export const Episode: FC<EpisodeProps> = ({ episode, allowGuesses: isNextEpisode
 				</div>        
       </div>
 			<div className="w-full text-center">
-      	<p>{episode?.description}</p>
+      	<p>{highlightText(episode?.description ?? "", searchQuery)}</p>
       </div>
-      <EpisodeAssignments assignments={episode.assignments} allowGuesses={isNextEpisode} showMovieTitles={showMovieTitles} />
+      <EpisodeAssignments assignments={episode.assignments} allowGuesses={isNextEpisode} showMovieTitles={showMovieTitles} searchQuery={searchQuery} />
     </div>
-    <EpisodeExtras extras={episode.extras} showMovieTitles={showMovieTitles} />		
+    <EpisodeExtras extras={episode.extras} showMovieTitles={showMovieTitles} searchQuery={searchQuery} />		
 		{isNextEpisode && <AddExtraToNext episode={episode} />}
 		<EpisodeLinks links={episode.links} />
   </section>
@@ -60,13 +61,14 @@ interface EpisodeAssignments {
 		User: User;
 		Movie: Movie | null;
 	})[];
+	searchQuery?: string;
 }
-const EpisodeAssignments: FC<EpisodeAssignments> = ({ assignments, allowGuesses, showMovieTitles = false }) => {
+const EpisodeAssignments: FC<EpisodeAssignments> = ({ assignments, allowGuesses, showMovieTitles = false, searchQuery = "" }) => {
 	if (!assignments || assignments.length == 0) return null;
 	return <div className="flex gap-2 justify-around">
 		{assignments.sort((a,b) => a.homework && !b.homework ? -1 : a.homework && b.homework ? 0 : 1).map((assignment) => {
 			return <div key={assignment.id} className="flex flex-col items-center justify-between gap-2">
-				<Assignment assignment={assignment} key={assignment.id} showMovieTitles={showMovieTitles} />
+				<Assignment assignment={assignment} key={assignment.id} showMovieTitles={showMovieTitles} searchQuery={searchQuery} />
 				
 				{allowGuesses && <Link className="bg-red-600 hover:bg-red-500 text-white py-1 px-4 text-2xl border-b-4 border-red-800 hover:border-red-600 rounded-xl" href={`/assignment/${assignment.id}`}>
 					<div className="flex">
@@ -80,6 +82,7 @@ const EpisodeAssignments: FC<EpisodeAssignments> = ({ assignments, allowGuesses,
 
 interface EpisodeExtras {
 	showMovieTitles?: boolean,
+	searchQuery?: string,
 	extras: (ExtraReview & {
 		Review: (Review & {
 			User: User;
@@ -87,15 +90,19 @@ interface EpisodeExtras {
 	})})[];
 }
 
-const EpisodeExtras: FC<EpisodeExtras> = ({ extras, showMovieTitles = false }) => {
+const EpisodeExtras: FC<EpisodeExtras> = ({ extras, showMovieTitles = false, searchQuery = "" }) => {
 	if (!extras || extras.length == 0) return null;
 	return <div className="py-2 w-full">
 		<div className="flex justify-center gap-2 flex-wrap">
 			{extras.map((extra) => {
 				return <div key={extra.id} className="flex items-center gap-2 w-20">
 					<div className="flex flex-col items-center gap-2">
-						{extra.Review.Movie && <MovieInlinePreview movie={extra.Review.Movie} />}
-						{showMovieTitles && <div className="text-sm text-gray-500">{extra.Review.Movie?.title} ({extra.Review.Movie?.year})</div>}
+						{extra.Review.Movie && <MovieInlinePreview movie={extra.Review.Movie} searchQuery={searchQuery} />}
+						{showMovieTitles && (
+							<div className="text-sm text-gray-500">
+								{highlightText(`${extra.Review.Movie?.title} (${extra.Review.Movie?.year})`, searchQuery)}
+							</div>
+						)}
 					</div>
 				</div>
 			})}

@@ -11,7 +11,7 @@ import type {
   Assignment as AssignmentType } from "@prisma/client";
 import { Episode } from "@/components/Episode";
 import SearchFilter from "@/components/common/SearchFilter";
-import { useState } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 
 function SearchResults({ query }: { query: string }) {
@@ -52,7 +52,7 @@ function SearchResults({ query }: { query: string }) {
         links: EpisodeLink[];
       }) => (
         <li className="mb-8" key={episode.id}>
-          <Episode episode={episode} showMovieTitles={true} />
+          <Episode episode={episode} showMovieTitles={true} searchQuery={query} />
         </li>
       ))}
     </>
@@ -60,8 +60,20 @@ function SearchResults({ query }: { query: string }) {
 }
 
 export default function HistoryPage() {
-  const [query, setQuery] = useState("");
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const query = searchParams.get('q') ?? '';
   const trimmedQuery = query.trim();
+
+  const handleSearch = (newQuery: string) => {
+    const params = new URLSearchParams(searchParams);
+    if (newQuery) {
+      params.set('q', newQuery);
+    } else {
+      params.delete('q');
+    }
+    router.push(`/history?${params.toString()}`);
+  };
 
   return (
     <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16">
@@ -75,7 +87,7 @@ export default function HistoryPage() {
         </Link>
       </div>
       <div className="w-full max-w-4xl">
-        <SearchFilter onSearch={setQuery} />
+        <SearchFilter onSearch={handleSearch} initialValue={query} />
       </div>
       <ul className="w-full max-w-4xl">
         <SearchResults query={trimmedQuery} />
