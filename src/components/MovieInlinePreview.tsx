@@ -29,9 +29,9 @@ const MovieInlinePreview: FC<MovieInlinePreviewProps> = ({ movie, searchQuery = 
         height={216} 
       />
     }
-    <div className="text-sm">
+    {searchQuery && <div className="text-sm">
       {highlightText(movie.title, searchQuery)}
-    </div>
+    </div>}
     </Link>
   );
 }
