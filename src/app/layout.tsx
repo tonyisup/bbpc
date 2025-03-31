@@ -28,32 +28,28 @@ export default async function RootLayout({
   children: React.ReactNode;
 }) {
   const session = await getServerAuthSession();
-  
+
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`font-sans ${inter.variable} dark`}>
         <Providers session={session} headers={headers()}>
-          <div className="bg-black flex flex-col min-h-screen">
+          <div className="bg-black flex flex-col min-h-screen items-center">
             <header>
-              <nav className="w-full flex items-center justify-around bg-[#020202]">
-                <div className="p-4">
-                  <Link href="/"> 
+              <nav className="pt-8 w-full flex items-center justify-around bg-[#020202]">
+                <div className="flex-grow">
+
+                  <Link href="/">
                     <Image src="/logo-short.png" alt="BBPC Logo" width={120} height={40} />
                   </Link>
                 </div>
                 <div className="px-4">
                   <LeaveMessage />
                 </div>
-                <div className="flex-grow">
-                  <p className="text-center text-xs sm:text-lg text-red-900">Random rants on all things movie</p>
-                </div>
-                <div>
-                  <NavMenu />
-                </div>
               </nav>
+              <p className="pb-2 text-center text-xs sm:text-lg text-red-900">Random rants on all things movie</p>
             </header>
-            <main className="flex-grow p-4">
-              <div className="flex flex-col text-white main-mask">                
+            <main className="flex-grow">
+              <div className="flex flex-col text-white main-mask">
                 {children}
               </div>
             </main>
@@ -65,6 +61,6 @@ export default async function RootLayout({
       </body>
     </html>
   );
-} 
+}
 
 

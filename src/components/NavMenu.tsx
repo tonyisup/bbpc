@@ -2,7 +2,7 @@
 
 import type { FC } from "react";
 import Link from "next/link";
-import { Sidebar, SidebarContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarGroup, SidebarGroupContent, useSidebar } from "@/components/ui/sidebar";
+import { Sidebar, SidebarContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarGroup, SidebarGroupContent, useSidebar, SidebarGroupLabel } from "@/components/ui/sidebar";
 import { HomeIcon, HistoryIcon, TrophyIcon, GamepadIcon, UserIcon } from "lucide-react";
 
 const NavMenu: FC = () => {
