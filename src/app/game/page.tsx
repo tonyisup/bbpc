@@ -7,6 +7,12 @@ export default function GamePage() {
         <span title="Who The Fuck Is Reggie">WTFIR</span> Game Rules
       </h1>
       
+      <div className="bg-red-900/30 rounded-lg p-4 mb-8 border-2 border-red-600">
+        <p className="text-lg font-semibold text-center text-red-400">
+          ⚠️ Important: Missing 2 episodes in a row will result in point deductions! ⚠️
+        </p>
+      </div>
+
       <div className="bg-gray-800/50 rounded-lg p-6 shadow-lg mb-8">
         <h2 className="text-2xl font-semibold mb-6 text-center text-red-600">Synopsis</h2>
         <div className="space-y-4 text-lg">
