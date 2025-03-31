@@ -19,7 +19,7 @@ export const Auth: React.FC = () => {
   const { data: sessionData, status } = useSession();
   
   if (status === "loading") {
-    return <div className="animate-pulse w-8 h-8 rounded-full bg-gray-200" />;
+    return <div className="animate-pulse w-8 h-8 rounded-full" />;
   }
   
   return <LoggedInAs session={sessionData} />;

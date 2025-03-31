@@ -7,39 +7,44 @@ import { Sidebar, SidebarContent, SidebarMenu, SidebarMenuItem, SidebarMenuButto
 import { HomeIcon, HistoryIcon, TrophyIcon, GamepadIcon, UserIcon } from "lucide-react";
 const NavMenu: FC = () => {
   return (
-    <Sidebar variant="sidebar" collapsible="offcanvas">
+    <Sidebar variant="sidebar" collapsible="icon">
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton size="lg">
-                  <HomeIcon className="w-4 h-4" />
-                  <Link className="transition hover:text-red-400" href="/">Home</Link>
+                <SidebarMenuButton>
+                  <Link className="transition hover:text-red-400 flex items-center gap-2" href="/">
+                    <HomeIcon className="w-4 h-4"/>Home
+                  </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
-                <SidebarMenuButton size="lg">
-                  <HistoryIcon className="w-4 h-4" />
-                  <Link className="transition hover:text-red-400" href="/history">History</Link>
+                <SidebarMenuButton>
+                  <Link className="transition hover:text-red-400 flex items-center gap-2" href="/history">
+                    <HistoryIcon className="w-4 h-4"/>History
+                  </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
-                <SidebarMenuButton size="lg">
-                  <TrophyIcon className="w-4 h-4" />
-                  <Link className="transition hover:text-red-400" href="/points">Points</Link>
+                <SidebarMenuButton>
+                  <Link className="transition hover:text-red-400 flex items-center gap-2" href="/points">
+                    <TrophyIcon className="w-4 h-4"/>Points
+                  </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
-                <SidebarMenuButton size="lg">
-                  <GamepadIcon className="w-4 h-4" size="lg" />
-                  <Link className="transition hover:text-red-400" href="/game">Game</Link>
+                <SidebarMenuButton>
+                  <Link className="transition hover:text-red-400 flex items-center gap-2" href="/game">
+                    <GamepadIcon className="w-4 h-4"/>Game
+                  </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
-                <SidebarMenuButton size="lg">
-                  <UserIcon className="w-4 h-4" />
-                  <Auth />
+                <SidebarMenuButton>
+                  <Link className="transition hover:text-red-400 flex items-center gap-2" href="/profile">
+                    <UserIcon className="w-4 h-4"/>Profile
+                  </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
