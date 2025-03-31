@@ -281,7 +281,7 @@ const SidebarTrigger = React.forwardRef<
       size="icon"
       className={cn(
         "h-10 w-10 md:h-7 md:w-7",
-        "fixed top-4 left-4 z-50",
+        "m-2 p-6 z-50",
         "bg-background/80 backdrop-blur-sm",
         "hover:bg-accent hover:text-accent-foreground",
         "transition-colors duration-200",
