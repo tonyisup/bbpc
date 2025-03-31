@@ -28,7 +28,7 @@ export const Episode: FC<EpisodeProps> = ({ episode, allowGuesses: isNextEpisode
 	if (!episode) return null;
 	if (isNextEpisode == null) isNextEpisode = false;
 
-  return <section className="px-2 bg-transparent outline-2 outline-gray-500 outline rounded-2xl">
+  return <section className="px-2 bg-transparent outline-2 outline-gray-500 outline rounded-2xl flex flex-col gap-2 justify-between">
     <div className="">
       <div className="flex justify-around items-baseline gap-2 font-bold">
         <div className="text-md p-2">          
@@ -49,9 +49,13 @@ export const Episode: FC<EpisodeProps> = ({ episode, allowGuesses: isNextEpisode
       </div>
       <EpisodeAssignments assignments={episode.assignments} allowGuesses={isNextEpisode} showMovieTitles={showMovieTitles} searchQuery={searchQuery} />
     </div>
-    <EpisodeExtras extras={episode.extras} showMovieTitles={showMovieTitles} searchQuery={searchQuery} />		
-		{isNextEpisode && <AddExtraToNext episode={episode} />}
-		<EpisodeLinks links={episode.links} />
+		<div>
+			<hr className="my-2 border-gray-500" />
+			<span className="text-xs">Extras</span>
+			<EpisodeExtras extras={episode.extras} showMovieTitles={showMovieTitles} searchQuery={searchQuery} />		
+			{isNextEpisode && <AddExtraToNext episode={episode} />}
+			<EpisodeLinks links={episode.links} />
+		</div>
   </section>
 }
 interface EpisodeAssignments {
