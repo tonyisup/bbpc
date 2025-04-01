@@ -50,9 +50,13 @@ export const Episode: FC<EpisodeProps> = ({ episode, allowGuesses: isNextEpisode
       <EpisodeAssignments assignments={episode.assignments} allowGuesses={isNextEpisode} showMovieTitles={showMovieTitles} searchQuery={searchQuery} />
     </div>
 		<div>
-			<hr className="my-2 border-gray-500" />
-			<span className="text-xs">Extras</span>
-			<EpisodeExtras extras={episode.extras} showMovieTitles={showMovieTitles} searchQuery={searchQuery} />		
+			{episode.extras.length > 0 && (
+				<>
+					<hr className="my-2 border-gray-500" />
+					<span className="text-xs">Extras</span>
+					<EpisodeExtras extras={episode.extras} showMovieTitles={showMovieTitles} searchQuery={searchQuery} />		
+				</>
+			)}
 			{isNextEpisode && <AddExtraToNext episode={episode} />}
 			<EpisodeLinks links={episode.links} />
 		</div>
