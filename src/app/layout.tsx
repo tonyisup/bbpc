@@ -2,13 +2,11 @@ import { type Metadata } from "next";
 import { Inter } from "next/font/google";
 import { headers } from "next/headers";
 import { getServerAuthSession } from "@/server/auth";
-import "@/styles/globals.css";
-import Head from "next/head";
+import "@/styles/globals.css"
 import Link from "next/link";
 import Image from "next/image";
 import LeaveMessage from "@/components/LeaveMessage";
 import { ListenHere } from "@/components/ListenHere";
-import NavMenu from "@/components/NavMenu";
 import { Providers } from "@/components/Providers";
 
 const inter = Inter({
