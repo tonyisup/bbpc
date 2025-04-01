@@ -83,7 +83,7 @@ export default function HistoryPage() {
           href="/episodes" 
           className="text-red-600 hover:text-red-700"
         >
-          View All Episodes
+          View All
         </Link>
       </div>
       <div className="w-full max-w-4xl">
