@@ -136,7 +136,7 @@ export default function GamePage() {
             If the player is landed on, they may choose either 
             a <span className="text-blue-400 font-semibold">Homework</span> or 
             a <span className="text-blue-600 font-semibold">Extra Credit</span> assignment 
-            for the <Strikethrough>next</Strikethrough> following episode.
+            for the <span className="text-yellow-400 font-semibold">following</span> episode.
           </p>
           <p>
             Players may also choose no assignment at all! (Strategy!?)
