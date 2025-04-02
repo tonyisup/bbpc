@@ -1,3 +1,4 @@
+import { Strikethrough } from "lucide-react";
 import RatingIcon from "../../components/RatingIcon";
 
 export default function GamePage() {
@@ -132,10 +133,16 @@ export default function GamePage() {
             The last seventh (7th) entry will be for the player who <span className="text-green-400 font-semibold">earned the most points</span> that week.
           </p>
           <p>
-            If the player is landed on, they may choose either a <span className="text-blue-400 font-semibold">Homework</span> or <span className="text-blue-600 font-semibold">Extra Credit</span> assignment for the next episode.
+            If the player is landed on, they may choose either 
+            a <span className="text-blue-400 font-semibold">Homework</span> or 
+            a <span className="text-blue-600 font-semibold">Extra Credit</span> assignment 
+            for the <Strikethrough>next</Strikethrough> following episode.
           </p>
           <p>
-            Players may also choose no assignment at all.
+            Players may also choose no assignment at all! (Strategy!?)
+          </p>
+          <p>
+            Players may also choose to pass. The wheel will be spun for a host to assign, per normal.
           </p>
         </div>
       </div>
