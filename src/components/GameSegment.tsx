@@ -2,7 +2,7 @@
 import { type Dispatch, type DispatchWithoutAction, type FC, useState, useEffect } from "react";
 import { type Assignment, type Guess, type Rating, type User } from "@prisma/client";
 
-import { HiRefresh, HiUpload, HiX, HiPhone, HiMicrophone } from "react-icons/hi";
+import { HiRefresh, HiUpload, HiPhone, HiMicrophone } from "react-icons/hi";
 import RecordAssignmentAudio from "./common/RecordAssignmentAudio";
 import UserTag from "./UserTag";
 import RatingIcon from "./RatingIcon";
@@ -124,7 +124,7 @@ const GameSegment: FC<GameSegmentProps> = ({ assignment }) => {
 			</div>
 		</div>}
 		<h3 className="text-2xl">Submit your guesses!</h3>
-		<div className="flex gap-4 items-center">
+		<div className="flex flex-col md:flex-row gap-4 items-center">
 			<Button
 				variant="outline"
 				onClick={() => setGameChoice(GameChoice.PhoneMessage)}
