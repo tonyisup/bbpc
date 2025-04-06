@@ -2,16 +2,20 @@
 import { type Dispatch, type DispatchWithoutAction, type FC, useState, useEffect } from "react";
 import { type Assignment, type Guess, type Rating, type User } from "@prisma/client";
 
-import { HiRefresh, HiUpload } from "react-icons/hi";
+import { HiRefresh, HiUpload, HiX, HiPhone, HiMicrophone } from "react-icons/hi";
 import RecordAssignmentAudio from "./common/RecordAssignmentAudio";
 import UserTag from "./UserTag";
 import RatingIcon from "./RatingIcon";
 import PhoneNumber from "./common/PhoneNumber";
 import { type Session } from "next-auth";
-import { Decimal } from "@prisma/client/runtime/library";
+import type { Decimal } from "@prisma/client/runtime/library";
 import { SignInButton } from "./Auth";
 import { useSession } from "next-auth/react";
 import { api } from "@/trpc/react";
+import { Button } from "./ui/button";
+import { Input } from "./ui/input";
+import UserPoints from "./UserPoints";
+import { GamepadIcon, UndoIcon } from "lucide-react";
 
 interface GameSegmentProps {
 	assignment: Assignment
@@ -25,6 +29,44 @@ enum GameChoice {
 const GameSegment: FC<GameSegmentProps> = ({ assignment }) => {
 	const { data: session, status } = useSession();
 	const [gameChoice, setGameChoice] = useState<GameChoice>(GameChoice.None);
+	const [gamblingPoints, setGamblingPoints] = useState<string>("");
+
+	// Fetch user data from the database
+	const { data: userData } = api.user.me.useQuery(undefined, {
+		enabled: !!session?.user?.id,
+	});
+
+	// Fetch gambling points for this assignment
+	const { data: assignmentGamblingPoints, refetch: refetchAssignmentGamblingPoints } = api.review.getGamblingPointsForAssignment.useQuery(
+		{ assignmentId: assignment.id },
+		{ enabled: !!session?.user?.id }
+	);
+
+	const { mutate: submitGamblingPoints } = api.review.submitGamblingPoints.useMutation({
+		onSuccess: () => {
+			refetchAssignmentGamblingPoints();
+		},
+		onError: (error) => {
+			alert(`Error submitting gambling points: ${error.message}`);
+		}
+	});
+
+	const handleGamblingPointsSubmit = () => {
+		if (!session?.user?.id) return;
+		if (!gamblingPoints) return;
+
+		const points = parseInt(gamblingPoints);
+		if (isNaN(points) || points < 0) {
+			alert("Please enter a valid number of points");
+			return;
+		}
+
+		submitGamblingPoints({
+			userId: session.user.id,
+			assignmentId: assignment.id,
+			points: points
+		});
+	};
 
 	if (status === "loading") {
 		return <div className="flex flex-col items-center gap-4 m-4">
@@ -41,23 +83,81 @@ const GameSegment: FC<GameSegmentProps> = ({ assignment }) => {
 	);
 
 	return <div className="flex flex-col gap-4 items-center py-4">
+		{userData?.points && Number(userData.points) > 0.0 && <div className="flex flex-col gap-2 items-center">
+			<UserPoints points={userData.points} showSpendButton={false} />
+			{assignmentGamblingPoints && assignmentGamblingPoints.length > 0 && assignmentGamblingPoints[0] && assignmentGamblingPoints[0].points > 0 && (
+				<div className="flex gap-2 items-center">
+					<p>You have gambled {assignmentGamblingPoints[0].points} points on this assignment!</p>
+					<Button
+						variant="destructive"
+						size="icon"
+						onClick={() => {
+							if (!session?.user?.id) return;
+							submitGamblingPoints({
+								userId: session.user.id,
+								assignmentId: assignment.id,
+								points: 0
+							});
+						}}
+					>
+						<UndoIcon className="inline-block m-2" />
+					</Button>
+				</div>
+			)}
+			<div className="flex gap-2">
+				<Input
+					type="number"
+					placeholder="How confident are you?"
+					value={gamblingPoints}
+					onChange={(e) => setGamblingPoints(e.target.value)}
+				/>
+				<Button
+					className="text-gray-300 rounded-md hover:bg-red-800 bg-gradient-to-r from-blue-900 to-blue-500  relative overflow-hidden group"
+					onClick={handleGamblingPointsSubmit}
+				>
+					<span className="absolute inset-0 bg-gradient-to-r from-transparent "></span>
+					<span className="p-4 relative z-10 flex items-center">
+						<span className="mr-1">So confident!</span>
+						<span className="animate-bounce inline-block">✨</span>
+					</span>
+				</Button>
+			</div>
+		</div>}
 		<h3 className="text-2xl">Submit your guesses!</h3>
 		<div className="flex gap-4 items-center">
-			<div className="p-4 cursor-pointer bg-red-900 text-gray-300 rounded-md hover:bg-red-800" onClick={() => setGameChoice(GameChoice.PhoneMessage)}><span>Leave a phone message</span></div>
-			<div className="p-4 cursor-pointer bg-red-900 text-gray-300 rounded-md hover:bg-red-800" onClick={() => setGameChoice(GameChoice.VoiceRecording)}><span>Leave a voice recording</span></div>
-			<div className="p-4 cursor-pointer bg-red-900 text-gray-300 rounded-md hover:bg-red-800" onClick={() => setGameChoice(GameChoice.ClickButtons)}><span>Click some buttons</span></div>
+			<Button
+				variant="outline"
+				onClick={() => setGameChoice(GameChoice.PhoneMessage)}
+			>
+				Leave a phone message
+				<HiPhone className="inline-block m-2" />
+			</Button>
+			<Button
+				variant="outline" 
+				onClick={() => setGameChoice(GameChoice.VoiceRecording)}
+			>
+				Leave a voice recording
+				<HiMicrophone className="inline-block m-2" />
+			</Button>
+			<Button
+				variant="outline"
+				onClick={() => setGameChoice(GameChoice.ClickButtons)}
+			>
+				Click some buttons
+				<GamepadIcon className="inline-block m-2" />
+			</Button>
 		</div>
 		{gameChoice == GameChoice.PhoneMessage && <PhoneNumber />}
 		{gameChoice == GameChoice.VoiceRecording && <RecordAssignmentAudio userId={session.user.id} assignmentId={assignment.id} />}
-    {gameChoice == GameChoice.ClickButtons && <GamePanel session={session} assignment={assignment} />}
+		{gameChoice == GameChoice.ClickButtons && <GamePanel session={session} assignment={assignment} />}
 	</div>
 }
 interface GamePanelProps {
-    session: Session | null,
-    assignment: Assignment
+	session: Session | null,
+	assignment: Assignment
 }
 const GamePanel: FC<GamePanelProps> = ({ session, assignment }) => {
-  
+
 	const { data: guesses, refetch } = api.review.getGuessesForAssignmentForUser.useQuery(
 
 		{ assignmentId: assignment.id, userId: session?.user?.id }
@@ -111,12 +211,13 @@ const ShowAssignmentGuesses: FC<ShowAssignmentGuessesProps> = ({ guesses, resetG
 			{guesses && guesses.map((guess) => {
 				return <SelectedGuess key={guess.id} host={guess?.AssignmentReview?.Review?.User} rating={guess?.Rating} />
 			})}
-			<button className="cursor-pointer py-2 px-4 bg-red-900 text-gray-300 rounded-md disabled:bg-gray-500 disabled:text-gray-800"
+			<Button 
+				variant="outline"
 				onClick={resetGuesses}
 			>
 				<HiRefresh className="inline-block m-2" />
 				Redo Picks!
-			</button>
+			</Button>
 		</div>
 	)
 }
@@ -172,12 +273,14 @@ const SetAssignmentGuesses: FC<SetAssignmentGuessesProps> = ({ assignment, guess
 					<GuessSelect host={host} setGuess={handleSetGuess} />
 				</div>
 			})}
-			<button disabled={!canSubmitGuesses} className="cursor-pointer py-2 px-4 bg-red-900 text-gray-300 rounded-md disabled:bg-gray-500 disabled:text-gray-800"
+			<Button 
+				variant="outline"
+				disabled={!canSubmitGuesses} 
 				onClick={handleSubmitGuesses}
 			>
 				<HiUpload className="inline-block m-2" />
 				Submit Picks!
-			</button>
+			</Button>
 			{pendingGuesses && Object.keys(pendingGuesses).map((key) => {
 				const guess = pendingGuesses[key];
 				return <SelectedGuess key={key} host={guess?.host} rating={guess?.rating} />

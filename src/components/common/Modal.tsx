@@ -1,6 +1,7 @@
 import { Dialog } from "@headlessui/react"
 import type { Dispatch, FC, ReactNode, SetStateAction } from "react"
 import { HiX } from "react-icons/hi"
+import { Button } from "../ui/button"
 
 interface ModalProps {
 	isOpen: boolean,
@@ -15,12 +16,11 @@ const Modal: FC<ModalProps> = ({ isOpen, openText, titleText, children, setIsOpe
 	return (
 		<>
 			{!isOpen && openText &&
-				<button
-						type="button" 
-						onClick={() => setIsOpen(true)}
-						className="bg-red-600 hover:bg-red-500 text-white py-1 px-4 text-2xl border-b-4 border-red-800 hover:border-red-600 rounded-xl">
-						{openText}
-				</button>
+				<Button
+					onClick={() => setIsOpen(true)}
+				>
+					{openText}
+				</Button>
 			}
 			
 			<Dialog open={isOpen} onClose={() => setIsOpen(false)} className="relative z-50">

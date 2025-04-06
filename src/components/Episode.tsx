@@ -5,6 +5,7 @@ import type { Assignment as AssignmentType, Episode as EpisodeType, Link as Epis
 import Link from "next/link";
 import { AddExtraToNext } from "./AddExtraToNext";
 import { highlightText } from "@/utils/text";
+import { Button } from "./ui/button";
 
 interface EpisodeProps {
 	allowGuesses?: boolean,
@@ -78,11 +79,13 @@ const EpisodeAssignments: FC<EpisodeAssignments> = ({ assignments, allowGuesses,
 			return <div key={assignment.id} className="flex flex-col items-center justify-between gap-2">
 				<Assignment assignment={assignment} key={assignment.id} showMovieTitles={showMovieTitles} searchQuery={searchQuery} />
 				
-				{allowGuesses && <Link className="bg-red-600 hover:bg-red-500 text-white py-1 px-4 text-2xl border-b-4 border-red-800 hover:border-red-600 rounded-xl" href={`/assignment/${assignment.id}`}>
-					<div className="flex">
-						GUESS
-					</div>
-				</Link>}
+				{allowGuesses && 
+					<Button variant="outline" asChild>
+						<Link href={`/assignment/${assignment.id}`}>
+							Play Game
+						</Link>
+					</Button>
+				}
 			</div>
 		})}
 	</div>

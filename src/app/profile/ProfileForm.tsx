@@ -25,14 +25,6 @@ export function ProfileForm({ initialName }: ProfileFormProps) {
 
   return (
     <div className="flex flex-col gap-4">
-      <button
-        type="button"
-        className="rounded-full bg-white/10 px-4 py-2 font-semibold text-red-400 no-underline transition hover:bg-white/20"
-        onClick={() => signOut()}
-      >
-        Sign Out
-      </button>
-
       <div className="flex flex-col gap-2">
         <label htmlFor="name" className="text-sm font-medium">
           Display Name

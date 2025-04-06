@@ -434,6 +434,60 @@ export const appRouter = createTRPCRouter({
         return review;
       }),
 
+    submitGamblingPoints: protectedProcedure
+      .input(z.object({
+        userId: z.string(),
+        assignmentId: z.string(),
+        points: z.number(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        // Check if user has already submitted gambling points for this assignment
+        const existingPoints = await ctx.db.gamblingPoints.findFirst({
+          where: {
+            userId: input.userId,
+            assignmentId: input.assignmentId,
+          },
+        });
+
+        if (existingPoints) {
+          // Update existing points
+          return ctx.db.gamblingPoints.update({
+            where: {
+              id: existingPoints.id,
+            },
+            data: {
+              points: input.points,
+            },
+          });
+        } else {
+          // Create new gambling points
+          return ctx.db.gamblingPoints.create({
+            data: {
+              userId: input.userId,
+              assignmentId: input.assignmentId,
+              points: input.points,
+            },
+          });
+        }
+      }),
+
+    getGamblingPointsForAssignment: protectedProcedure
+      .input(z.object({
+        assignmentId: z.string(),
+      }))
+      .query(async ({ ctx, input }) => {
+        if (!ctx.session.user.id) {
+          throw new Error("User not authenticated");
+        }
+        
+        return ctx.db.gamblingPoints.findMany({
+          where: {
+            assignmentId: input.assignmentId,
+            userId: ctx.session.user.id,
+          },
+        });
+      }),
+
     getCountOfUserAudioMessagesForAssignment: protectedProcedure
       .input(z.object({
         userId: z.string(),

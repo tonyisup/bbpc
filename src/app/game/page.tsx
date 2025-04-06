@@ -1,19 +1,14 @@
-import { Strikethrough } from "lucide-react";
 import RatingIcon from "../../components/RatingIcon";
-
+import { NextEpisode } from "../../components/NextEpisode";
 export default function GamePage() {
   return (
     <div className="max-w-2xl mx-auto flex flex-col gap-4">
       <h1 className="text-4xl font-bold text-center text-red-600">
-        <span title="Who The Fuck Is Reggie">WTFIR</span> Game Rules
+        <span title="Who The Fuck Is Reggie">WTFIR</span> Game
       </h1>
 
-      <div className="bg-red-900/30 rounded-lg p-4 border-2 border-red-600">
-        <p className="text-lg font-semibold text-center text-red-400">
-          ⚠️ New Rule: Missing 2 episodes in a row will result in point deductions! ⚠️
-        </p>
-      </div>
-
+      <NextEpisode />
+      <h2 className="text-4xl font-bold text-center text-red-600">Rules</h2>
       <div className="bg-gray-800 rounded-lg p-6 shadow-lg">
         <h2 className="text-2xl font-semibold mb-6 text-center text-blue-400">Synopsis</h2>
         <div className="space-y-4 text-lg">

@@ -6,7 +6,7 @@ import {
 } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import EmailProvider from "next-auth/providers/email";
-
+import type { Decimal } from "@prisma/client/runtime/library";
 import { env } from "@/env.mjs";
 import { db } from "@/server/db";
 
@@ -21,6 +21,7 @@ declare module "next-auth" {
   interface User {
     id: string;
     isAdmin?: boolean;
+    points?: Decimal;
   }
 }
 
@@ -37,6 +38,13 @@ export const authOptions: NextAuthOptions = {
         // Check if user has admin role
         const isAdmin = userRoles.some(ur => ur.role.admin);
 
+        // Get user points from database
+        const dbUser = await db.user.findUnique({
+          where: { id: user.id },
+          select: { points: true }
+        });
+        
+        user.points = dbUser?.points ?? undefined;
         session.user = {
           ...session.user,
           id: user.id,
