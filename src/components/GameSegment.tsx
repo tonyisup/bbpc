@@ -30,6 +30,7 @@ const GameSegment: FC<GameSegmentProps> = ({ assignment }) => {
 	const { data: session, status } = useSession();
 	const [gameChoice, setGameChoice] = useState<GameChoice>(GameChoice.None);
 	const [gamblingPoints, setGamblingPoints] = useState<string>("");
+	const [canSubmitGamblingPoints, setCanSubmitGamblingPoints] = useState<boolean>(false);	
 
 	// Fetch user data from the database
 	const { data: userData } = api.user.me.useQuery(undefined, {
@@ -54,19 +55,33 @@ const GameSegment: FC<GameSegmentProps> = ({ assignment }) => {
 	const handleGamblingPointsSubmit = () => {
 		if (!session?.user?.id) return;
 		if (!gamblingPoints) return;
-
+		
 		const points = parseInt(gamblingPoints);
 		if (isNaN(points) || points < 0) {
 			alert("Please enter a valid number of points");
 			return;
 		}
-
+		
 		submitGamblingPoints({
 			userId: session.user.id,
 			assignmentId: assignment.id,
 			points: points
 		});
 	};
+
+	useEffect(() => {
+		const evalCanSubmitGamblingPoints = () => {
+			if (!userData?.points) return false;
+			if (Number(userData.points) <= 0) return false;
+			if (gamblingPoints.length == 0) return false;
+			if (Number(gamblingPoints) <= 0) return false;	
+			if (Number(gamblingPoints) > Number(userData.points)) return false;
+			return true;
+		}
+		
+		setCanSubmitGamblingPoints(evalCanSubmitGamblingPoints());
+	}, [assignmentGamblingPoints, userData, gamblingPoints]);
+
 
 	if (status === "loading") {
 		return <div className="flex flex-col items-center gap-4 m-4">
@@ -112,6 +127,7 @@ const GameSegment: FC<GameSegmentProps> = ({ assignment }) => {
 					onChange={(e) => setGamblingPoints(e.target.value)}
 				/>
 				<Button
+					disabled={!canSubmitGamblingPoints}
 					className="text-gray-300 rounded-md hover:bg-red-800 bg-gradient-to-r from-blue-900 to-blue-500  relative overflow-hidden group"
 					onClick={handleGamblingPointsSubmit}
 				>
