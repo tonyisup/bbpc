@@ -22,7 +22,7 @@ export default async function ProfilePage() {
       <h1 className="text-5xl font-extrabold tracking-tight">Profile</h1>
       <div className="w-full max-w-md flex flex-col gap-4">
         <ProfileForm initialName={session.user.name ?? ""} />
-        <UserPoints points={user?.points ?? null} />
+        {user?.points && Number(user.points) > 0 && <UserPoints points={user?.points ?? null} />}
       </div>    
       <SignOutButton />
     </div>
