@@ -24,10 +24,10 @@ const UserPoints: FC<UserPointsProps> = ({
         <h2 className="text-xl font-semibold mb-2">Your Points</h2>
         <p className="text-3xl font-bold text-red-500">{pointsValue}</p>
       </div>
-      {showSpendButton && pointsValue > 0 && (
+      {showSpendButton && (
         <Button variant="outline">
           <Link href="/game">
-            Go Spend Them
+            Go {pointsValue > 0 ? "Spend Them" : "Play"}
           </Link>
         </Button>
       )}
