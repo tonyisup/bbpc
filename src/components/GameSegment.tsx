@@ -71,16 +71,22 @@ const GameSegment: FC<GameSegmentProps> = ({ assignment }) => {
 
 	useEffect(() => {
 		const evalCanSubmitGamblingPoints = () => {
+			// Check if user has points
 			if (!userData?.points) return false;
 			if (Number(userData.points) <= 0) return false;
-			if (gamblingPoints.length == 0) return false;
-			if (Number(gamblingPoints) <= 0) return false;	
-			if (Number(gamblingPoints) > Number(userData.points)) return false;
+			
+			// Check if gambling points input is valid
+			if (!gamblingPoints || gamblingPoints.trim() === '') return false;
+			
+			const points = Number(gamblingPoints);
+			if (isNaN(points) || points <= 0) return false;
+			if (points > Number(userData.points)) return false;
+			
 			return true;
 		}
 		
 		setCanSubmitGamblingPoints(evalCanSubmitGamblingPoints());
-	}, [assignmentGamblingPoints, userData, gamblingPoints]);
+	}, [userData, gamblingPoints]);
 
 
 	if (status === "loading") {
