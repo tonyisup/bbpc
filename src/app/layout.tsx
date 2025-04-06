@@ -8,7 +8,7 @@ import Image from "next/image";
 import LeaveMessage from "@/components/LeaveMessage";
 import { ListenHere } from "@/components/ListenHere";
 import { Providers } from "@/components/Providers";
-
+import NavMenu from "@/components/NavMenu";
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-sans",
@@ -31,11 +31,10 @@ export default async function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={`font-sans ${inter.variable} dark`}>
         <Providers session={session} headers={headers()}>
-          <div className="bg-black flex flex-col min-h-screen items-center">
-            <header>
-              <nav className="pt-8 w-full flex items-center justify-around bg-[#020202]">
-                <div className="flex-grow">
-
+          <div className="bg-black w-full flex flex-col min-h-screen items-center">
+            <header className="flex sm:w-1/2 w-full items-center justify-between bg-[#020202]">
+                <NavMenu />
+                <div>
                   <Link href="/">
                     <Image src="/logo-short.png" alt="BBPC Logo" width={120} height={40} />
                   </Link>
@@ -43,9 +42,10 @@ export default async function RootLayout({
                 <div className="px-4">
                   <LeaveMessage />
                 </div>
-              </nav>
-              <p className="pb-2 text-center text-xs sm:text-lg text-red-900">Random rants on all things movie</p>
             </header>
+            <section>
+              <p className="pb-2 text-center text-xs sm:text-lg text-red-900">Random rants on all things movie</p>
+            </section>
             <main className="flex-grow">
               <div className="flex flex-col text-white main-mask">
                 {children}
