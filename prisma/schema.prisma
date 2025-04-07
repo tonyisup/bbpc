@@ -267,6 +267,7 @@ model GamblingPoints {
   userId       String
   assignmentId String     @db.UniqueIdentifier
   points       Int        @db.Int
+  successful   Boolean?   @default(false)
   createdAt    DateTime   @default(now()) @db.DateTime
   User         User       @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   Assignment   Assignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)

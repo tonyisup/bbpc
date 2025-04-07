@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { db } from "@/server/db";
 import SignOutButton from "@/components/SignOutButton";
 import UserPoints from "@/components/UserPoints";
+import { GamblingHistory } from "@/components/GamblingHistory";
 
 export default async function ProfilePage() {
   const session = await getServerAuthSession();
@@ -15,6 +16,17 @@ export default async function ProfilePage() {
   // Fetch the user's data including points
   const user = await db.user.findUnique({
     where: { id: session.user.id },
+    include: {
+      gamblingPoints: {
+        include: {
+          Assignment: {
+            include: {
+              Movie: true
+            }
+          }
+        }
+      }
+    }
   });
 
   return (
@@ -22,7 +34,8 @@ export default async function ProfilePage() {
       <h1 className="text-5xl font-extrabold tracking-tight">Profile</h1>
       <div className="w-full max-w-md flex flex-col gap-4">
         <ProfileForm initialName={session.user.name ?? ""} />
-        <UserPoints points={user?.points ?? null} />
+        <UserPoints points={Number(user?.points) ?? null} />
+        <GamblingHistory history={user?.gamblingPoints ?? []} />
       </div>    
       <SignOutButton />
     </div>

@@ -3,10 +3,9 @@
 import { type FC } from "react";
 import { Button } from "./ui/button";
 import Link from "next/link";
-import type { Decimal } from "@prisma/client/runtime/library";
 
 interface UserPointsProps {
-  points: Decimal | null;
+  points: number | null;
   showSpendButton?: boolean;
   className?: string;
 }

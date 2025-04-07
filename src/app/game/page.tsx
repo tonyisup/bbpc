@@ -168,6 +168,10 @@ export default function GamePage() {
               <p className="underline text-2xl font-semibold mb-6 text-center text-blue-400">Video: How to gamble on  the site</p>
             </a>
           </p>
+          <p>
+            BONUS HARLEY POINTS: If you call in/leave a voice message and you wager "all your points" and you win, you will earn an extra 4 points BEFORE it's doubled, so an extra 8 (EIGHT!) points!
+            This only applies to voice submissions. Text or website button submissions do not count.
+          </p>
         </div>
       </div>
 
