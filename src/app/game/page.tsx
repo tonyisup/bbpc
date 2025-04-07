@@ -1,5 +1,7 @@
 import RatingIcon from "../../components/RatingIcon";
 import { NextEpisode } from "../../components/NextEpisode";
+import { Info } from "lucide-react";
+
 export default function GamePage() {
   return (
     <div className="max-w-2xl mx-auto flex flex-col gap-4">
@@ -8,6 +10,7 @@ export default function GamePage() {
       </h1>
 
       <NextEpisode />
+
       <h2 className="text-4xl font-bold text-center text-red-600">Rules</h2>
       <div className="bg-gray-800 rounded-lg p-6 shadow-lg">
         <h2 className="text-2xl font-semibold mb-6 text-center text-blue-400">Synopsis</h2>
@@ -138,6 +141,32 @@ export default function GamePage() {
           </p>
           <p>
             Players may also choose to pass. The wheel will be spun for a host to assign, per normal.
+          </p>
+        </div>
+      </div>
+      <div className="bg-gray-800 rounded-lg p-6 shadow-lg">
+        <h2 className="text-2xl font-semibold mb-6 text-center text-blue-400">Gambling</h2>
+        <div className="space-y-4 text-lg">
+          <p>
+            For each assignment, if you have over 10 points, you can gamble any amount of points.
+          </p>
+          <p>
+            The gamble is a bet that you will guess ALL the ratings correctly.
+          </p>
+          <p>
+            If you win, you will earn double your points. 
+          </p>
+          <p>
+            If you lose, you will lose your points
+          </p>
+          <p>
+            To gamble, just say your wager on your recording or message
+          </p>
+          <p>
+            <a href="https://www.instagram.com/p/DIFsttBpTaF/" target="_blank" rel="noreferrer">
+              <p>You can now play online!</p>
+              <p className="underline text-2xl font-semibold mb-6 text-center text-blue-400">Video: How to gamble on  the site</p>
+            </a>
           </p>
         </div>
       </div>
