@@ -2,7 +2,7 @@
 
 import type { FC } from "react";
 import Link from "next/link";
-import { HomeIcon, HistoryIcon, TrophyIcon, GamepadIcon, UserIcon } from "lucide-react";
+import { HomeIcon, HistoryIcon, TrophyIcon, GamepadIcon, UserIcon, ShirtIcon } from "lucide-react";
 import {
   NavigationMenu,
   NavigationMenuList,
@@ -48,6 +48,11 @@ const NavMenu: FC = () => {
             <NavigationMenuLink asChild>
               <Link href="/profile" className="flex items-center gap-2 px-4 py-2 transition hover:text-red-400">
                 <UserIcon className="w-4 h-4" />Profile
+              </Link>
+            </NavigationMenuLink>
+            <NavigationMenuLink asChild>
+              <Link href="https://www.teepublic.com/user/badboyspodcast" target="_blank" className="flex items-center gap-2 px-4 py-2 transition hover:text-red-400">
+                <ShirtIcon className="w-4 h-4" />Merch
               </Link>
             </NavigationMenuLink>
           </NavigationMenuContent>
