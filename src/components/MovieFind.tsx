@@ -88,15 +88,10 @@ const MovieFind: FC<MovieFindProps> = ({ selectMovie }) => {
         />
         <Search className="pointer-events-none absolute left-2 top-1/2 size-4 -translate-y-1/2 select-none opacity-50" />
       </div>
-      <div className="flex flex-wrap gap-4">
+      <div className="flex flex-wrap gap-4 justify-center">
         {resp?.results.map((title) => (
           title?.poster_path && (
-            <button
-              key={title.id}
-              onClick={() => selectTitle(title)}
-            >
-              <TitleCard title={title} />
-            </button>
+            <TitleCard key={title.id} title={title} titleSelected={selectTitle} />
           )
         ))}
       </div>
