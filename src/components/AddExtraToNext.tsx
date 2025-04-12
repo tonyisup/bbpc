@@ -1,10 +1,9 @@
 'use client';
 
-import { type FC, useState } from "react";
-import AddEpisodeExtraModal from "./AddEpisodeExtraModal";
+import { type FC } from "react";
 import type { Assignment as AssignmentType, Episode as EpisodeType, Movie, User, Review, ExtraReview, Link as EpisodeLink } from '@prisma/client';
 import { api } from "@/trpc/react";
-import MovieInlinePreview from "./MovieInlinePreview";
+import Link from "next/link";
 
 interface AddExtraToNextProps {
   episode: null | (EpisodeType & {
@@ -20,26 +19,23 @@ interface AddExtraToNextProps {
 		links: EpisodeLink[];
 	});
 }
-export const AddExtraToNext: FC<AddExtraToNextProps> = ({ episode }) => {  
 
+export const AddExtraToNext: FC<AddExtraToNextProps> = ({ episode }) => {  
 	const { data: isAdmin } = api.auth.isAdmin.useQuery();
-  const [addedExtras, setAddedExtras] = useState<Movie[]>([]);
-  
-  const addExtra = (movie: Movie) => {
-    setAddedExtras([...addedExtras, movie]);
-  }
 	
 	if (!episode) return null;
   return (
     <>
-      {addedExtras && addedExtras.length > 0 && addedExtras.map((movie) => {
-        return <div key={movie.id} className="flex items-center gap-2 w-20">
-          {movie && <MovieInlinePreview movie={movie} />}
+      {isAdmin && episode && (
+        <div className="flex justify-center items-center gap-2 w-full p-2">
+          <Link 
+            href={`/episodes/${episode.id}/extras/add`}
+            className="rounded-md bg-red-800 p-4 text-xs transition hover:bg-red-400"
+          >
+            Add Extra
+          </Link>
         </div>
-      })}
-      {isAdmin && episode && <div className="flex justify-center items-center gap-2 w-full p-2">
-        <AddEpisodeExtraModal episode={episode} setMovieAdded={addExtra} />
-      </div>}
+      )}
     </>
   )
 }

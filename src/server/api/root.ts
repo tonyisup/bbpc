@@ -307,6 +307,49 @@ export const appRouter = createTRPCRouter({
           take: 10,
         });
       }),
+    getTitle: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+      }))
+      .query(({ ctx, input }) => {
+        return ctx.tmdb.getMovie(input.id)
+      }),
+
+    add: publicProcedure
+      .input(z.object({
+        title: z.string(),
+        year: z.number(),
+        poster: z.string(),
+        url: z.string(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const exists = await ctx.db.movie.findFirst({
+          where: {
+            url: input.url
+          }
+        })
+        if (exists) {
+          return await ctx.db.movie.update({
+            where: {
+              id: exists.id
+            },
+            data: {
+              title: input.title,
+              year: input.year,
+              poster: input.poster,
+              url: input.url,
+            }
+          })
+        }
+        return await ctx.db.movie.create({
+          data: {
+            title: input.title,
+            year: input.year,
+            poster: input.poster,
+            url: input.url,
+          }
+        })
+      }),
     searchByNext10Page: protectedProcedure
       .input(z.object({
         term: z.string(),
@@ -479,7 +522,7 @@ export const appRouter = createTRPCRouter({
         if (!ctx.session.user.id) {
           throw new Error("User not authenticated");
         }
-        
+
         return ctx.db.gamblingPoints.findMany({
           where: {
             assignmentId: input.assignmentId,

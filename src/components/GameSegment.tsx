@@ -105,7 +105,7 @@ const GameSegment: FC<GameSegmentProps> = ({ assignment }) => {
 
 	return <div className="flex flex-col gap-4 items-center py-4">
 		{userData?.points && Number(userData.points) > 0.0 && <div className="flex flex-col gap-2 items-center">
-			<UserPoints points={userData.points} showSpendButton={false} />
+			<UserPoints points={Number(userData.points)} showSpendButton={false} />
 			{assignmentGamblingPoints && assignmentGamblingPoints.length > 0 && assignmentGamblingPoints[0] && assignmentGamblingPoints[0].points > 0 && (
 				<div className="flex gap-2 items-center">
 					<p>You have gambled {assignmentGamblingPoints[0].points} points on this assignment!</p>
