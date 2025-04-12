@@ -3,7 +3,6 @@
 import { api } from "@/trpc/react";
 import { useParams } from "next/navigation";
 import MovieFind from "@/components/MovieFind";
-import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Movie } from "@prisma/client";
 import { Button } from "@/components/ui/button";
@@ -15,22 +14,22 @@ export default function AddExtraPage() {
   const episodeId = params.id as string;
 
   const reviewer = api.user.me.useQuery();
-  const [movie, setMovie] = useState<Movie | null>(null);
 
   const addExtra = api.review.add.useMutation({
     onSuccess: () => {
-      router.push(`/episodes/${episodeId}`);
+      router.back();
     }
   });
 
-  const handleAddExtra = () => {
-    if (reviewer?.data && movie) {
-      addExtra.mutate({
-        userId: reviewer.data.id,
+  const handleAddExtra = (movie: Movie) => {
+    if (!movie) return;
+    if (!reviewer?.data) return;
+
+    addExtra.mutate({
+      userId: reviewer.data.id,
         movieId: movie.id,
-        episodeId: episodeId
-      });
-    }
+      episodeId: episodeId
+    });
   };
 
   return (
@@ -42,11 +41,10 @@ export default function AddExtraPage() {
           Back
         </Button>
       </div>
-      <h1 className="text-2xl font-bold mb-4">Add Extra to Episode</h1>
       <div className="space-y-4">
         <div>
-          <label htmlFor="movie" className="block text-sm font-medium mb-2">Movie</label>
-          <MovieFind selectMovie={setMovie} />
+          <label htmlFor="movie" className="sr-only">Selected Movie</label>
+          <MovieFind selectMovie={handleAddExtra} />
         </div>
       </div>
     </div>

@@ -10,10 +10,9 @@ interface MovieCardProps {
 
 const MovieCard: FC<MovieCardProps> = ({ movie, width, height }) => {
   return (
-    <div className="w-full flex justify-center text-white">
-      <div>        
+    <div className="w-full flex justify-center text-white">   
         <a href={movie.url} target="_blank" rel="noreferrer">
-          <figure>
+          <figure className="flex flex-col items-center justify-center">
             {movie.poster && <Image width={width ?? 114} height={height ?? 216} src={movie.poster} alt={movie.title} />}
             <figcaption className="text-center">
               {movie.title} 
@@ -21,7 +20,6 @@ const MovieCard: FC<MovieCardProps> = ({ movie, width, height }) => {
             </figcaption>
           </figure>
         </a>
-      </div>
     </div>
   )
 }

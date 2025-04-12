@@ -49,8 +49,8 @@ export default async function HomePage() {
         <div className="flex flex-wrap gap-12 justify-evenly">
           {latestEpisode && <Episode episode={latestEpisode} />}
           <Suspense fallback={
-            <div className="flex items-center justify-center p-8 rounded-lg bg-gray-800 min-w-[300px] min-h-[200px]">
-              <div className="text-white text-lg">Loading next episode...</div>
+            <div className="flex items-center justify-center p-8 min-w-[300px] min-h-[200px]">
+              <div className="text-lg">Loading next episode...</div>
             </div>
           }>
             <NextEpisode />

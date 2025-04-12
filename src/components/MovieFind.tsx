@@ -1,19 +1,17 @@
 'use client';
 
 import type { Movie } from "@prisma/client";
-import { type Dispatch, type FC, type SetStateAction, useState } from "react";
+import { type Dispatch, type FC, useState } from "react";
 import type { Title } from "../server/tmdb/client";
 import MovieCard from "./MovieCard";
 import TitleCard from "./TitleCard";
-import TitleSearch from "./TitleSearch";
 import { api } from "@/trpc/react";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 interface MovieFindProps {
-  selectMovie: Dispatch<SetStateAction<Movie | null>>;
+  selectMovie: Dispatch<Movie>;
 }
 
 const MovieFind: FC<MovieFindProps> = ({ selectMovie }) => {
@@ -48,17 +46,28 @@ const MovieFind: FC<MovieFindProps> = ({ selectMovie }) => {
   const { mutate: addMovie } = api.movie.add.useMutation({
     onSuccess: (result) => {
       setSelectedMovie(result);
-      selectMovie(result);
     }
   });
 
-  const selectTitle = function(title: Title) {
+  const selectTitle = function (title: Title) {
     setTitle(title);
     setSearchQuery("");
   }
 
+  const handleAddingExtra = function () {
+    if (!selectedMovie) return;
+    selectMovie(selectedMovie);
+  }
+
   return (
-    <div className="w-full flex flex-col justify-center gap-4">
+    <div className="w-full flex flex-col items-center justify-center gap-4">
+      <Button
+        variant="outline"
+        onClick={handleAddingExtra}
+        disabled={!selectedMovie}
+      >
+        Add Extra
+      </Button>
       {selectedMovie && <MovieCard movie={selectedMovie} />}
       {!selectedMovie && title && <TitleCard title={title} />}
       {!selectedMovie && !title && (
@@ -66,7 +75,6 @@ const MovieFind: FC<MovieFindProps> = ({ selectMovie }) => {
           No movie selected
         </div>
       )}
-
       <div className="relative">
         <Label htmlFor="search" className="sr-only">
           Search
@@ -83,14 +91,12 @@ const MovieFind: FC<MovieFindProps> = ({ selectMovie }) => {
       <div className="flex flex-wrap gap-4">
         {resp?.results.map((title) => (
           title?.poster_path && (
-            <Button
+            <button
               key={title.id}
-              variant="ghost"
               onClick={() => selectTitle(title)}
-              asChild
             >
               <TitleCard title={title} />
-            </Button>
+            </button>
           )
         ))}
       </div>

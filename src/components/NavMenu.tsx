@@ -2,7 +2,7 @@
 
 import type { FC } from "react";
 import Link from "next/link";
-import { HomeIcon, HistoryIcon, TrophyIcon, GamepadIcon, UserIcon, ShirtIcon } from "lucide-react";
+import { HomeIcon, HistoryIcon, TrophyIcon, GamepadIcon, UserIcon, ShirtIcon, LogIn } from "lucide-react";
 import {
   NavigationMenu,
   NavigationMenuList,
@@ -11,8 +11,9 @@ import {
   NavigationMenuTrigger,
   NavigationMenuContent
 } from "@/components/ui/navigation-menu";
-
+import { useSession } from "next-auth/react";
 const NavMenu: FC = () => {
+  const { data: session } = useSession();
   return (
     <NavigationMenu orientation="vertical">
       <NavigationMenuList>
@@ -46,14 +47,20 @@ const NavMenu: FC = () => {
               </Link>
             </NavigationMenuLink>
             <NavigationMenuLink asChild>
-              <Link href="/profile" className="flex items-center gap-2 px-4 py-2 transition hover:text-red-400">
-                <UserIcon className="w-4 h-4" />Profile
-              </Link>
-            </NavigationMenuLink>
-            <NavigationMenuLink asChild>
               <Link href="https://www.teepublic.com/user/badboyspodcast" target="_blank" className="flex items-center gap-2 px-4 py-2 transition hover:text-red-400">
                 <ShirtIcon className="w-4 h-4" />Merch
               </Link>
+            </NavigationMenuLink>
+            <NavigationMenuLink asChild>
+              {session ? (
+                <Link href="/profile" className="flex items-center gap-2 px-4 py-2 transition hover:text-red-400">
+                  <UserIcon className="w-4 h-4" />Profile
+                </Link>
+              ) : (
+                <Link href="/api/auth/signin" className="flex items-center gap-2 px-4 py-2 transition hover:text-red-400">
+                  <LogIn className="w-4 h-4" />Login
+                </Link>
+              )}
             </NavigationMenuLink>
           </NavigationMenuContent>
         </NavigationMenuItem>
