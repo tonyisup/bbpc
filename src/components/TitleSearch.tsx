@@ -1,6 +1,9 @@
 import { type Dispatch, type FC, type SetStateAction, useState } from "react";
 import type { Title } from "../server/tmdb/client";
-import Search from "./common/Search";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { X, Search } from "lucide-react";
 
 import { CarouselProvider, Slider, Slide, ButtonBack, ButtonNext } from 'pure-react-carousel';
 import 'pure-react-carousel/dist/react-carousel.es.css';
@@ -30,64 +33,80 @@ const TitleSearch: FC<TitleSearchProps> = ({ setTitle, open }) => {
 	}
 	return (
 		<>
-			{ !modalOpen &&
-				<div>
-					<button
-						type="button"
-						title="open movie title search modal"
-						className="rounded-md bg-red-800 p-4 text-xs transition hover:bg-red-400"
-						onClick={() => setModalOpen(true)}
-					>
-						<span className="focus:outline-none inset-y-0 left-0 flex items-center pl-3">
-							<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-						</span>
-					</button>
-				</div>
-			}
-			{ modalOpen &&
-				<div className="text-white w-full inset-0 flex items-center justify-center bg-black/75">
-					<div className="p-3 w-full bg-gray-800">
-						<div className="relative w-full flex">
-							<button
-								type="button"
-								title="close movie title search modal"
+			{ !modalOpen && (
+				<Button
+					variant="outline"
+					size="icon"
+					onClick={() => setModalOpen(true)}
+					className="w-full"
+				>
+					<Search className="h-4 w-4" />
+					<span className="sr-only">Search for a movie</span>
+				</Button>
+			)}
+			{ modalOpen && (
+				<div className="p-8  inset-0 z-50 flex items-center justify-center bg-black/50">
+					<Card className="w-full max-w-4xl">
+						<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+							<CardTitle>Search for a Movie</CardTitle>
+							<Button
+								variant="ghost"
+								size="icon"
 								onClick={closeModal}
-								className="absolute right-4 focus:outline-none flex items-center"
+								className="h-8 w-8"
 							>
-								<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-							</button>
-						</div>
-						<div>
-							<Search setSearch={setSearchQuery} />
-							<CarouselProvider
-								naturalSlideWidth={150}
-								naturalSlideHeight={300}
-								totalSlides={resp?.results.length || 0}
-								visibleSlides={5}
-								step={5}
-								infinite={true}
-							>
-								<div className="flex justify-between">
-									<ButtonBack>Back</ButtonBack>
-									<ButtonNext>Next</ButtonNext>
+								<X className="h-4 w-4" />
+								<span className="sr-only">Close</span>
+							</Button>
+						</CardHeader>
+						<CardContent>
+							<div className="space-y-4">
+								<div className="relative">
+									<Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+									<Input
+										placeholder="Search for a movie..."
+										value={searchQuery}
+										onChange={(e) => setSearchQuery(e.target.value)}
+										className="pl-8"
+									/>
 								</div>
-								<Slider>
-									{resp?.results.map((title, index) => (
-										title?.poster_path && <Slide index={index} key={title.id}>
-											<button 
-												type="button"
-												title="select movie title"
-												onClick={() => selectTitle(title)}
-											>
-												<TitleCard title={title} />
-											</button>
-										</Slide>
-									))}
-								</Slider>
-							</CarouselProvider>
-						</div>
-					</div>
-				</div>}
+								<CarouselProvider
+									naturalSlideWidth={150}
+									naturalSlideHeight={300}
+									totalSlides={resp?.results.length || 0}
+									visibleSlides={5}
+									step={5}
+									infinite={true}
+								>
+									<div className="flex justify-between mb-2">
+										<Button variant="outline" size="sm">
+											<ButtonBack>Previous</ButtonBack>
+										</Button>
+										<Button variant="outline" size="sm">
+											<ButtonNext>Next</ButtonNext>
+										</Button>
+									</div>
+									<Slider>
+										{resp?.results.map((title, index) => (
+											title?.poster_path && (
+												<Slide index={index} key={title.id}>
+													<Button
+														variant="ghost"
+														className="h-full w-full p-0"
+														onClick={() => selectTitle(title)}
+													>
+														<TitleCard title={title} />
+													</Button>
+												</Slide>
+											)
+										))}
+									</Slider>
+								</CarouselProvider>
+							</div>
+						</CardContent>
+					</Card>
+				</div>
+			)}
 		</>
 	);
 };

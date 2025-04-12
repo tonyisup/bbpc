@@ -147,6 +147,41 @@ export const appRouter = createTRPCRouter({
           }
         });
       }),
+    getById: publicProcedure
+      .input(z.object({ id: z.string() }))
+      .query(async ({ ctx, input }) => {
+        return ctx.db.episode.findUnique({
+          where: { id: input.id },
+          include: {
+            assignments: {
+              include: {
+                Movie: true,
+                User: true,
+                assignmentReviews: {
+                  include: {
+                    Review: {
+                      include: {
+                        Rating: true,
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            extras: {
+              include: {
+                Review: {
+                  include: {
+                    Movie: true,
+                    User: true,
+                  },
+                },
+              },
+            },
+            links: true,
+          },
+        });
+      }),
   }),
 
   game: createTRPCRouter({

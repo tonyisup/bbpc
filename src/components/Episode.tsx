@@ -32,8 +32,10 @@ export const Episode: FC<EpisodeProps> = ({ episode, allowGuesses: isNextEpisode
   return <section className="px-2 bg-transparent outline-2 outline-gray-500 outline rounded-2xl flex flex-col gap-2 justify-between">
     <div className="">
       <div className="flex justify-around items-baseline gap-2 font-bold">
-        <div className="text-md p-2">          
-          {episode?.number}
+        <div className="text-md p-2">  
+					<Link href={`/episodes/${episode.id}`}>
+						{episode?.number}
+					</Link>
         </div>
 				<div className="text-2xl p-2 flex-grow flex justify-center items-center gap-2">
 					{!episode?.recording && highlightText(episode?.title ?? "", searchQuery)}
