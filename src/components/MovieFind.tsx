@@ -1,7 +1,7 @@
 'use client';
 
 import type { Movie } from "@prisma/client";
-import { type Dispatch, type FC, useState } from "react";
+import { type Dispatch, type FC, useMemo, useState, useEffect } from "react";
 import type { Title } from "../server/tmdb/client";
 import MovieCard from "./MovieCard";
 import TitleCard from "./TitleCard";
@@ -10,6 +10,8 @@ import { Button } from "@/components/ui/button";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { debounce } from 'lodash';
+
 interface MovieFindProps {
   selectMovie: Dispatch<Movie>;
 }
@@ -18,6 +20,8 @@ const MovieFind: FC<MovieFindProps> = ({ selectMovie }) => {
   const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
   const [title, setTitle] = useState<Title | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [inputValue, setInputValue] = useState("");
+
   const { data: resp } = api.movie.searchByPage.useQuery({
     page: 1,
     term: searchQuery,
@@ -59,6 +63,17 @@ const MovieFind: FC<MovieFindProps> = ({ selectMovie }) => {
     selectMovie(selectedMovie);
   }
 
+  const debouncedSearch = useMemo(
+    () => debounce((value: string) => setSearchQuery(value), 300),
+    []
+  );
+
+  useEffect(() => {
+    return () => {
+      debouncedSearch.cancel();
+    };
+  }, [debouncedSearch]);
+
   return (
     <div className="w-full flex flex-col items-center justify-center gap-4">
       <Button
@@ -82,8 +97,11 @@ const MovieFind: FC<MovieFindProps> = ({ selectMovie }) => {
         <Input
           id="search"
           placeholder="Search for a movie..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
+          value={inputValue}
+          onChange={(e) => {
+            setInputValue(e.target.value);
+            debouncedSearch(e.target.value);
+          }}
           className="h-8 pl-7"
         />
         <Search className="pointer-events-none absolute left-2 top-1/2 size-4 -translate-y-1/2 select-none opacity-50" />

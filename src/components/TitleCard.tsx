@@ -1,7 +1,7 @@
 import { type Dispatch, type FC, useState } from "react";
-import Image from "next/image";
 import { type Title } from "../server/tmdb/client";
-
+import { motion, AnimatePresence } from "motion/react";
+import { FlipHorizontal, Upload, X } from "lucide-react";
 interface TitleCardProps {
   title: Title,
   titleSelected?: Dispatch<Title>
@@ -10,7 +10,7 @@ interface TitleCardProps {
 const TitleCard: FC<TitleCardProps> = ({ title, titleSelected }) => {
 
   const [isFlipped, setIsFlipped] = useState(false)
-  const [isZoomedIn, setIsZoomedIn] = useState(false)
+  const [isExpanded, setIsExpanded] = useState(false)
 
   const handleFlip = () => {
     setIsFlipped(!isFlipped)
@@ -19,77 +19,110 @@ const TitleCard: FC<TitleCardProps> = ({ title, titleSelected }) => {
   const handleSelect = () => {
     if (!titleSelected) return;
     titleSelected(title)
+    setIsExpanded(false)
   }
 
-  const handleZoomIn = () => {
-    setIsZoomedIn(!isZoomedIn)
+  const toggleExpand = () => {
+    setIsExpanded(prev => !prev)
   }
 
+
+  const closeOnBackdropClick = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) {
+      setIsExpanded(false)
+    }
+  }
   return (
     <div className="rounded-md w-[100px] h-[150px]">
-      <div
-        className={`relative w-full transition-transform duration-700 h-[150px] cursor-pointer`}
-        style={{
-          transformStyle: "preserve-3d",
-          transform: isFlipped ? "rotateY(180deg)" : "rotateY(0deg)",
-        }}
-      >
-        <div className="absolute top-1 right-1 z-10" onClick={handleFlip}>
-          <div className="bg-black/50 p-1 rounded-full hover:bg-black/70 transition-colors">
-            <svg 
-              xmlns="http://www.w3.org/2000/svg" 
-              width="16" 
-              height="16" 
-              viewBox="0 0 24 24" 
-              fill="none" 
-              stroke="currentColor" 
-              strokeWidth="2" 
-              strokeLinecap="round" 
-              strokeLinejoin="round"
-              className="text-white"
-            >
-              <path d="M21 2v6h-6"></path>
-              <path d="M3 12a9 9 0 0 1 15-6.7L21 8"></path>
-              <path d="M3 22v-6h6"></path>
-              <path d="M21 12a9 9 0 0 1-15 6.7L3 16"></path>
-            </svg>
-          </div>
-        </div>
-        <div
-          className="absolute w-full h-full rounded-lg overflow-hidden shadow-xl"
-          style={{ backfaceVisibility: "hidden" }}
-        >
-          {!isZoomedIn && <button onClick={handleZoomIn}>
-            <Image
-              unoptimized
-              width={100}
-              height={150}
-              src={title?.poster_path}
-              alt={title?.title}
-            />
-          </button>}
-          {isZoomedIn && <button onClick={handleZoomIn}>
-            <Image
-              unoptimized
-              width={200}
-              height={300}
-              src={title?.poster_path}
-              alt={title?.title}
-            />
-          </button>}
-        </div>
-        <div
-          className="absolute w-full h-full bg-gray-900 text-white rounded-lg overflow-hidden shadow-xl"
-          style={{
-            backfaceVisibility: "hidden",
-            transform: "rotateY(180deg)",
+      <div className="relative">
+        {/* The poster that animates */}
+
+        <motion.div
+          layoutId="poster-container"
+          onClick={isExpanded ? undefined : toggleExpand}
+          className={`cursor-pointer overflow-hidden rounded-md shadow-lg ${isExpanded ? "fixed inset-0 z-50 m-auto max-w-[300px] max-h-[450px]" : "w-[100px] h-[150px]"
+            }`}
+          transition={{
+            type: "spring",
+            damping: 25,
+            stiffness: 120,
+            mass: 1,
+            duration: 1,
           }}
         >
-          <div className="p-4">
-            <h2 className="text-lg font-bold mb-2">{title.title}</h2>
-            <p className="text-sm">{(new Date(title.release_date)).getFullYear()}</p>
-          </div>
-        </div>
+
+          {isExpanded && (<div className="relative top-14 px-6 flex justify-between">
+
+            {/* Flip button */}
+            <motion.button
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              onClick={handleFlip}
+              className="z-50 text-white p-2 rounded-full bg-black/50 hover:bg-white/20"
+              aria-label="Close expanded poster"
+            >
+              <FlipHorizontal className="h-6 w-6" />
+            </motion.button>
+
+            {/* Select button */}
+            <motion.button
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              onClick={handleSelect}
+              className="z-50 text-white p-2 rounded-full bg-black/50 hover:bg-white/20"
+              aria-label="Close expanded poster"
+            >
+              <Upload className="h-6 w-6" />
+            </motion.button>
+
+
+            {/* Close button */}
+            <motion.button
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              onClick={toggleExpand}
+              className="z-50 text-white p-2 rounded-full bg-black/50 hover:bg-white/20"
+              aria-label="Close expanded poster"
+            >
+              <X className="h-6 w-6" />
+            </motion.button>
+
+
+
+          </div>)}
+            <motion.img
+              layoutId="poster-image"
+              src={title?.poster_path}
+              alt={title?.title}
+              className={`w-full h-full object-fill`}
+              transition={{
+                type: "spring",
+                damping: 25,
+                stiffness: 120,
+                mass: 1,
+                duration: 1,
+              }}
+            />
+        </motion.div>
+
+        {/* Backdrop overlay */}
+        <AnimatePresence>
+          {isExpanded && (
+            <>
+              <motion.div
+                className="fixed inset-0 bg-black/80 z-40"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.3 }}
+                onClick={closeOnBackdropClick}
+              />
+            </>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );
