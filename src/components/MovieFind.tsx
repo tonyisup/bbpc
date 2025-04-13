@@ -56,6 +56,7 @@ const MovieFind: FC<MovieFindProps> = ({ selectMovie }) => {
   const selectTitle = function (title: Title) {
     setTitle(title);
     setSearchQuery("");
+    setInputValue("");
   }
 
   const handleAddingExtra = function () {

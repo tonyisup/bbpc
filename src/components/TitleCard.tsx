@@ -1,7 +1,7 @@
 import { type Dispatch, type FC, useState } from "react";
 import { type Title } from "../server/tmdb/client";
 import { motion, AnimatePresence } from "motion/react";
-import { FlipHorizontal, Upload, X } from "lucide-react";
+import { Check, X } from "lucide-react";
 interface TitleCardProps {
   title: Title,
   titleSelected?: Dispatch<Title>
@@ -9,12 +9,8 @@ interface TitleCardProps {
 
 const TitleCard: FC<TitleCardProps> = ({ title, titleSelected }) => {
 
-  const [isFlipped, setIsFlipped] = useState(false)
   const [isExpanded, setIsExpanded] = useState(false)
 
-  const handleFlip = () => {
-    setIsFlipped(!isFlipped)
-  }
 
   const handleSelect = () => {
     if (!titleSelected) return;
@@ -50,20 +46,7 @@ const TitleCard: FC<TitleCardProps> = ({ title, titleSelected }) => {
             duration: 1,
           }}
         >
-
           {isExpanded && (<div className="relative top-14 px-6 flex justify-between">
-
-            {/* Flip button */}
-            <motion.button
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.8 }}
-              onClick={handleFlip}
-              className="z-50 text-white p-2 rounded-full bg-black/50 hover:bg-white/20"
-              aria-label="Close expanded poster"
-            >
-              <FlipHorizontal className="h-6 w-6" />
-            </motion.button>
 
             {/* Select button */}
             <motion.button
@@ -74,9 +57,10 @@ const TitleCard: FC<TitleCardProps> = ({ title, titleSelected }) => {
               className="z-50 text-white p-2 rounded-full bg-black/50 hover:bg-white/20"
               aria-label="Close expanded poster"
             >
-              <Upload className="h-6 w-6" />
+              <Check className="h-6 w-6" />
             </motion.button>
 
+            <span className="bg-black/50 p-2 rounded-md text-white text-xl">{(new Date(title?.release_date)).getFullYear()}</span>
 
             {/* Close button */}
             <motion.button
@@ -89,15 +73,13 @@ const TitleCard: FC<TitleCardProps> = ({ title, titleSelected }) => {
             >
               <X className="h-6 w-6" />
             </motion.button>
-
-
-
           </div>)}
-            <motion.img
-              layoutId="poster-image"
-              src={title?.poster_path}
-              alt={title?.title}
-              className={`w-full h-full object-fill`}
+
+          <motion.img
+            layoutId="poster-image"
+            src={title?.poster_path}
+            alt={title?.title}
+            className={`w-full h-full object-fill`}
               transition={{
                 type: "spring",
                 damping: 25,
