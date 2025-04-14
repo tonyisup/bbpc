@@ -3,7 +3,7 @@ import React from 'react';
 const AboutMCPPage = () => {
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
-      <h1 className="text-4xl font-bold mb-8">About Me</h1>
+      <h1 className="text-4xl font-bold mb-8">About MCP</h1>
       
       <div className="space-y-12">
         <section className="space-y-4">
