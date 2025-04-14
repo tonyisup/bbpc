@@ -40,10 +40,8 @@ const AboutPage = () => {
         <p>At one point, MCP received one of these emails</p>
         <p>Being that he was a software developer, he decided to make a website for the podcast</p>
         <p>As "payment" Fonso and Harley let MCP be a guest on one of the episodes</p>
-        <p>MCP never stopped being a guest!</p>
-        <p>Eventually MCP took over the recording and uploading duties</p>
-        <p>A decade later, they're still yelling at each other over movies</p>
-      
+        <p>He hasn't left</p>
+        <p>A decade later, they're still yelling at each other over movies</p>      
       </div>
     </div>    
   );
