@@ -52,6 +52,11 @@ const NavMenu: FC = () => {
               </Link>
             </NavigationMenuLink>
             <NavigationMenuLink asChild>
+              <Link href="/about" className="flex items-center gap-2 px-4 py-2 transition hover:text-red-400">
+                <UserIcon className="w-4 h-4" />About
+              </Link>
+            </NavigationMenuLink>
+            <NavigationMenuLink asChild>
               {session ? (
                 <Link href="/profile" className="flex items-center gap-2 px-4 py-2 transition hover:text-red-400">
                   <UserIcon className="w-4 h-4" />Profile
