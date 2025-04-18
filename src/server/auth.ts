@@ -5,8 +5,6 @@ import {
   type NextAuthOptions,
 } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
-import EmailProvider from "next-auth/providers/email";
-import type { Decimal } from "@prisma/client/runtime/library";
 import { env } from "@/env.mjs";
 import { db } from "@/server/db";
 
@@ -15,18 +13,37 @@ declare module "next-auth" {
     user?: DefaultSession["user"] & {
       id: string;
       isAdmin: boolean;
+      points?: number;
+      name?: string;
+      image?: string;
     };
   }
 
   interface User {
     id: string;
     isAdmin?: boolean;
-    points?: Decimal;
+    points?: number;
+    name?: string;
+    image?: string;
   }
 }
 
 export const authOptions: NextAuthOptions = {
   callbacks: {
+    signIn: async ({ user, account, profile }) => {
+      console.log('Sign in callback:', { user, account, profile });
+      return true;
+    },
+    jwt: async ({ token, user, account, profile }) => {
+      if (user) {
+        token.id = user.id;
+        token.isAdmin = user.isAdmin;
+        token.points = user.points;
+        token.name = user.name;
+        token.image = user.image;
+      }
+      return token;
+    },
     session: async ({ session, user }) => {
       if (session.user) {
         // Get user roles
@@ -41,14 +58,20 @@ export const authOptions: NextAuthOptions = {
         // Get user points from database
         const dbUser = await db.user.findUnique({
           where: { id: user.id },
-          select: { points: true }
+          select: { 
+            points: true,
+            name: true,
+            image: true,
+          }
         });
         
-        user.points = dbUser?.points ?? undefined;
+        user.points = dbUser?.points?.toNumber() ?? undefined;
         session.user = {
           ...session.user,
           id: user.id,
-          isAdmin,
+          isAdmin,  
+          name: dbUser?.name ?? undefined,
+          image: dbUser?.image ?? undefined,
         };
       }
       return session;
@@ -59,6 +82,23 @@ export const authOptions: NextAuthOptions = {
     GoogleProvider({
       clientId: env.GOOGLE_CLIENT_ID,
       clientSecret: env.GOOGLE_CLIENT_SECRET,
+      authorization: {
+        params: {
+          prompt: "consent",
+          access_type: "offline",
+          response_type: "code",
+          scope: "openid email profile https://www.googleapis.com/auth/userinfo.profile"
+        }
+      },
+      profile(profile) {
+        console.log('Google profile:', profile);
+        return {
+          id: profile.sub,
+          name: profile.name,
+          email: profile.email,
+          image: profile.picture,
+        };
+      },
     }),
 
 		// EmailProvider({
