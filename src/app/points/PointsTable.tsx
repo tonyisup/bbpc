@@ -2,6 +2,7 @@
 
 import { type User } from "@prisma/client";
 import { UserPointsEdit } from "./UserPointsEdit";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 interface PointsTableProps {
   users: User[];
@@ -22,7 +23,17 @@ export function PointsTable({ users, isAdmin }: PointsTableProps) {
         <tbody>
           {users.map((user) => (
             <tr key={user.id} className="border-b border-gray-800">
-              <td className="p-4">{user.name}</td>
+              <td className="p-4">
+                <div className="flex items-center gap-2">
+                  {user.image && (
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src={user.image} alt={user.name ?? ""} />
+                      <AvatarFallback>{user.name?.charAt(0)}</AvatarFallback>
+                    </Avatar>
+                  )}
+                  {user.name}
+                </div>
+              </td>
               <td className="p-4">{user.points?.toString()}</td>
               {isAdmin && (
                 <td className="p-4">
