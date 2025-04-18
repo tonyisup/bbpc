@@ -2,7 +2,7 @@
 
 import type { FC } from "react";
 import Link from "next/link";
-import { HomeIcon, HistoryIcon, TrophyIcon, GamepadIcon, UserIcon, ShirtIcon, LogIn } from "lucide-react";
+import { HomeIcon, HistoryIcon, TrophyIcon, GamepadIcon, UserIcon, ShirtIcon, LogIn, LogOut } from "lucide-react";
 import {
   NavigationMenu,
   NavigationMenuList,
@@ -11,7 +11,7 @@ import {
   NavigationMenuTrigger,
   NavigationMenuContent
 } from "@/components/ui/navigation-menu";
-import { useSession } from "next-auth/react";
+import { useSession, signOut } from "next-auth/react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 const NavMenu: FC = () => {
   const { data: session } = useSession();
@@ -64,17 +64,28 @@ const NavMenu: FC = () => {
                 <UserIcon className="w-4 h-4" />About
               </Link>
             </NavigationMenuLink>
-            <NavigationMenuLink asChild>
-              {session ? (
+            {session ? (<>
+              <NavigationMenuLink asChild>
                 <Link href="/profile" className="flex items-center gap-2 px-4 py-2 transition hover:text-red-400">
                   <UserIcon className="w-4 h-4" />Profile
                 </Link>
-              ) : (
+              </NavigationMenuLink>
+              <NavigationMenuLink asChild>
+                <button 
+                  onClick={() => signOut({ callbackUrl: window.location.pathname })}
+                  className="flex items-center gap-2 px-4 py-2 transition hover:text-red-400"
+                >
+                  <LogOut className="w-4 h-4" />Logout
+                </button>
+              </NavigationMenuLink>
+            </>
+            ) : (
+              <NavigationMenuLink asChild>
                 <Link href="/api/auth/signin" className="flex items-center gap-2 px-4 py-2 transition hover:text-red-400">
                   <LogIn className="w-4 h-4" />Login
                 </Link>
-              )}
-            </NavigationMenuLink>
+              </NavigationMenuLink>
+            )}
           </NavigationMenuContent>
         </NavigationMenuItem>
       </NavigationMenuList>
