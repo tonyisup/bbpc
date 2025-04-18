@@ -30,13 +30,17 @@ export default async function ProfilePage() {
   });
 
   return (
-    <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16">
-      <h1 className="text-5xl font-extrabold tracking-tight">Profile</h1>
-      <div className="w-full max-w-md flex flex-col gap-4">
-        <ProfileForm initialName={session.user.name ?? ""} />
-        <UserPoints points={Number(user?.points) ?? null} />
-        <GamblingHistory history={user?.gamblingPoints ?? []} />
-      </div>    
+    <div className="container flex flex-col items-start justify-center gap-12 px-4 py-16">
+      <h1 className="text-3xl font-extrabold tracking-tight">{session.user.email}</h1>
+
+      <ProfileForm
+        initialName={session.user.name ?? ""}
+        initialImage={session.user.image}
+      />
+
+      <h2 className="text-xl font-bold tracking-tight">Game Stuff</h2>
+      <UserPoints points={Number(user?.points) ?? null} />
+      <GamblingHistory history={user?.gamblingPoints ?? []} />
       <SignOutButton />
     </div>
   );

@@ -9,6 +9,23 @@ const f = createUploadthing();
 // FileRouter for your app, can contain multiple FileRoutes
 export const ourFileRouter = {
   // Define as many FileRoutes as you like, each with a unique routeSlug
+  imageUploader: f({ image: { maxFileSize: "4MB", maxFileCount: 1 } })
+    .middleware(async () => {
+      const session = await getServerAuthSession();
+      const user = session?.user;
+
+      if (!user?.id) throw new UploadThingError("Unauthorized");
+
+      return { userId: user.id };
+    })
+    .onUploadComplete(async ({ metadata, file }) => {
+      // Update user's image in database
+      await db.user.update({
+        where: { id: metadata.userId },
+        data: { image: file.url }
+      });
+    }),
+
   audioUploader: f({ audio: { maxFileSize: "8MB" } })
     .input(z.object({ episodeId: z.string().optional(), assignmentId: z.string().optional() }))
     // Set permissions and file types for this FileRoute
