@@ -28,13 +28,7 @@ export default async function SyllabusPage() {
   });
 
   return (
-    <div className="container flex flex-col gap-4 px-4 py-16">
-      <div className="flex">
-        <Button variant="outline" asChild>
-          <Link href="/profile">Back to Profile</Link>
-        </Button>
-      </div>
-      <h1 className="text-3xl font-extrabold tracking-tight text-center">My Syllabus</h1>
+    <div className="container flex flex-col gap-4 p-4">
       <SyllabusManager
         initialSyllabus={user?.syllabus ?? []}
         userId={session.user.id}

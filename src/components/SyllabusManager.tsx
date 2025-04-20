@@ -4,7 +4,7 @@ import { type FC, useState } from "react";
 import type { Movie, Syllabus } from "@prisma/client";
 import { api } from "@/trpc/react";
 import { Button } from "./ui/button";
-import { X, ArrowUp, ArrowDown } from "lucide-react";
+import { X, ArrowUp, ArrowDown, Plus } from "lucide-react";
 import MovieFind from "./MovieFind";
 import MovieInlinePreview from "./MovieInlinePreview";
 
@@ -88,9 +88,9 @@ const SyllabusManager: FC<SyllabusManagerProps> = ({ initialSyllabus, userId }) 
 
   return (
     <div className="flex flex-col gap-4 w-full max-w-4xl">
-      <div className="flex justify-end items-center">
+      <div className="flex justify-center items-center">
         {!showMovieSearch && <Button
-          
+          variant="outline"
           onClick={() => setShowMovieSearch(true)}
         >
           Add Movie
