@@ -4,18 +4,19 @@ import Image from "next/image";
 import Link from "next/link";
 
 interface SyllabusPreviewProps {
+  count: number;
   syllabus: {
     Movie: Movie;
   }[];
 }
 
-const SyllabusPreview: FC<SyllabusPreviewProps> = ({ syllabus }) => {
+const SyllabusPreview: FC<SyllabusPreviewProps> = ({ count, syllabus }) => {
   const totalMovies = syllabus.length;
 
   return (
     <div className="flex flex-col gap-4 w-full">
       <div className="text-lg">
-        Total Movies: {totalMovies}
+        Total Movies: {count}
       </div>
       {totalMovies > 0 && (
         <div className="flex gap-4">

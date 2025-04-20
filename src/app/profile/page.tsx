@@ -33,8 +33,17 @@ export default async function ProfilePage() {
         include: {
           Movie: true
         },
+        orderBy: {
+          order: 'desc'
+        },
         take: 3
       }
+    }
+  });
+
+  const syllabusCount = await db.syllabus.count({
+    where: {
+      userId: session.user.id
     }
   });
 
@@ -55,7 +64,7 @@ export default async function ProfilePage() {
         <h2 className="text-xl font-bold tracking-tight self-start">My Syllabus</h2>
         <div className="flex gap-4 w-full items-center">
           <Link href="/syllabus"><Pencil className="w-4 h-4" /></Link>
-          <SyllabusPreview syllabus={user?.syllabus ?? []} />
+          <SyllabusPreview count={syllabusCount} syllabus={user?.syllabus ?? []} />
         </div>
       </div>
       <SignOutButton />
