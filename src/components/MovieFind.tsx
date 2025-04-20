@@ -14,10 +14,10 @@ import { debounce } from 'lodash';
 
 interface MovieFindProps {
   selectMovie: Dispatch<Movie>;
+
 }
 
 const MovieFind: FC<MovieFindProps> = ({ selectMovie }) => {
-  const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
   const [title, setTitle] = useState<Title | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [inputValue, setInputValue] = useState("");
@@ -49,7 +49,8 @@ const MovieFind: FC<MovieFindProps> = ({ selectMovie }) => {
 
   const { mutate: addMovie } = api.movie.add.useMutation({
     onSuccess: (result) => {
-      setSelectedMovie(result);
+      if (!result) return;
+      selectMovie(result);
     }
   });
 
@@ -57,11 +58,6 @@ const MovieFind: FC<MovieFindProps> = ({ selectMovie }) => {
     setTitle(title);
     setSearchQuery("");
     setInputValue("");
-  }
-
-  const handleAddingExtra = function () {
-    if (!selectedMovie) return;
-    selectMovie(selectedMovie);
   }
 
   const debouncedSearch = useMemo(
@@ -77,20 +73,6 @@ const MovieFind: FC<MovieFindProps> = ({ selectMovie }) => {
 
   return (
     <div className="w-full flex flex-col items-center justify-center gap-4">
-      <Button
-        variant="outline"
-        onClick={handleAddingExtra}
-        disabled={!selectedMovie}
-      >
-        Add
-      </Button>
-      {selectedMovie && <MovieCard movie={selectedMovie} />}
-      {!selectedMovie && title && <TitleCard title={title} />}
-      {!selectedMovie && !title && (
-        <div className="text-center text-muted-foreground">
-          No movie selected
-        </div>
-      )}
       <div className="relative">
         <Label htmlFor="search" className="sr-only">
           Search
