@@ -5,6 +5,9 @@ import { db } from "@/server/db";
 import SignOutButton from "@/components/SignOutButton";
 import UserPoints from "@/components/UserPoints";
 import { GamblingHistory } from "@/components/GamblingHistory";
+import SyllabusPreview from "@/components/SyllabusPreview";
+import Link from "next/link";
+import { Pencil } from "lucide-react";
 
 export default async function ProfilePage() {
   const session = await getServerAuthSession();
@@ -25,6 +28,12 @@ export default async function ProfilePage() {
             }
           }
         }
+      },
+      syllabus: {
+        include: {
+          Movie: true
+        },
+        take: 3
       }
     }
   });
@@ -37,10 +46,18 @@ export default async function ProfilePage() {
         initialName={session.user.name ?? ""}
         initialImage={session.user.image}
       />
-
-      <h2 className="text-xl font-bold tracking-tight">Game Stuff</h2>
-      <UserPoints points={Number(user?.points) ?? null} />
-      <GamblingHistory history={user?.gamblingPoints ?? []} />
+      <div className="flex flex-col gap-4 w-full justify-center items-center">
+        <h2 className="text-xl font-bold tracking-tight self-start">Game Stuff</h2>
+        <UserPoints points={Number(user?.points) ?? null} />
+        <GamblingHistory history={user?.gamblingPoints ?? []} />
+      </div>
+      <div className="flex flex-col gap-4 w-full justify-center items-center">
+        <h2 className="text-xl font-bold tracking-tight self-start">My Syllabus</h2>
+        <div className="flex gap-4 w-full items-center">
+          <Link href="/syllabus"><Pencil className="w-4 h-4" /></Link>
+          <SyllabusPreview syllabus={user?.syllabus ?? []} />
+        </div>
+      </div>
       <SignOutButton />
     </div>
   );

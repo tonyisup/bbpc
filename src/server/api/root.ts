@@ -2,6 +2,7 @@ import { z } from "zod";
 import { Decimal } from "@prisma/client/runtime/library";
 import { type Rating } from "@prisma/client";
 import { createTRPCRouter, protectedProcedure, adminProcedure, publicProcedure } from "@/server/api/trpc";
+import { syllabusRouter } from "./routers/syllabus";
 
 export const appRouter = createTRPCRouter({
   episode: createTRPCRouter({
@@ -687,6 +688,8 @@ export const appRouter = createTRPCRouter({
         return await ctx.db.$executeRaw`EXEC [AddVoteForFeature] @lookupID=${input.lookupID}`;
       })
   }),
+
+  syllabus: syllabusRouter,
 });
 
 export type AppRouter = typeof appRouter; 

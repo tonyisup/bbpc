@@ -39,6 +39,7 @@ model Movie {
   url         String
   assignments Assignment[]
   reviews     Review[]
+  syllabus    Syllabus[]
 }
 
 model Show {
@@ -104,6 +105,7 @@ model Assignment {
   assignmentReviews AssignmentReview[]
   audioMessages     AudioMessage[]
   gamblingPoints    GamblingPoints[]
+  syllabus Syllabus[]
 }
 
 model Banger {
@@ -184,8 +186,8 @@ model User {
   roles         UserRole[]
   audioMessages AudioMessage[]
   gamblingPoints GamblingPoints[]
-
   AudioEpisodeMessage AudioEpisodeMessage[]
+  syllabus Syllabus[]
 }
 
 model Guess {
@@ -272,3 +274,16 @@ model GamblingPoints {
   User         User       @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   Assignment   Assignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
 }
+
+model Syllabus {
+  id String @id @default(dbgenerated("newid()")) @db.UniqueIdentifier
+  userId String
+  movieId String @db.UniqueIdentifier
+  order Int @db.Int
+  createdAt DateTime @default(now()) @db.DateTime
+  assignmentId String? @db.UniqueIdentifier
+  Assignment Assignment? @relation(fields: [assignmentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  User User @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  Movie Movie @relation(fields: [movieId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+

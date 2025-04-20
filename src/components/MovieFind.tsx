@@ -82,7 +82,7 @@ const MovieFind: FC<MovieFindProps> = ({ selectMovie }) => {
         onClick={handleAddingExtra}
         disabled={!selectedMovie}
       >
-        Add Extra
+        Add
       </Button>
       {selectedMovie && <MovieCard movie={selectedMovie} />}
       {!selectedMovie && title && <TitleCard title={title} />}
