@@ -107,7 +107,7 @@ const SyllabusManager: FC<SyllabusManagerProps> = ({ initialSyllabus, userId }) 
       {showMovieSearch && (
         <MovieFind selectMovie={handleAddMovie} />
       )}
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-4 w-[480px]">
         {syllabus.map((item, index) => (
           <div
             key={item.id}
@@ -136,7 +136,7 @@ const SyllabusManager: FC<SyllabusManagerProps> = ({ initialSyllabus, userId }) 
                 {item.Movie.poster && (
                   <MovieInlinePreview movie={item.Movie} />
                 )}
-                <div>
+                <div className="flex-1">
                   <h3 className="text-lg font-semibold break-words">{item.Movie.title}</h3>
                   <p className="text-gray-400">{item.Movie.year}</p>
                 </div>
