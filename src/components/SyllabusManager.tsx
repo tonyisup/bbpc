@@ -107,7 +107,7 @@ const SyllabusManager: FC<SyllabusManagerProps> = ({ initialSyllabus, userId }) 
       {showMovieSearch && (
         <MovieFind selectMovie={handleAddMovie} />
       )}
-      <div className="flex flex-col gap-4 w-[480px]">
+      <div className="flex flex-col gap-4 w-full">
         {syllabus.map((item, index) => (
           <div
             key={item.id}
