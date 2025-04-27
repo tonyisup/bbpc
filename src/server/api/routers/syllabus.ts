@@ -16,7 +16,12 @@ export const syllabusRouter = createTRPCRouter({
           order: input.order
         },
         include: {
-          Movie: true
+          Movie: true,
+          Assignment: {
+            include: {
+              Episode: true
+            }
+          }
         }
       });
     }),
@@ -45,7 +50,7 @@ export const syllabusRouter = createTRPCRouter({
         ctx.db.syllabus.update({
           where: { id: item.id },
           data: { order: item.order },
-          include: { Movie: true }
+          include: { Movie: true, Assignment: { include: { Episode: true } } }
         })
       );
       

@@ -19,7 +19,12 @@ export default async function SyllabusPage() {
     include: {
       syllabus: {
         include: {
-          Movie: true
+          Movie: true,
+          Assignment: {
+            include: {
+              Episode: true
+            }
+          }
         },
         orderBy: {
           order: 'desc'
