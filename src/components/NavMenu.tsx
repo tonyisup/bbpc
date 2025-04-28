@@ -45,11 +45,6 @@ const NavMenu: FC = () => {
               </Link>
             </NavigationMenuLink>
             <NavigationMenuLink asChild>
-              <Link href="/points" className="flex items-center gap-2 px-4 py-2 transition hover:text-red-400">
-                <TrophyIcon className="w-4 h-4" />Points
-              </Link>
-            </NavigationMenuLink>
-            <NavigationMenuLink asChild>
               <Link href="/game" className="flex items-center gap-2 px-4 py-2 transition hover:text-red-400">
                 <GamepadIcon className="w-4 h-4" />Game
               </Link>
