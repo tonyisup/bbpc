@@ -1,4 +1,5 @@
 import { type FC } from "react";
+import { type AssignmentWithRelations } from "@/types/assignment";
 import Assignment from "./Assignment";
 import MovieInlinePreview from "./MovieInlinePreview";
 import type { Assignment as AssignmentType, Episode as EpisodeType, Link as EpisodeLink, Movie, User, Review, ExtraReview } from '@prisma/client';
@@ -65,6 +66,7 @@ export const Episode: FC<EpisodeProps> = ({ episode, allowGuesses: isNextEpisode
 		</div>
   </section>
 }
+
 interface EpisodeAssignments {
 	allowGuesses?: boolean,
 	showMovieTitles?: boolean,
@@ -74,10 +76,14 @@ interface EpisodeAssignments {
 	})[];
 	searchQuery?: string;
 }
+
 const EpisodeAssignments: FC<EpisodeAssignments> = ({ assignments, allowGuesses, showMovieTitles = false, searchQuery = "" }) => {
 	if (!assignments || assignments.length == 0) return null;
 	return <div className="flex gap-2 justify-around">
-		{assignments.sort((a,b) => a.homework && !b.homework ? -1 : a.homework && b.homework ? 0 : 1).map((assignment) => {
+		{assignments.sort((a,b) => {
+      const typeOrder = { "HOMEWORK": 0, "EXTRA_CREDIT": 1, "BONUS": 2 };
+      return typeOrder[a.type] - typeOrder[b.type];
+    }).map((assignment) => {
 			return <div key={assignment.id} className="flex flex-col items-center justify-between gap-2">
 				<Assignment assignment={assignment} key={assignment.id} showMovieTitles={showMovieTitles} searchQuery={searchQuery} />
 				
