@@ -16,6 +16,8 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import UserPoints from "./UserPoints";
 import { GamepadIcon, UndoIcon } from "lucide-react";
+import { Label } from "./ui/label";
+import { Badge } from "./ui/badge";
 
 interface GameSegmentProps {
 	assignment: Assignment
@@ -29,8 +31,8 @@ enum GameChoice {
 const GameSegment: FC<GameSegmentProps> = ({ assignment }) => {
 	const { data: session, status } = useSession();
 	const [gameChoice, setGameChoice] = useState<GameChoice>(GameChoice.None);
-	const [gamblingPoints, setGamblingPoints] = useState<string>("");
-	const [canSubmitGamblingPoints, setCanSubmitGamblingPoints] = useState<boolean>(false);	
+	const [gamblingPoints, setGamblingPoints] = useState<number>(0);
+	const [canSubmitGamblingPoints, setCanSubmitGamblingPoints] = useState<boolean>(false);
 
 	// Fetch user data from the database
 	const { data: userData } = api.user.me.useQuery(undefined, {
@@ -55,17 +57,16 @@ const GameSegment: FC<GameSegmentProps> = ({ assignment }) => {
 	const handleGamblingPointsSubmit = () => {
 		if (!session?.user?.id) return;
 		if (!gamblingPoints) return;
-		
-		const points = parseInt(gamblingPoints);
-		if (isNaN(points) || points < 0) {
+
+		if (isNaN(gamblingPoints) || gamblingPoints < 0) {
 			alert("Please enter a valid number of points");
 			return;
 		}
-		
+
 		submitGamblingPoints({
 			userId: session.user.id,
 			assignmentId: assignment.id,
-			points: points
+			points: gamblingPoints
 		});
 	};
 
@@ -74,20 +75,21 @@ const GameSegment: FC<GameSegmentProps> = ({ assignment }) => {
 			// Check if user has points
 			if (!userData?.points) return false;
 			if (Number(userData.points) <= 0) return false;
-			
+
 			// Check if gambling points input is valid
-			if (!gamblingPoints || gamblingPoints.trim() === '') return false;
-			
-			const points = Number(gamblingPoints);
-			if (isNaN(points) || points <= 0) return false;
-			if (points > Number(userData.points)) return false;
-			
+			if (isNaN(gamblingPoints) || gamblingPoints <= 0) return false;
+
+			if (gamblingPoints > Number(userData.points)) return false;
+
 			return true;
 		}
-		
+
 		setCanSubmitGamblingPoints(evalCanSubmitGamblingPoints());
 	}, [userData, gamblingPoints]);
 
+	const handleAutoBet = (amount: number) => {
+		setGamblingPoints(amount);
+	}
 
 	if (status === "loading") {
 		return <div className="flex flex-col items-center gap-4 m-4">
@@ -126,23 +128,36 @@ const GameSegment: FC<GameSegmentProps> = ({ assignment }) => {
 				</div>
 			)}
 			<div className="flex gap-2">
-				<Input
-					type="number"
-					placeholder="How confident are you?"
-					value={gamblingPoints}
-					onChange={(e) => setGamblingPoints(e.target.value)}
-				/>
-				<Button
-					disabled={!canSubmitGamblingPoints}
-					className="text-gray-300 rounded-md hover:bg-red-800 bg-gradient-to-r from-blue-900 to-blue-500  relative overflow-hidden group"
-					onClick={handleGamblingPointsSubmit}
-				>
-					<span className="absolute inset-0 bg-gradient-to-r from-transparent "></span>
-					<span className="p-4 relative z-10 flex items-center">
-						<span className="mr-1">So confident!</span>
-						<span className="animate-bounce inline-block">✨</span>
-					</span>
-				</Button>
+				<div className="flex flex-col gap-2">
+					<div className="flex gap-2 items-center">
+						<Label>Wanna bet?</Label>
+						{userData?.points && Number(userData.points) > 0 && <Badge className="cursor-pointer" onClick={() => handleAutoBet(1)}>Bet 1</Badge>}
+						{userData?.points && Number(userData.points) > 5 && <Badge className="cursor-pointer" onClick={() => handleAutoBet(5)}>Bet 5</Badge>}
+						{userData?.points && Number(userData.points) > 10 && <Badge className="cursor-pointer" onClick={() => handleAutoBet(10)}>Bet 10</Badge>}
+						{userData?.points && Number(userData.points) > 20 && <Badge className="cursor-pointer" onClick={() => handleAutoBet(20)}>Bet 20</Badge>}
+						{userData?.points && Number(userData.points) > 50 && <Badge className="cursor-pointer" onClick={() => handleAutoBet(50)}>Bet 50</Badge>}
+						{userData?.points && Number(userData.points) > 0 && <Badge className="cursor-pointer" onClick={() => handleAutoBet(Number(userData.points))}>ALL IN</Badge>}
+					</div>
+					<div className="flex gap-2">
+						<Input
+							type="number"
+							placeholder="Points here..."
+							value={gamblingPoints}
+							onChange={(e) => setGamblingPoints(Number(e.target.value))}
+						/>
+						<Button
+							disabled={!canSubmitGamblingPoints}
+							className="text-gray-300 rounded-md hover:bg-red-800 bg-gradient-to-r from-blue-900 to-blue-500  relative overflow-hidden group"
+							onClick={handleGamblingPointsSubmit}
+						>
+							<span className="absolute inset-0 bg-gradient-to-r from-transparent "></span>
+							<span className="p-4 relative z-10 flex items-center">
+								<span className="mr-1">Gamble!</span>
+								<span className="animate-bounce inline-block">✨</span>
+							</span>
+						</Button>
+					</div>
+				</div>
 			</div>
 		</div>}
 		<h3 className="text-2xl">Submit your guesses!</h3>
@@ -155,7 +170,7 @@ const GameSegment: FC<GameSegmentProps> = ({ assignment }) => {
 				<HiPhone className="inline-block m-2" />
 			</Button>
 			<Button
-				variant="outline" 
+				variant="outline"
 				onClick={() => setGameChoice(GameChoice.VoiceRecording)}
 			>
 				Leave a voice recording
@@ -233,7 +248,7 @@ const ShowAssignmentGuesses: FC<ShowAssignmentGuessesProps> = ({ guesses, resetG
 			{guesses && guesses.map((guess) => {
 				return <SelectedGuess key={guess.id} host={guess?.AssignmentReview?.Review?.User} rating={guess?.Rating} />
 			})}
-			<Button 
+			<Button
 				variant="outline"
 				onClick={resetGuesses}
 			>
@@ -295,9 +310,9 @@ const SetAssignmentGuesses: FC<SetAssignmentGuessesProps> = ({ assignment, guess
 					<GuessSelect host={host} setGuess={handleSetGuess} />
 				</div>
 			})}
-			<Button 
+			<Button
 				variant="outline"
-				disabled={!canSubmitGuesses} 
+				disabled={!canSubmitGuesses}
 				onClick={handleSubmitGuesses}
 			>
 				<HiUpload className="inline-block m-2" />
