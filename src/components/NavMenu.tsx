@@ -2,7 +2,7 @@
 
 import type { FC } from "react";
 import Link from "next/link";
-import { HomeIcon, HistoryIcon, TrophyIcon, GamepadIcon, UserIcon, ShirtIcon, LogIn, LogOut } from "lucide-react";
+import { HomeIcon, HistoryIcon, TrophyIcon, GamepadIcon, UserIcon, ShirtIcon, LogIn, LogOut, BookOpenIcon } from "lucide-react";
 import {
   NavigationMenu,
   NavigationMenuList,
@@ -60,6 +60,11 @@ const NavMenu: FC = () => {
               </Link>
             </NavigationMenuLink>
             {session ? (<>
+              <NavigationMenuLink asChild>
+                <Link href="/syllabus" className="flex items-center gap-2 px-4 py-2 transition hover:text-red-400">
+                  <BookOpenIcon className="w-4 h-4" />Syllabus
+                </Link>
+              </NavigationMenuLink>
               <NavigationMenuLink asChild>
                 <Link href="/profile" className="flex items-center gap-2 px-4 py-2 transition hover:text-red-400">
                   <UserIcon className="w-4 h-4" />Profile
