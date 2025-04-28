@@ -16,7 +16,7 @@ const SyllabusPreview: FC<SyllabusPreviewProps> = ({ count, syllabus }) => {
   return (
     <div className="flex flex-col gap-4 w-full">
       <div className="text-lg">
-        Total Movies: {count}
+        Available Movies: {count}
       </div>
       {totalMovies > 0 && (
         <div className="flex gap-4">
@@ -40,6 +40,16 @@ const SyllabusPreview: FC<SyllabusPreviewProps> = ({ count, syllabus }) => {
               )}
             </Link>
           ))}
+
+          {count > 3 && (
+            <div className="flex flex-col items-center justify-center">
+              <p>
+                <Link href="/syllabus">
+                  More...
+                </Link>
+              </p>
+            </div>
+          )}
         </div>
       )}
     </div>

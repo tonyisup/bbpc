@@ -30,6 +30,9 @@ export default async function ProfilePage() {
         }
       },
       syllabus: {
+        where: {
+          assignmentId: null
+        },
         include: {
           Movie: true
         },
@@ -43,7 +46,8 @@ export default async function ProfilePage() {
 
   const syllabusCount = await db.syllabus.count({
     where: {
-      userId: session.user.id
+      userId: session.user.id,
+      assignmentId: null
     }
   });
 
