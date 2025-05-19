@@ -138,9 +138,6 @@ export default function GamePage() {
           <p>
             Players may also choose no assignment at all! (Strategy!?)
           </p>
-          <p>
-            Players may also choose to pass. The wheel will be spun for a host to assign, per normal.
-          </p>
         </div>
       </div>
       <div className="bg-gray-800 rounded-lg p-6 shadow-lg">
