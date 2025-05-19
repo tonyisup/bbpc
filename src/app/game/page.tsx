@@ -129,8 +129,8 @@ export default function GamePage() {
             The last seventh (7th) entry will be for the player who <span className="text-green-400 font-semibold">earned the most points</span> that week.
           </p>
           <p>
-            If the player entry is landed on, we will choose the next available assignment from that user's 
-            <Link href="/syllabus">
+            If the player entry is landed on, we will choose the next available assignment from that user's  
+            <Link href="/syllabus" className="text-blue-400 font-semibold">
               syllabus
             </Link>.
             If the syllabus is empty, the bonus is forfeited.
