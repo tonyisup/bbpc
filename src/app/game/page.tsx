@@ -1,6 +1,7 @@
 import RatingIcon from "../../components/RatingIcon";
 import { NextEpisode } from "../../components/NextEpisode";
-import { Info, Link } from "lucide-react";
+import { Info } from "lucide-react";
+import Link from "next/link";
 
 export default function GamePage() {
   return (
@@ -129,7 +130,7 @@ export default function GamePage() {
           </p>
           <p>
             If the player entry is landed on, we will choose the next available assignment from that user's 
-            <Link href="/syllabus" className="text-blue-400 font-semibold">
+            <Link href="/syllabus">
               syllabus
             </Link>.
             If the syllabus is empty, the bonus is forfeited.
