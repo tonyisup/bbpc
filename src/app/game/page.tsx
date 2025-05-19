@@ -131,7 +131,7 @@ export default function GamePage() {
           <p>
             If the player entry is landed on, we will choose the next available assignment from that user's  
             <Link href="/syllabus" className="text-blue-400 font-semibold">
-              syllabus
+              &nbsp;syllabus
             </Link>.
             If the syllabus is empty, the bonus is forfeited.
           </p>
