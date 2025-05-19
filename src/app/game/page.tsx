@@ -1,6 +1,6 @@
 import RatingIcon from "../../components/RatingIcon";
 import { NextEpisode } from "../../components/NextEpisode";
-import { Info } from "lucide-react";
+import { Info, Link } from "lucide-react";
 
 export default function GamePage() {
   return (
@@ -119,10 +119,7 @@ export default function GamePage() {
         <h2 className="text-2xl font-semibold mb-6 text-center text-blue-400">Wheel Spin</h2>
         <div className="space-y-4 text-lg">
           <p>
-            The wheel will be spun at the end of the reviews.
-          </p>
-          <p>
-            The wheel contains <span className="text-yellow-400 font-semibold">seven (7)</span> entries.
+            At the end of the reviews in each episode, we spin the wheel to determine the Assignments for the next episode.
           </p>
           <p>
             Each host will have a <span className="text-blue-400 font-semibold">Homework</span> entry and an <span className="text-blue-600 font-semibold">Extra Credit</span> entry.
@@ -131,10 +128,11 @@ export default function GamePage() {
             The last seventh (7th) entry will be for the player who <span className="text-green-400 font-semibold">earned the most points</span> that week.
           </p>
           <p>
-            If the player is landed on, they may choose either 
-            a <span className="text-blue-400 font-semibold">Homework</span> or 
-            a <span className="text-blue-600 font-semibold">Extra Credit</span> assignment 
-            for the <span className="text-yellow-400 font-semibold">following</span> episode.
+            If the player entry is landed on, we will choose the next available assignment from that user's 
+            <Link href="/syllabus" className="text-blue-400 font-semibold">
+              syllabus
+            </Link>.
+            If the syllabus is empty, the bonus is forfeited.
           </p>
           <p>
             Players may also choose no assignment at all! (Strategy!?)
