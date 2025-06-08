@@ -153,6 +153,33 @@ export default function VoiceMailRecorder({ episodeId, userId }: VoiceMailRecord
     }
   }, [isRecording])
 
+  const playRecording = useCallback(() => {
+    if (audioBlob && audioRef.current) {
+      const audioUrl = URL.createObjectURL(audioBlob)
+      audioRef.current.src = audioUrl
+      audioRef.current.play()
+      setIsPlaying(true)
+      
+      // Update media session state
+      if ('mediaSession' in navigator) {
+        navigator.mediaSession.playbackState = 'playing';
+      }
+    }
+  }, [audioBlob])
+
+  const stopPlayback = useCallback(() => {
+    if (audioRef.current) {
+      audioRef.current.pause()
+      audioRef.current.currentTime = 0
+      setIsPlaying(false)
+      
+      // Update media session state
+      if ('mediaSession' in navigator) {
+        navigator.mediaSession.playbackState = 'paused';
+      }
+    }
+  }, [])
+
   // Setup Media Session API
   useEffect(() => {
     if ('mediaSession' in navigator) {
@@ -163,29 +190,26 @@ export default function VoiceMailRecorder({ episodeId, userId }: VoiceMailRecord
         }
       });
 
+      navigator.mediaSession.setActionHandler('play', () => {
+        if (audioBlob && !isPlaying) {
+          playRecording();
+        }
+      });
+
+      navigator.mediaSession.setActionHandler('pause', () => {
+        if (isPlaying) {
+          stopPlayback();
+        }
+      });
+
       // Clean up media session on unmount
       return () => {
         navigator.mediaSession.setActionHandler('stop', null);
+        navigator.mediaSession.setActionHandler('play', null);
+        navigator.mediaSession.setActionHandler('pause', null);
       };
     }
-  }, [stopRecording, isRecording]);
-
-  const playRecording = () => {
-    if (audioBlob && audioRef.current) {
-      const audioUrl = URL.createObjectURL(audioBlob)
-      audioRef.current.src = audioUrl
-      audioRef.current.play()
-      setIsPlaying(true)
-    }
-  }
-
-  const stopPlayback = () => {
-    if (audioRef.current) {
-      audioRef.current.pause()
-      audioRef.current.currentTime = 0
-      setIsPlaying(false)
-    }
-  }
+  }, [isRecording, isPlaying, audioBlob, stopRecording, playRecording, stopPlayback]);
 
   const handleSubmit = async () => {
     if (!audioBlob) return
