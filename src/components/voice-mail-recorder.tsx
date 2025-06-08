@@ -59,6 +59,23 @@ export default function VoiceMailRecorder({ episodeId, userId }: VoiceMailRecord
     },
   });
 
+  // Setup Media Session API
+  useEffect(() => {
+    if ('mediaSession' in navigator) {
+      // Set up media session action handlers
+      navigator.mediaSession.setActionHandler('stop', () => {
+        if (isRecording) {
+          stopRecording();
+        }
+      });
+
+      // Clean up media session on unmount
+      return () => {
+        navigator.mediaSession.setActionHandler('stop', null);
+      };
+    }
+  }, [isRecording]);
+
   useEffect(() => {
     // Create audio element for playback
     audioRef.current = new Audio()
@@ -109,6 +126,16 @@ export default function VoiceMailRecorder({ episodeId, userId }: VoiceMailRecord
       setIsRecording(true)
       setPermissionDenied(false)
 
+      // Update media session metadata
+      if ('mediaSession' in navigator) {
+        navigator.mediaSession.metadata = new MediaMetadata({
+          title: 'Voice Message Recording',
+          artist: 'Voice Mail Recorder',
+          album: 'Episode Voice Message',
+        });
+        navigator.mediaSession.playbackState = 'playing';
+      }
+
       // Clear any existing timer first
       if (timerRef.current) {
         clearInterval(timerRef.current)
@@ -128,6 +155,12 @@ export default function VoiceMailRecorder({ episodeId, userId }: VoiceMailRecord
     if (mediaRecorderRef.current && isRecording) {
       mediaRecorderRef.current.stop()
       setIsRecording(false)
+
+      // Clear media session metadata
+      if ('mediaSession' in navigator) {
+        navigator.mediaSession.metadata = null;
+        navigator.mediaSession.playbackState = 'none';
+      }
 
       if (timerRef.current) {
         clearInterval(timerRef.current)
