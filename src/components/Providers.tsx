@@ -5,6 +5,7 @@ import { TRPCReactProvider } from "@/trpc/react";
 import { type Session } from "next-auth";
 import { PostHogProvider } from "./PostHogProvider";
 import { ThemeProvider } from "next-themes";
+import { Toaster } from "@/components/ui/sonner";
 export function Providers({
   children,
   session,
@@ -20,6 +21,7 @@ export function Providers({
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
           <PostHogProvider>
             {children}
+            <Toaster />
           </PostHogProvider>
         </ThemeProvider>
       </TRPCReactProvider>

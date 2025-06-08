@@ -1,10 +1,11 @@
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef, useEffect, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Mic, Square, Play, Send, Loader2 } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { api } from "@/trpc/react"
 import { useUploadThing } from "@/utils/uploadthing"
+import { toast } from "sonner"
 
 interface VoiceMailRecorderProps {
   episodeId: string;
@@ -53,28 +54,11 @@ export default function VoiceMailRecorder({ episodeId, userId }: VoiceMailRecord
           setTimeout(() => setIsUploaded(false), 5000);
           setAudioBlob(null);
           setIsSubmitting(false);
-          alert("Voice message submitted successfully!");
+          toast.success("Voice message submitted successfully!");
         }
       });
     },
   });
-
-  // Setup Media Session API
-  useEffect(() => {
-    if ('mediaSession' in navigator) {
-      // Set up media session action handlers
-      navigator.mediaSession.setActionHandler('stop', () => {
-        if (isRecording) {
-          stopRecording();
-        }
-      });
-
-      // Clean up media session on unmount
-      return () => {
-        navigator.mediaSession.setActionHandler('stop', null);
-      };
-    }
-  }, [isRecording]);
 
   useEffect(() => {
     // Create audio element for playback
@@ -151,7 +135,7 @@ export default function VoiceMailRecorder({ episodeId, userId }: VoiceMailRecord
     }
   }
 
-  const stopRecording = () => {
+  const stopRecording = useCallback(() => {
     if (mediaRecorderRef.current && isRecording) {
       mediaRecorderRef.current.stop()
       setIsRecording(false)
@@ -167,7 +151,24 @@ export default function VoiceMailRecorder({ episodeId, userId }: VoiceMailRecord
         timerRef.current = null
       }
     }
-  }
+  }, [isRecording])
+
+  // Setup Media Session API
+  useEffect(() => {
+    if ('mediaSession' in navigator) {
+      // Set up media session action handlers
+      navigator.mediaSession.setActionHandler('stop', () => {
+        if (isRecording) {
+          stopRecording();
+        }
+      });
+
+      // Clean up media session on unmount
+      return () => {
+        navigator.mediaSession.setActionHandler('stop', null);
+      };
+    }
+  }, [stopRecording, isRecording]);
 
   const playRecording = () => {
     if (audioBlob && audioRef.current) {
