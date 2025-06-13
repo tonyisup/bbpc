@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   title: "Bad Boys Podcast",
   description: "Random rants on all things movie",
   manifest: "/manifest.json",
-  themeColor: "#000000",
+  themeColor: "black",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
