@@ -25,6 +25,7 @@ export default function VoiceMailRecorder({ episodeId, userId }: VoiceMailRecord
   const audioChunksRef = useRef<Blob[]>([])
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const timerRef = useRef<NodeJS.Timeout | null>(null)
+  const serviceWorkerRef = useRef<ServiceWorker | null>(null)
 
   const { mutate: updateAudio } = api.episode.updateAudioMessage.useMutation();
   const { data: countOfUserAudioMessagesForEpisode, refetch } = api.episode.getCountOfUserEpisodeAudioMessages.useQuery({ 
@@ -61,6 +62,20 @@ export default function VoiceMailRecorder({ episodeId, userId }: VoiceMailRecord
   });
 
   useEffect(() => {
+    // Register service worker
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').then(registration => {
+        serviceWorkerRef.current = registration.active;
+      });
+    }
+
+    // Listen for messages from service worker
+    navigator.serviceWorker.addEventListener('message', (event) => {
+      if (event.data.type === 'STOP_RECORDING') {
+        stopRecording();
+      }
+    });
+
     // Create audio element for playback
     audioRef.current = new Audio()
     audioRef.current.onended = () => setIsPlaying(false)
@@ -110,24 +125,29 @@ export default function VoiceMailRecorder({ episodeId, userId }: VoiceMailRecord
       setIsRecording(true)
       setPermissionDenied(false)
 
-      // Update media session metadata
-      if ('mediaSession' in navigator) {
-        navigator.mediaSession.metadata = new MediaMetadata({
-          title: 'Voice Message Recording',
-          artist: 'Voice Mail Recorder',
-          album: 'Episode Voice Message',
+      // Notify service worker about recording state
+      if (serviceWorkerRef.current) {
+        serviceWorkerRef.current.postMessage({
+          type: 'RECORDING_STATE',
+          isRecording: true,
+          duration: 0
         });
-        navigator.mediaSession.playbackState = 'playing';
-      }
-
-      // Clear any existing timer first
-      if (timerRef.current) {
-        clearInterval(timerRef.current)
       }
 
       // Start timer to track recording duration
       timerRef.current = setInterval(() => {
-        setRecordingTime((prevTime) => prevTime + 1)
+        setRecordingTime((prevTime) => {
+          const newTime = prevTime + 1;
+          // Update service worker with new duration
+          if (serviceWorkerRef.current) {
+            serviceWorkerRef.current.postMessage({
+              type: 'RECORDING_STATE',
+              isRecording: true,
+              duration: newTime
+            });
+          }
+          return newTime;
+        });
       }, 1000)
     } catch (error) {
       console.error("Error accessing microphone:", error)
@@ -140,10 +160,13 @@ export default function VoiceMailRecorder({ episodeId, userId }: VoiceMailRecord
       mediaRecorderRef.current.stop()
       setIsRecording(false)
 
-      // Clear media session metadata
-      if ('mediaSession' in navigator) {
-        navigator.mediaSession.metadata = null;
-        navigator.mediaSession.playbackState = 'none';
+      // Notify service worker about recording state
+      if (serviceWorkerRef.current) {
+        serviceWorkerRef.current.postMessage({
+          type: 'RECORDING_STATE',
+          isRecording: false,
+          duration: recordingTime
+        });
       }
 
       if (timerRef.current) {
@@ -151,7 +174,7 @@ export default function VoiceMailRecorder({ episodeId, userId }: VoiceMailRecord
         timerRef.current = null
       }
     }
-  }, [isRecording])
+  }, [isRecording, recordingTime])
 
   const playRecording = useCallback(() => {
     if (audioBlob && audioRef.current) {
@@ -159,11 +182,6 @@ export default function VoiceMailRecorder({ episodeId, userId }: VoiceMailRecord
       audioRef.current.src = audioUrl
       audioRef.current.play()
       setIsPlaying(true)
-      
-      // Update media session state
-      if ('mediaSession' in navigator) {
-        navigator.mediaSession.playbackState = 'playing';
-      }
     }
   }, [audioBlob])
 
@@ -172,44 +190,8 @@ export default function VoiceMailRecorder({ episodeId, userId }: VoiceMailRecord
       audioRef.current.pause()
       audioRef.current.currentTime = 0
       setIsPlaying(false)
-      
-      // Update media session state
-      if ('mediaSession' in navigator) {
-        navigator.mediaSession.playbackState = 'paused';
-      }
     }
   }, [])
-
-  // Setup Media Session API
-  useEffect(() => {
-    if ('mediaSession' in navigator) {
-      // Set up media session action handlers
-      navigator.mediaSession.setActionHandler('stop', () => {
-        if (isRecording) {
-          stopRecording();
-        }
-      });
-
-      navigator.mediaSession.setActionHandler('play', () => {
-        if (audioBlob && !isPlaying) {
-          playRecording();
-        }
-      });
-
-      navigator.mediaSession.setActionHandler('pause', () => {
-        if (isPlaying) {
-          stopPlayback();
-        }
-      });
-
-      // Clean up media session on unmount
-      return () => {
-        navigator.mediaSession.setActionHandler('stop', null);
-        navigator.mediaSession.setActionHandler('play', null);
-        navigator.mediaSession.setActionHandler('pause', null);
-      };
-    }
-  }, [isRecording, isPlaying, audioBlob, stopRecording, playRecording, stopPlayback]);
 
   const handleSubmit = async () => {
     if (!audioBlob) return

@@ -17,7 +17,22 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "Bad Boys Podcast",
   description: "Random rants on all things movie",
-  icons: [{ rel: "icon", url: "/favicon.ico" }],
+  manifest: "/manifest.json",
+  themeColor: "black",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Bad Boys Podcast",
+  },
+  viewport: {
+    width: "device-width",
+    initialScale: 1,
+    maximumScale: 1,
+  },
+  icons: [
+    { rel: "icon", url: "/favicon.ico" },
+    { rel: "apple-touch-icon", url: "/icons/icon-192x192.png" },
+  ],
 };
 
 export default async function RootLayout({
