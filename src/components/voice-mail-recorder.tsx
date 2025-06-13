@@ -80,6 +80,35 @@ export default function VoiceMailRecorder({ episodeId, userId }: VoiceMailRecord
     audioRef.current = new Audio()
     audioRef.current.onended = () => setIsPlaying(false)
 
+    // Set up media session
+    if ('mediaSession' in navigator) {
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: 'Voice Message Recording',
+        artist: 'BBPC',
+        album: 'Voice Messages',
+      });
+
+      navigator.mediaSession.setActionHandler('play', () => {
+        if (audioBlob) {
+          playRecording();
+        }
+      });
+
+      navigator.mediaSession.setActionHandler('pause', () => {
+        if (isPlaying) {
+          stopPlayback();
+        }
+      });
+
+      navigator.mediaSession.setActionHandler('stop', () => {
+        if (isRecording) {
+          stopRecording();
+        } else if (isPlaying) {
+          stopPlayback();
+        }
+      });
+    }
+
     // Clean up on unmount
     return () => {
       if (timerRef.current) {
@@ -95,8 +124,15 @@ export default function VoiceMailRecorder({ episodeId, userId }: VoiceMailRecord
         audioRef.current.pause()
         audioRef.current.src = ""
       }
+
+      // Clean up media session
+      if ('mediaSession' in navigator) {
+        navigator.mediaSession.setActionHandler('play', null);
+        navigator.mediaSession.setActionHandler('pause', null);
+        navigator.mediaSession.setActionHandler('stop', null);
+      }
     }
-  }, [])
+  }, [audioBlob, isPlaying, isRecording])
 
   const startRecording = async () => {
     audioChunksRef.current = []
@@ -124,6 +160,11 @@ export default function VoiceMailRecorder({ episodeId, userId }: VoiceMailRecord
       mediaRecorderRef.current.start()
       setIsRecording(true)
       setPermissionDenied(false)
+
+      // Update media session state
+      if ('mediaSession' in navigator) {
+        navigator.mediaSession.playbackState = 'none';
+      }
 
       // Notify service worker about recording state
       if (serviceWorkerRef.current) {
@@ -160,6 +201,11 @@ export default function VoiceMailRecorder({ episodeId, userId }: VoiceMailRecord
       mediaRecorderRef.current.stop()
       setIsRecording(false)
 
+      // Update media session state
+      if ('mediaSession' in navigator) {
+        navigator.mediaSession.playbackState = 'none';
+      }
+
       // Notify service worker about recording state
       if (serviceWorkerRef.current) {
         serviceWorkerRef.current.postMessage({
@@ -182,6 +228,11 @@ export default function VoiceMailRecorder({ episodeId, userId }: VoiceMailRecord
       audioRef.current.src = audioUrl
       audioRef.current.play()
       setIsPlaying(true)
+
+      // Update media session state
+      if ('mediaSession' in navigator) {
+        navigator.mediaSession.playbackState = 'none';
+      }
     }
   }, [audioBlob])
 
@@ -190,6 +241,11 @@ export default function VoiceMailRecorder({ episodeId, userId }: VoiceMailRecord
       audioRef.current.pause()
       audioRef.current.currentTime = 0
       setIsPlaying(false)
+
+      // Update media session state
+      if ('mediaSession' in navigator) {
+        navigator.mediaSession.playbackState = 'none';
+      }
     }
   }, [])
 
@@ -221,6 +277,11 @@ export default function VoiceMailRecorder({ episodeId, userId }: VoiceMailRecord
       audioRef.current.pause()
       audioRef.current.currentTime = 0
       setIsPlaying(false)
+    }
+
+    // Update media session state
+    if ('mediaSession' in navigator) {
+      navigator.mediaSession.playbackState = 'none';
     }
   }
 
@@ -266,7 +327,7 @@ export default function VoiceMailRecorder({ episodeId, userId }: VoiceMailRecord
           )}
         </div>
       </CardContent>
-      <CardFooter className="flex justify-between">
+      <CardFooter>
         {isRecording ? (
           <Button variant="destructive" onClick={stopRecording} className="w-full">
             <Square className="mr-2 h-4 w-4" />
