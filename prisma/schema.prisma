@@ -280,6 +280,7 @@ model Syllabus {
   userId String
   movieId String @db.UniqueIdentifier
   order Int @db.Int
+  notes String?
   createdAt DateTime @default(now()) @db.DateTime
   assignmentId String? @db.UniqueIdentifier
   Assignment Assignment? @relation(fields: [assignmentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
