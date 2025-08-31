@@ -68,7 +68,7 @@ export async function POST(req: NextRequest) {
       fulfillmentMessages: [{
         text: {
           text: [
-            `Movies assigned: ${episode.assignments.map(a => a.Movie.title).join(", ")}`
+            `Movies assigned: ${episode.assignments.map(a => a.Movie.title).join(" and ")}`
           ]
         }
       }]
