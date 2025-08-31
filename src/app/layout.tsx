@@ -44,6 +44,16 @@ export default async function RootLayout({
 
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <meta name="description" content="Random rants on all things movie" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="icon" href="/favicon.ico" />
+        <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="black" />
+        <meta name="google-site-verification" content="SC5A9TotM4gBLo9UVqxKOyJG-d4Soj6ayNxE5lk9HNs" />
+        <title>Bad Boys Podcast</title>
+      </head>
       <body className={`font-sans ${inter.variable} dark`}>
         <Providers session={session} headers={headers()}>
           <div className="bg-black w-full flex flex-col min-h-screen items-center">
