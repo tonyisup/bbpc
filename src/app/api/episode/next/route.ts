@@ -1,13 +1,34 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { createTRPCContext } from "@/server/api/trpc";
 
-export async function GET() {
+// Dialogflow webhook request/response types
+interface WebhookRequest {
+  queryResult: {
+    intent: {
+      displayName: string;
+    };
+    parameters?: Record<string, any>;
+  };
+}
+
+interface WebhookResponse {
+  fulfillmentMessages: Array<{
+    text: {
+      text: string[];
+    };
+  }>;
+}
+
+export async function POST(req: NextRequest) {
   try {
+    // Parse the webhook request
+    const webhookRequest: WebhookRequest = await req.json();
+    
     // Create a tRPC context
     const ctx = await createTRPCContext();
     
-    // Call the database query directly (same logic as episode.next)
-    const result = await ctx.db.episode.findFirst({
+    // Get the next episode data
+    const episode = await ctx.db.episode.findFirst({
       orderBy: {
         number: 'desc',
       },
@@ -16,15 +37,6 @@ export async function GET() {
           include: {
             Movie: true,
             User: true,
-            assignmentReviews: {
-              include: {
-                Review: {
-                  include: {
-                    Rating: true,
-                  },
-                },
-              },
-            },
           },
         },
         extras: {
@@ -40,14 +52,38 @@ export async function GET() {
         links: true,
       },
     });
+
+    if (!episode) {
+      const response: WebhookResponse = {
+        fulfillmentMessages: [{
+          text: {
+            text: ["No episodes found."]
+          }
+        }]
+      };
+      return NextResponse.json(response);
+    }
     
-    // Return the result as JSON
-    return NextResponse.json(result);
+    const response: WebhookResponse = {
+      fulfillmentMessages: [{
+        text: {
+          text: [
+            `Movies assigned: ${episode.assignments.map(a => a.Movie.title).join(", ")}`
+          ]
+        }
+      }]
+    };
+    
+    return NextResponse.json(response);
   } catch (error) {
-    console.error("Error fetching next episode:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch next episode" },
-      { status: 500 }
-    );
+    console.error("Error processing webhook:", error);
+    const errorResponse: WebhookResponse = {
+      fulfillmentMessages: [{
+        text: {
+          text: ["Sorry, I encountered an error while fetching episode information."]
+        }
+      }]
+    };
+    return NextResponse.json(errorResponse, { status: 500 });
   }
 }
