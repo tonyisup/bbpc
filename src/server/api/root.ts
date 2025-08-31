@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { Decimal } from "@prisma/client/runtime/library";
 import { type Rating } from "@prisma/client";
-import { createTRPCRouter, protectedProcedure, adminProcedure, publicProcedure } from "@/server/api/trpc";
+import { createTRPCRouter, protectedProcedure, publicProcedure } from "@/server/api/trpc";
 import { syllabusRouter } from "./routers/syllabus";
 
 export const appRouter = createTRPCRouter({
