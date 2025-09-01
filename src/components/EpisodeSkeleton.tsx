@@ -12,7 +12,8 @@ export const EpisodeSkeleton = () => {
         <div className="flex gap-2 justify-around mt-4">
           {[1, 2].map((i) => (
             <div key={i} className="flex flex-col items-center justify-between gap-2">
-              <Skeleton className="h-52 w-36" />
+              <Skeleton className="h-[216px] w-[144px]" />
+              <Skeleton className="h-10 w-36" />
               <Skeleton className="h-10 w-36" />
             </div>
           ))}
@@ -22,7 +23,7 @@ export const EpisodeSkeleton = () => {
       <div className="p-1">        
         <Skeleton className="h-4 w-16" />
         <div className="flex justify-center gap-2 flex-wrap mt-2">
-          {[1, 2, 3].map((i) => (
+          {[1, 2].map((i) => (
             <Skeleton key={i} className="h-32 w-20" />
           ))}
         </div>

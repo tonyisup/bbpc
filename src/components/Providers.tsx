@@ -6,6 +6,7 @@ import { type Session } from "next-auth";
 import { PostHogProvider } from "./PostHogProvider";
 import { ThemeProvider } from "next-themes";
 import { Toaster } from "@/components/ui/sonner";
+
 export function Providers({
   children,
   session,
@@ -13,7 +14,7 @@ export function Providers({
 }: {
   children: React.ReactNode;
   session: Session | null;
-  headers: Headers;
+  headers?: Headers;
 }) {
   return (
     <SessionProvider session={session}>

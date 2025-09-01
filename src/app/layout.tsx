@@ -1,6 +1,5 @@
 import { type Metadata } from "next";
 import { Inter } from "next/font/google";
-import { headers } from "next/headers";
 import { getServerAuthSession } from "@/server/auth";
 import "@/styles/globals.css"
 import Link from "next/link";
@@ -55,7 +54,7 @@ export default async function RootLayout({
         <title>Bad Boys Podcast</title>
       </head>
       <body className={`font-sans ${inter.variable} dark`}>
-        <Providers session={session} headers={headers()}>
+        <Providers session={session}>
           <div className="bg-black w-full flex flex-col min-h-screen items-center">
             <header className="flex sm:w-1/2 w-full items-center justify-between bg-[#020202]">
                 <NavMenu />

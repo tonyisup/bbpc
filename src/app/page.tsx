@@ -49,7 +49,10 @@ export default async function HomePage() {
       
       <div className="container flex flex-col items-center justify-center gap-12 px-4">        
         <div className="flex flex-wrap gap-12 justify-evenly">
-          {latestEpisode && <Episode episode={latestEpisode} />}
+          <Suspense fallback={<EpisodeSkeleton />}>
+            {latestEpisode && <Episode episode={latestEpisode} />}
+          </Suspense>
+          {/* <EpisodeSkeleton /> */}
           <Suspense fallback={<EpisodeSkeleton />}>
             <NextEpisode />
           </Suspense>
