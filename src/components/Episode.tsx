@@ -8,22 +8,25 @@ import { AddExtraToNext } from "./AddExtraToNext";
 import { highlightText } from "@/utils/text";
 import { Button } from "./ui/button";
 
+export type CompleteEpisode = EpisodeType & {
+  assignments: (AssignmentType & {
+    User: User;
+    Movie: Movie | null;
+  })[];
+  extras: (ExtraReview & {
+    Review: Review & {
+      User: User;
+      Movie: Movie;
+    };
+  })[];
+  links: EpisodeLink[];
+};
+
 interface EpisodeProps {
 	allowGuesses?: boolean,
 	showMovieTitles?: boolean,
   searchQuery?: string,
-  episode: null | (EpisodeType & {
-    assignments: (AssignmentType & {
-        User: User;
-        Movie: Movie | null;
-    })[];
-    extras: (ExtraReview & {
-      Review: (Review & {
-        User: User;
-        Movie: Movie;
-    })})[];
-		links: EpisodeLink[];
-	});
+  episode: CompleteEpisode;
 }
 
 export const Episode: FC<EpisodeProps> = ({ episode, allowGuesses: isNextEpisode, showMovieTitles = false, searchQuery = "" }) => {
@@ -51,7 +54,7 @@ export const Episode: FC<EpisodeProps> = ({ episode, allowGuesses: isNextEpisode
 			<div className="w-full text-center">
       	<p>{highlightText(episode?.description ?? "", searchQuery)}</p>
       </div>
-      <EpisodeAssignments assignments={episode.assignments} allowGuesses={isNextEpisode} showMovieTitles={showMovieTitles} searchQuery={searchQuery} />
+      <EpisodeAssignments assignments={episode.assignments as AssignmentWithRelations[]} allowGuesses={isNextEpisode} showMovieTitles={showMovieTitles} searchQuery={searchQuery} />
     </div>
 		<div>
 			{episode.extras.length > 0 && (
@@ -70,10 +73,7 @@ export const Episode: FC<EpisodeProps> = ({ episode, allowGuesses: isNextEpisode
 interface EpisodeAssignments {
 	allowGuesses?: boolean,
 	showMovieTitles?: boolean,
-	assignments: (AssignmentType & {
-		User: User;
-		Movie: Movie | null;
-	})[];
+	assignments: AssignmentWithRelations[];
 	searchQuery?: string;
 }
 
@@ -82,7 +82,7 @@ const EpisodeAssignments: FC<EpisodeAssignments> = ({ assignments, allowGuesses,
 	return <div className="flex gap-2 justify-around">
 		{assignments.sort((a,b) => {
       const typeOrder = { "HOMEWORK": 0, "EXTRA_CREDIT": 1, "BONUS": 2 };
-      return typeOrder[a.type] - typeOrder[b.type];
+      return typeOrder[a.type as keyof typeof typeOrder] - typeOrder[b.type as keyof typeof typeOrder];
     }).map((assignment) => {
 			return <div key={assignment.id} className="flex flex-col items-center justify-between gap-2">
 				<Assignment assignment={assignment} key={assignment.id} showMovieTitles={showMovieTitles} searchQuery={searchQuery} />

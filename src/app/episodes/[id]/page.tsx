@@ -1,30 +1,55 @@
-'use client';
-
-import { api } from "@/trpc/react";
-import { useParams } from "next/navigation";
+import { db } from "@/server/db";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { Episode } from "@/components/Episode";
 
-export default function EpisodePage() {
-  const params = useParams();
-  const episodeId = params.id as string;
+export const revalidate = 3600;
 
-  const { data: episode, isLoading } = api.episode.getById.useQuery({ id: episodeId });
+export async function generateStaticParams() {
+  const episodes = await db.episode.findMany();
+  return episodes.map((episode) => ({ id: episode.id }));
+}
 
-  if (isLoading) {
-    return (
-      <div className="container mx-auto p-4">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-center">Loading...</div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+export default async function EpisodePage({
+  params
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+
+  const episode = await db.episode.findUnique({
+    where: { id: id },
+    include: {
+      assignments: {
+        include: {
+          Movie: true,
+          User: true,
+          assignmentReviews: {
+            include: {
+              Review: {
+                include: {
+                  Rating: true,
+                },
+              },
+            },
+          },
+        },
+      },
+      extras: {
+        include: {
+          Review: {
+            include: {
+              Movie: true,
+              User: true,
+            },
+          },
+        },
+      },
+      links: true,
+    },
+  });
 
   if (!episode) {
     return (
@@ -48,7 +73,7 @@ export default function EpisodePage() {
           </Link>
         </Button>
       </div>  
-      <Episode episode={episode} />
+      {episode && <Episode episode={episode} />}
     </div>
   );
 } 

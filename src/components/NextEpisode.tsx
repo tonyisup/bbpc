@@ -25,6 +25,6 @@ export function NextEpisode() {
   });
 
   // Type assertion to match the Episode component's expected type
-  const nextEpisode = data as unknown as CompleteEpisode | null;
+  const nextEpisode = data as unknown as CompleteEpisode;
   return <Episode episode={nextEpisode} allowGuesses={true} />;
 } 
