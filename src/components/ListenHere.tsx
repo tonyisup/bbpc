@@ -43,12 +43,12 @@ export const ListenHere: FC = () => {
         title="Listen on Soundcloud"
         className="text-orange-400 flex flex-col items-center py-4"
       >
-        <Image
-          alt="Listen on soundcloud" 
-          src="https://a-v2.sndcdn.com/assets/images/brand-1b72dd82.svg" 
-          title="Listen on Soundcloud"
+        <img
+          alt="Listen on soundcloud"
+          src="https://a-v2.sndcdn.com/assets/images/brand-1b72dd82.svg"
           width={150}
           height={38}
+          loading="lazy"
         /> Soundcloud
       </a>
     </div>

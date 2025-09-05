@@ -3,9 +3,14 @@
 import { SessionProvider } from "next-auth/react";
 import { TRPCReactProvider } from "@/trpc/react";
 import { type Session } from "next-auth";
-import { PostHogProvider } from "./PostHogProvider";
 import { ThemeProvider } from "next-themes";
 import { Toaster } from "@/components/ui/sonner";
+import dynamic from "next/dynamic";
+
+const PostHogProviderDynamic = dynamic(
+  () => import("./PostHogProvider").then((m) => m.PostHogProvider),
+  { ssr: false }
+);
 
 export function Providers({
   children,
@@ -20,10 +25,17 @@ export function Providers({
     <SessionProvider session={session}>
       <TRPCReactProvider headers={headers}>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
-          <PostHogProvider>
-            {children}
-            <Toaster />
-          </PostHogProvider>
+          {process.env.NEXT_PUBLIC_POSTHOG_KEY ? (
+            <PostHogProviderDynamic>
+              {children}
+              <Toaster />
+            </PostHogProviderDynamic>
+          ) : (
+            <>
+              {children}
+              <Toaster />
+            </>
+          )}
         </ThemeProvider>
       </TRPCReactProvider>
     </SessionProvider>
