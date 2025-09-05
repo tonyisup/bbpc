@@ -60,7 +60,7 @@ export default async function RootLayout({
                 <NavMenu />
                 <div>
                   <Link href="/">
-                    <Image src="/logo-short.png" alt="BBPC Logo" width={120} height={40} />
+                    <Image src="/logo-short.png" alt="BBPC Logo" width={120} height={40} priority sizes="120px" />
                   </Link>
                 </div>
                 <div className="px-4">
