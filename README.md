@@ -1,5 +1,7 @@
 # BBPC (Bad Boys Podcast)
 
+https://badboyspodcast.com/
+
 A modern web application built with the T3 Stack, combining powerful technologies for a robust full-stack experience.
 
 ## ��� Tech Stack
