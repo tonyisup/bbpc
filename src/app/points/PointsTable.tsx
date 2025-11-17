@@ -3,6 +3,7 @@
 import { type User } from "@prisma/client";
 import { UserPointsEdit } from "./UserPointsEdit";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { revalidate } from "./_actions";
 
 interface PointsTableProps {
   users: User[];
@@ -40,8 +41,7 @@ export function PointsTable({ users, isAdmin }: PointsTableProps) {
                   <UserPointsEdit
                     user={user}
                     onPointsUpdated={() => {
-                      // This will trigger a server revalidation
-                      // when points are updated
+                      revalidate();
                     }}
                   />
                 </td>
