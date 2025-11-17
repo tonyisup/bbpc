@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { type FC, useState } from "react";
 import type { Movie, Syllabus, Assignment, Episode } from "@prisma/client";
@@ -12,14 +12,19 @@ import MovieInlinePreview from "./MovieInlinePreview";
 interface SyllabusManagerProps {
   initialSyllabus: (Syllabus & {
     Movie: Movie;
-    Assignment: (Assignment & {
-      Episode: Episode;
-    }) | null;
+    Assignment:
+      | (Assignment & {
+          Episode: Episode;
+        })
+      | null;
   })[];
   userId: string;
 }
 
-const SyllabusManager: FC<SyllabusManagerProps> = ({ initialSyllabus, userId }) => {
+const SyllabusManager: FC<SyllabusManagerProps> = ({
+  initialSyllabus,
+  userId,
+}) => {
   const [syllabus, setSyllabus] = useState(initialSyllabus);
   const [showMovieSearch, setShowMovieSearch] = useState(false);
   const [editingNotes, setEditingNotes] = useState<string | null>(null);
@@ -29,36 +34,38 @@ const SyllabusManager: FC<SyllabusManagerProps> = ({ initialSyllabus, userId }) 
     onSuccess: (newSyllabus) => {
       setSyllabus((prev) => [newSyllabus, ...prev]);
       setShowMovieSearch(false);
-    }
+    },
   });
 
   const { mutate: removeFromSyllabus } = api.syllabus.remove.useMutation({
     onSuccess: (removedId) => {
-      setSyllabus((prev) => prev.filter(item => item.id !== removedId));
-    }
+      setSyllabus((prev) => prev.filter((item) => item.id !== removedId));
+    },
   });
 
   const { mutate: reorderSyllabus } = api.syllabus.reorder.useMutation({
     onSuccess: (updatedSyllabus) => {
       setSyllabus(updatedSyllabus);
-    }
+    },
   });
 
   const { mutate: updateNotes } = api.syllabus.updateNotes.useMutation({
     onSuccess: (updatedSyllabus) => {
-      setSyllabus((prev) => prev.map(item => 
-        item.id === updatedSyllabus.id ? updatedSyllabus : item
-      ));
+      setSyllabus((prev) =>
+        prev.map((item) =>
+          item.id === updatedSyllabus.id ? updatedSyllabus : item
+        )
+      );
       setEditingNotes(null);
       setNotesText("");
-    }
+    },
   });
 
   const handleAddMovie = (movie: Movie) => {
     addToSyllabus({
       userId,
       movieId: movie.id,
-      order: syllabus.length
+      order: syllabus.length,
     });
   };
 
@@ -70,7 +77,7 @@ const SyllabusManager: FC<SyllabusManagerProps> = ({ initialSyllabus, userId }) 
 
   const moveSyllabusItem = (syllabusId: string, direction: MoveDirection) => {
     setSyllabus((prev) => {
-      const currentIndex = prev.findIndex(item => item.id === syllabusId);
+      const currentIndex = prev.findIndex((item) => item.id === syllabusId);
       if (currentIndex === -1) {
         return prev;
       }
@@ -87,9 +94,10 @@ const SyllabusManager: FC<SyllabusManagerProps> = ({ initialSyllabus, userId }) 
         return prev;
       }
 
-      const targetPosition = direction === "up"
-        ? positionInUnassigned - 1
-        : positionInUnassigned + 1;
+      const targetPosition =
+        direction === "up"
+          ? positionInUnassigned - 1
+          : positionInUnassigned + 1;
 
       if (targetPosition < 0 || targetPosition >= unassignedIndexes.length) {
         return prev;
@@ -97,33 +105,40 @@ const SyllabusManager: FC<SyllabusManagerProps> = ({ initialSyllabus, userId }) 
 
       const swapIndex = unassignedIndexes[targetPosition];
       const updated = [...prev];
-      [updated[currentIndex], updated[swapIndex]] = [updated[swapIndex], updated[currentIndex]];
+      [updated[currentIndex], updated[swapIndex]] = [
+        updated[swapIndex],
+        updated[currentIndex],
+      ];
 
       reorderSyllabus({
         userId,
         syllabus: updated.map((item, index, arr) => ({
           id: item.id,
-          order: arr.length - index
-        }))
+          order: arr.length - index,
+        })),
       });
 
       return updated;
     });
   };
 
-  const handleMoveUp = (syllabusId: string) => moveSyllabusItem(syllabusId, "up");
-  const handleMoveDown = (syllabusId: string) => moveSyllabusItem(syllabusId, "down");
+  const handleMoveUp = (syllabusId: string) =>
+    moveSyllabusItem(syllabusId, "up");
+  const handleMoveDown = (syllabusId: string) =>
+    moveSyllabusItem(syllabusId, "down");
 
-  const handleStartEditNotes = (syllabusId: string, currentNotes: string | null) => {
+  const handleStartEditNotes = (
+    syllabusId: string,
+    currentNotes: string | null
+  ) => {
     setEditingNotes(syllabusId);
     setNotesText(currentNotes ? currentNotes : "");
   };
 
   const handleSaveNotes = (syllabusId: string) => {
-
     updateNotes({
       id: syllabusId,
-      notes: notesText?.trim() || undefined
+      notes: notesText?.trim() || undefined,
     });
   };
 
@@ -132,151 +147,169 @@ const SyllabusManager: FC<SyllabusManagerProps> = ({ initialSyllabus, userId }) 
     setNotesText("");
   };
 
-  const unassignedSyllabus = syllabus.filter(item => item.assignmentId === null);
-  const assignedSyllabus = syllabus.filter(item => item.assignmentId !== null);
+  const unassignedSyllabus = syllabus.filter(
+    (item) => item.assignmentId === null
+  );
+  const assignedSyllabus = syllabus.filter(
+    (item) => item.assignmentId !== null
+  );
 
   return (
-    <div className="flex flex-col gap-4 w-full max-w-4xl">
-      <div className="flex justify-center items-center">
-        {!showMovieSearch && <Button
-          variant="outline"
-          onClick={() => setShowMovieSearch(true)}
-        >
-          Add Movie
-        </Button>}
-        {showMovieSearch && <Button
-          variant="outline"
-          onClick={() => setShowMovieSearch(false)}
-        >
-          Cancel
-        </Button>}
+    <div className="flex w-full max-w-4xl flex-col gap-4">
+      <div className="flex items-center justify-center">
+        {!showMovieSearch && (
+          <Button variant="outline" onClick={() => setShowMovieSearch(true)}>
+            Add Movie
+          </Button>
+        )}
+        {showMovieSearch && (
+          <Button variant="outline" onClick={() => setShowMovieSearch(false)}>
+            Cancel
+          </Button>
+        )}
       </div>
 
-        {showMovieSearch && (
-          <MovieFind selectMovie={handleAddMovie} />
-        )}
+      {showMovieSearch && <MovieFind selectMovie={handleAddMovie} />}
 
-        <div className="flex flex-col gap-4 w-full">
-          {unassignedSyllabus.map((item, index) => (
-            <div
-              key={item.id}
-              className="flex items-start gap-4 p-4 rounded-lg border"
-            >
-              <div className="flex flex-col gap-2">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => handleMoveUp(item.id)}
-                  disabled={index === 0}
-                >
-                  <ArrowUp className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => handleMoveDown(item.id)}
-                  disabled={index === unassignedSyllabus.length - 1}
-                >
-                  <ArrowDown className="h-4 w-4" />
-                </Button>
-              </div>
-              <div className="flex-1">
-                <div className="flex items-center gap-4 mb-2">
-                  {item.Movie.poster && (
-                    <MovieInlinePreview movie={item.Movie} />
-                  )}
-                  <div className="flex-1">
-                    <h3 className="text-lg font-semibold break-words">{item.Movie.title}</h3>
-                    <p className="text-gray-400">{item.Movie.year}</p>
-                  </div>
-                </div>
-                
-                {/* Notes Section */}
-                <div className="mt-3">
-                  {editingNotes === item.id ? (
-                    <div className="space-y-2">
-                      <Textarea
-                        value={notesText ?? ""}
-                        onChange={(e) => setNotesText(e.target.value)}
-                        placeholder="Add your notes here..."
-                        className="min-h-[60px]"
-                      />
-                      <div className="flex gap-2">
-                        <Button
-                          size="sm"
-                          onClick={() => handleSaveNotes(item.id)}
-                        >
-                          <Save className="h-3 w-3 mr-1" />
-                          Save
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={handleCancelEditNotes}
-                        >
-                          <XIcon className="h-3 w-3 mr-1" />
-                          Cancel
-                        </Button>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="flex items-start gap-2">
-                      <div className="flex-1">
-                        {item.notes ? (
-                          <p className="text-sm text-gray-600 whitespace-pre-wrap">{item.notes}</p>
-                        ) : (
-                          <p className="text-sm text-gray-400 italic">No notes yet</p>
-                        )}
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleStartEditNotes(item.id, item.notes)}
-                      >
-                        <Edit3 className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  )}
-                </div>
-              </div>
+      <section
+        aria-label="Unassigned movies"
+        className="flex w-full flex-col gap-4"
+      >
+        {unassignedSyllabus.map((item, index) => (
+          <div
+            key={item.id}
+            className="flex items-start gap-4 rounded-lg border p-4"
+          >
+            <div className="flex flex-col gap-2">
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => handleRemoveMovie(item.id)}
+                onClick={() => handleMoveUp(item.id)}
+                disabled={index === 0}
+                aria-label={`Move ${item.Movie.title} up`}
               >
-                <X className="text-red-500 h-4 w-4" />
+                <ArrowUp className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => handleMoveDown(item.id)}
+                disabled={index === unassignedSyllabus.length - 1}
+                aria-label={`Move ${item.Movie.title} down`}
+              >
+                <ArrowDown className="h-4 w-4" />
               </Button>
             </div>
-          ))}
-        </div>
-        <div className="flex flex-col gap-4 w-full">
-          <h2 className="text-lg font-semibold">Assigned</h2>
-        </div>
-        <div className="flex flex-col gap-4 w-full">
-          {assignedSyllabus.map((item) => (
-            <div key={item.id} className="flex-1 p-4 rounded-lg border">
-              <div className="flex items-center gap-4 mb-2">
-                {item.Movie.poster && (
-                  <MovieInlinePreview movie={item.Movie} />
-                )}
+            <div className="flex-1">
+              <div className="mb-2 flex items-center gap-4">
+                {item.Movie.poster && <MovieInlinePreview movie={item.Movie} />}
                 <div className="flex-1">
-                  <h3 className="text-lg font-semibold break-words">{item.Movie.title}</h3>
+                  <h3 className="break-words text-lg font-semibold">
+                    {item.Movie.title}
+                  </h3>
                   <p className="text-gray-400">{item.Movie.year}</p>
                 </div>
-                <p>Reviewed in Episode {item.Assignment?.Episode.number} - {item.Assignment?.Episode.title}</p>
               </div>
-              
-              {/* Notes Section for Assigned Items */}
-              {item.notes && (
-                <div className="mt-2">
-                  <p className="text-sm text-gray-600 whitespace-pre-wrap">{item.notes}</p>
-                </div>
-              )}
+
+              {/* Notes Section */}
+              <div className="mt-3">
+                {editingNotes === item.id ? (
+                  <div className="space-y-2">
+                    <Textarea
+                      value={notesText ?? ""}
+                      onChange={(e) => setNotesText(e.target.value)}
+                      placeholder="Add your notes here..."
+                      className="min-h-[60px]"
+                      aria-label={`Notes for ${item.Movie.title}`}
+                    />
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        onClick={() => handleSaveNotes(item.id)}
+                      >
+                        <Save className="mr-1 h-3 w-3" />
+                        Save
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={handleCancelEditNotes}
+                      >
+                        <XIcon className="mr-1 h-3 w-3" />
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-start gap-2">
+                    <div className="flex-1">
+                      {item.notes ? (
+                        <p className="whitespace-pre-wrap text-sm text-gray-600">
+                          {item.notes}
+                        </p>
+                      ) : (
+                        <p className="text-sm italic text-gray-400">
+                          No notes yet
+                        </p>
+                      )}
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleStartEditNotes(item.id, item.notes)}
+                      aria-label={`Edit notes for ${item.Movie.title}`}
+                    >
+                      <Edit3 className="h-3 w-3" />
+                    </Button>
+                  </div>
+                )}
+              </div>
             </div>
-          ))}
-        </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => handleRemoveMovie(item.id)}
+              aria-label={`Remove ${item.Movie.title} from syllabus`}
+            >
+              <X className="h-4 w-4 text-red-500" />
+            </Button>
+          </div>
+        ))}
+      </section>
+      <section
+        aria-label="Assigned movies"
+        className="flex w-full flex-col gap-4"
+      >
+        <h2 className="text-lg font-semibold">Assigned</h2>
+        {assignedSyllabus.map((item) => (
+          <div key={item.id} className="flex-1 rounded-lg border p-4">
+            <div className="mb-2 flex items-center gap-4">
+              {item.Movie.poster && <MovieInlinePreview movie={item.Movie} />}
+              <div className="flex-1">
+                <h3 className="break-words text-lg font-semibold">
+                  {item.Movie.title}
+                </h3>
+                <p className="text-gray-400">{item.Movie.year}</p>
+              </div>
+              <p>
+                Reviewed in Episode {item.Assignment?.Episode.number} -{" "}
+                {item.Assignment?.Episode.title}
+              </p>
+            </div>
+
+            {/* Notes Section for Assigned Items */}
+            {item.notes && (
+              <div className="mt-2">
+                <p className="whitespace-pre-wrap text-sm text-gray-600">
+                  {item.notes}
+                </p>
+              </div>
+            )}
+          </div>
+        ))}
+      </section>
     </div>
   );
 };
 
-export default SyllabusManager; 
+export default SyllabusManager;
