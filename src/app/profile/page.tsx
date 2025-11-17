@@ -1,55 +1,28 @@
-import { getServerAuthSession } from "@/server/auth";
+'use client';
+
 import { ProfileForm } from "./ProfileForm";
-import { redirect } from "next/navigation";
-import { db } from "@/server/db";
 import SignOutButton from "@/components/SignOutButton";
 import UserPoints from "@/components/UserPoints";
 import { GamblingHistory } from "@/components/GamblingHistory";
 import SyllabusPreview from "@/components/SyllabusPreview";
 import Link from "next/link";
 import { Pencil } from "lucide-react";
+import { useSession } from "next-auth/react";
+import { api } from "@/trpc/react";
+import { redirect } from "next/navigation";
 
-export default async function ProfilePage() {
-  const session = await getServerAuthSession();
-
-  if (!session || !session.user) {
-    redirect("/api/auth/signin");
-  }
-
-  // Fetch the user's data including points
-  const user = await db.user.findUnique({
-    where: { id: session.user.id },
-    include: {
-      gamblingPoints: {
-        include: {
-          Assignment: {
-            include: {
-              Movie: true
-            }
-          }
-        }
-      },
-      syllabus: {
-        where: {
-          assignmentId: null
-        },
-        include: {
-          Movie: true
-        },
-        orderBy: {
-          order: 'desc'
-        },
-        take: 3
-      }
-    }
+export default function ProfilePage() {
+  const { data: session } = useSession({
+    required: true,
+    onUnauthenticated() {
+      redirect("/api/auth/signin");
+    },
   });
 
-  const syllabusCount = await db.syllabus.count({
-    where: {
-      userId: session.user.id,
-      assignmentId: null
-    }
-  });
+  const { data: user } = api.user.me.useQuery();
+  const { data: syllabusCount } = api.syllabus.count.useQuery();
+
+  if (!session?.user) return null;
 
   return (
     <div className="container flex flex-col items-start justify-center gap-12 px-4 py-16">
@@ -68,10 +41,10 @@ export default async function ProfilePage() {
         <h2 className="text-xl font-bold tracking-tight self-start">My Syllabus</h2>
         <div className="flex gap-4 w-full items-center">
           <Link href="/syllabus"><Pencil className="w-4 h-4" /></Link>
-          <SyllabusPreview count={syllabusCount} syllabus={user?.syllabus ?? []} />
+          <SyllabusPreview count={syllabusCount ?? 0} syllabus={user?.syllabus ?? []} />
         </div>
       </div>
       <SignOutButton />
     </div>
   );
-} 
+}

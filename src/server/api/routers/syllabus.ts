@@ -76,5 +76,15 @@ export const syllabusRouter = createTRPCRouter({
           }
         }
       });
-    })
+    }),
+
+  count: protectedProcedure
+    .query(async ({ ctx }) => {
+      return ctx.db.syllabus.count({
+        where: {
+          userId: ctx.session.user.id,
+          assignmentId: null
+        }
+      });
+    }),
 }); 

@@ -259,6 +259,29 @@ export const appRouter = createTRPCRouter({
     me: protectedProcedure.query(({ ctx }) => {
       return ctx.db.user.findUnique({
         where: { id: ctx.session.user.id },
+        include: {
+          gamblingPoints: {
+            include: {
+              Assignment: {
+                include: {
+                  Movie: true
+                }
+              }
+            }
+          },
+          syllabus: {
+            where: {
+              assignmentId: null
+            },
+            include: {
+              Movie: true
+            },
+            orderBy: {
+              order: 'desc'
+            },
+            take: 3
+          }
+        }
       });
     }),
     update: protectedProcedure
