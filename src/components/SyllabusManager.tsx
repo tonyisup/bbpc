@@ -38,11 +38,7 @@ const SyllabusManager: FC<SyllabusManagerProps> = ({ initialSyllabus, userId }) 
     }
   });
 
-  const { mutate: reorderSyllabus } = api.syllabus.reorder.useMutation({
-    onSuccess: (updatedSyllabus) => {
-      setSyllabus(updatedSyllabus);
-    }
-  });
+  const { mutate: reorderSyllabus } = api.syllabus.reorder.useMutation();
 
   const { mutate: updateNotes } = api.syllabus.updateNotes.useMutation({
     onSuccess: (updatedSyllabus) => {
