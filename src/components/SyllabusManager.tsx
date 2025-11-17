@@ -5,7 +5,7 @@ import type { Movie, Syllabus, Assignment, Episode } from "@prisma/client";
 import { api } from "@/trpc/react";
 import { Button } from "./ui/button";
 import { Textarea } from "./ui/textarea";
-import { X, ArrowUp, ArrowDown, Edit3, Save, X as XIcon } from "lucide-react";
+import { X, ArrowUp, ArrowDown, Edit3, Save, X as XIcon, ChevronsUp } from "lucide-react";
 import MovieFind from "./MovieFind";
 import MovieInlinePreview from "./MovieInlinePreview";
 
@@ -110,6 +110,39 @@ const SyllabusManager: FC<SyllabusManagerProps> = ({ initialSyllabus, userId }) 
   const handleMoveUp = (syllabusId: string) => moveSyllabusItem(syllabusId, "up");
   const handleMoveDown = (syllabusId: string) => moveSyllabusItem(syllabusId, "down");
 
+  const handleSendToTop = (syllabusId: string) => {
+    setSyllabus((prev) => {
+      const currentIndex = prev.findIndex(item => item.id === syllabusId);
+      if (currentIndex === -1) {
+        return prev;
+      }
+
+      const itemToMove = prev[currentIndex];
+      if (itemToMove.assignmentId !== null) {
+        return prev;
+      }
+
+      const topUnassignedIndex = prev.findIndex(item => item.assignmentId === null);
+      if (currentIndex === topUnassignedIndex) {
+        return prev;
+      }
+
+      const updated = [...prev];
+      updated.splice(currentIndex, 1);
+      updated.splice(topUnassignedIndex, 0, itemToMove);
+
+      reorderSyllabus({
+        userId,
+        syllabus: updated.map((item, index, arr) => ({
+          id: item.id,
+          order: arr.length - index
+        }))
+      });
+
+      return updated;
+    });
+  };
+
   const handleStartEditNotes = (syllabusId: string, currentNotes: string | null) => {
     setEditingNotes(syllabusId);
     setNotesText(currentNotes ? currentNotes : "");
@@ -130,6 +163,7 @@ const SyllabusManager: FC<SyllabusManagerProps> = ({ initialSyllabus, userId }) 
 
   const unassignedSyllabus = syllabus.filter(item => item.assignmentId === null);
   const assignedSyllabus = syllabus.filter(item => item.assignmentId !== null);
+  const topUnassignedSyllabusItem = syllabus.find(item => item.assignmentId === null);
 
   return (
     <div className="flex flex-col gap-4 w-full max-w-4xl">
@@ -159,6 +193,14 @@ const SyllabusManager: FC<SyllabusManagerProps> = ({ initialSyllabus, userId }) 
               className="flex items-start gap-4 p-4 rounded-lg border"
             >
               <div className="flex flex-col gap-2">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => handleSendToTop(item.id)}
+                  disabled={item.id === topUnassignedSyllabusItem?.id}
+                >
+                  <ChevronsUp className="h-4 w-4" />
+                </Button>
                 <Button
                   variant="ghost"
                   size="icon"
