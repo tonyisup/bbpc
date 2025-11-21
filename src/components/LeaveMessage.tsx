@@ -1,6 +1,6 @@
 'use client'
 import { useState, type FC, useMemo } from "react";
-import { signIn, useSession } from "next-auth/react";
+import { SignInButton, useUser } from "@clerk/nextjs";
 import { FaMicrophoneAlt } from "react-icons/fa";
 import dynamic from "next/dynamic";
 import { api } from "@/trpc/react";
@@ -9,19 +9,20 @@ const Modal = dynamic(() => import("./common/Modal"), { ssr: false });
 const VoiceMailRecorder = dynamic(() => import("./voice-mail-recorder"), { ssr: false });
 
 const LeaveMessage: FC = () => {
-  const session = useSession();
+  const { user, isSignedIn } = useUser();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const shouldFetchEpisode = useMemo(() => isModalOpen && !!session.data?.user, [isModalOpen, session.data?.user]);
+  const shouldFetchEpisode = useMemo(() => isModalOpen && isSignedIn, [isModalOpen, isSignedIn]);
   const { data: episode } = api.episode.next.useQuery(undefined, { enabled: shouldFetchEpisode });
 
-  if (!session.data?.user) return (<>
-    <button
-      title="Log in to leave a message"
-      className="text-red-500"
-      onClick={() => signIn()}
-    >
-      <MicrophoneIcon />
-    </button>
+  if (!isSignedIn || !user) return (<>
+    <SignInButton mode="modal">
+      <button
+        title="Log in to leave a message"
+        className="text-red-500"
+      >
+        <MicrophoneIcon />
+      </button>
+    </SignInButton>
   </>);
   const toggleModal = () => {
     setIsModalOpen(true);
@@ -43,7 +44,7 @@ const LeaveMessage: FC = () => {
         {episode && (
           <VoiceMailRecorder 
             episodeId={episode.id} 
-            userId={session.data.user.id} 
+            userId={user.id}
           />
         )}
       </Modal>

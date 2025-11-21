@@ -1,8 +1,7 @@
 'use client';
 
-import { SessionProvider } from "next-auth/react";
+import { ClerkProvider } from "@clerk/nextjs";
 import { TRPCReactProvider } from "@/trpc/react";
-import { type Session } from "next-auth";
 import { ThemeProvider } from "next-themes";
 import { Toaster } from "@/components/ui/sonner";
 import dynamic from "next/dynamic";
@@ -14,15 +13,13 @@ const PostHogProviderDynamic = dynamic(
 
 export function Providers({
   children,
-  session,
   headers,
 }: {
   children: React.ReactNode;
-  session: Session | null;
   headers?: Headers;
 }) {
   return (
-    <SessionProvider session={session}>
+    <ClerkProvider>
       <TRPCReactProvider headers={headers}>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
           {process.env.NEXT_PUBLIC_POSTHOG_KEY ? (
@@ -38,6 +35,6 @@ export function Providers({
           )}
         </ThemeProvider>
       </TRPCReactProvider>
-    </SessionProvider>
+    </ClerkProvider>
   );
-} 
+}

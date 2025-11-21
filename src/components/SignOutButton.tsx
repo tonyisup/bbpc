@@ -1,6 +1,6 @@
 'use client'
 
-import { signOut } from "next-auth/react";
+import { SignOutButton as ClerkSignOutButton } from "@clerk/nextjs";
 import { Button } from "./ui/button";
 import { type FC } from "react";
 
@@ -14,14 +14,15 @@ const SignOutButton: FC<SignOutButtonProps> = ({
   className
 }) => {
   return (
-    <Button 
-      variant={variant} 
-      onClick={() => signOut()}
-      className={className}
-    >
-      Sign Out
-    </Button>
+    <ClerkSignOutButton>
+      <Button
+        variant={variant}
+        className={className}
+      >
+        Sign Out
+      </Button>
+    </ClerkSignOutButton>
   );
 };
 
-export default SignOutButton; 
+export default SignOutButton;

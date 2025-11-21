@@ -1,6 +1,5 @@
 import { type Metadata } from "next";
 import { Inter } from "next/font/google";
-import { getServerAuthSession } from "@/server/auth";
 import "@/styles/globals.css"
 import Link from "next/link";
 import Image from "next/image";
@@ -34,13 +33,11 @@ export const metadata: Metadata = {
   ],
 };
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const session = await getServerAuthSession();
-
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -54,7 +51,7 @@ export default async function RootLayout({
         <title>Bad Boys Podcast</title>
       </head>
       <body className={`font-sans ${inter.variable} dark`}>
-        <Providers session={session}>
+        <Providers>
           <div className="bg-black w-full flex flex-col min-h-screen items-center">
             <header className="flex sm:w-1/2 w-full items-center justify-between bg-[#020202]">
                 <NavMenu />
@@ -84,5 +81,3 @@ export default async function RootLayout({
     </html>
   );
 }
-
-

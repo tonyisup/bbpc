@@ -7,10 +7,9 @@ import RecordAssignmentAudio from "./common/RecordAssignmentAudio";
 import UserTag from "./UserTag";
 import RatingIcon from "./RatingIcon";
 import PhoneNumber from "./common/PhoneNumber";
-import { type Session } from "next-auth";
 import type { Decimal } from "@prisma/client/runtime/library";
 import { SignInButton } from "./Auth";
-import { useSession } from "next-auth/react";
+import { useUser } from "@clerk/nextjs";
 import { api } from "@/trpc/react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -29,20 +28,20 @@ enum GameChoice {
 	ClickButtons = "click-buttons"
 }
 const GameSegment: FC<GameSegmentProps> = ({ assignment }) => {
-	const { data: session, status } = useSession();
+	const { user, isLoaded, isSignedIn } = useUser();
 	const [gameChoice, setGameChoice] = useState<GameChoice>(GameChoice.None);
 	const [gamblingPoints, setGamblingPoints] = useState<number>(0);
 	const [canSubmitGamblingPoints, setCanSubmitGamblingPoints] = useState<boolean>(false);
 
 	// Fetch user data from the database
 	const { data: userData } = api.user.me.useQuery(undefined, {
-		enabled: !!session?.user?.id,
+		enabled: !!user?.id,
 	});
 
 	// Fetch gambling points for this assignment
 	const { data: assignmentGamblingPoints, refetch: refetchAssignmentGamblingPoints } = api.review.getGamblingPointsForAssignment.useQuery(
 		{ assignmentId: assignment.id },
-		{ enabled: !!session?.user?.id }
+		{ enabled: !!user?.id }
 	);
 
 	const { mutate: submitGamblingPoints } = api.review.submitGamblingPoints.useMutation({
@@ -55,7 +54,7 @@ const GameSegment: FC<GameSegmentProps> = ({ assignment }) => {
 	});
 
 	const handleGamblingPointsSubmit = () => {
-		if (!session?.user?.id) return;
+		if (!user?.id) return;
 		if (!gamblingPoints) return;
 
 		if (isNaN(gamblingPoints) || gamblingPoints < 0) {
@@ -64,7 +63,7 @@ const GameSegment: FC<GameSegmentProps> = ({ assignment }) => {
 		}
 
 		submitGamblingPoints({
-			userId: session.user.id,
+			userId: user.id,
 			assignmentId: assignment.id,
 			points: gamblingPoints
 		});
@@ -91,13 +90,13 @@ const GameSegment: FC<GameSegmentProps> = ({ assignment }) => {
 		setGamblingPoints(amount);
 	}
 
-	if (status === "loading") {
+	if (!isLoaded) {
 		return <div className="flex flex-col items-center gap-4 m-4">
 			<p className="text-2xl animate-pulse">Loading...</p>
 		</div>;
 	}
 
-	if (!session?.user?.id) return (
+	if (!isSignedIn || !user?.id) return (
 		<>
 			<div className="flex flex-col items-center gap-4 m-4">
 				<p className="text-2xl">Please <SignInButton /> to submit guesses</p>
@@ -115,9 +114,9 @@ const GameSegment: FC<GameSegmentProps> = ({ assignment }) => {
 						variant="destructive"
 						size="icon"
 						onClick={() => {
-							if (!session?.user?.id) return;
+							if (!user?.id) return;
 							submitGamblingPoints({
-								userId: session.user.id,
+								userId: user.id,
 								assignmentId: assignment.id,
 								points: 0
 							});
@@ -185,19 +184,19 @@ const GameSegment: FC<GameSegmentProps> = ({ assignment }) => {
 			</Button>
 		</div>
 		{gameChoice == GameChoice.PhoneMessage && <PhoneNumber />}
-		{gameChoice == GameChoice.VoiceRecording && <RecordAssignmentAudio userId={session.user.id} assignmentId={assignment.id} />}
-		{gameChoice == GameChoice.ClickButtons && <GamePanel session={session} assignment={assignment} />}
+		{gameChoice == GameChoice.VoiceRecording && <RecordAssignmentAudio userId={user.id} assignmentId={assignment.id} />}
+		{gameChoice == GameChoice.ClickButtons && <GamePanel userId={user.id} assignment={assignment} />}
 	</div>
 }
 interface GamePanelProps {
-	session: Session | null,
+	userId: string,
 	assignment: Assignment
 }
-const GamePanel: FC<GamePanelProps> = ({ session, assignment }) => {
+const GamePanel: FC<GamePanelProps> = ({ userId, assignment }) => {
 
 	const { data: guesses, refetch } = api.review.getGuessesForAssignmentForUser.useQuery(
 
-		{ assignmentId: assignment.id, userId: session?.user?.id }
+		{ assignmentId: assignment.id, userId: userId }
 	);
 
 	const [setGuesses, setSetGuesses] = useState<boolean>(false);
@@ -212,8 +211,8 @@ const GamePanel: FC<GamePanelProps> = ({ session, assignment }) => {
 	}
 
 	return <>
-		{session && (guesses?.length != undefined && guesses.length > 0) && <ShowAssignmentGuesses guesses={guesses} resetGuesses={handleResubmitGuesses} />}
-		{session && (guesses?.length == 0 || setGuesses) && <SetAssignmentGuesses assignment={assignment} guesserId={session?.user?.id} guessesSaved={handleSavedGuesses} />}
+		{userId && (guesses?.length != undefined && guesses.length > 0) && <ShowAssignmentGuesses guesses={guesses} resetGuesses={handleResubmitGuesses} />}
+		{userId && (guesses?.length == 0 || setGuesses) && <SetAssignmentGuesses assignment={assignment} guesserId={userId} guessesSaved={handleSavedGuesses} />}
 	</>
 }
 interface ShowAssignmentGuessesProps {

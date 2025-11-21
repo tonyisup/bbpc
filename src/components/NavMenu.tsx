@@ -2,7 +2,7 @@
 
 import type { FC } from "react";
 import Link from "next/link";
-import { HomeIcon, HistoryIcon, TrophyIcon, GamepadIcon, UserIcon, ShirtIcon, LogIn, LogOut, BookOpenIcon } from "lucide-react";
+import { HomeIcon, HistoryIcon, GamepadIcon, UserIcon, ShirtIcon, LogIn, LogOut, BookOpenIcon } from "lucide-react";
 import {
   NavigationMenu,
   NavigationMenuList,
@@ -11,19 +11,24 @@ import {
   NavigationMenuTrigger,
   NavigationMenuContent
 } from "@/components/ui/navigation-menu";
-import { useSession, signOut } from "next-auth/react";
+import { useClerk, useUser } from "@clerk/nextjs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useRouter } from "next/navigation";
+
 const NavMenu: FC = () => {
-  const { data: session } = useSession();
+  const { user, isSignedIn } = useUser();
+  const { signOut } = useClerk();
+  const router = useRouter();
+
   return (
     <NavigationMenu orientation="vertical">
       <NavigationMenuList>
         <NavigationMenuItem>
           <NavigationMenuTrigger>
-            {session?.user ? (
+            {isSignedIn && user ? (
               <Avatar>
-                <AvatarImage src={session.user.image} />
-                <AvatarFallback>{session.user.name?.charAt(0)}</AvatarFallback>
+                <AvatarImage src={user.imageUrl} />
+                <AvatarFallback>{user.firstName?.charAt(0) ?? user.username?.charAt(0) ?? 'U'}</AvatarFallback>
               </Avatar>
             ) : (
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
@@ -59,7 +64,7 @@ const NavMenu: FC = () => {
                 <UserIcon className="w-4 h-4" />About
               </Link>
             </NavigationMenuLink>
-            {session ? (<>
+            {isSignedIn ? (<>
               <NavigationMenuLink asChild>
                 <Link href="/syllabus" className="flex items-center gap-2 px-4 py-2 transition hover:text-red-400">
                   <BookOpenIcon className="w-4 h-4" />Syllabus
@@ -72,7 +77,7 @@ const NavMenu: FC = () => {
               </NavigationMenuLink>
               <NavigationMenuLink asChild>
                 <button 
-                  onClick={() => signOut({ callbackUrl: window.location.pathname })}
+                  onClick={() => signOut(() => router.push("/"))}
                   className="flex items-center gap-2 px-4 py-2 transition hover:text-red-400"
                 >
                   <LogOut className="w-4 h-4" />Logout
@@ -81,7 +86,7 @@ const NavMenu: FC = () => {
             </>
             ) : (
               <NavigationMenuLink asChild>
-                <Link href="/api/auth/signin" className="flex items-center gap-2 px-4 py-2 transition hover:text-red-400">
+                <Link href="/sign-in" className="flex items-center gap-2 px-4 py-2 transition hover:text-red-400">
                   <LogIn className="w-4 h-4" />Login
                 </Link>
               </NavigationMenuLink>
