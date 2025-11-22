@@ -6,7 +6,11 @@ import { z } from "zod";
  * This way you can ensure the app isn't built with invalid env vars.
  */
 export const serverSchema = z.object({
-  DATABASE_URL: z.string().url(),
+  DATABASE_URL: z.string(),
+  DB_USER: z.string(),
+  DB_PASSWORD: z.string(),
+  DB_NAME: z.string(),
+  DB_HOST: z.string(),
   TMDB_API_KEY: z.string(),
   GOOGLE_API_KEY: z.string(),
   NODE_ENV: z.enum(["development", "test", "production"]),
@@ -21,11 +25,11 @@ export const serverSchema = z.object({
     // VERCEL_URL doesn't include `https` so it cant be validated as a URL
     process.env.VERCEL ? z.string() : z.string().url(),
   ),
-	EMAIL_SERVER_USER: z.string(),
-	EMAIL_SERVER_PASSWORD: z.string(),
-	EMAIL_SERVER_HOST: z.string(),
-	EMAIL_SERVER_PORT: z.string(),
-	EMAIL_FROM: z.string().email(),
+  EMAIL_SERVER_USER: z.string(),
+  EMAIL_SERVER_PASSWORD: z.string(),
+  EMAIL_SERVER_HOST: z.string(),
+  EMAIL_SERVER_PORT: z.string(),
+  EMAIL_FROM: z.string().email(),
   GOOGLE_CLIENT_ID: z.string(),
   GOOGLE_CLIENT_SECRET: z.string(),
 });
