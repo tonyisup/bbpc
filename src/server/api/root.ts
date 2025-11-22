@@ -1,13 +1,16 @@
 import { z } from "zod";
-import { Decimal } from "@prisma/client/runtime/library";
 import { type Rating } from "@prisma/client";
 import { createTRPCRouter, protectedProcedure, publicProcedure } from "@/server/api/trpc";
 import { syllabusRouter } from "./routers/syllabus";
+import { Decimal } from "@prisma/client/runtime/client";
 
 export const appRouter = createTRPCRouter({
   episode: createTRPCRouter({
     next: publicProcedure.query(async ({ ctx }) => {
       return ctx.db.episode.findFirst({
+        where: {
+          status: "next"
+        },
         orderBy: {
           number: 'desc',
         },
@@ -208,8 +211,8 @@ export const appRouter = createTRPCRouter({
           throw new Error("User not found");
         }
 
-        const currentPoints = user.points || new Decimal(0);
-        const newPoints = currentPoints.add(new Decimal(input.points));
+        const currentPoints = user.points ?? new Decimal(0);
+        const newPoints = currentPoints.add(input.points);
 
         return ctx.db.user.update({
           where: { id: input.userId },
