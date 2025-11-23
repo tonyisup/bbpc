@@ -8,6 +8,7 @@ import { Suspense } from "react";
 export default async function HomePage() {
   const latestEpisode = await db.episode.findFirst({
     where: {
+      status: 'Published',
       date: {
         lte: new Date(),
       },
@@ -46,8 +47,8 @@ export default async function HomePage() {
   });
   return (
     <main className="flex min-h-screen flex-col items-center justify-center text-white">
-      
-      <div className="container flex flex-col items-center justify-center gap-12 px-4">        
+
+      <div className="container flex flex-col items-center justify-center gap-12 px-4">
         <div className="flex flex-wrap gap-12 justify-evenly">
           <Suspense fallback={<EpisodeSkeleton />}>
             {latestEpisode && <Episode episode={latestEpisode} />}
