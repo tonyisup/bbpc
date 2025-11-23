@@ -2,7 +2,7 @@
 
 import { api } from "@/trpc/react";
 import { Episode } from "./Episode";
-import type { Episode as EpisodeType, Assignment, Link as EpisodeLink, Movie, User, Review, ExtraReview } from '@prisma/client';
+import type { Episode as EpisodeType, Assignment, Link as EpisodeLink, Movie, User, Review, ExtraReview, Show } from '@prisma/client';
 
 type CompleteEpisode = EpisodeType & {
   assignments: (Assignment & {
@@ -13,6 +13,7 @@ type CompleteEpisode = EpisodeType & {
     Review: Review & {
       User: User;
       Movie: Movie;
+      Show: Show;
     };
   })[];
   links: EpisodeLink[];
