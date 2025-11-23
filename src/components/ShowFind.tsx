@@ -1,31 +1,28 @@
-'use client';
-
-import type { Movie } from "@prisma/client";
-import { type Dispatch, type FC, useMemo, useState, useEffect } from "react";
+import type { Show } from "@prisma/client";
+import { type Dispatch, type FC, useEffect, useMemo, useState } from "react";
 import type { Title } from "../server/tmdb/client";
-import TitleCard from "./TitleCard";
 import { api } from "@/trpc/react";
+import TitleCard from "./TitleCard";
+import { debounce } from "lodash";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { debounce } from 'lodash';
 
-interface MovieFindProps {
-  selectMovie: Dispatch<Movie>;
-
+interface ShowFindProps {
+  selectShow: Dispatch<Show>;
 }
 
-const MovieFind: FC<MovieFindProps> = ({ selectMovie }) => {
+const ShowFind: FC<ShowFindProps> = ({ selectShow }) => {
   const [title, setTitle] = useState<Title | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [inputValue, setInputValue] = useState("");
 
-  const { data: resp } = api.movie.searchByPage.useQuery({
+  const { data: resp } = api.show.searchByPage.useQuery({
     page: 1,
     term: searchQuery,
   });
 
-  const { data: temp_title } = api.movie.getTitle.useQuery({
+  const { data: temp_title } = api.show.getTitle.useQuery({
     id: title?.id ?? 0
   }, {
     onSuccess: (result) => {
@@ -36,7 +33,7 @@ const MovieFind: FC<MovieFindProps> = ({ selectMovie }) => {
 
       const year = (new Date(result.release_date)).getFullYear();
 
-      addMovie({
+      addShow({
         title: result.title,
         year: year,
         poster: result.poster_path,
@@ -45,10 +42,10 @@ const MovieFind: FC<MovieFindProps> = ({ selectMovie }) => {
     }
   });
 
-  const { mutate: addMovie } = api.movie.add.useMutation({
+  const { mutate: addShow } = api.show.add.useMutation({
     onSuccess: (result) => {
       if (!result) return;
-      selectMovie(result);
+      selectShow(result);
     }
   });
 
@@ -77,7 +74,7 @@ const MovieFind: FC<MovieFindProps> = ({ selectMovie }) => {
         </Label>
         <Input
           id="search"
-          placeholder="Search for a movie..."
+          placeholder="Search for a show..."
           value={inputValue}
           onChange={(e) => {
             setInputValue(e.target.value);
@@ -98,4 +95,4 @@ const MovieFind: FC<MovieFindProps> = ({ selectMovie }) => {
   );
 };
 
-export default MovieFind;
+export default ShowFind;

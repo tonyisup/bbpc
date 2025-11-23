@@ -3,6 +3,7 @@ import { type Rating } from "@prisma/client";
 import { createTRPCRouter, protectedProcedure, publicProcedure } from "@/server/api/trpc";
 import { syllabusRouter } from "./routers/syllabus";
 import { Decimal } from "@prisma/client/runtime/client";
+import { showRouter } from "./routers/showRouter";
 
 export const appRouter = createTRPCRouter({
   episode: createTRPCRouter({
@@ -36,6 +37,7 @@ export const appRouter = createTRPCRouter({
                 include: {
                   Movie: true,
                   User: true,
+                  Show: true,
                 },
               },
             },
@@ -492,7 +494,7 @@ export const appRouter = createTRPCRouter({
   }),
 
   review: createTRPCRouter({
-    add: protectedProcedure
+    addMovie: protectedProcedure
       .input(z.object({
         userId: z.string(),
         movieId: z.string(),
@@ -503,6 +505,29 @@ export const appRouter = createTRPCRouter({
           data: {
             userId: input.userId,
             movieId: input.movieId,
+          },
+        });
+
+        await ctx.db.extraReview.create({
+          data: {
+            reviewId: review.id,
+            episodeId: input.episodeId,
+          },
+        });
+
+        return review;
+      }),
+    addShow: protectedProcedure
+      .input(z.object({
+        userId: z.string(),
+        showId: z.string(),
+        episodeId: z.string(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const review = await ctx.db.review.create({
+          data: {
+            userId: input.userId,
+            showId: input.showId,
           },
         });
 
@@ -693,6 +718,7 @@ export const appRouter = createTRPCRouter({
   }),
 
   syllabus: syllabusRouter,
+  show: showRouter,
 });
 
 export type AppRouter = typeof appRouter; 

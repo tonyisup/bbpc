@@ -1,7 +1,7 @@
 'use client';
 
 import { type FC } from "react";
-import type { Assignment as AssignmentType, Episode as EpisodeType, Movie, User, Review, ExtraReview, Link as EpisodeLink } from '@prisma/client';
+import type { Assignment as AssignmentType, Episode as EpisodeType, Movie, User, Review, ExtraReview, Link as EpisodeLink, Show } from '@prisma/client';
 import { api } from "@/trpc/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -16,6 +16,7 @@ interface AddExtraToNextProps {
       Review: (Review & {
         User: User;
         Movie: Movie;
+        Show: Show;
       })
     })[];
     links: EpisodeLink[];
