@@ -259,6 +259,7 @@ model AudioEpisodeMessage {
   fileKey   String?
   userId    String
   episodeId String?  @db.UniqueIdentifier
+  notes     String?
   Episode   Episode? @relation(fields: [episodeId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   User      User     @relation(fields: [userId], references: [id], onUpdate: NoAction)
 }
