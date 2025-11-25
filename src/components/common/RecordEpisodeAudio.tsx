@@ -15,7 +15,12 @@ const RecordEpisodeAudio: React.FC<RecordEpisodeAudioProps> = ({ userId, episode
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const { mutate: updateAudio } = api.episode.updateAudioMessage.useMutation();
-  const { data: countOfUserAudioMessagesForEpisode, refetch } = api.episode.getCountOfUserEpisodeAudioMessages.useQuery({ episodeId: episodeId, userId: userId });
+
+  const { data: uploadInfo, refetch } = api.uploadInfo.getEpisodeUploadInfo.useQuery({
+    episodeId: episodeId,
+    userId: userId,
+  });
+
   const { startUpload, isUploading } = useUploadThing("audioUploader", {
     onUploadError: (error: Error) => {
       console.error("Error uploading audio:", error);
@@ -95,7 +100,15 @@ const RecordEpisodeAudio: React.FC<RecordEpisodeAudioProps> = ({ userId, episode
   const handleSubmit = async () => {
     if (audioChunksRef.current.length) {
       const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' });
-      const audioFile = new File([audioBlob], 'audio-message.wav', { type: 'audio/wav' });
+
+      let fileName = 'audio-message.wav';
+      if (uploadInfo) {
+        const { episodeNumber, userName, messageCount } = uploadInfo;
+        const safeUserName = userName ? userName.replace(/[^a-zA-Z0-9]/g, '-') : 'unknown-user';
+        fileName = `${episodeNumber}-${safeUserName}-${messageCount + 1}.wav`;
+      }
+
+      const audioFile = new File([audioBlob], fileName, { type: 'audio/wav' });
 
       const formData = new FormData();
       formData.append('audio', audioFile);
@@ -109,7 +122,7 @@ const RecordEpisodeAudio: React.FC<RecordEpisodeAudioProps> = ({ userId, episode
   return (<>
     <div className="flex flex-col items-center bg-gray-800 text-white p-4">
       <p>
-        You have {countOfUserAudioMessagesForEpisode} messages for the next episode
+        You have {uploadInfo?.messageCount ?? 0} messages for the next episode
       </p>
       <div className="flex flex-wrap items-center">
         <button

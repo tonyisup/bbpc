@@ -4,8 +4,10 @@ import { createTRPCRouter, protectedProcedure, publicProcedure } from "@/server/
 import { syllabusRouter } from "./routers/syllabus";
 import { Decimal } from "@prisma/client/runtime/client";
 import { showRouter } from "./routers/showRouter";
+import { uploadInfoRouter } from "./routers/uploadInfo";
 
 export const appRouter = createTRPCRouter({
+  uploadInfo: uploadInfoRouter,
   episode: createTRPCRouter({
     next: publicProcedure.query(async ({ ctx }) => {
       return ctx.db.episode.findFirst({
