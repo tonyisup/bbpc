@@ -26,9 +26,10 @@ const RecordAssignmentAudio: React.FC<RecordAssignmentAudioProps> = ({ userId, a
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   const { mutate: updateAudio } = api.review.updateAudioMessage.useMutation();
-  const { data: countOfUserAudioMessagesForAssignment, refetch } = api.review.getCountOfUserAudioMessagesForAssignment.useQuery({ 
-    assignmentId: assignmentId, 
-    userId: userId 
+
+  const { data: uploadInfo, refetch } = api.uploadInfo.getAssignmentUploadInfo.useQuery({
+    assignmentId: assignmentId,
+    userId: userId,
   });
 
   const { startUpload, isUploading } = useUploadThing("audioUploader", {
@@ -159,7 +160,15 @@ const RecordAssignmentAudio: React.FC<RecordAssignmentAudioProps> = ({ userId, a
     setIsSubmitting(true)
 
     try {
-      const audioFile = new File([audioBlob], 'audio-message.wav', { type: 'audio/wav' });
+      let fileName = 'audio-message.wav';
+      if (uploadInfo) {
+        const { episodeNumber, userName, movieName, messageCount } = uploadInfo;
+        const safeMovieName = movieName ? movieName.replace(/[^a-zA-Z0-9]/g, '-') : 'unknown-movie';
+        const safeUserName = userName ? userName.replace(/[^a-zA-Z0-9]/g, '-') : 'unknown-user';
+        fileName = `${episodeNumber}-${safeUserName}-${safeMovieName}-${messageCount + 1}.wav`;
+      }
+
+      const audioFile = new File([audioBlob], fileName, { type: 'audio/wav' });
       await startUpload(
         [audioFile],
         { assignmentId: assignmentId }
@@ -197,7 +206,7 @@ const RecordAssignmentAudio: React.FC<RecordAssignmentAudioProps> = ({ userId, a
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex items-center justify-between text-sm text-muted-foreground">
-          <span>Recordings for this assignment: {countOfUserAudioMessagesForAssignment}</span>
+          <span>Recordings for this assignment: {uploadInfo?.messageCount ?? 0}</span>
         </div>
         {permissionDenied && (
           <Alert variant="destructive">
