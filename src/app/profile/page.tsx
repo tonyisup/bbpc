@@ -21,7 +21,7 @@ export default async function ProfilePage() {
   console.log(session.user);
   // Fetch the user's data including points
   const user = await db.user.findFirst({
-    where: { email: 'dodger_83@yahoo.com' },
+    where: { email: session.user.email },
     include: {
       Point: {
         include: {
