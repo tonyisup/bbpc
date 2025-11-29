@@ -5,6 +5,7 @@ import { syllabusRouter } from "./routers/syllabus";
 import { Decimal } from "@prisma/client/runtime/client";
 import { showRouter } from "./routers/showRouter";
 import { uploadInfoRouter } from "./routers/uploadInfo";
+import { createGuessesFromAi } from "./ai";
 
 export const appRouter = createTRPCRouter({
   uploadInfo: uploadInfoRouter,

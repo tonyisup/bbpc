@@ -3,6 +3,7 @@ import { UploadThingError } from "uploadthing/server";
 import { getServerAuthSession } from "@/server/auth";
 import { db } from "@/server/db";
 import { z } from "zod";
+import { createGuessesFromAi } from "../api/ai";
 
 const f = createUploadthing();
 
@@ -67,6 +68,8 @@ export const ourFileRouter = {
           }
         });
         savedAudioMessageId = savedAudioMessage.id;
+
+        await createGuessesFromAi(savedAudioMessage);
       }
 
       // !!! Whatever is returned here is sent to the clientside `onClientUploadComplete` callback
