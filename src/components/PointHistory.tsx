@@ -1,0 +1,147 @@
+'use client'
+
+import { useState } from "react";
+import { ChevronDown, ChevronUp } from "lucide-react";
+
+// Define types based on what we expect from the server
+interface Episode {
+	id: string;
+	title: string;
+	number: number;
+}
+
+interface Movie {
+	title: string;
+}
+
+interface Assignment {
+	id: string;
+	Episode: Episode;
+	Movie: Movie;
+}
+
+interface Point {
+	id: string;
+	reason: string | null;
+	earnedOn: Date | string;
+	adjustment: number;
+	GamePointType: {
+		title: string;
+		points: number;
+		description: string | null;
+	} | null;
+	AssignmentPoints: {
+		Assignment: Assignment;
+	}[];
+	GamblingPoints: {
+		Assignment: Assignment;
+	}[];
+	Guess: {
+		AssignmentReview: {
+			Assignment: Assignment;
+		};
+	}[];
+}
+
+interface PointHistoryProps {
+	points: Point[];
+}
+
+export default function PointHistory({ points }: PointHistoryProps) {
+	// Group points by Episode -> Assignment
+	const groupedPoints = points.reduce((acc, point) => {
+		let episodeId = "misc";
+		let episodeTitle = "Miscellaneous";
+		let episodeNumber = -1;
+		let assignmentId = "misc";
+		let assignmentTitle = "General";
+
+		// Try to find associated assignment and episode
+		let assignment: Assignment | undefined;
+
+		if (point.AssignmentPoints.length > 0) {
+			assignment = point.AssignmentPoints[0]?.Assignment;
+		} else if (point.GamblingPoints.length > 0) {
+			assignment = point.GamblingPoints[0]?.Assignment;
+		} else if (point.Guess.length > 0) {
+			assignment = point.Guess[0]?.AssignmentReview.Assignment;
+		}
+
+		if (assignment) {
+			episodeId = assignment.Episode.id;
+			episodeTitle = `Episode ${assignment.Episode.number}: ${assignment.Episode.title}`;
+			episodeNumber = assignment.Episode.number;
+			assignmentId = assignment.id;
+			assignmentTitle = assignment.Movie.title;
+		}
+
+		if (!acc[episodeId]) {
+			acc[episodeId] = {
+				title: episodeTitle,
+				number: episodeNumber,
+				assignments: {}
+			};
+		}
+
+		const episodeGroup = acc[episodeId];
+		if (episodeGroup) {
+			if (!episodeGroup.assignments[assignmentId]) {
+				episodeGroup.assignments[assignmentId] = {
+					title: assignmentTitle,
+					points: []
+				};
+			}
+			episodeGroup.assignments[assignmentId]?.points.push(point);
+		}
+		return acc;
+	}, {} as Record<string, { title: string; number: number; assignments: Record<string, { title: string; points: Point[] }> }>);
+
+	// Sort episodes by number (descending)
+	const sortedEpisodes = Object.entries(groupedPoints).sort(([, a], [, b]) => b.number - a.number);
+
+	return (
+		<div className="w-full max-w-4xl space-y-6">
+			<h3 className="text-2xl font-bold text-white mb-6">Point History</h3>
+			{sortedEpisodes.map(([episodeId, episode]) => (
+				<div key={episodeId} className="border border-gray-700 rounded-xl overflow-hidden bg-gray-900/40 backdrop-blur-sm shadow-lg transition-all hover:shadow-xl hover:bg-gray-900/60">
+					<div className="p-4 bg-gradient-to-r from-gray-800 to-gray-900 border-b border-gray-700">
+						<h4 className="text-xl font-bold text-white">{episode.title}</h4>
+					</div>
+					<div className="p-4 space-y-6">
+						{Object.entries(episode.assignments).map(([assignmentId, assignment]) => (
+							<div key={assignmentId} className="relative pl-6 border-l-2 border-indigo-500/50">
+								<h5 className="text-lg font-semibold mb-3 text-indigo-300">{assignment.title}</h5>
+								<div className="grid gap-3">
+									{assignment.points.map(point => (
+										<div key={point.id} className="flex justify-between items-center bg-gray-800/50 p-4 rounded-lg border border-gray-700/50 hover:border-indigo-500/30 transition-colors">
+											<div className="flex-1">
+												<div className="font-medium text-white text-lg">
+													{point.GamePointType?.title || point.reason || "Point Adjustment"}
+												</div>
+												{point.GamePointType?.description && (
+													<div className="text-sm text-gray-400 mt-1">
+														{point.GamePointType.description}
+													</div>
+												)}
+												<div className="text-xs text-gray-500 mt-2 font-mono">
+													{new Date(point.earnedOn).toLocaleDateString(undefined, { dateStyle: 'long' })}
+												</div>
+											</div>
+											<div className={`text-2xl font-bold ml-4 ${((point.GamePointType?.points ?? 0) + point.adjustment) > 0
+												? 'text-emerald-400'
+												: 'text-red-400'
+												}`}>
+												{((point.GamePointType?.points ?? 0) + point.adjustment) > 0 ? '+' : ''}
+												{((point.GamePointType?.points ?? 0) + point.adjustment)}
+											</div>
+										</div>
+									))}
+								</div>
+							</div>
+						))}
+					</div>
+				</div>
+			))}
+		</div>
+	);
+}

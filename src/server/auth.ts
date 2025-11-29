@@ -7,6 +7,7 @@ import {
 import GoogleProvider from "next-auth/providers/google";
 import { env } from "@/env.mjs";
 import { db } from "@/server/db";
+import { calculateUserPoints } from "@/utils/points";
 
 declare module "next-auth" {
   interface Session extends DefaultSession {
@@ -51,28 +52,29 @@ export const authOptions: NextAuthOptions = {
           where: { userId: user.id },
           include: { role: true },
         });
-        
+
         // Check if user has admin role
         const isAdmin = userRoles.some(ur => ur.role.admin);
 
         // Get user points from database
         const dbUser = await db.user.findUnique({
           where: { id: user.id },
-          select: { 
-            points: true,
+          select: {
             name: true,
             image: true,
           }
         });
-        
-        user.points = dbUser?.points?.toNumber() ?? undefined;
-        session.user = {
-          ...session.user,
-          id: user.id,
-          isAdmin,  
-          name: dbUser?.name ?? undefined,
-          image: dbUser?.image ?? undefined,
-        };
+
+        const season = await db.season.findFirst({
+          orderBy: {
+            startedOn: 'desc',
+          },
+          where: {
+            endedOn: null,
+          },
+        });
+
+        user.points = await calculateUserPoints(db, user.id, season?.id ?? "");
       }
       return session;
     },
@@ -101,18 +103,18 @@ export const authOptions: NextAuthOptions = {
       },
     }),
 
-		// EmailProvider({
-		// 	server: {
-		// 		host: env.EMAIL_SERVER_HOST,
-		// 		port: env.EMAIL_SERVER_PORT,
-		// 		auth: {
-		// 			user: env.EMAIL_SERVER_USER,
-		// 			pass: env.EMAIL_SERVER_PASSWORD
-		// 		},
-		// 		secure: true
-		// 	},
-		// 	from: env.EMAIL_FROM,
-		// }),
+    // EmailProvider({
+    // 	server: {
+    // 		host: env.EMAIL_SERVER_HOST,
+    // 		port: env.EMAIL_SERVER_PORT,
+    // 		auth: {
+    // 			user: env.EMAIL_SERVER_USER,
+    // 			pass: env.EMAIL_SERVER_PASSWORD
+    // 		},
+    // 		secure: true
+    // 	},
+    // 	from: env.EMAIL_FROM,
+    // }),
   ],
 };
 

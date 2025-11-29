@@ -1,18 +1,7 @@
 import { prisma } from "./client";
 
 export const ssr = {
-	getPoints: async function () {
-		return await prisma.user.findMany({
-			where: {
-				points: {
-					not: null
-				}
-			},
-			orderBy: {
-				points: "desc"
-			}
-		});
-	},
+
 	getAssignment: async function (id: string) {
 		return await prisma.assignment.findUnique({
 			where: {
@@ -87,7 +76,7 @@ export const ssr = {
 			}
 		});
 	},
-	getEpisodeHistory: async function() {
+	getEpisodeHistory: async function () {
 		return await prisma.episode.findMany({
 			orderBy: {
 				date: 'desc',

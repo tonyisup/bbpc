@@ -192,40 +192,6 @@ export const appRouter = createTRPCRouter({
       }),
   }),
 
-  game: createTRPCRouter({
-    points: protectedProcedure.query(async ({ ctx }) => {
-      return ctx.db.user.findMany({
-        orderBy: {
-          points: 'desc',
-        },
-      });
-    }),
-
-    addPointsToUser: protectedProcedure
-      .input(z.object({
-        userId: z.string(),
-        points: z.number(),
-      }))
-      .mutation(async ({ ctx, input }) => {
-        const user = await ctx.db.user.findUnique({
-          where: { id: input.userId },
-        });
-
-        if (!user) {
-          throw new Error("User not found");
-        }
-
-        const currentPoints = user.points ?? new Decimal(0);
-        const newPoints = currentPoints.add(input.points);
-
-        return ctx.db.user.update({
-          where: { id: input.userId },
-          data: {
-            points: newPoints,
-          },
-        });
-      }),
-  }),
 
   auth: createTRPCRouter({
     getSession: publicProcedure.query(({ ctx }) => {

@@ -7,7 +7,7 @@ export default defineConfig({
 
 	// Database connection URL
 	datasource: {
-		url: env('DATABASE_URL'),
+		url: env("DATABASE_URL"),
 	},
 
 	// Migration settings
