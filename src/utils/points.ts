@@ -8,7 +8,7 @@ type PrismaTransactionClient = Omit<
 export const calculateUserPoints = async (
   prisma: PrismaTransactionClient,
   userId: string,
-  seasonId: string | null | undefined
+  seasonId?: string | null | undefined
 ) => {
   let seasonIdToUse = seasonId;
   if (!seasonIdToUse) {

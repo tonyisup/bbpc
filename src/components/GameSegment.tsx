@@ -1,6 +1,6 @@
 'use client'
 import { type Dispatch, type DispatchWithoutAction, type FC, useState, useEffect } from "react";
-import { type Assignment, type Guess, type Rating, type User } from "@prisma/client";
+import { AssignmentReview, Review, type Assignment, type Guess, type Rating, type User } from "@prisma/client";
 
 import { HiRefresh, HiUpload, HiPhone, HiMicrophone } from "react-icons/hi";
 import RecordAssignmentAudio from "./common/RecordAssignmentAudio";
@@ -8,7 +8,6 @@ import UserTag from "./UserTag";
 import RatingIcon from "./RatingIcon";
 import PhoneNumber from "./common/PhoneNumber";
 import { type Session } from "next-auth";
-import type { Decimal } from "@prisma/client/runtime/library";
 import { SignInButton } from "./Auth";
 import { useSession } from "next-auth/react";
 import { api } from "@/trpc/react";
@@ -36,6 +35,10 @@ const GameSegment: FC<GameSegmentProps> = ({ assignment }) => {
 
 	// Fetch user data from the database
 	const { data: userData } = api.user.me.useQuery(undefined, {
+		enabled: !!session?.user?.id,
+	});
+
+	const { data: userPoints } = api.user.points.useQuery(undefined, {
 		enabled: !!session?.user?.id,
 	});
 
@@ -73,19 +76,20 @@ const GameSegment: FC<GameSegmentProps> = ({ assignment }) => {
 	useEffect(() => {
 		const evalCanSubmitGamblingPoints = () => {
 			// Check if user has points
-			if (!userData?.points) return false;
-			if (Number(userData.points) <= 0) return false;
+			if (!userPoints) return false;
+
+			if (Number(userPoints) <= 0) return false;
 
 			// Check if gambling points input is valid
 			if (isNaN(gamblingPoints) || gamblingPoints <= 0) return false;
 
-			if (gamblingPoints > Number(userData.points)) return false;
+			if (gamblingPoints > Number(userPoints)) return false;
 
 			return true;
 		}
 
 		setCanSubmitGamblingPoints(evalCanSubmitGamblingPoints());
-	}, [userData, gamblingPoints]);
+	}, [userPoints, gamblingPoints]);
 
 	const handleAutoBet = (amount: number) => {
 		setGamblingPoints(amount);
@@ -106,8 +110,8 @@ const GameSegment: FC<GameSegmentProps> = ({ assignment }) => {
 	);
 
 	return <div className="flex flex-col gap-4 items-center py-4">
-		{userData?.points && Number(userData.points) > 0.0 && <div className="flex flex-col gap-2 items-center">
-			<UserPoints points={Number(userData.points)} showSpendButton={false} />
+		{userPoints && Number(userPoints) > 0.0 && <div className="flex flex-col gap-2 items-center">
+			<UserPoints points={Number(userPoints)} showSpendButton={false} />
 			{assignmentGamblingPoints && assignmentGamblingPoints.length > 0 && assignmentGamblingPoints[0] && assignmentGamblingPoints[0].points > 0 && (
 				<div className="flex gap-2 items-center">
 					<p>You have gambled {assignmentGamblingPoints[0].points} points on this assignment!</p>
@@ -131,12 +135,12 @@ const GameSegment: FC<GameSegmentProps> = ({ assignment }) => {
 				<div className="flex flex-col gap-2">
 					<div className="flex gap-2 items-center">
 						<Label>Wanna bet?</Label>
-						{userData?.points && Number(userData.points) > 0 && <Badge className="cursor-pointer" onClick={() => handleAutoBet(1)}>Bet 1</Badge>}
-						{userData?.points && Number(userData.points) > 5 && <Badge className="cursor-pointer" onClick={() => handleAutoBet(5)}>Bet 5</Badge>}
-						{userData?.points && Number(userData.points) > 10 && <Badge className="cursor-pointer" onClick={() => handleAutoBet(10)}>Bet 10</Badge>}
-						{userData?.points && Number(userData.points) > 20 && <Badge className="cursor-pointer" onClick={() => handleAutoBet(20)}>Bet 20</Badge>}
-						{userData?.points && Number(userData.points) > 50 && <Badge className="cursor-pointer" onClick={() => handleAutoBet(50)}>Bet 50</Badge>}
-						{userData?.points && Number(userData.points) > 0 && <Badge className="cursor-pointer" onClick={() => handleAutoBet(Number(userData.points))}>ALL IN</Badge>}
+						{userPoints && Number(userPoints) > 0 && <Badge className="cursor-pointer" onClick={() => handleAutoBet(1)}>Bet 1</Badge>}
+						{userPoints && Number(userPoints) > 5 && <Badge className="cursor-pointer" onClick={() => handleAutoBet(5)}>Bet 5</Badge>}
+						{userPoints && Number(userPoints) > 10 && <Badge className="cursor-pointer" onClick={() => handleAutoBet(10)}>Bet 10</Badge>}
+						{userPoints && Number(userPoints) > 20 && <Badge className="cursor-pointer" onClick={() => handleAutoBet(20)}>Bet 20</Badge>}
+						{userPoints && Number(userPoints) > 50 && <Badge className="cursor-pointer" onClick={() => handleAutoBet(50)}>Bet 50</Badge>}
+						{userPoints && Number(userPoints) > 0 && <Badge className="cursor-pointer" onClick={() => handleAutoBet(Number(userPoints))}>ALL IN</Badge>}
 					</div>
 					<div className="flex gap-2">
 						<Input
@@ -218,25 +222,11 @@ const GamePanel: FC<GamePanelProps> = ({ session, assignment }) => {
 }
 interface ShowAssignmentGuessesProps {
 	guesses: (Guess & {
-		Rating: {
-			id: string;
-			name: string;
-			value: number;
-			sound: string | null;
-			icon: string | null;
-			category: string | null;
-		};
-		AssignmentReview: {
-			Review: {
-				User: {
-					id: string;
-					name: string | null;
-					email: string | null;
-					emailVerified: Date | null;
-					image: string | null;
-					points: Decimal | null;
-				} | null;
-			};
+		Rating: Rating;
+		AssignmentReview: AssignmentReview & {
+			Review: Review & {
+				User: User | null;
+			} | null;
 		};
 	})[] | null | undefined,
 	resetGuesses: DispatchWithoutAction

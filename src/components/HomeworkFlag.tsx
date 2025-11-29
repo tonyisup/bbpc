@@ -1,12 +1,11 @@
 import { type FC } from "react";
 import { HiOutlineClipboardList, HiOutlinePaperClip, HiOutlineStar } from "react-icons/hi"
-import { type AssignmentType } from "@/types/assignment";
 
 interface HomeworkFlagProps {
-  type: AssignmentType
+  type: string
 }
 
-const HomeworkFlag: FC<HomeworkFlagProps> = ({type}) => {
+const HomeworkFlag: FC<HomeworkFlagProps> = ({ type }) => {
   return <>
     {type === "HOMEWORK" && <div className="sm:whitespace-nowrap">
       <HiOutlineClipboardList className="inline mx-1 text-4xl text-gray-300" title="Homework" />

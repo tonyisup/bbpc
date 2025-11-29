@@ -5,6 +5,7 @@ import { syllabusRouter } from "./routers/syllabus";
 import { Decimal } from "@prisma/client/runtime/client";
 import { showRouter } from "./routers/showRouter";
 import { uploadInfoRouter } from "./routers/uploadInfo";
+import { calculateUserPoints } from "@/utils/points";
 
 export const appRouter = createTRPCRouter({
   uploadInfo: uploadInfoRouter,
@@ -229,6 +230,9 @@ export const appRouter = createTRPCRouter({
   }),
 
   user: createTRPCRouter({
+    points: protectedProcedure.query(({ ctx }) => {
+      return calculateUserPoints(ctx.db, ctx.session.user.id);
+    }),
     me: protectedProcedure.query(({ ctx }) => {
       return ctx.db.user.findUnique({
         where: { id: ctx.session.user.id },
