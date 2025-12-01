@@ -94,7 +94,7 @@ export default async function ProfilePage() {
     }
   });
 
-  const points = await calculateUserPoints(db, user?.id ?? '', undefined);
+  const points = await calculateUserPoints(db, user?.email ?? '', undefined);
 
   return (
     <div className="container flex flex-col items-start justify-center gap-12 px-4 py-16">

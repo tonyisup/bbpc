@@ -231,11 +231,15 @@ export const appRouter = createTRPCRouter({
 
   user: createTRPCRouter({
     points: protectedProcedure.query(({ ctx }) => {
-      return calculateUserPoints(ctx.db, ctx.session.user.id);
+      console.log('user stuff', ctx.session.user);
+      if (!ctx.session.user.email) {
+        throw new Error("User not found");
+      }
+      return calculateUserPoints(ctx.db, ctx.session.user.email);
     }),
     me: protectedProcedure.query(({ ctx }) => {
-      return ctx.db.user.findUnique({
-        where: { id: ctx.session.user.id },
+      return ctx.db.user.findFirst({
+        where: { email: ctx.session.user.email },
       });
     }),
     update: protectedProcedure
@@ -243,8 +247,14 @@ export const appRouter = createTRPCRouter({
         name: z.string(),
       }))
       .mutation(async ({ ctx, input }) => {
+        const user = await ctx.db.user.findFirst({
+          where: { email: ctx.session.user.email },
+        });
+        if (!user) {
+          throw new Error("User not found");
+        }
         return ctx.db.user.update({
-          where: { id: ctx.session.user.id },
+          where: { id: user.id },
           data: { name: input.name },
         });
       }),
@@ -627,7 +637,12 @@ export const appRouter = createTRPCRouter({
         ratingId: z.string()
       }))
       .mutation(async ({ ctx, input }) => {
-        return await ctx.db.$executeRaw`EXEC [SubmitGuess] @assignmentId=${input.assignmentId}, @hostId=${input.hostId}, @guesserId=${input.guesserId}, @ratingId=${input.ratingId}`
+        return await ctx.db.$executeRaw`
+          EXEC [SubmitGuess]
+            @assignmentId=${input.assignmentId},
+            @hostId=${input.hostId},
+            @guesserId=${input.guesserId},
+            @ratingId=${input.ratingId}`
       }),
 
     updateAudioMessage: protectedProcedure

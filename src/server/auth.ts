@@ -56,14 +56,6 @@ export const authOptions: NextAuthOptions = {
         // Check if user has admin role
         const isAdmin = userRoles.some(ur => ur.role.admin);
 
-        // Get user points from database
-        const dbUser = await db.user.findUnique({
-          where: { id: user.id },
-          select: {
-            name: true,
-            image: true,
-          }
-        });
 
         const season = await db.season.findFirst({
           orderBy: {
@@ -73,8 +65,8 @@ export const authOptions: NextAuthOptions = {
             endedOn: null,
           },
         });
-
-        user.points = await calculateUserPoints(db, user.id, season?.id ?? "");
+        session.user.isAdmin = isAdmin;
+        session.user.points = await calculateUserPoints(db, user.email, season?.id ?? "");
       }
       return session;
     },

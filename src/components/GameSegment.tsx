@@ -35,17 +35,17 @@ const GameSegment: FC<GameSegmentProps> = ({ assignment }) => {
 
 	// Fetch user data from the database
 	const { data: userData } = api.user.me.useQuery(undefined, {
-		enabled: !!session?.user?.id,
+		enabled: !!session?.user?.email,
 	});
 
 	const { data: userPoints } = api.user.points.useQuery(undefined, {
-		enabled: !!session?.user?.id,
+		enabled: !!session?.user?.email,
 	});
 
 	// Fetch gambling points for this assignment
 	const { data: assignmentGamblingPoints, refetch: refetchAssignmentGamblingPoints } = api.review.getGamblingPointsForAssignment.useQuery(
 		{ assignmentId: assignment.id },
-		{ enabled: !!session?.user?.id }
+		{ enabled: !!session?.user?.email }
 	);
 
 	const { mutate: submitGamblingPoints } = api.review.submitGamblingPoints.useMutation({
@@ -101,10 +101,12 @@ const GameSegment: FC<GameSegmentProps> = ({ assignment }) => {
 		</div>;
 	}
 
-	if (!session?.user?.id) return (
+	console.log('user data', userData);
+
+	if (!userData?.id) return (
 		<>
 			<div className="flex flex-col items-center gap-4 m-4">
-				<p className="text-2xl">Please <SignInButton /> to submit guesses</p>
+				<p className="text-2xl">Please <SignInButton /> to submit guesses tests</p>
 			</div>
 		</>
 	);
@@ -119,9 +121,9 @@ const GameSegment: FC<GameSegmentProps> = ({ assignment }) => {
 						variant="destructive"
 						size="icon"
 						onClick={() => {
-							if (!session?.user?.id) return;
+							if (!userData.id) return;
 							submitGamblingPoints({
-								userId: session.user.id,
+								userId: userData.id,
 								assignmentId: assignment.id,
 								points: 0
 							});
@@ -189,7 +191,7 @@ const GameSegment: FC<GameSegmentProps> = ({ assignment }) => {
 			</Button>
 		</div>
 		{gameChoice == GameChoice.PhoneMessage && <PhoneNumber />}
-		{gameChoice == GameChoice.VoiceRecording && <RecordAssignmentAudio userId={session.user.id} assignmentId={assignment.id} />}
+		{gameChoice == GameChoice.VoiceRecording && <RecordAssignmentAudio userId={userData?.id} assignmentId={assignment.id} />}
 		{gameChoice == GameChoice.ClickButtons && <GamePanel session={session} assignment={assignment} />}
 	</div>
 }

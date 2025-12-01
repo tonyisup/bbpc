@@ -7,7 +7,7 @@ type PrismaTransactionClient = Omit<
 
 export const calculateUserPoints = async (
   prisma: PrismaTransactionClient,
-  userId: string,
+  userEmail: string,
   seasonId?: string | null | undefined
 ) => {
   let seasonIdToUse = seasonId;
@@ -21,12 +21,19 @@ export const calculateUserPoints = async (
     seasonIdToUse = season?.id ?? '';
   }
 
+  const user = await prisma.user.findFirst({
+    where: { email: userEmail },
+  });
+  if (!user) {
+    throw new Error("User not found for email " + userEmail);
+  }
+
   const adjustmentResult = await prisma.point.aggregate({
     _sum: {
       adjustment: true,
     },
     where: {
-      userId,
+      userId: user.id,
       seasonId: seasonIdToUse,
     },
   });
@@ -36,7 +43,7 @@ export const calculateUserPoints = async (
 from [dbo].[point] [a]
 join [dbo].[gamepointtype] [b]
 	on [a].[gamepointtypeid] = [b].[id]
-where [a].[userid] = ${userId}
+where [a].[userid] = ${user.id}
 and [a].[seasonid] = ${seasonIdToUse}
 `;
 
