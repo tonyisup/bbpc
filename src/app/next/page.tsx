@@ -75,6 +75,7 @@ export default async function NextPage() {
 						include: {
 							Movie: true,
 							User: true,
+							Show: true,
 						},
 					},
 				},
