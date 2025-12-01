@@ -14,10 +14,10 @@ export const appRouter = createTRPCRouter({
         where: OR
           [
         {
-              status: "next"
+              status: { equals: "next"}
             },
             {
-              status: "recording"
+              status: { equals: "recording" }
             },
           ]
         },
