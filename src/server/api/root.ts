@@ -143,7 +143,8 @@ export const appRouter = createTRPCRouter({
       .input(z.object({
         id: z.number(),
         episodeId: z.string(),
-        fileKey: z.string()
+        fileKey: z.string(),
+        notes: z.string().optional(),
       }))
       .mutation(async ({ ctx, input }) => {
         return await ctx.db.audioEpisodeMessage.update({
@@ -152,7 +153,8 @@ export const appRouter = createTRPCRouter({
           },
           data: {
             episodeId: input.episodeId,
-            fileKey: input.fileKey
+            fileKey: input.fileKey,
+            notes: input.notes,
           }
         });
       }),
