@@ -70,7 +70,16 @@ const AssignmentPrediction: FC<AssignmentPredictionProps> = ({ assignment, hosts
 			utils.review.getGuessesForAssignmentForUser.setData({ assignmentId: assignment.id, userId }, (old) => {
 				const oldGuesses = old ?? [];
 				// Remove existing guess for this host
-				const filtered = oldGuesses.filter(g => g.AssignmentReview?.Review?.User?.id !== newGuess.hostId);
+				const filtered = oldGuesses.filter(g => {
+					// Check both User object and userId field for robustness
+					const reviewUserId = g.AssignmentReview?.Review?.userId;
+					const reviewUserObjId = g.AssignmentReview?.Review?.User?.id;
+					const hostId = reviewUserId ?? reviewUserObjId;
+					return hostId !== newGuess.hostId;
+				});
+
+				const rating = ratings.find(r => r.id === newGuess.ratingId);
+				if (!rating) return [...filtered];
 
 				// Create mock new guess
 				const mockGuess = {
@@ -81,9 +90,10 @@ const AssignmentPrediction: FC<AssignmentPredictionProps> = ({ assignment, hosts
 					assignmntReviewId: "temp-id",
 					seasonId: "temp-id",
 					pointsId: null,
-					Rating: ratings.find(r => r.id === newGuess.ratingId)!,
+					Rating: rating,
 					AssignmentReview: {
 						Review: {
+							userId: newGuess.hostId,
 							User: {
 								id: newGuess.hostId
 							}
@@ -97,6 +107,7 @@ const AssignmentPrediction: FC<AssignmentPredictionProps> = ({ assignment, hosts
 			return { previousGuesses };
 		},
 		onError: (err, newGuess, context) => {
+			console.error("Failed to submit guess:", err);
 			utils.review.getGuessesForAssignmentForUser.setData({ assignmentId: assignment.id, userId }, context?.previousGuesses);
 		},
 		onSettled: () => {
@@ -106,7 +117,11 @@ const AssignmentPrediction: FC<AssignmentPredictionProps> = ({ assignment, hosts
 
 	const getGuessForHost = (hostId: string) => {
 		if (!existingGuesses) return null;
-		return existingGuesses?.find(g => g.AssignmentReview?.Review?.User?.id === hostId);
+		return existingGuesses.find(g => {
+			const reviewUserId = g.AssignmentReview?.Review?.userId;
+			const reviewUserObjId = g.AssignmentReview?.Review?.User?.id;
+			return (reviewUserId ?? reviewUserObjId) === hostId;
+		});
 	};
 
 	if (isLoading) return <div className="animate-pulse h-32 bg-gray-800/50 rounded-lg"></div>;
