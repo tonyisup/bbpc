@@ -19,7 +19,7 @@ export const appRouter = createTRPCRouter({
             {
               status: { equals: "recording" }
             },
-          ]}
+          ]
         },
         orderBy: {
           number: 'desc',
