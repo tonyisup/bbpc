@@ -13,7 +13,7 @@ export const appRouter = createTRPCRouter({
       return ctx.db.episode.findFirst({
         where: OR
           [
-            
+        {
               status: "next"
             },
             {
