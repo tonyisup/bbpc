@@ -11,13 +11,13 @@ export const appRouter = createTRPCRouter({
   episode: createTRPCRouter({
     next: publicProcedure.query(async ({ ctx }) => {
       return ctx.db.episode.findFirst({
-        where: OR
+        where: {OR:
           [
-            
-              status: "next"
+        {
+              status: { equals: "next"}
             },
             {
-              status: "recording"
+              status: { equals: "recording" }
             },
           ]
         },
