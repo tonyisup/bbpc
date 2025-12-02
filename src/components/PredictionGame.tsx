@@ -7,6 +7,7 @@ import { type AssignmentWithRelations } from "@/types/assignment";
 import { type User, type Rating } from "@prisma/client";
 import { highlightText } from "@/utils/text";
 import { cn } from "@/lib/utils";
+import RatingIcon from "./RatingIcon";
 
 interface PredictionGameProps {
 	assignments: AssignmentWithRelations[];
@@ -17,12 +18,12 @@ export const PredictionGame: FC<PredictionGameProps> = ({ assignments, searchQue
 	const { data: session } = api.auth.getSession.useQuery();
 	const { data: hosts } = api.user.hosts.useQuery();
 	const { data: ratings } = api.movie.ratings.useQuery();
-	const { data: user } = api.user.me.useQuery();
+	const { data: user } = api.user.me.useQuery(undefined, { enabled: false });
 
 	if (!session?.user) return <div className="p-4 text-center text-gray-400">You must be logged in to play the game.</div>;
 	if (!hosts || !ratings) return <div className="p-4 text-center text-gray-400">Loading prediction game...</div>;
 
-	if (!user) return <div className="p-4 text-center text-gray-400">Loading prediction game...</div>;
+
 
 	return (
 		<div className="flex flex-col gap-8 p-6 border rounded-xl border-gray-700 mt-6 bg-gray-900/50 backdrop-blur-sm shadow-xl">
@@ -38,7 +39,7 @@ export const PredictionGame: FC<PredictionGameProps> = ({ assignments, searchQue
 						assignment={assignment}
 						hosts={hosts}
 						ratings={ratings}
-						userId={user.id}
+						userId={session.user.id}
 						searchQuery={searchQuery}
 					/>
 				))}
@@ -92,10 +93,15 @@ const AssignmentPrediction: FC<AssignmentPredictionProps> = ({ assignment, hosts
 					pointsId: null,
 					Rating: rating,
 					AssignmentReview: {
+						id: "temp-id",
 						Review: {
+							id: "temp-id",
 							userId: newGuess.hostId,
 							User: {
-								id: newGuess.hostId
+								id: newGuess.hostId,
+								name: "Loading...",
+								email: "",
+								image: null
 							}
 						}
 					}
@@ -167,7 +173,7 @@ const AssignmentPrediction: FC<AssignmentPredictionProps> = ({ assignment, hosts
 											)}
 											title={rating.name}
 										>
-											{rating.value} - {rating.name}
+											<RatingIcon value={rating.value} />
 										</button>
 									);
 								})}
