@@ -274,6 +274,7 @@ function SwipeCard({
       {/* Buttons for non-swipe interaction - placed outside the card but logically coupled */}
       <div className="absolute top-[520px] w-full flex justify-between px-8 z-10">
         <button
+          type="button"
           onClick={() => handleButtonVote(false)}
           className="w-16 h-16 rounded-full bg-red-500 hover:bg-red-600 flex items-center justify-center shadow-lg transition-transform hover:scale-110 active:scale-95"
           aria-label="Not the tag"
@@ -281,6 +282,7 @@ function SwipeCard({
           <X className="w-8 h-8 font-bold" />
         </button>
         <button
+          type="button"
           onClick={() => handleButtonVote(true)}
           className="w-16 h-16 rounded-full bg-green-500 hover:bg-green-600 flex items-center justify-center shadow-lg transition-transform hover:scale-110 active:scale-95"
           aria-label="Is the tag"
