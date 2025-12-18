@@ -5,6 +5,7 @@ import {
   type NextAuthOptions,
 } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
+import EmailProvider from "next-auth/providers/email";
 import { env } from "@/env.mjs";
 import { db } from "@/server/db";
 import { calculateUserPoints } from "@/utils/points";
@@ -65,14 +66,26 @@ export const authOptions: NextAuthOptions = {
             endedOn: null,
           },
         });
+        session.user.id = user.id;
         session.user.isAdmin = isAdmin;
-        session.user.points = await calculateUserPoints(db, user.email, season?.id ?? "");
+        session.user.points = await calculateUserPoints(db, user.email ?? "", season?.id ?? "");
       }
       return session;
     },
   },
   adapter: PrismaAdapter(db),
   providers: [
+    EmailProvider({
+      server: {
+        host: env.EMAIL_SERVER_HOST,
+        port: env.EMAIL_SERVER_PORT,
+        auth: {
+          user: env.EMAIL_SERVER_USER,
+          pass: env.EMAIL_SERVER_PASSWORD
+        }
+      },
+      from: env.EMAIL_FROM,
+    }),
     GoogleProvider({
       clientId: env.GOOGLE_CLIENT_ID,
       clientSecret: env.GOOGLE_CLIENT_SECRET,
@@ -88,25 +101,12 @@ export const authOptions: NextAuthOptions = {
         console.log('Google profile:', profile);
         return {
           id: profile.sub,
-          name: profile.name,
-          email: profile.email,
-          image: profile.picture,
+          name: profile.name ?? "",
+          email: profile.email ?? "",
+          image: profile.picture ?? "",
         };
       },
     }),
-
-    // EmailProvider({
-    // 	server: {
-    // 		host: env.EMAIL_SERVER_HOST,
-    // 		port: env.EMAIL_SERVER_PORT,
-    // 		auth: {
-    // 			user: env.EMAIL_SERVER_USER,
-    // 			pass: env.EMAIL_SERVER_PASSWORD
-    // 		},
-    // 		secure: true
-    // 	},
-    // 	from: env.EMAIL_FROM,
-    // }),
   ],
 };
 

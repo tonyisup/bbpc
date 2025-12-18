@@ -8,6 +8,8 @@ import { type User, type Rating } from "@prisma/client";
 import { highlightText } from "@/utils/text";
 import { cn } from "@/lib/utils";
 import RatingIcon from "./RatingIcon";
+import GamblingSection from "./GamblingSection";
+import { SignInButton } from "./Auth";
 
 interface PredictionGameProps {
 	assignments: AssignmentWithRelations[];
@@ -18,9 +20,8 @@ export const PredictionGame: FC<PredictionGameProps> = ({ assignments, searchQue
 	const { data: session } = api.auth.getSession.useQuery();
 	const { data: hosts } = api.user.hosts.useQuery();
 	const { data: ratings } = api.movie.ratings.useQuery();
-	const { data: user } = api.user.me.useQuery(undefined, { enabled: false });
 
-	if (!session?.user) return <div className="p-4 text-center text-gray-400">You must be logged in to play the game.</div>;
+	if (!session?.user) return <div className="p-4 text-center text-gray-400">Please <SignInButton /> to play the game.</div>;
 	if (!hosts || !ratings) return <div className="p-4 text-center text-gray-400">Loading prediction game...</div>;
 
 
@@ -39,11 +40,13 @@ export const PredictionGame: FC<PredictionGameProps> = ({ assignments, searchQue
 						assignment={assignment}
 						hosts={hosts}
 						ratings={ratings}
-						userId={session.user.id}
+						userId={session.user?.id ?? ""}
 						searchQuery={searchQuery}
 					/>
 				))}
 			</div>
+
+			{/* Ability to gamble per assignment here */}
 		</div>
 	);
 };
@@ -181,6 +184,10 @@ const AssignmentPrediction: FC<AssignmentPredictionProps> = ({ assignment, hosts
 						</div>
 					);
 				})}
+			</div>
+
+			<div className="pt-4 border-t border-gray-700/50">
+				<GamblingSection assignmentId={assignment.id} userId={userId} />
 			</div>
 		</div>
 	);
