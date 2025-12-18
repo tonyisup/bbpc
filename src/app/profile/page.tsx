@@ -18,59 +18,14 @@ export default async function ProfilePage() {
     redirect("/api/auth/signin");
   }
 
-  // Fetch the user's data including points
+  // Fetch the user's basic data and syllabus
   const user = await db.user.findFirst({
     where: { email: session.user.email },
-    include: {
-      Point: {
-        include: {
-          Season: true,
-          GamePointType: true,
-          AssignmentPoints: {
-            include: {
-              Assignment: {
-                include: {
-                  Episode: true,
-                  Movie: true
-                }
-              }
-            }
-          },
-          GamblingPoints: {
-            include: {
-              Assignment: {
-                include: {
-                  Episode: true,
-                  Movie: true
-                }
-              }
-            }
-          },
-          Guess: {
-            include: {
-              AssignmentReview: {
-                include: {
-                  Assignment: {
-                    include: {
-                      Episode: true,
-                      Movie: true
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      gamblingPoints: {
-        include: {
-          Assignment: {
-            include: {
-              Movie: true
-            }
-          }
-        }
-      },
+    select: {
+      id: true,
+      email: true,
+      name: true,
+      image: true,
       syllabus: {
         where: {
           assignmentId: null
@@ -82,6 +37,105 @@ export default async function ProfilePage() {
           order: 'desc'
         },
         take: 3
+      }
+    }
+  });
+
+  if (!user) {
+    redirect("/api/auth/signin");
+  }
+
+  // Fetch the user's point history separately with targeted selects
+  const pointsData = await db.point.findMany({
+    where: { userId: user.id },
+    orderBy: { earnedOn: 'desc' },
+    select: {
+      id: true,
+      reason: true,
+      earnedOn: true,
+      adjustment: true,
+      GamePointType: {
+        select: {
+          title: true,
+          points: true,
+          description: true,
+        }
+      },
+      AssignmentPoints: {
+        take: 1,
+        select: {
+          Assignment: {
+            select: {
+              id: true,
+              Episode: {
+                select: { id: true, number: true, title: true }
+              },
+              Movie: {
+                select: { title: true }
+              }
+            }
+          }
+        }
+      },
+      GamblingPoints: {
+        take: 1,
+        select: {
+          Assignment: {
+            select: {
+              id: true,
+              Episode: {
+                select: { id: true, number: true, title: true }
+              },
+              Movie: {
+                select: { title: true }
+              }
+            }
+          }
+        }
+      },
+      Guess: {
+        take: 1,
+        select: {
+          AssignmentReview: {
+            select: {
+              Assignment: {
+                select: {
+                  id: true,
+                  Episode: {
+                    select: { id: true, number: true, title: true }
+                  },
+                  Movie: {
+                    select: { title: true }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  });
+
+  // Fetch gambling history separately
+  const gamblingHistory = await db.gamblingPoints.findMany({
+    where: { userId: user.id },
+    orderBy: { createdAt: 'desc' },
+    select: {
+      id: true,
+      assignmentId: true,
+      points: true,
+      createdAt: true,
+      successful: true,
+      Assignment: {
+        select: {
+          id: true,
+          Movie: {
+            select: {
+              title: true,
+              year: true
+            }
+          }
+        }
       }
     }
   });
@@ -113,11 +167,11 @@ export default async function ProfilePage() {
       <div className="flex flex-col gap-4 w-full justify-center items-center">
         <h2 className="text-xl font-bold tracking-tight self-start">Game Stuff</h2>
         <UserPoints points={points} />
-        <PointHistory points={user?.Point.map(p => ({
+        <PointHistory points={pointsData.map(p => ({
           ...p,
           earnedOn: p.earnedOn.toISOString()
         })) ?? []} />
-        <GamblingHistory history={user?.gamblingPoints ?? []} />
+        <GamblingHistory history={gamblingHistory as any} />
 
       </div>
       <SignOutButton />
