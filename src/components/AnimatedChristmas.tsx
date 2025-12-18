@@ -1,13 +1,14 @@
 import React from 'react';
 
+const snowParticles = Array.from({ length: 12 }).map((_, i) => ({
+  id: i,
+  cx: Math.random() * 400,
+  delay: Math.random() * 5,
+  duration: 3 + Math.random() * 3,
+  size: 2 + Math.random() * 3,
+}));
+
 const ChristmasSnow = () => {
-  const snowParticles = Array.from({ length: 12 }).map((_, i) => ({
-    id: i,
-    cx: Math.random() * 400,
-    delay: Math.random() * 5,
-    duration: 3 + Math.random() * 3,
-    size: 2 + Math.random() * 3,
-  }));
 
   return (
     <div className="flex items-center justify-center p-4">
