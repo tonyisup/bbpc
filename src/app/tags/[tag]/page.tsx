@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { api } from "@/trpc/react";
-import { motion, useMotionValue, useTransform, AnimatePresence } from "motion/react";
+import { motion, useMotionValue, useTransform, AnimatePresence, PanInfo } from "motion/react";
 import { X, Check, LinkIcon } from "lucide-react";
 import { v4 as uuidv4 } from "uuid";
 import ChristmasSnow from "@/components/AnimatedChristmas";
@@ -204,7 +204,7 @@ function SwipeCard({
   const rightOpacity = useTransform(x, [0, 150], [0, 1]);
   const leftOpacity = useTransform(x, [0, -150], [0, 1]);
 
-  const handleDragEnd = (_: any, info: any) => {
+  const handleDragEnd = (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
     if (info.offset.x > 100) {
       onVote(true);
     } else if (info.offset.x < -100) {
