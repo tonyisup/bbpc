@@ -1,6 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { PrismaMssql } from "@prisma/adapter-mssql";
-import { env } from "process";
+
 declare global {
   // eslint-disable-next-line no-var
   var prisma: PrismaClient | undefined;
@@ -45,6 +45,6 @@ const sqlConfig = {
 const adapter = new PrismaMssql(sqlConfig)
 export const prisma = new PrismaClient({ adapter });
 
-if (env.NODE_ENV !== "production") {
+if (process.env.NODE_ENV !== "production") {
   global.prisma = prisma;
 }
