@@ -5,6 +5,7 @@ import { api } from "@/trpc/react";
 import { motion, useMotionValue, useTransform, AnimatePresence } from "motion/react";
 import { X, Check, LinkIcon } from "lucide-react";
 import { v4 as uuidv4 } from "uuid";
+import ChristmasSnow from "@/components/AnimatedChristmas";
 
 interface Movie {
   id: number;
@@ -135,7 +136,8 @@ export default function TagPage({ params }: { params: { tag: string } }) {
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-gray-950 text-white overflow-hidden p-4">
-      <h1 className="text-3xl font-bold mb-8 capitalize">Is it {params.tag} ?</h1>
+      {params.tag === "christmas" && <div className="mb-8"><h1 className="text-3xl text-center font-bold capitalize">Is it?</h1><ChristmasSnow /></div>}
+      {params.tag !== "christmas" && <h1 className="text-3xl font-bold mb-8 capitalize">Is it {params.tag} ?</h1>}
 
       <div className="relative w-full max-w-sm h-[600px] flex flex-col items-center">
         <AnimatePresence>
@@ -224,7 +226,7 @@ function SwipeCard({
         }}
       >
         {movie.poster_path ? (
-          <img src={movie.poster_path} alt={movie.title} className="w-full h-full object-cover" draggable={false} />
+          <img src={movie.poster_path} alt={movie.title} className="w-full h-full object-contain" draggable={false} />
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-gray-800 text-gray-500">
             No Poster
@@ -247,13 +249,13 @@ function SwipeCard({
         {/* Yes/No Overlays */}
         <motion.div
           style={{ opacity: rightOpacity }}
-          className="absolute inset-0 bg-red-500/40 z-10 flex items-center justify-center pointer-events-none"
+          className="absolute inset-0 bg-green-500/40 z-10 flex items-center justify-center pointer-events-none"
         >
           <span className="text-white font-black text-4xl border-4 border-white p-2 rounded transform -rotate-12">YES</span>
         </motion.div>
         <motion.div
           style={{ opacity: leftOpacity }}
-          className="absolute inset-0 bg-blue-500/40 z-10 flex items-center justify-center pointer-events-none"
+          className="absolute inset-0 bg-red-500/40 z-10 flex items-center justify-center pointer-events-none"
         >
           <span className="text-white font-black text-4xl border-4 border-white p-2 rounded transform rotate-12">NO</span>
         </motion.div>
@@ -271,14 +273,14 @@ function SwipeCard({
       <div className="absolute top-[520px] w-full flex justify-between px-8 z-10">
         <button
           onClick={() => handleButtonVote(false)}
-          className="w-16 h-16 rounded-full bg-blue-500 hover:bg-blue-600 flex items-center justify-center shadow-lg transition-transform hover:scale-110 active:scale-95"
+          className="w-16 h-16 rounded-full bg-red-500 hover:bg-red-600 flex items-center justify-center shadow-lg transition-transform hover:scale-110 active:scale-95"
           aria-label="Not the tag"
         >
           <X className="w-8 h-8 font-bold" />
         </button>
         <button
           onClick={() => handleButtonVote(true)}
-          className="w-16 h-16 rounded-full bg-red-500 hover:bg-red-600 flex items-center justify-center shadow-lg transition-transform hover:scale-110 active:scale-95"
+          className="w-16 h-16 rounded-full bg-green-500 hover:bg-green-600 flex items-center justify-center shadow-lg transition-transform hover:scale-110 active:scale-95"
           aria-label="Is the tag"
         >
           <Check className="w-8 h-8 font-bold" />
@@ -304,7 +306,7 @@ function StatsBar({ stats }: { stats?: { yes: number, no: number, total: number 
     <div className="w-full h-14 flex rounded-md overflow-hidden text-lg font-bold">
       {stats.no > 0 && (
         <div
-          className="bg-blue-500 h-full flex items-center justify-center text-white transition-all duration-500"
+          className="bg-red-500 h-full flex items-center justify-center text-white transition-all duration-500"
           style={{ width: `${noPercent}%` }}
         >
           {stats.no}
@@ -312,7 +314,7 @@ function StatsBar({ stats }: { stats?: { yes: number, no: number, total: number 
       )}
       {stats.yes > 0 && (
         <div
-          className="bg-red-500 h-full flex items-center justify-center text-white transition-all duration-500"
+          className="bg-green-500 h-full flex items-center justify-center text-white transition-all duration-500"
           style={{ width: `${yesPercent}%` }}
         >
           {stats.yes}
