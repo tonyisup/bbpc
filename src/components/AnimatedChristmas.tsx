@@ -64,10 +64,9 @@ const ChristmasSnow = () => {
             cy="-10"
             r={p.size}
             style={{
-              // @ts-ignore
               '--duration': `${p.duration}s`,
               '--delay': `${p.delay}s`,
-            }}
+            } as React.CSSProperties}
           />
         ))}
       </svg>
