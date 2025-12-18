@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
 
-export default function TagsRootPage() {
+export default async function TagsRootPage() {
   redirect("/tags/christmas");
 }
