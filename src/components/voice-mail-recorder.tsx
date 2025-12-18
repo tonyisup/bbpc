@@ -269,7 +269,7 @@ export default function VoiceMailRecorder({ episodeId, userId }: VoiceMailRecord
           )}
         </div>
         <div>
-          <div className="flex gap-2 mb-2">
+          <div className="flex gap-2 mb-2 flex-wrap">
             <Button variant="outline" size="sm" onClick={() => setNotes("Play during extras")}>Play during extras</Button>
             <Button variant="outline" size="sm" onClick={() => setNotes("Play before assignments")}>Play before assignments</Button>
             <Button variant="outline" size="sm" onClick={() => setNotes("Play after weekends")}>Play after weekends</Button>
