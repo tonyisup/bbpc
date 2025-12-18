@@ -32,10 +32,12 @@
     "@trpc/react-query": "^10.45.1",
     "@trpc/server": "^10.45.1",
     "@types/lodash": "^4.17.16",
+    "@types/uuid": "^10.0.0",
     "@uploadthing/react": "^7.0.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
+    "dotenv": "^17.2.3",
     "lodash": "^4.17.21",
     "lucide-react": "^0.344.0",
     "motion": "^12.6.5",
@@ -58,6 +60,7 @@
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7",
     "uploadthing": "^7.1.0",
+    "uuid": "^13.0.0",
     "zod": "^3.18.0"
   },
   "devDependencies": {
