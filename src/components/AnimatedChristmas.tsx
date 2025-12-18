@@ -26,7 +26,6 @@ const ChristmasSnow = () => {
           <title id="christmas-snow-title">Animated Christmas snow decoration</title>
           <style>
             {`
-              @import url('https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap');
               @keyframes fall {
                 0% { transform: translateY(-20px) translateX(0px); opacity: 0; }
                 10% { opacity: 0.8; }
