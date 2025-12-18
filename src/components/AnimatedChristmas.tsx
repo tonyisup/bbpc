@@ -19,8 +19,11 @@ const ChristmasSnow = () => {
         xmlns="http://www.w3.org/2000/svg"
         className="rounded-lg shadow-xl"
         style={{ backgroundColor: '#1a472a' }}
+        role="img"
+        aria-labelledby="christmas-snow-title"
       >
         <defs>
+          <title id="christmas-snow-title">Animated Christmas snow decoration</title>
           <style>
             {`
               @import url('https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap');
@@ -68,7 +71,7 @@ const ChristmasSnow = () => {
           />
         ))}
       </svg>
-    </div>
+    </div >
   );
 };
 
