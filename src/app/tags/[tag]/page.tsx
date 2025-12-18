@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { api } from "@/trpc/react";
 import { motion, useMotionValue, useTransform, AnimatePresence } from "motion/react";
-import { X, Check } from "lucide-react";
+import { X, Check, LinkIcon } from "lucide-react";
 import { v4 as uuidv4 } from "uuid";
 
 interface Movie {
@@ -13,6 +13,7 @@ interface Movie {
   backdrop_path: string | null;
   overview: string;
   release_date: string;
+  imdb_id?: string | null;
 }
 
 export default function TagPage({ params }: { params: { tag: string } }) {
@@ -134,32 +135,46 @@ export default function TagPage({ params }: { params: { tag: string } }) {
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-gray-950 text-white overflow-hidden p-4">
-      <h1 className="text-3xl font-bold mb-8 capitalize">Is it {params.tag}?</h1>
+      <h1 className="text-3xl font-bold mb-8 capitalize">Is it {params.tag} ?</h1>
 
       <div className="relative w-full max-w-sm h-[600px] flex flex-col items-center">
         <AnimatePresence>
           {movies.map((movie, index) => {
-             // Only render the top 2 cards for performance
-             if (index > 1) return null;
+            // Only render the top 2 cards for performance
+            if (index > 1) return null;
 
-             return (
-               <SwipeCard
-                 key={movie.id}
-                 movie={movie}
-                 index={index}
-                 onVote={handleVote}
-                 isFront={index === 0}
-               />
-             );
+            return (
+              <SwipeCard
+                key={movie.id}
+                movie={movie}
+                index={index}
+                onVote={handleVote}
+                isFront={index === 0}
+              />
+            );
           })}
         </AnimatePresence>
       </div>
 
       {/* Stats Bar */}
       {currentMovie && (
-        <div className="w-full max-w-sm mt-8">
-           <StatsBar stats={stats} />
-           <p className="text-center text-sm text-gray-400 mt-2">{currentMovie.title}</p>
+        <div className="w-full max-w-sm">
+          <p className="text-center text-sm text-gray-400 p-4">
+            {currentMovie.imdb_id ? (
+              <a
+                href={`https://www.imdb.com/title/${currentMovie.imdb_id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-white hover:underline transition-colors"
+              >
+                {currentMovie.title}
+                <LinkIcon className="pl-2w-4 h-4 inline" />
+              </a>
+            ) : (
+              currentMovie.title
+            )}
+          </p>
+          <StatsBar stats={stats} />
         </div>
       )}
     </div>
@@ -194,115 +209,115 @@ function SwipeCard({
   };
 
   const handleButtonVote = (vote: boolean) => {
-      onVote(vote);
+    onVote(vote);
   }
 
   // If it's not the front card, it sits behind
   if (!isFront) {
-     return (
-        <motion.div
-            className="absolute top-0 w-full h-[500px] rounded-xl overflow-hidden shadow-2xl bg-gray-900"
-            style={{
-                scale: 0.95,
-                zIndex: 0,
-                y: 20
-            }}
-        >
-            {movie.poster_path ? (
-                <img src={movie.poster_path} alt={movie.title} className="w-full h-full object-cover" draggable={false} />
-            ) : (
-                <div className="w-full h-full flex items-center justify-center bg-gray-800 text-gray-500">
-                    No Poster
-                </div>
-            )}
-        </motion.div>
-     )
+    return (
+      <motion.div
+        className="absolute top-0 w-full h-[500px] rounded-xl overflow-hidden shadow-2xl bg-gray-900"
+        style={{
+          scale: 0.95,
+          zIndex: 0,
+          y: 20
+        }}
+      >
+        {movie.poster_path ? (
+          <img src={movie.poster_path} alt={movie.title} className="w-full h-full object-cover" draggable={false} />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center bg-gray-800 text-gray-500">
+            No Poster
+          </div>
+        )}
+      </motion.div>
+    )
   }
 
   return (
     <>
-    <motion.div
-      className="absolute top-0 w-full h-[500px] rounded-xl overflow-hidden shadow-2xl bg-gray-900 cursor-grab active:cursor-grabbing"
-      style={{ x, rotate, zIndex: 1 }}
-      drag="x"
-      dragConstraints={{ left: 0, right: 0 }}
-      onDragEnd={handleDragEnd}
-      exit={{ opacity: 0, transition: { duration: 0.2 } }}
-    >
+      <motion.div
+        className="absolute top-0 w-full h-[500px] rounded-xl overflow-hidden shadow-2xl bg-gray-900 cursor-grab active:cursor-grabbing"
+        style={{ x, rotate, zIndex: 1 }}
+        drag="x"
+        dragConstraints={{ left: 0, right: 0 }}
+        onDragEnd={handleDragEnd}
+        exit={{ opacity: 0, transition: { duration: 0.2 } }}
+      >
         {/* Yes/No Overlays */}
         <motion.div
-            style={{ opacity: rightOpacity }}
-            className="absolute inset-0 bg-red-500/40 z-10 flex items-center justify-center pointer-events-none"
+          style={{ opacity: rightOpacity }}
+          className="absolute inset-0 bg-red-500/40 z-10 flex items-center justify-center pointer-events-none"
         >
-            <span className="text-white font-black text-4xl border-4 border-white p-2 rounded transform -rotate-12">YES</span>
+          <span className="text-white font-black text-4xl border-4 border-white p-2 rounded transform -rotate-12">YES</span>
         </motion.div>
         <motion.div
-            style={{ opacity: leftOpacity }}
-            className="absolute inset-0 bg-blue-500/40 z-10 flex items-center justify-center pointer-events-none"
+          style={{ opacity: leftOpacity }}
+          className="absolute inset-0 bg-blue-500/40 z-10 flex items-center justify-center pointer-events-none"
         >
-            <span className="text-white font-black text-4xl border-4 border-white p-2 rounded transform rotate-12">NO</span>
+          <span className="text-white font-black text-4xl border-4 border-white p-2 rounded transform rotate-12">NO</span>
         </motion.div>
 
         {movie.poster_path ? (
-            <img src={movie.poster_path} alt={movie.title} className="w-full h-full object-cover pointer-events-none" />
+          <img src={movie.poster_path} alt={movie.title} className="w-full h-full object-cover pointer-events-none" />
         ) : (
-            <div className="w-full h-full flex items-center justify-center bg-gray-800 text-gray-500">
-                No Poster
-            </div>
+          <div className="w-full h-full flex items-center justify-center bg-gray-800 text-gray-500">
+            No Poster
+          </div>
         )}
-    </motion.div>
+      </motion.div>
 
-    {/* Buttons for non-swipe interaction - placed outside the card but logically coupled */}
-    <div className="absolute top-[520px] w-full flex justify-between px-8 z-10">
+      {/* Buttons for non-swipe interaction - placed outside the card but logically coupled */}
+      <div className="absolute top-[520px] w-full flex justify-between px-8 z-10">
         <button
-            onClick={() => handleButtonVote(false)}
-            className="w-16 h-16 rounded-full bg-blue-500 hover:bg-blue-600 flex items-center justify-center shadow-lg transition-transform hover:scale-110 active:scale-95"
-            aria-label="Not the tag"
+          onClick={() => handleButtonVote(false)}
+          className="w-16 h-16 rounded-full bg-blue-500 hover:bg-blue-600 flex items-center justify-center shadow-lg transition-transform hover:scale-110 active:scale-95"
+          aria-label="Not the tag"
         >
-            <X className="w-8 h-8 font-bold" />
+          <X className="w-8 h-8 font-bold" />
         </button>
         <button
-            onClick={() => handleButtonVote(true)}
-            className="w-16 h-16 rounded-full bg-red-500 hover:bg-red-600 flex items-center justify-center shadow-lg transition-transform hover:scale-110 active:scale-95"
-            aria-label="Is the tag"
+          onClick={() => handleButtonVote(true)}
+          className="w-16 h-16 rounded-full bg-red-500 hover:bg-red-600 flex items-center justify-center shadow-lg transition-transform hover:scale-110 active:scale-95"
+          aria-label="Is the tag"
         >
-            <Check className="w-8 h-8 font-bold" />
+          <Check className="w-8 h-8 font-bold" />
         </button>
-    </div>
+      </div>
     </>
   );
 }
 
 function StatsBar({ stats }: { stats?: { yes: number, no: number, total: number } }) {
-    if (!stats || stats.total === 0) {
-        return (
-            <div className="w-full h-12 bg-gray-800 rounded-md flex items-center justify-center text-gray-400">
-                No votes yet
-            </div>
-        )
-    }
-
-    const yesPercent = (stats.yes / stats.total) * 100;
-    const noPercent = (stats.no / stats.total) * 100;
-
+  if (!stats || stats.total === 0) {
     return (
-        <div className="w-full h-14 flex rounded-md overflow-hidden text-lg font-bold">
-            {stats.no > 0 && (
-                <div
-                    className="bg-blue-500 h-full flex items-center justify-center text-white transition-all duration-500"
-                    style={{ width: `${noPercent}%` }}
-                >
-                    {stats.no}
-                </div>
-            )}
-            {stats.yes > 0 && (
-                <div
-                    className="bg-red-500 h-full flex items-center justify-center text-white transition-all duration-500"
-                    style={{ width: `${yesPercent}%` }}
-                >
-                    {stats.yes}
-                </div>
-            )}
-        </div>
+      <div className="w-full h-12 bg-gray-800 rounded-md flex items-center justify-center text-gray-400">
+        No votes yet
+      </div>
     )
+  }
+
+  const yesPercent = (stats.yes / stats.total) * 100;
+  const noPercent = (stats.no / stats.total) * 100;
+
+  return (
+    <div className="w-full h-14 flex rounded-md overflow-hidden text-lg font-bold">
+      {stats.no > 0 && (
+        <div
+          className="bg-blue-500 h-full flex items-center justify-center text-white transition-all duration-500"
+          style={{ width: `${noPercent}%` }}
+        >
+          {stats.no}
+        </div>
+      )}
+      {stats.yes > 0 && (
+        <div
+          className="bg-red-500 h-full flex items-center justify-center text-white transition-all duration-500"
+          style={{ width: `${yesPercent}%` }}
+        >
+          {stats.yes}
+        </div>
+      )}
+    </div>
+  )
 }

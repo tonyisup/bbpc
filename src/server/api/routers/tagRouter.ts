@@ -69,21 +69,29 @@ export const tagRouter = createTRPCRouter({
       if (totalPages > 1) {
         const randomPage = Math.floor(Math.random() * totalPages) + 1;
         if (randomPage !== 1) {
-           const randomPageResp = await fetch(`${discoverUrlBase}&page=${randomPage}`);
-           const randomPageData = (await randomPageResp.json()) as DiscoverMovieResponse;
-           movies = randomPageData.results;
+          const randomPageResp = await fetch(`${discoverUrlBase}&page=${randomPage}`);
+          const randomPageData = (await randomPageResp.json()) as DiscoverMovieResponse;
+          movies = randomPageData.results;
         }
       }
 
-      // Process image URLs
-      const processedMovies = movies.map((movie) => ({
-        ...movie,
-        poster_path: movie.poster_path
-          ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
-          : null,
-        backdrop_path: movie.backdrop_path
+      // Process image URLs and fetch IMDB IDs
+      const processedMovies = await Promise.all(movies.map(async (movie) => {
+        // Fetch details to get imdb_id
+        const detailsUrl = `${TMDB_API_BASE}/movie/${movie.id}?api_key=${process.env.TMDB_API_KEY}`;
+        const detailsResp = await fetch(detailsUrl);
+        const detailsData = await detailsResp.json();
+
+        return {
+          ...movie,
+          imdb_id: detailsData.imdb_id as string | null,
+          poster_path: movie.poster_path
+            ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
+            : null,
+          backdrop_path: movie.backdrop_path
             ? `https://image.tmdb.org/t/p/w1280${movie.backdrop_path}`
             : null,
+        };
       }));
 
       // Shuffle the results on the server side as well for good measure
