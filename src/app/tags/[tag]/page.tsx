@@ -172,7 +172,7 @@ export default async function TagPage({ params }: { params: Promise<{ tag: strin
                 className="hover:text-white hover:underline transition-colors"
               >
                 {currentMovie.title}
-                <LinkIcon className="pl-2w-4 h-4 inline" />
+                <LinkIcon className="pl-2 w-4 h-4 inline" />
               </a>
             ) : (
               currentMovie.title
