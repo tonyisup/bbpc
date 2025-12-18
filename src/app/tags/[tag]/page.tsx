@@ -72,7 +72,7 @@ export default async function TagPage({ params }: { params: Promise<{ tag: strin
         setMovies((prev) => [...prev, ...newMovies]);
       }
     }
-  }, [movieData, votedMovieIds]);
+  }, [movieData, votedMovieIds, movies]);
 
   const handleVote = async (isTag: boolean) => {
     const currentMovie = movies[currentIndex];
