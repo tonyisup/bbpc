@@ -122,6 +122,7 @@ export default async function TagPage({ params }: { params: Promise<{ tag: strin
         <h2 className="text-2xl font-bold mb-4">No more movies to vote on!</h2>
         <p className="mb-8">You've gone through all the movies we found for "{tag}".</p>
         <button
+          type="button"
           onClick={() => {
             setVotedMovieIds([]);
             localStorage.removeItem(`voted_movies_${tag}`);
