@@ -20,6 +20,11 @@ export const calculateUserPoints = async (
   userEmail: string,
   seasonId?: string | null | undefined
 ) => {
+  if (!userEmail) {
+    console.error("calculateUserPoints: called with empty or null userEmail");
+    throw new Error("User email is required to calculate points");
+  }
+
   let seasonIdToUse = seasonId;
   if (!seasonIdToUse) {
     seasonIdToUse = await getCurrentSeasonID(prisma);
@@ -28,8 +33,10 @@ export const calculateUserPoints = async (
   const user = await prisma.user.findFirst({
     where: { email: userEmail },
   });
+
   if (!user) {
-    throw new Error("User not found for email " + userEmail);
+    console.warn(`calculateUserPoints: User not found for email ${userEmail}`);
+    throw new Error(`User not found for email ${userEmail}`);
   }
 
   const adjustmentResult = await prisma.point.aggregate({

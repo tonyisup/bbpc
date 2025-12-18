@@ -14,7 +14,7 @@ import PointHistory from "@/components/PointHistory";
 export default async function ProfilePage() {
   const session = await getServerAuthSession();
 
-  if (!session || !session.user) {
+  if (!session || !session.user || !session.user.email) {
     redirect("/api/auth/signin");
   }
 
@@ -42,7 +42,16 @@ export default async function ProfilePage() {
   });
 
   if (!user) {
-    redirect("/api/auth/signin");
+    console.warn(`ProfilePage: User not found for email ${session.user.email}`);
+    return (
+      <div className="container flex flex-col items-center justify-center min-h-[50vh] px-4 py-16">
+        <h1 className="text-2xl font-bold">User Not Found</h1>
+        <p className="mt-4 text-muted-foreground">We couldn't find your profile information. Please try signing in again.</p>
+        <div className="mt-8">
+          <SignOutButton />
+        </div>
+      </div>
+    );
   }
 
   // Fetch the user's point history separately with targeted selects
@@ -142,12 +151,12 @@ export default async function ProfilePage() {
 
   const syllabusCount = await db.syllabus.count({
     where: {
-      userId: user?.id,
+      userId: user.id,
       assignmentId: null
     }
   });
 
-  const points = await calculateUserPoints(db, user?.email ?? '', undefined);
+  const points = await calculateUserPoints(db, user.email ?? "", undefined);
 
   return (
     <div className="container flex flex-col items-start justify-center gap-12 px-4 py-16">
@@ -161,7 +170,7 @@ export default async function ProfilePage() {
         <h2 className="text-xl font-bold tracking-tight self-start">My Syllabus</h2>
         <div className="flex gap-4 w-full items-center">
           <Link href="/syllabus"><Pencil className="w-4 h-4" /></Link>
-          <SyllabusPreview count={syllabusCount} syllabus={user?.syllabus ?? []} />
+          <SyllabusPreview count={syllabusCount} syllabus={user.syllabus} />
         </div>
       </div>
       <div className="flex flex-col gap-4 w-full justify-center items-center">
