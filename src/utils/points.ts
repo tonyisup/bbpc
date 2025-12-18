@@ -5,6 +5,16 @@ type PrismaTransactionClient = Omit<
   "$connect" | "$disconnect" | "$on" | "$transaction" | "$extends"
 >;
 
+export const getCurrentSeasonID = async (prisma: PrismaTransactionClient): Promise<string> => {
+  const season = await prisma.season.findFirst({
+    orderBy: {
+      startedOn: 'desc',
+    },
+    where: { endedOn: null }
+  });
+  return season?.id ?? '';
+};
+
 export const calculateUserPoints = async (
   prisma: PrismaTransactionClient,
   userEmail: string,
@@ -12,13 +22,7 @@ export const calculateUserPoints = async (
 ) => {
   let seasonIdToUse = seasonId;
   if (!seasonIdToUse) {
-    const season = await prisma.season.findFirst({
-      orderBy: {
-        startedOn: 'desc',
-      },
-      where: { endedOn: null }
-    });
-    seasonIdToUse = season?.id ?? '';
+    seasonIdToUse = await getCurrentSeasonID(prisma);
   }
 
   const user = await prisma.user.findFirst({
@@ -49,14 +53,4 @@ and [a].[seasonid] = ${seasonIdToUse}
 
   return (pointsResult[0]?.sum ?? 0)
     + (adjustmentResult._sum.adjustment ?? 0);
-};
-
-export const getCurrentSeasonID = async (prisma: PrismaTransactionClient) => {
-  const season = await prisma.season.findFirst({
-    orderBy: {
-      startedOn: 'desc',
-    },
-    where: { endedOn: null }
-  });
-  return season?.id ?? '';
 };

@@ -18,7 +18,6 @@ export default async function ProfilePage() {
     redirect("/api/auth/signin");
   }
 
-  console.log(session.user);
   // Fetch the user's data including points
   const user = await db.user.findFirst({
     where: { email: session.user.email },

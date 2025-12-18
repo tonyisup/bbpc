@@ -1,32 +1,19 @@
 import { PrismaClient } from "@prisma/client";
 import { PrismaMssql } from "@prisma/adapter-mssql";
 
+import { parseDbUrl } from "./db/parse-db-url";
+
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };
 
-const dbUrl = process.env.DATABASE_URL // sqlserver://bbpc.database.windows.net;database=dev;user=bbpc-login;password=_S?A17Dv.-4(ZG>b;encrypt=true
+const dbUrl = process.env.DATABASE_URL;
 if (!dbUrl) {
   throw new Error("DATABASE_URL is not defined");
 }
-/* parse dbUrl */
 
-const dbUser = dbUrl.split(";")[2]?.split("=")[1]
-if (!dbUser) {
-  throw new Error("DB User is not defined");
-}
-const dbPassword = dbUrl.split(";")[3]?.split("=")[1]
-if (!dbPassword) {
-  throw new Error("DB Password is not defined");
-}
-const dbName = dbUrl.split(";")[1]?.split("=")[1]
-if (!dbName) {
-  throw new Error("DB Name is not defined");
-}
-const dbHost = dbUrl.split(";")[0]?.split("://")[1]
-if (!dbHost) {
-  throw new Error("DB Host is not defined");
-}
+const { dbUser, dbPassword, dbHost, dbName } = parseDbUrl(dbUrl);
+
 
 async function createPrismaClient() {
   const sqlConfig = {
