@@ -314,3 +314,12 @@ model GamePointType {
   GameType    GameType @relation(fields: [gameTypeId], references: [id], onDelete: Cascade)
   Point       Point[]
 }
+
+model TagVote {
+  id        String   @id @default(dbgenerated("newid()")) @db.UniqueIdentifier
+  tag       String
+  tmdbId    Int
+  isTag     Boolean
+  createdAt DateTime @default(now())
+  sessionId String?
+}

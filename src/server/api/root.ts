@@ -6,8 +6,10 @@ import { Decimal } from "@prisma/client/runtime/client";
 import { showRouter } from "./routers/showRouter";
 import { uploadInfoRouter } from "./routers/uploadInfo";
 import { calculateUserPoints } from "@/utils/points";
+import { tagRouter } from "./routers/tagRouter";
 
 export const appRouter = createTRPCRouter({
+  tag: tagRouter,
   uploadInfo: uploadInfoRouter,
   episode: createTRPCRouter({
     next: publicProcedure.query(async ({ ctx }) => {
