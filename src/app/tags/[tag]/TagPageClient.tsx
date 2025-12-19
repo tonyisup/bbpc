@@ -3,10 +3,12 @@
 import { useEffect, useState } from "react";
 import { api } from "@/trpc/react";
 import { motion, useMotionValue, useTransform, AnimatePresence, PanInfo } from "motion/react";
-import { X, Check, LinkIcon, RefreshCwIcon, PlusCircle, CheckCircle } from "lucide-react";
+import { X, Check, LinkIcon, RefreshCwIcon, PlusCircle, CheckCircle, Info } from "lucide-react";
 import { v4 as uuidv4 } from "uuid";
 import ChristmasSnow from "@/components/AnimatedChristmas";
 import { useSession } from "next-auth/react";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 interface Movie {
   id: number;
@@ -235,8 +237,35 @@ export function TagPageClient({ tag }: { tag: string }) {
 
   return (
     <div className="flex min-h-screen flex-col items-center text-white overflow-hidden p-4">
-      {tag === "christmas" && <div className="mb-8"><h1 className="text-3xl text-center font-bold capitalize">Is it?</h1><ChristmasSnow /></div>}
-      {tag !== "christmas" && <h1 className="text-3xl font-bold mb-8 capitalize">Is it {tag} ?</h1>}
+      {tag === "christmas" && <div className="mb-8">
+        <span className="flex items-center justify-center gap-2">
+          <span className="text-3xl text-center font-bold capitalize">Is it?</span>
+          <Link href={`/tags/${tag}/stats`}>
+            <Button
+
+              variant="ghost"
+              aria-label="View Stats"
+              title="View Stats"
+            >
+              <Info />
+            </Button>
+          </Link>
+        </span>
+        <ChristmasSnow />
+      </div>}
+      {tag !== "christmas" && <span className="flex items-center justify-center gap-2">
+        <span className="text-3xl text-center font-bold capitalize">Is it {tag}?</span>
+        <Link href={`/tags/${tag}/stats`}>
+          <Button
+
+            variant="ghost"
+            aria-label="View Stats"
+            title="View Stats"
+          >
+            <Info />
+          </Button>
+        </Link>
+      </span>}
 
       <div className="relative w-full max-w-sm h-[600px] flex flex-col items-center">
         <AnimatePresence>
