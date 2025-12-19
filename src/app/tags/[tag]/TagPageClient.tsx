@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { api } from "@/trpc/react";
 import { motion, useMotionValue, useTransform, AnimatePresence, PanInfo } from "motion/react";
-import { X, Check, LinkIcon, RefreshCwIcon, PlusCircle, CheckCircle, Info } from "lucide-react";
+import { X, Check, LinkIcon, RefreshCwIcon, PlusCircle, CheckCircle, Info, Share2 } from "lucide-react";
 import { v4 as uuidv4 } from "uuid";
 import ChristmasSnow from "@/components/AnimatedChristmas";
 import { useSession } from "next-auth/react";
@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { signIn } from "next-auth/react";
 import { toast } from "sonner";
+import { useSearchParams } from "next/navigation";
 
 interface Movie {
   id: number;
@@ -31,6 +32,9 @@ export function TagPageClient({ tag }: { tag: string }) {
   const [totalPages, setTotalPages] = useState(1);
   const [hasFetchedOnce, setHasFetchedOnce] = useState(false);
 
+  const searchParams = useSearchParams();
+  const sharedMovieId = searchParams.get("movieId") ? parseInt(searchParams.get("movieId")!, 10) : undefined;
+
   // Initialize page from localStorage
   useEffect(() => {
     const storedPage = localStorage.getItem(`tag_page_${tag}`);
@@ -49,7 +53,11 @@ export function TagPageClient({ tag }: { tag: string }) {
 
   // Queries
   const { data: movieData, isLoading, refetch: refetchMovies } = api.tag.getMoviesForTag.useQuery(
-    { tag: tag, page: currentPage },
+    {
+      tag: tag,
+      page: currentPage,
+      movieId: sharedMovieId,
+    },
     {
       refetchOnWindowFocus: false,
       refetchOnMount: 'always', // Always fetch fresh data on mount
@@ -118,18 +126,39 @@ export function TagPageClient({ tag }: { tag: string }) {
         }
       }
 
+      // Filter out movies that have been voted on, but ALLOW the shared movie even if voted
       const newMovies = movieData.movies.filter(
-        (m) => !votedMovieIds.includes(m.id) && !movies.find((existing) => existing.id === m.id)
+        (m) => {
+          // If this is the shared movie, allow it even if in votedMovieIds
+          if (sharedMovieId && m.id === sharedMovieId) return true;
+
+          return !votedMovieIds.includes(m.id) && !movies.find((existing) => existing.id === m.id);
+        }
       );
 
-      if (newMovies.length > 0) {
-        setMovies((prev) => [...prev, ...newMovies]);
+      // Also deduplicate against existing state movies, but be careful not to remove the shared one if it's new
+      const uniqueNewMovies = newMovies.filter(m => !movies.find(existing => existing.id === m.id));
+
+      if (uniqueNewMovies.length > 0) {
+        setMovies((prev) => [...prev, ...uniqueNewMovies]);
       } else if (movieData.pagination && currentPage < movieData.pagination.totalPages) {
         // No new movies on this page, advance to next page
         setCurrentPage((prev) => prev + 1);
       }
     }
-  }, [movieData, votedMovieIds, movies, currentPage, tag]);
+  }, [movieData, votedMovieIds, movies, currentPage, tag, sharedMovieId]);
+
+  const handleShare = async () => {
+    if (!currentMovie) return;
+    const url = `${window.location.origin}/tags/${tag}?movieId=${currentMovie.id}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      toast.success("Link copied to clipboard!");
+    } catch (err) {
+      console.error("Failed to copy link:", err);
+      toast.error("Failed to copy link");
+    }
+  };
 
   const handleAddToSyllabus = async () => {
     const user = session?.user;
@@ -417,8 +446,17 @@ export function TagPageClient({ tag }: { tag: string }) {
             </button>
           )}
 
-          <div className="w-full mt-2">
+          <div className="w-full mt-2 flex items-center gap-2">
             <StatsBar stats={stats} />
+             <Button
+              variant="outline"
+              size="icon"
+              onClick={handleShare}
+              title="Share this movie"
+              className="shrink-0"
+            >
+              <Share2 className="h-4 w-4" />
+            </Button>
           </div>
         </div>
       )}

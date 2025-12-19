@@ -31,7 +31,11 @@ const TMDB_API_BASE = "https://api.themoviedb.org/3";
 
 export const tagRouter = createTRPCRouter({
   getMoviesForTag: publicProcedure
-    .input(z.object({ tag: z.string(), page: z.number().min(1).default(1) }))
+    .input(z.object({
+      tag: z.string(),
+      page: z.number().min(1).default(1),
+      movieId: z.number().optional(),
+    }))
     .query(async ({ ctx, input }) => {
       if (!process.env.TMDB_API_KEY) {
         throw new Error("TMDB_API_KEY is not set");
@@ -152,9 +156,39 @@ export const tagRouter = createTRPCRouter({
 
       // Shuffle the results on the server side as well for good measure
       // Filter out nulls and force type
-      const shuffled = processedMovies
+      let shuffled = processedMovies
         .filter((m): m is NonNullable<typeof m> => m !== null)
         .sort(() => 0.5 - Math.random());
+
+      // If a specific movie is requested, fetch and prepend it
+      if (input.movieId) {
+        // Remove it if it's already in the list to avoid duplicates
+        shuffled = shuffled.filter((m) => m.id !== input.movieId);
+
+        try {
+          const specificMovieUrl = `${TMDB_API_BASE}/movie/${input.movieId}?api_key=${process.env.TMDB_API_KEY}`;
+          const specificMovieResp = await fetch(specificMovieUrl);
+          if (specificMovieResp.ok) {
+            const specificMovieData = await specificMovieResp.json();
+            const specificMovie = {
+              id: specificMovieData.id,
+              title: specificMovieData.title as string,
+              poster_path: specificMovieData.poster_path
+                ? `https://image.tmdb.org/t/p/w500${specificMovieData.poster_path}`
+                : null,
+              backdrop_path: specificMovieData.backdrop_path
+                ? `https://image.tmdb.org/t/p/w1280${specificMovieData.backdrop_path}`
+                : null,
+              overview: specificMovieData.overview as string,
+              release_date: specificMovieData.release_date as string,
+              imdb_id: specificMovieData.imdb_id as string | null | undefined,
+            };
+            shuffled.unshift(specificMovie);
+          }
+        } catch (e) {
+          console.error(`Failed to fetch specific movie ${input.movieId}`, e);
+        }
+      }
 
       return {
         tag: input.tag,
