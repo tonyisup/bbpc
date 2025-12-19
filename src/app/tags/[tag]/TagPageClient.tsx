@@ -487,6 +487,8 @@ export function TagPageClient({ tag }: { tag: string }) {
                     const params = new URLSearchParams(searchParams.toString());
                     params.delete("movieId");
                     router.replace(`${pathname}${params.toString() ? `?${params.toString()}` : ""}`, { scroll: false });
+                    // Fetch more movies
+                    refetchMovies();
                   }}
                   className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-full text-white text-sm font-medium transition-colors"
                 >
