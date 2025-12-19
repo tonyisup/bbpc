@@ -35,6 +35,8 @@ export function TagPageClient({ tag }: { tag: string }) {
   const [hasVotedOnSharedMovie, setHasVotedOnSharedMovie] = useState(false);
   const [sharedMovieWasAlreadyVoted, setSharedMovieWasAlreadyVoted] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [salt, setSalt] = useState(0);
+  const [ignoreSharedMovie, setIgnoreSharedMovie] = useState(false);
 
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -62,7 +64,8 @@ export function TagPageClient({ tag }: { tag: string }) {
     {
       tag: tag,
       page: currentPage,
-      movieId: sharedMovieId,
+      movieId: ignoreSharedMovie ? undefined : sharedMovieId,
+      salt: salt,
     },
     {
       refetchOnWindowFocus: false,
@@ -485,6 +488,8 @@ export function TagPageClient({ tag }: { tag: string }) {
                     // Mark as voted in this session and move to next
                     setHasVotedOnSharedMovie(true);
                     setIsTransitioning(true);
+                    setIgnoreSharedMovie(true);
+                    setSalt(s => s + 1);
                     setMovies((prev) => prev.slice(1));
                     // Clear the movieId from URL
                     const params = new URLSearchParams(searchParams.toString());
