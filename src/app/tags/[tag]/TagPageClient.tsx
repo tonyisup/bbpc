@@ -31,6 +31,7 @@ export function TagPageClient({ tag }: { tag: string }) {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [hasFetchedOnce, setHasFetchedOnce] = useState(false);
+  const [sharedMovieLoaded, setSharedMovieLoaded] = useState(false);
 
   const searchParams = useSearchParams();
   const sharedMovieId = searchParams.get("movieId") ? parseInt(searchParams.get("movieId")!, 10) : undefined;
@@ -140,6 +141,17 @@ export function TagPageClient({ tag }: { tag: string }) {
       // Also deduplicate against existing state movies, but be careful not to remove the shared one if it's new
       const uniqueNewMovies = newMovies.filter(m => !movies.find(existing => existing.id === m.id));
 
+      // Check if we received the shared movie in this response
+      // Mark as loaded either way after first fetch to avoid infinite loading
+      if (sharedMovieId && !sharedMovieLoaded) {
+        const foundSharedMovie = movieData.movies.some(m => m.id === sharedMovieId);
+        // Mark as loaded regardless - we either found it or the API didn't return it
+        setSharedMovieLoaded(true);
+        if (!foundSharedMovie) {
+          console.warn(`Shared movie ID ${sharedMovieId} was not returned by the API`);
+        }
+      }
+
       if (uniqueNewMovies.length > 0) {
         // If there's a shared movie, ensure it goes to the front
         if (sharedMovieId) {
@@ -164,7 +176,7 @@ export function TagPageClient({ tag }: { tag: string }) {
         setCurrentPage((prev) => prev + 1);
       }
     }
-  }, [movieData, votedMovieIds, movies, currentPage, tag, sharedMovieId]);
+  }, [movieData, votedMovieIds, movies, currentPage, tag, sharedMovieId, sharedMovieLoaded]);
 
   const handleShare = async () => {
     if (!currentMovie) return;
@@ -328,8 +340,11 @@ export function TagPageClient({ tag }: { tag: string }) {
 
   // const currentMovie = movies[0]; // Moved up
 
-  // Show loading if we haven't fetched yet, are currently loading, or we're fetching more movies from another page
-  if (!currentMovie && (isLoading || !hasFetchedOnce || currentPage < totalPages)) {
+  // Check if we're still waiting for a shared movie to be fetched
+  const isWaitingForSharedMovie = sharedMovieId && !sharedMovieLoaded && (isLoading || !hasFetchedOnce);
+
+  // Show loading if we haven't fetched yet, are currently loading, are fetching more movies, or waiting for a shared movie
+  if (!currentMovie && (isLoading || !hasFetchedOnce || currentPage < totalPages || isWaitingForSharedMovie)) {
     return (
       <div className="flex min-h-screen items-center justify-center text-white">
         <div className="animate-pulse">{hasFetchedOnce ? "Loading more movies..." : `Loading movies for "${tag}"...`}</div>
@@ -337,7 +352,15 @@ export function TagPageClient({ tag }: { tag: string }) {
     );
   }
 
-  if (!currentMovie && !isLoading && hasFetchedOnce && currentPage >= totalPages) {
+  // Only show "no more movies" if:
+  // - No current movie
+  // - Not loading
+  // - We've fetched at least once
+  // - We've exhausted all pages
+  // - AND if there was a sharedMovieId, it must be marked as loaded (even if not found)
+  const canShowNoMovies = !sharedMovieId || sharedMovieLoaded;
+
+  if (!currentMovie && !isLoading && hasFetchedOnce && currentPage >= totalPages && canShowNoMovies) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center text-white p-4 text-center">
         <h2 className="text-2xl font-bold mb-4">No more movies to vote on!</h2>
