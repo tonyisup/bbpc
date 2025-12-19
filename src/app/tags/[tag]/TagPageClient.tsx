@@ -32,6 +32,7 @@ export function TagPageClient({ tag }: { tag: string }) {
   const [totalPages, setTotalPages] = useState(1);
   const [hasFetchedOnce, setHasFetchedOnce] = useState(false);
   const [sharedMovieLoaded, setSharedMovieLoaded] = useState(false);
+  const [hasVotedOnSharedMovie, setHasVotedOnSharedMovie] = useState(false);
 
   const searchParams = useSearchParams();
   const sharedMovieId = searchParams.get("movieId") ? parseInt(searchParams.get("movieId")!, 10) : undefined;
@@ -134,11 +135,13 @@ export function TagPageClient({ tag }: { tag: string }) {
         }
       }
 
-      // Filter out movies that have been voted on, but ALLOW the shared movie even if voted
+      // Filter out movies that have been voted on, but ALLOW the shared movie if not voted on this session
       const newMovies = movieData.movies.filter(
         (m) => {
-          // If this is the shared movie, allow it even if in votedMovieIds
-          if (sharedMovieId && m.id === sharedMovieId) return true;
+          // If this is the shared movie, allow it only if we haven't voted on it this session
+          if (sharedMovieId && m.id === sharedMovieId) {
+            return !hasVotedOnSharedMovie;
+          }
 
           return !votedMovieIds.includes(m.id) && !movies.find((existing) => existing.id === m.id);
         }
@@ -182,7 +185,7 @@ export function TagPageClient({ tag }: { tag: string }) {
         setCurrentPage((prev) => prev + 1);
       }
     }
-  }, [movieData, votedMovieIds, movies, currentPage, tag, sharedMovieId, sharedMovieLoaded]);
+  }, [movieData, votedMovieIds, movies, currentPage, tag, sharedMovieId, sharedMovieLoaded, hasVotedOnSharedMovie]);
 
   const handleShare = async () => {
     if (!currentMovie) return;
@@ -315,6 +318,18 @@ export function TagPageClient({ tag }: { tag: string }) {
 
   const handleVote = async (isTag: boolean | null) => {
     if (!currentMovie) return;
+
+    // Prevent duplicate votes on the same movie
+    if (votedMovieIds.includes(currentMovie.id)) {
+      console.warn(`Already voted on movie ${currentMovie.id}, skipping`);
+      setMovies((prev) => prev.slice(1));
+      return;
+    }
+
+    // If voting on the shared movie, mark it so it won't be re-added
+    if (sharedMovieId && currentMovie.id === sharedMovieId) {
+      setHasVotedOnSharedMovie(true);
+    }
 
     // Optimistic UI update: move to next card immediately
     // In a real tinder-style, we remove the card.
