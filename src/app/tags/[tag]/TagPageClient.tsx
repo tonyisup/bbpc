@@ -178,7 +178,7 @@ export function TagPageClient({ tag }: { tag: string }) {
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-gray-950 text-white overflow-hidden p-4">
+    <div className="flex min-h-screen flex-col items-center text-white overflow-hidden p-4">
       {tag === "christmas" && <div className="mb-8"><h1 className="text-3xl text-center font-bold capitalize">Is it?</h1><ChristmasSnow /></div>}
       {tag !== "christmas" && <h1 className="text-3xl font-bold mb-8 capitalize">Is it {tag} ?</h1>}
 
