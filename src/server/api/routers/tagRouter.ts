@@ -103,8 +103,10 @@ export const tagRouter = createTRPCRouter({
       const interleaved: typeof highMovies = [];
       const maxLen = Math.max(highMovies.length, lowMovies.length);
       for (let i = 0; i < maxLen; i++) {
-        if (i < highMovies.length) interleaved.push(highMovies[i]);
-        if (i < lowMovies.length) interleaved.push(lowMovies[i]);
+        const highMovie = highMovies[i];
+        const lowMovie = lowMovies[i];
+        if (highMovie) interleaved.push(highMovie);
+        if (lowMovie) interleaved.push(lowMovie);
       }
 
       // Remove duplicates (same movie might appear in both lists)
