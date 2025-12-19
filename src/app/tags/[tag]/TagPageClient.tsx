@@ -180,6 +180,7 @@ export function TagPageClient({ tag }: { tag: string }) {
         year: year,
         poster: currentMovie.poster_path ?? "", // Fallback if null, schema might require string
         url: url,
+        tmdbId: currentMovie.id,
       });
 
       // 2. Add to Syllabus
@@ -242,6 +243,7 @@ export function TagPageClient({ tag }: { tag: string }) {
                   year: year,
                   poster: pendingMovie.poster_path ?? "",
                   url: url,
+                  tmdbId: pendingMovie.id,
                 });
 
                 await addToSyllabus.mutateAsync({
@@ -448,7 +450,7 @@ export function TagPageClient({ tag }: { tag: string }) {
 
           <div className="w-full mt-2 flex items-center gap-2">
             <StatsBar stats={stats} />
-             <Button
+            <Button
               variant="outline"
               size="icon"
               onClick={handleShare}
