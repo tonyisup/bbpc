@@ -62,7 +62,8 @@ export function TagPageClient({ tag }: { tag: string }) {
       refetchOnWindowFocus: false,
       refetchOnMount: 'always', // Always fetch fresh data on mount
       staleTime: 0, // Consider data stale immediately to ensure fresh fetches
-      enabled: movies.length < 3, // Refetch when we're running low
+      // Always enable when there's a shared movie ID, otherwise only when running low on movies
+      enabled: !!sharedMovieId || movies.length < 3,
     }
   );
 
@@ -140,7 +141,24 @@ export function TagPageClient({ tag }: { tag: string }) {
       const uniqueNewMovies = newMovies.filter(m => !movies.find(existing => existing.id === m.id));
 
       if (uniqueNewMovies.length > 0) {
-        setMovies((prev) => [...prev, ...uniqueNewMovies]);
+        // If there's a shared movie, ensure it goes to the front
+        if (sharedMovieId) {
+          const sharedMovie = uniqueNewMovies.find(m => m.id === sharedMovieId);
+          const otherMovies = uniqueNewMovies.filter(m => m.id !== sharedMovieId);
+
+          if (sharedMovie) {
+            // Prepend shared movie, then append others
+            setMovies((prev) => {
+              // Remove the shared movie if it somehow got in already at wrong position
+              const withoutShared = prev.filter(m => m.id !== sharedMovieId);
+              return [sharedMovie, ...withoutShared, ...otherMovies];
+            });
+          } else {
+            setMovies((prev) => [...prev, ...uniqueNewMovies]);
+          }
+        } else {
+          setMovies((prev) => [...prev, ...uniqueNewMovies]);
+        }
       } else if (movieData.pagination && currentPage < movieData.pagination.totalPages) {
         // No new movies on this page, advance to next page
         setCurrentPage((prev) => prev + 1);
