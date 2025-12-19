@@ -429,6 +429,7 @@ export function TagPageClient({ tag }: { tag: string }) {
 
             return (
               <SwipeCard
+                tag={tag}
                 key={movie.id}
                 movie={movie}
                 index={index}
@@ -514,12 +515,14 @@ export function TagPageClient({ tag }: { tag: string }) {
 }
 
 function SwipeCard({
+  tag,
   movie,
   index,
   onVote,
   isFront,
   onPassAndRefresh,
 }: {
+  tag: string,
   movie: Movie,
   index: number,
   onVote: (vote: boolean) => void,
@@ -611,7 +614,8 @@ function SwipeCard({
           type="button"
           onClick={() => handleButtonVote(false)}
           className="w-8 h-8 sm:w-12 sm:h-12 md:w-14 md:h-14 aspect-square shrink-0 rounded-full bg-red-500 hover:bg-red-600 flex items-center justify-center shadow-lg transition-transform hover:scale-110 active:scale-95"
-          aria-label="Not the tag"
+          aria-label={`Is NOT ${tag}`}
+          title={`Is NOT ${tag}`}
         >
           <X className="w-6 h-6 sm:w-8 sm:h-8 font-bold" />
         </button>
@@ -620,6 +624,7 @@ function SwipeCard({
           onClick={() => onPassAndRefresh()}
           className="w-8 h-8 sm:w-12 sm:h-12 md:w-14 md:h-14 aspect-square shrink-0 rounded-full bg-blue-500 hover:bg-blue-600 flex items-center justify-center shadow-lg transition-transform hover:scale-110 active:scale-95"
           aria-label="Pass and refresh"
+          title="Pass and refresh"
         >
           <RefreshCwIcon className="w-6 h-6 sm:w-8 sm:h-8 font-bold" />
         </button>
@@ -627,7 +632,8 @@ function SwipeCard({
           type="button"
           onClick={() => handleButtonVote(true)}
           className="w-8 h-8 sm:w-12 sm:h-12 md:w-14 md:h-14 aspect-square shrink-0 rounded-full bg-green-500 hover:bg-green-600 flex items-center justify-center shadow-lg transition-transform hover:scale-110 active:scale-95"
-          aria-label="Is the tag"
+          aria-label={`It IS ${tag}`}
+          title={`It IS ${tag}`}
         >
           <Check className="w-6 h-6 sm:w-8 sm:h-8 font-bold" />
         </button>
