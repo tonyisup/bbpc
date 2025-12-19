@@ -1,6 +1,6 @@
 'use client'
 import { type Dispatch, type DispatchWithoutAction, type FC, useState, useEffect } from "react";
-import { type Assignment, type Guess, type Rating, type User } from "@prisma/client";
+import { AssignmentReview, Review, type Assignment, type Guess, type Rating, type User } from "@prisma/client";
 
 import { HiRefresh, HiUpload, HiPhone, HiMicrophone } from "react-icons/hi";
 import RecordAssignmentAudio from "./common/RecordAssignmentAudio";
@@ -8,7 +8,6 @@ import UserTag from "./UserTag";
 import RatingIcon from "./RatingIcon";
 import PhoneNumber from "./common/PhoneNumber";
 import { type Session } from "next-auth";
-import type { Decimal } from "@prisma/client/runtime/library";
 import { SignInButton } from "./Auth";
 import { useSession } from "next-auth/react";
 import { api } from "@/trpc/react";
@@ -18,6 +17,7 @@ import UserPoints from "./UserPoints";
 import { GamepadIcon, UndoIcon } from "lucide-react";
 import { Label } from "./ui/label";
 import { Badge } from "./ui/badge";
+import GamblingSection from "./GamblingSection";
 
 interface GameSegmentProps {
 	assignment: Assignment
@@ -31,65 +31,15 @@ enum GameChoice {
 const GameSegment: FC<GameSegmentProps> = ({ assignment }) => {
 	const { data: session, status } = useSession();
 	const [gameChoice, setGameChoice] = useState<GameChoice>(GameChoice.None);
-	const [gamblingPoints, setGamblingPoints] = useState<number>(0);
-	const [canSubmitGamblingPoints, setCanSubmitGamblingPoints] = useState<boolean>(false);
 
 	// Fetch user data from the database
 	const { data: userData } = api.user.me.useQuery(undefined, {
-		enabled: !!session?.user?.id,
+		enabled: !!session?.user?.email,
 	});
 
-	// Fetch gambling points for this assignment
-	const { data: assignmentGamblingPoints, refetch: refetchAssignmentGamblingPoints } = api.review.getGamblingPointsForAssignment.useQuery(
-		{ assignmentId: assignment.id },
-		{ enabled: !!session?.user?.id }
-	);
-
-	const { mutate: submitGamblingPoints } = api.review.submitGamblingPoints.useMutation({
-		onSuccess: () => {
-			refetchAssignmentGamblingPoints();
-		},
-		onError: (error) => {
-			alert(`Error submitting gambling points: ${error.message}`);
-		}
+	const { data: userPoints } = api.user.points.useQuery(undefined, {
+		enabled: !!session?.user?.email,
 	});
-
-	const handleGamblingPointsSubmit = () => {
-		if (!session?.user?.id) return;
-		if (!gamblingPoints) return;
-
-		if (isNaN(gamblingPoints) || gamblingPoints < 0) {
-			alert("Please enter a valid number of points");
-			return;
-		}
-
-		submitGamblingPoints({
-			userId: session.user.id,
-			assignmentId: assignment.id,
-			points: gamblingPoints
-		});
-	};
-
-	useEffect(() => {
-		const evalCanSubmitGamblingPoints = () => {
-			// Check if user has points
-			if (!userData?.points) return false;
-			if (Number(userData.points) <= 0) return false;
-
-			// Check if gambling points input is valid
-			if (isNaN(gamblingPoints) || gamblingPoints <= 0) return false;
-
-			if (gamblingPoints > Number(userData.points)) return false;
-
-			return true;
-		}
-
-		setCanSubmitGamblingPoints(evalCanSubmitGamblingPoints());
-	}, [userData, gamblingPoints]);
-
-	const handleAutoBet = (amount: number) => {
-		setGamblingPoints(amount);
-	}
 
 	if (status === "loading") {
 		return <div className="flex flex-col items-center gap-4 m-4">
@@ -97,69 +47,18 @@ const GameSegment: FC<GameSegmentProps> = ({ assignment }) => {
 		</div>;
 	}
 
-	if (!session?.user?.id) return (
+	console.log('user data', userData);
+
+	if (!userData?.id) return (
 		<>
 			<div className="flex flex-col items-center gap-4 m-4">
-				<p className="text-2xl">Please <SignInButton /> to submit guesses</p>
+				<p className="text-2xl">Please <SignInButton /> to submit guesses tests</p>
 			</div>
 		</>
 	);
 
 	return <div className="flex flex-col gap-4 items-center py-4">
-		{userData?.points && Number(userData.points) > 0.0 && <div className="flex flex-col gap-2 items-center">
-			<UserPoints points={Number(userData.points)} showSpendButton={false} />
-			{assignmentGamblingPoints && assignmentGamblingPoints.length > 0 && assignmentGamblingPoints[0] && assignmentGamblingPoints[0].points > 0 && (
-				<div className="flex gap-2 items-center">
-					<p>You have gambled {assignmentGamblingPoints[0].points} points on this assignment!</p>
-					<Button
-						variant="destructive"
-						size="icon"
-						onClick={() => {
-							if (!session?.user?.id) return;
-							submitGamblingPoints({
-								userId: session.user.id,
-								assignmentId: assignment.id,
-								points: 0
-							});
-						}}
-					>
-						<UndoIcon className="inline-block m-2" />
-					</Button>
-				</div>
-			)}
-			<div className="flex gap-2">
-				<div className="flex flex-col gap-2">
-					<div className="flex gap-2 items-center">
-						<Label>Wanna bet?</Label>
-						{userData?.points && Number(userData.points) > 0 && <Badge className="cursor-pointer" onClick={() => handleAutoBet(1)}>Bet 1</Badge>}
-						{userData?.points && Number(userData.points) > 5 && <Badge className="cursor-pointer" onClick={() => handleAutoBet(5)}>Bet 5</Badge>}
-						{userData?.points && Number(userData.points) > 10 && <Badge className="cursor-pointer" onClick={() => handleAutoBet(10)}>Bet 10</Badge>}
-						{userData?.points && Number(userData.points) > 20 && <Badge className="cursor-pointer" onClick={() => handleAutoBet(20)}>Bet 20</Badge>}
-						{userData?.points && Number(userData.points) > 50 && <Badge className="cursor-pointer" onClick={() => handleAutoBet(50)}>Bet 50</Badge>}
-						{userData?.points && Number(userData.points) > 0 && <Badge className="cursor-pointer" onClick={() => handleAutoBet(Number(userData.points))}>ALL IN</Badge>}
-					</div>
-					<div className="flex gap-2">
-						<Input
-							type="number"
-							placeholder="Points here..."
-							value={gamblingPoints}
-							onChange={(e) => setGamblingPoints(Number(e.target.value))}
-						/>
-						<Button
-							disabled={!canSubmitGamblingPoints}
-							className="text-gray-300 rounded-md hover:bg-red-800 bg-gradient-to-r from-blue-900 to-blue-500  relative overflow-hidden group"
-							onClick={handleGamblingPointsSubmit}
-						>
-							<span className="absolute inset-0 bg-gradient-to-r from-transparent "></span>
-							<span className="p-4 relative z-10 flex items-center">
-								<span className="mr-1">Gamble!</span>
-								<span className="animate-bounce inline-block">✨</span>
-							</span>
-						</Button>
-					</div>
-				</div>
-			</div>
-		</div>}
+		<GamblingSection assignmentId={assignment.id} userId={userData.id} />
 		<h3 className="text-2xl">Submit your guesses!</h3>
 		<div className="flex flex-col md:flex-row gap-4 items-center">
 			<Button
@@ -185,7 +84,7 @@ const GameSegment: FC<GameSegmentProps> = ({ assignment }) => {
 			</Button>
 		</div>
 		{gameChoice == GameChoice.PhoneMessage && <PhoneNumber />}
-		{gameChoice == GameChoice.VoiceRecording && <RecordAssignmentAudio userId={session.user.id} assignmentId={assignment.id} />}
+		{gameChoice == GameChoice.VoiceRecording && <RecordAssignmentAudio userId={userData?.id} assignmentId={assignment.id} />}
 		{gameChoice == GameChoice.ClickButtons && <GamePanel session={session} assignment={assignment} />}
 	</div>
 }
@@ -218,25 +117,11 @@ const GamePanel: FC<GamePanelProps> = ({ session, assignment }) => {
 }
 interface ShowAssignmentGuessesProps {
 	guesses: (Guess & {
-		Rating: {
-			id: string;
-			name: string;
-			value: number;
-			sound: string | null;
-			icon: string | null;
-			category: string | null;
-		};
-		AssignmentReview: {
-			Review: {
-				User: {
-					id: string;
-					name: string | null;
-					email: string | null;
-					emailVerified: Date | null;
-					image: string | null;
-					points: Decimal | null;
-				} | null;
-			};
+		Rating: Rating;
+		AssignmentReview: AssignmentReview & {
+			Review: Review & {
+				User: User | null;
+			} | null;
 		};
 	})[] | null | undefined,
 	resetGuesses: DispatchWithoutAction

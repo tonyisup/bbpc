@@ -7,10 +7,6 @@ import { z } from "zod";
  */
 export const serverSchema = z.object({
   DATABASE_URL: z.string(),
-  DB_USER: z.string(),
-  DB_PASSWORD: z.string(),
-  DB_NAME: z.string(),
-  DB_HOST: z.string(),
   TMDB_API_KEY: z.string().optional(),
   GOOGLE_API_KEY: z.string().optional(),
   NODE_ENV: z.enum(["development", "test", "production"]),

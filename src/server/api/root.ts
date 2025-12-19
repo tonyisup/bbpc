@@ -5,8 +5,11 @@ import { syllabusRouter } from "./routers/syllabus";
 import { Decimal } from "@prisma/client/runtime/client";
 import { showRouter } from "./routers/showRouter";
 import { uploadInfoRouter } from "./routers/uploadInfo";
+import { calculateUserPoints } from "@/utils/points";
+import { tagRouter } from "./routers/tagRouter";
 
 export const appRouter = createTRPCRouter({
+  tag: tagRouter,
   uploadInfo: uploadInfoRouter,
   episode: createTRPCRouter({
     next: publicProcedure.query(async ({ ctx }) => {
@@ -144,7 +147,8 @@ export const appRouter = createTRPCRouter({
       .input(z.object({
         id: z.number(),
         episodeId: z.string(),
-        fileKey: z.string()
+        fileKey: z.string(),
+        notes: z.string().optional(),
       }))
       .mutation(async ({ ctx, input }) => {
         return await ctx.db.audioEpisodeMessage.update({
@@ -153,7 +157,8 @@ export const appRouter = createTRPCRouter({
           },
           data: {
             episodeId: input.episodeId,
-            fileKey: input.fileKey
+            fileKey: input.fileKey,
+            notes: input.notes,
           }
         });
       }),
@@ -194,40 +199,6 @@ export const appRouter = createTRPCRouter({
       }),
   }),
 
-  game: createTRPCRouter({
-    points: protectedProcedure.query(async ({ ctx }) => {
-      return ctx.db.user.findMany({
-        orderBy: {
-          points: 'desc',
-        },
-      });
-    }),
-
-    addPointsToUser: protectedProcedure
-      .input(z.object({
-        userId: z.string(),
-        points: z.number(),
-      }))
-      .mutation(async ({ ctx, input }) => {
-        const user = await ctx.db.user.findUnique({
-          where: { id: input.userId },
-        });
-
-        if (!user) {
-          throw new Error("User not found");
-        }
-
-        const currentPoints = user.points ?? new Decimal(0);
-        const newPoints = currentPoints.add(input.points);
-
-        return ctx.db.user.update({
-          where: { id: input.userId },
-          data: {
-            points: newPoints,
-          },
-        });
-      }),
-  }),
 
   auth: createTRPCRouter({
     getSession: publicProcedure.query(({ ctx }) => {
@@ -265,9 +236,16 @@ export const appRouter = createTRPCRouter({
   }),
 
   user: createTRPCRouter({
+    points: protectedProcedure.query(({ ctx }) => {
+      console.log('user stuff', ctx.session.user);
+      if (!ctx.session.user.email) {
+        throw new Error("User not found");
+      }
+      return calculateUserPoints(ctx.db, ctx.session.user.email);
+    }),
     me: protectedProcedure.query(({ ctx }) => {
-      return ctx.db.user.findUnique({
-        where: { id: ctx.session.user.id },
+      return ctx.db.user.findFirst({
+        where: { email: ctx.session.user.email },
       });
     }),
     update: protectedProcedure
@@ -275,8 +253,14 @@ export const appRouter = createTRPCRouter({
         name: z.string(),
       }))
       .mutation(async ({ ctx, input }) => {
+        const user = await ctx.db.user.findFirst({
+          where: { email: ctx.session.user.email },
+        });
+        if (!user) {
+          throw new Error("User not found");
+        }
         return ctx.db.user.update({
-          where: { id: ctx.session.user.id },
+          where: { id: user.id },
           data: { name: input.name },
         });
       }),
@@ -659,7 +643,12 @@ export const appRouter = createTRPCRouter({
         ratingId: z.string()
       }))
       .mutation(async ({ ctx, input }) => {
-        return await ctx.db.$executeRaw`EXEC [SubmitGuess] @assignmentId=${input.assignmentId}, @hostId=${input.hostId}, @guesserId=${input.guesserId}, @ratingId=${input.ratingId}`
+        return await ctx.db.$executeRaw`
+          EXEC [SubmitGuess]
+            @assignmentId=${input.assignmentId},
+            @hostId=${input.hostId},
+            @guesserId=${input.guesserId},
+            @ratingId=${input.ratingId}`
       }),
 
     updateAudioMessage: protectedProcedure

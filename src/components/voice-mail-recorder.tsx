@@ -27,10 +27,11 @@ export default function VoiceMailRecorder({ episodeId, userId }: VoiceMailRecord
   const timerRef = useRef<NodeJS.Timeout | null>(null)
   const serviceWorkerRef = useRef<ServiceWorker | null>(null)
 
+  const [notes, setNotes] = useState("");
   const { mutate: updateAudio } = api.episode.updateAudioMessage.useMutation();
-  const { data: countOfUserAudioMessagesForEpisode, refetch } = api.episode.getCountOfUserEpisodeAudioMessages.useQuery({ 
-    episodeId: episodeId, 
-    userId: userId 
+  const { data: countOfUserAudioMessagesForEpisode, refetch } = api.episode.getCountOfUserEpisodeAudioMessages.useQuery({
+    episodeId: episodeId,
+    userId: userId
   });
 
   const { startUpload, isUploading } = useUploadThing("audioUploader", {
@@ -43,13 +44,15 @@ export default function VoiceMailRecorder({ episodeId, userId }: VoiceMailRecord
       const uploadedFile = data[0];
       if (!uploadedFile) return;
       if (!uploadedFile.serverData.uploadedId) return;
-      
-      updateAudio({ 
-        id: uploadedFile.serverData.uploadedId, 
+
+      updateAudio({
+        id: uploadedFile.serverData.uploadedId,
         episodeId: episodeId,
-        fileKey: uploadedFile.key
-      }, { 
+        fileKey: uploadedFile.key,
+        notes: notes
+      }, {
         onSuccess: () => {
+          setNotes("");
           refetch();
           setIsUploaded(true);
           setTimeout(() => setIsUploaded(false), 5000);
@@ -264,6 +267,19 @@ export default function VoiceMailRecorder({ episodeId, userId }: VoiceMailRecord
           ) : (
             <div className="text-center text-muted-foreground">Press record to start your voice message</div>
           )}
+        </div>
+        <div>
+          <div className="flex gap-2 mb-2 flex-wrap">
+            <Button variant="outline" size="sm" onClick={() => setNotes("Play during extras")}>Play during extras</Button>
+            <Button variant="outline" size="sm" onClick={() => setNotes("Play before assignments")}>Play before assignments</Button>
+            <Button variant="outline" size="sm" onClick={() => setNotes("Play after weekends")}>Play after weekends</Button>
+          </div>
+          <textarea
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            placeholder="Add a note for the hosts..."
+            className="w-full h-24 p-2 border rounded-md"
+          />
         </div>
       </CardContent>
       <CardFooter className="flex justify-between">

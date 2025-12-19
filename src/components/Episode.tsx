@@ -8,6 +8,8 @@ import { AddExtraToNext } from "./AddExtraToNext";
 import { highlightText } from "@/utils/text";
 import { Button } from "./ui/button";
 import ShowInlinePreview from "./ShowInlinePreview";
+import GameSegment from "./GameSegment";
+import { PredictionGame } from "./PredictionGame";
 
 export type CompleteEpisode = EpisodeType & {
 	assignments: (AssignmentType & {
@@ -56,7 +58,8 @@ export const Episode: FC<EpisodeProps> = ({ episode, allowGuesses: isNextEpisode
 			<div className="w-full text-center">
 				<p>{highlightText(episode?.description ?? "", searchQuery)}</p>
 			</div>
-			<EpisodeAssignments assignments={episode.assignments as AssignmentWithRelations[]} allowGuesses={isNextEpisode} showMovieTitles={showMovieTitles} searchQuery={searchQuery} />
+			<EpisodeAssignments assignments={episode.assignments as AssignmentWithRelations[]} showMovieTitles={showMovieTitles} searchQuery={searchQuery} />
+			{isNextEpisode && <PredictionGame assignments={episode.assignments as AssignmentWithRelations[]} searchQuery={searchQuery} />}
 		</div>
 		<div>
 			{episode.extras.length > 0 && (
@@ -73,13 +76,12 @@ export const Episode: FC<EpisodeProps> = ({ episode, allowGuesses: isNextEpisode
 }
 
 interface EpisodeAssignments {
-	allowGuesses?: boolean,
 	showMovieTitles?: boolean,
 	assignments: AssignmentWithRelations[];
 	searchQuery?: string;
 }
 
-const EpisodeAssignments: FC<EpisodeAssignments> = ({ assignments, allowGuesses, showMovieTitles = false, searchQuery = "" }) => {
+const EpisodeAssignments: FC<EpisodeAssignments> = ({ assignments, showMovieTitles = false, searchQuery = "" }) => {
 	if (!assignments || assignments.length == 0) return null;
 	return <div className="flex gap-2 justify-around">
 		{assignments.sort((a, b) => {
@@ -88,14 +90,6 @@ const EpisodeAssignments: FC<EpisodeAssignments> = ({ assignments, allowGuesses,
 		}).map((assignment) => {
 			return <div key={assignment.id} className="flex flex-col items-center justify-between gap-2">
 				<Assignment assignment={assignment} key={assignment.id} showMovieTitles={showMovieTitles} searchQuery={searchQuery} />
-
-				{allowGuesses &&
-					<Button variant="outline" asChild>
-						<Link href={`/assignment/${assignment.id}`}>
-							Play Game
-						</Link>
-					</Button>
-				}
 			</div>
 		})}
 	</div>
