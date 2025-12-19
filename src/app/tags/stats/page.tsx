@@ -59,18 +59,18 @@ export default function StatsPage() {
 
                     <div className="relative h-4 w-full overflow-hidden rounded-full bg-neutral-800">
                       <div
-                        className="absolute left-0 top-0 h-full bg-red-500 transition-all duration-1000"
+                        className="absolute left-0 top-0 h-full bg-red-700 transition-all duration-1000"
                         style={{ width: `${noPercent}%` }}
                       />
                       <div
-                        className="absolute right-0 top-0 h-full bg-green-500 transition-all duration-1000"
+                        className="absolute right-0 top-0 h-full bg-green-700 transition-all duration-1000"
                         style={{ width: `${yesPercent}%` }}
                       />
                     </div>
 
                     <div className="mt-2 flex justify-between gap-4 text-xs font-medium uppercase tracking-wider">
-                      <span className="text-red-400">No: {stat.no} ({noPercent.toFixed(1)}%)</span>
-                      <span className="text-green-400">Yes: {stat.yes} ({yesPercent.toFixed(1)}%)</span>
+                      <span className="text-red-500">No: {stat.no} ({noPercent.toFixed(1)}%)</span>
+                      <span className="text-green-500">Yes: {stat.yes} ({yesPercent.toFixed(1)}%)</span>
                     </div>
                   </div>
                 </Link>
