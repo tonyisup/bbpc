@@ -194,7 +194,7 @@ export function TagPageClient({ tag }: { tag: string }) {
         } else {
           setMovies((prev) => [...prev, ...uniqueNewMovies]);
         }
-      } else if (movieData.pagination && currentPage < movieData.pagination.totalPages) {
+      } else if (!sharedMovieId && movieData.pagination && currentPage < movieData.pagination.totalPages) {
         // No new movies on this page, advance to next page
         setCurrentPage((prev) => prev + 1);
       }
@@ -420,7 +420,6 @@ export function TagPageClient({ tag }: { tag: string }) {
             setCurrentPage(1);
             localStorage.setItem(`tag_page_${tag}`, "1");
             setHasFetchedOnce(false);
-            refetchMovies();
           }}
           className="px-6 py-2 bg-blue-600 rounded-full hover:bg-blue-700 transition-colors"
         >
@@ -504,8 +503,6 @@ export function TagPageClient({ tag }: { tag: string }) {
                     const params = new URLSearchParams(searchParams.toString());
                     params.delete("movieId");
                     router.replace(`${pathname}${params.toString() ? `?${params.toString()}` : ""}`, { scroll: false });
-                    // Fetch more movies
-                    refetchMovies();
                   }}
                   className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-full text-white text-sm font-medium transition-colors"
                 >
