@@ -103,12 +103,18 @@ export function TagPageClient({ tag }: { tag: string }) {
     const storedVotes = localStorage.getItem(`voted_movies_${tag}`);
     if (storedVotes) {
       try {
-        setVotedMovieIds(JSON.parse(storedVotes));
+        let votedIds: number[] = JSON.parse(storedVotes);
+        // If there's a shared movie ID in the URL, remove it from votedIds
+        // so the user can see the shared movie even if they voted on it before
+        if (sharedMovieId && votedIds.includes(sharedMovieId)) {
+          votedIds = votedIds.filter(id => id !== sharedMovieId);
+        }
+        setVotedMovieIds(votedIds);
       } catch (e) {
         console.error("Failed to parse voted movies", e);
       }
     }
-  }, [tag]);
+  }, [tag, sharedMovieId]);
 
   // Handle incoming movie data
   useEffect(() => {
