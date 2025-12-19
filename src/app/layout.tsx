@@ -75,8 +75,13 @@ export default async function RootLayout({
                 {children}
               </div>
             </main>
-            <footer>
+            <footer className="w-full flex flex-col items-center">
               <ListenHere />
+              <div className="flex gap-4 text-xs text-gray-400 pb-8 flex-wrap justify-center">
+                 <Link href="/privacy" className="hover:underline">Privacy Policy</Link>
+                 <Link href="/terms" className="hover:underline">Terms of Service</Link>
+                 <Link href="/data-deletion" className="hover:underline">Data Deletion</Link>
+              </div>
             </footer>
           </div>
         </Providers>
