@@ -197,4 +197,90 @@ export const tagRouter = createTRPCRouter({
         total: yesCount + noCount,
       };
     }),
+
+  getMoviesStats: publicProcedure
+    .input(z.object({
+      tag: z.string(),
+      limit: z.number().min(1).max(100).default(50),
+      cursor: z.number().default(0),
+    }))
+    .query(async ({ ctx, input }) => {
+      const stats = await ctx.db.tagVote.groupBy({
+        by: ["tmdbId", "isTag"],
+        where: {
+          tag: input.tag,
+        },
+        _count: {
+          isTag: true,
+        },
+      });
+
+      // Aggregate counts by tmdbId
+      const movieStatsMap = new Map<
+        number,
+        { yes: number; no: number; total: number }
+      >();
+
+      for (const stat of stats) {
+        const current = movieStatsMap.get(stat.tmdbId) ?? {
+          yes: 0,
+          no: 0,
+          total: 0,
+        };
+        const count = stat._count.isTag;
+        if (stat.isTag === true) current.yes += count;
+        if (stat.isTag === false) current.no += count;
+        current.total += count;
+        movieStatsMap.set(stat.tmdbId, current);
+      }
+
+      // Convert to array and sort by total votes desc
+      const sortedStats = Array.from(movieStatsMap.entries())
+        .map(([tmdbId, s]) => ({ tmdbId, ...s }))
+        .sort((a, b) => b.total - a.total);
+
+      // Pagination slice
+      const pagedStats = sortedStats.slice(input.cursor, input.cursor + input.limit);
+      const nextCursor = input.cursor + input.limit < sortedStats.length ? input.cursor + input.limit : undefined;
+
+      // Fetch movie details only for the current page
+      const moviesWithDetails = await Promise.all(
+        pagedStats.map(async (stat) => {
+          try {
+            const detailsUrl = `${TMDB_API_BASE}/movie/${stat.tmdbId}?api_key=${process.env.TMDB_API_KEY}`;
+            const detailsResp = await fetch(detailsUrl);
+
+            if (!detailsResp.ok) {
+                // If fail, return partial
+                return {
+                    ...stat,
+                    title: `Unknown Movie (${stat.tmdbId})`,
+                    poster_path: null as string | null,
+                }
+            }
+
+            const detailsData = await detailsResp.json();
+
+            return {
+              ...stat,
+              title: detailsData.title as string,
+              poster_path: detailsData.poster_path
+                ? `https://image.tmdb.org/t/p/w200${detailsData.poster_path}`
+                : null as string | null,
+            };
+          } catch (e) {
+             return {
+                ...stat,
+                title: `Error Loading (${stat.tmdbId})`,
+                poster_path: null as string | null,
+             }
+          }
+        })
+      );
+
+      return {
+        items: moviesWithDetails,
+        nextCursor,
+      };
+    }),
 });
