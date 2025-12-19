@@ -391,7 +391,7 @@ export function TagPageClient({ tag }: { tag: string }) {
 
   return (
     <div className="flex min-h-screen flex-col items-center text-white overflow-hidden p-4">
-      {tag === "christmas" && <div className="mb-8">
+      {tag === "christmas" && <div>
         <span className="flex items-center justify-center gap-2">
           <span className="text-3xl text-center font-bold capitalize">Is it?</span>
           <Link href={`/tags/${tag}/stats`}>
@@ -421,7 +421,7 @@ export function TagPageClient({ tag }: { tag: string }) {
         </Link>
       </span>}
 
-      <div className="relative w-full max-w-sm h-[600px] flex flex-col items-center">
+      <div className="relative w-full max-w-sm h-[300px] sm:h-[450px] md:h-[550px] flex flex-col items-center">
         <AnimatePresence>
           {movies.map((movie, index) => {
             // Only render the top 2 cards for performance
@@ -550,7 +550,7 @@ function SwipeCard({
   if (!isFront) {
     return (
       <motion.div
-        className="absolute top-0 w-full h-[500px] rounded-xl overflow-hidden shadow-2xl"
+        className="absolute top-0 w-[150px] sm:w-[250px] md:w-[300px] rounded-xl overflow-hidden shadow-2xl"
         style={{
           scale: 0.95,
           zIndex: 0,
@@ -573,7 +573,7 @@ function SwipeCard({
   return (
     <>
       <motion.div
-        className="absolute top-0 w-full h-[500px] rounded-xl overflow-hidden shadow-2xl cursor-grab active:cursor-grabbing"
+        className="absolute top-0 w-[150px] sm:w-[250px] md:w-[300px] rounded-xl overflow-hidden shadow-2xl cursor-grab active:cursor-grabbing"
         style={{ x, rotate, zIndex: 1 }}
         drag="x"
         dragConstraints={{ left: 0, right: 0 }}
@@ -606,30 +606,30 @@ function SwipeCard({
       </motion.div>
 
       {/* Buttons for non-swipe interaction - placed outside the card but logically coupled */}
-      <div className="absolute top-[520px] w-full flex justify-between px-8 z-10">
+      <div className="absolute top-[240px] sm:top-[380px] md:top-[460px] w-full flex justify-center px-8 sm:px-16 z-10 mt-4">
         <button
           type="button"
           onClick={() => handleButtonVote(false)}
-          className="w-16 h-16 rounded-full bg-red-500 hover:bg-red-600 flex items-center justify-center shadow-lg transition-transform hover:scale-110 active:scale-95"
+          className="w-8 h-8 sm:w-12 sm:h-12 md:w-14 md:h-14 aspect-square shrink-0 rounded-full bg-red-500 hover:bg-red-600 flex items-center justify-center shadow-lg transition-transform hover:scale-110 active:scale-95"
           aria-label="Not the tag"
         >
-          <X className="w-8 h-8 font-bold" />
+          <X className="w-6 h-6 sm:w-8 sm:h-8 font-bold" />
         </button>
         <button
           type="button"
           onClick={() => onPassAndRefresh()}
-          className="w-16 h-16 rounded-full bg-blue-500 hover:bg-blue-600 flex items-center justify-center shadow-lg transition-transform hover:scale-110 active:scale-95"
+          className="w-8 h-8 sm:w-12 sm:h-12 md:w-14 md:h-14 aspect-square shrink-0 rounded-full bg-blue-500 hover:bg-blue-600 flex items-center justify-center shadow-lg transition-transform hover:scale-110 active:scale-95"
           aria-label="Pass and refresh"
         >
-          <RefreshCwIcon className="w-8 h-8 font-bold" />
+          <RefreshCwIcon className="w-6 h-6 sm:w-8 sm:h-8 font-bold" />
         </button>
         <button
           type="button"
           onClick={() => handleButtonVote(true)}
-          className="w-16 h-16 rounded-full bg-green-500 hover:bg-green-600 flex items-center justify-center shadow-lg transition-transform hover:scale-110 active:scale-95"
+          className="w-8 h-8 sm:w-12 sm:h-12 md:w-14 md:h-14 aspect-square shrink-0 rounded-full bg-green-500 hover:bg-green-600 flex items-center justify-center shadow-lg transition-transform hover:scale-110 active:scale-95"
           aria-label="Is the tag"
         >
-          <Check className="w-8 h-8 font-bold" />
+          <Check className="w-6 h-6 sm:w-8 sm:h-8 font-bold" />
         </button>
       </div>
     </>

@@ -13,9 +13,9 @@ const ChristmasSnow = () => {
   return (
     <div className="flex items-center justify-center p-4">
       <svg
-        width="300"
-        height="150"
-        viewBox="0 0 300 150"
+        width="150"
+        height="50"
+        viewBox="0 0 150 50"
         xmlns="http://www.w3.org/2000/svg"
         className="rounded-lg shadow-xl"
         style={{ backgroundColor: '#1a472a' }}
@@ -43,12 +43,12 @@ const ChristmasSnow = () => {
 
         <text
           x="50%"
-          y="50%"
+          y="60%"
           textAnchor="middle"
           dominantBaseline="middle"
           style={{
             fontFamily: "'Great Vibes', cursive",
-            fontSize: '80px',
+            fontSize: '30px',
             fill: '#D42426',
           }}
         >
