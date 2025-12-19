@@ -71,10 +71,13 @@ export function TagPageClient({ tag }: { tag: string }) {
   const addMovie = api.movie.add.useMutation();
   const addToSyllabus = api.syllabus.add.useMutation();
 
+
+  const currentMovie = movies[currentIndex];
+
   useEffect(() => {
     // Reset added state when current movie changes
     setAddedToSyllabus(false);
-  }, [currentIndex]);
+  }, [currentIndex, currentMovie?.id]);
 
   // Initialize session and local storage
   useEffect(() => {
@@ -166,8 +169,6 @@ export function TagPageClient({ tag }: { tag: string }) {
     }
   };
 
-  const currentMovie = movies[0];
-
   const handleSignInToAdd = () => {
     if (!currentMovie) return;
     localStorage.setItem("pending_syllabus_add", JSON.stringify({
@@ -203,6 +204,8 @@ export function TagPageClient({ tag }: { tag: string }) {
               url = `https://www.imdb.com/title/${pendingMovie.imdb_id}`;
             }
 
+            setIsAddingToSyllabus(true);
+
             toast.promise(
               (async () => {
                 const savedMovie = await addMovie.mutateAsync({
@@ -217,11 +220,16 @@ export function TagPageClient({ tag }: { tag: string }) {
                   movieId: savedMovie.id,
                   order: 9999,
                 });
+
+                setAddedToSyllabus(true);
               })(),
               {
                 loading: 'Adding movie from your previous session...',
                 success: `Added ${pendingMovie.title} to your syllabus!`,
                 error: 'Failed to add movie to syllabus.',
+                finally: () => {
+                  setIsAddingToSyllabus(false);
+                }
               }
             );
           }
@@ -239,7 +247,6 @@ export function TagPageClient({ tag }: { tag: string }) {
   }
 
   const handleVote = async (isTag: boolean | null) => {
-    const currentMovie = movies[currentIndex];
     if (!currentMovie) return;
 
     // Optimistic UI update: move to next card immediately
