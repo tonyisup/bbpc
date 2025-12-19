@@ -37,6 +37,7 @@ export function TagPageClient({ tag }: { tag: string }) {
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [salt, setSalt] = useState(0);
   const [ignoreSharedMovie, setIgnoreSharedMovie] = useState(false);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -133,6 +134,7 @@ export function TagPageClient({ tag }: { tag: string }) {
     if (movieData) {
       setHasFetchedOnce(true);
       setIsTransitioning(false);
+      setIsInitialLoad(false);
 
       // Update pagination info
       if (movieData.pagination) {
@@ -382,23 +384,24 @@ export function TagPageClient({ tag }: { tag: string }) {
   const isWaitingForSharedMovie = sharedMovieId && !sharedMovieLoaded && (isLoading || !hasFetchedOnce);
 
   // Show loading if we haven't fetched yet, are currently loading, are fetching more movies, or waiting for a shared movie
-  if (!currentMovie && (isLoading || isFetching || !hasFetchedOnce || currentPage < totalPages || isWaitingForSharedMovie || isTransitioning)) {
+  if (!currentMovie && (isLoading || isFetching || !hasFetchedOnce || isInitialLoad || isTransitioning || isWaitingForSharedMovie)) {
     return (
       <div className="flex min-h-screen items-center justify-center text-white">
-        <div className="animate-pulse">{isFetching || isTransitioning ? "Loading more movies..." : `Loading movies for "${tag}"...`}</div>
+        <div className="animate-pulse">
+          {isFetching || isTransitioning ? "Loading more movies..." : `Loading movies for "${tag}"...`}
+        </div>
       </div>
     );
   }
 
   // Only show "no more movies" if:
   // - No current movie
-  // - Not loading/fetching
+  // - Not loading/fetching/initial load
   // - We've fetched at least once
   // - We've exhausted all pages
-  // - AND if there was a sharedMovieId, it must be marked as loaded (even if not found)
-  const canShowNoMovies = !sharedMovieId || sharedMovieLoaded;
+  const canShowNoMovies = (!sharedMovieId || sharedMovieLoaded) && !isInitialLoad && !isTransitioning;
 
-  if (!currentMovie && !isLoading && !isFetching && !isTransitioning && hasFetchedOnce && currentPage >= totalPages && canShowNoMovies) {
+  if (!currentMovie && !isLoading && !isFetching && !isTransitioning && hasFetchedOnce && !isInitialLoad && currentPage >= totalPages && canShowNoMovies) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center text-white p-4 text-center">
         <h2 className="text-2xl font-bold mb-4">No more movies to vote on!</h2>
@@ -407,6 +410,12 @@ export function TagPageClient({ tag }: { tag: string }) {
           type="button"
           onClick={() => {
             setVotedMovieIds([]);
+            setMovies([]);
+            setHasVotedOnSharedMovie(false);
+            setSharedMovieWasAlreadyVoted(false);
+            setSharedMovieLoaded(false);
+            setIgnoreSharedMovie(false);
+            setSalt(s => s + 1);
             localStorage.removeItem(`voted_movies_${tag}`);
             setCurrentPage(1);
             localStorage.setItem(`tag_page_${tag}`, "1");

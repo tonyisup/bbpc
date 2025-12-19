@@ -35,6 +35,8 @@ export const tagRouter = createTRPCRouter({
       tag: z.string(),
       page: z.number().min(1).default(1),
       movieId: z.number().optional(),
+      salt: z.number().optional(),
+      cursor: z.string().optional(),
     }))
     .query(async ({ ctx, input }) => {
       if (!process.env.TMDB_API_KEY) {
