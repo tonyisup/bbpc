@@ -193,8 +193,9 @@ export function TagPageClient({ tag }: { tag: string }) {
             if (votedMovieIds.includes(pendingMovie.id)) {
               return;
             }
-
-            setMovies(prev => [pendingMovie, ...prev]);
+            // This ensures the pending movie is at the front, 
+            // and removes any "duplicate" of it that might have loaded naturally.
+            setMovies(prev => [pendingMovie, ...prev.filter(m => m.id !== pendingMovie.id)]);
 
             const year = new Date(pendingMovie.release_date).getFullYear();
             let url = `https://www.themoviedb.org/movie/${pendingMovie.id}`;
@@ -216,17 +217,6 @@ export function TagPageClient({ tag }: { tag: string }) {
                   movieId: savedMovie.id,
                   order: 9999,
                 });
-
-                // // Record as "voted" so it doesn't show up again in the swipe list
-                // setVotedMovieIds(prev => {
-                //   if (prev.includes(pendingMovie.id)) return prev;
-                //   const newVotedIds = [...prev, pendingMovie.id];
-                //   localStorage.setItem(`voted_movies_${tag}`, JSON.stringify(newVotedIds));
-                //   return newVotedIds;
-                // });
-
-                // // Remove from current movies list if it happens to be there
-                // setMovies(prev => prev.filter(m => m.id !== pendingMovie.id));
               })(),
               {
                 loading: 'Adding movie from your previous session...',
