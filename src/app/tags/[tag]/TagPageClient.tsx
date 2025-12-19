@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { signIn } from "next-auth/react";
 import { toast } from "sonner";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 
 interface Movie {
   id: number;
@@ -35,6 +35,8 @@ export function TagPageClient({ tag }: { tag: string }) {
   const [hasVotedOnSharedMovie, setHasVotedOnSharedMovie] = useState(false);
 
   const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
   const sharedMovieId = searchParams.get("movieId") ? parseInt(searchParams.get("movieId")!, 10) : undefined;
 
   // Initialize page from localStorage
@@ -329,6 +331,11 @@ export function TagPageClient({ tag }: { tag: string }) {
     // If voting on the shared movie, mark it so it won't be re-added
     if (sharedMovieId && currentMovie.id === sharedMovieId) {
       setHasVotedOnSharedMovie(true);
+
+      // Clear the movieId from the URL so it doesn't reappear on refresh
+      const params = new URLSearchParams(searchParams.toString());
+      params.delete("movieId");
+      router.replace(`${pathname}${params.toString() ? `?${params.toString()}` : ""}`, { scroll: false });
     }
 
     // Optimistic UI update: move to next card immediately
@@ -436,7 +443,7 @@ export function TagPageClient({ tag }: { tag: string }) {
         </Link>
       </span>}
 
-      <div className="relative w-full max-w-sm h-[300px] sm:h-[450px] md:h-[550px] flex flex-col items-center">
+      <div className="relative w-full max-w-sm h-[300px] sm:h-[450px] md:h-[550px] mx-auto flex justify-center">
         <AnimatePresence>
           {movies.map((movie, index) => {
             // Only render the top 2 cards for performance
@@ -444,23 +451,54 @@ export function TagPageClient({ tag }: { tag: string }) {
 
             return (
               <SwipeCard
-                tag={tag}
                 key={movie.id}
                 movie={movie}
                 index={index}
                 onVote={handleVote}
-                onPassAndRefresh={handlePassAndRefresh}
                 isFront={index === 0}
               />
             );
           })}
         </AnimatePresence>
+
+        {/* Buttons for non-swipe interaction - placed outside the card stack */}
+        {currentMovie && (
+          <div className="absolute top-[240px] sm:top-[380px] md:top-[460px] left-0 right-0 mx-auto w-full flex justify-center gap-4 sm:gap-8 z-10 mt-4">
+            <button
+              type="button"
+              onClick={() => handleVote(false)}
+              className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 aspect-square shrink-0 rounded-full bg-red-500 hover:bg-red-600 flex items-center justify-center shadow-lg transition-transform hover:scale-110 active:scale-95"
+              aria-label={`Is NOT ${tag}`}
+              title={`Is NOT ${tag}`}
+            >
+              <X className="w-6 h-6 sm:w-8 sm:h-8 font-bold" />
+            </button>
+            <button
+              type="button"
+              onClick={() => handlePassAndRefresh()}
+              className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 aspect-square shrink-0 rounded-full bg-blue-500 hover:bg-blue-600 flex items-center justify-center shadow-lg transition-transform hover:scale-110 active:scale-95"
+              aria-label="Pass and refresh"
+              title="Pass and refresh"
+            >
+              <RefreshCwIcon className="w-6 h-6 sm:w-8 sm:h-8 font-bold" />
+            </button>
+            <button
+              type="button"
+              onClick={() => handleVote(true)}
+              className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 aspect-square shrink-0 rounded-full bg-green-500 hover:bg-green-600 flex items-center justify-center shadow-lg transition-transform hover:scale-110 active:scale-95"
+              aria-label={`It IS ${tag}`}
+              title={`It IS ${tag}`}
+            >
+              <Check className="w-6 h-6 sm:w-8 sm:h-8 font-bold" />
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Stats Bar */}
       {currentMovie && (
         <div className="w-full max-w-sm flex flex-col items-center gap-2">
-          <p className="text-center text-sm text-gray-400 p-2">
+          <p className="text-center text-sm text-gray-400 p-2 break-words w-full px-4">
             {currentMovie.imdb_id ? (
               <a
                 href={`https://www.imdb.com/title/${currentMovie.imdb_id}`}
@@ -511,7 +549,7 @@ export function TagPageClient({ tag }: { tag: string }) {
             </button>
           )}
 
-          <div className="w-full mt-2 flex items-center gap-2">
+          <div className="w-full mt-2 flex items-center gap-2 px-4">
             <StatsBar stats={stats} />
             <Button
               variant="outline"
@@ -530,19 +568,15 @@ export function TagPageClient({ tag }: { tag: string }) {
 }
 
 function SwipeCard({
-  tag,
   movie,
   index,
   onVote,
   isFront,
-  onPassAndRefresh,
 }: {
-  tag: string,
   movie: Movie,
   index: number,
   onVote: (vote: boolean) => void,
   isFront: boolean,
-  onPassAndRefresh: () => void
 }) {
   const x = useMotionValue(0);
   const rotate = useTransform(x, [-200, 200], [-30, 30]);
@@ -564,20 +598,22 @@ function SwipeCard({
     onVote(vote);
   }
 
+  const cardClasses = "absolute top-0 w-[150px] sm:w-[250px] md:w-[300px]";
+
   // If it's not the front card, it sits behind
   if (!isFront) {
     return (
       <motion.div
-        className="absolute top-0 w-[150px] sm:w-[250px] md:w-[300px] rounded-xl overflow-hidden shadow-2xl"
+        className={`${cardClasses} rounded-xl overflow-hidden shadow-2xl`}
         style={{
           scale: 0.95,
           zIndex: 0,
           y: 20
         }}
       >
-        <div className="w-full overflow-hidden flex items-center justify-center">
+        <div className="w-full aspect-[2/3] bg-gray-900 flex items-center justify-center">
           {movie.poster_path ? (
-            <img src={movie.poster_path} alt={movie.title} className="w-full h-auto object-cover" draggable={false} />
+            <img src={movie.poster_path} alt={movie.title} className="w-full h-full object-contain" draggable={false} />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-gray-800 text-gray-500">
               No Poster
@@ -591,7 +627,7 @@ function SwipeCard({
   return (
     <>
       <motion.div
-        className="absolute top-0 w-[150px] sm:w-[250px] md:w-[300px] rounded-xl overflow-hidden shadow-2xl cursor-grab active:cursor-grabbing"
+        className={`${cardClasses} rounded-xl overflow-hidden shadow-2xl cursor-grab active:cursor-grabbing`}
         style={{ x, rotate, zIndex: 1 }}
         drag="x"
         dragConstraints={{ left: 0, right: 0 }}
@@ -612,9 +648,9 @@ function SwipeCard({
           <span className="text-white font-black text-4xl border-4 border-white p-2 rounded transform rotate-12">NO</span>
         </motion.div>
 
-        <div className="w-full overflow-hidden flex items-center justify-center">
+        <div className="w-full aspect-[2/3] bg-gray-900 flex items-center justify-center">
           {movie.poster_path ? (
-            <img src={movie.poster_path} alt={movie.title} className="w-full h-auto object-cover pointer-events-none" />
+            <img src={movie.poster_path} alt={movie.title} className="w-full h-full object-contain pointer-events-none" />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-gray-800 text-gray-500">
               No Poster
@@ -622,37 +658,6 @@ function SwipeCard({
           )}
         </div>
       </motion.div>
-
-      {/* Buttons for non-swipe interaction - placed outside the card but logically coupled */}
-      <div className="absolute top-[240px] sm:top-[380px] md:top-[460px] w-full flex justify-center gap-4 sm:gap-8 z-10 mt-4">
-        <button
-          type="button"
-          onClick={() => handleButtonVote(false)}
-          className="w-8 h-8 sm:w-12 sm:h-12 md:w-14 md:h-14 aspect-square shrink-0 rounded-full bg-red-500 hover:bg-red-600 flex items-center justify-center shadow-lg transition-transform hover:scale-110 active:scale-95"
-          aria-label={`Is NOT ${tag}`}
-          title={`Is NOT ${tag}`}
-        >
-          <X className="w-6 h-6 sm:w-8 sm:h-8 font-bold" />
-        </button>
-        <button
-          type="button"
-          onClick={() => onPassAndRefresh()}
-          className="w-8 h-8 sm:w-12 sm:h-12 md:w-14 md:h-14 aspect-square shrink-0 rounded-full bg-blue-500 hover:bg-blue-600 flex items-center justify-center shadow-lg transition-transform hover:scale-110 active:scale-95"
-          aria-label="Pass and refresh"
-          title="Pass and refresh"
-        >
-          <RefreshCwIcon className="w-6 h-6 sm:w-8 sm:h-8 font-bold" />
-        </button>
-        <button
-          type="button"
-          onClick={() => handleButtonVote(true)}
-          className="w-8 h-8 sm:w-12 sm:h-12 md:w-14 md:h-14 aspect-square shrink-0 rounded-full bg-green-500 hover:bg-green-600 flex items-center justify-center shadow-lg transition-transform hover:scale-110 active:scale-95"
-          aria-label={`It IS ${tag}`}
-          title={`It IS ${tag}`}
-        >
-          <Check className="w-6 h-6 sm:w-8 sm:h-8 font-bold" />
-        </button>
-      </div>
     </>
   );
 }
