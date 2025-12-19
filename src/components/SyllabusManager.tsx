@@ -183,12 +183,14 @@ const SyllabusManager: FC<SyllabusManagerProps> = ({ initialSyllabus, userId }) 
         {!showMovieSearch && <Button
           variant="outline"
           onClick={() => setShowMovieSearch(true)}
+          aria-label="Add movie"
         >
           Add Movie
         </Button>}
         {showMovieSearch && <Button
           variant="outline"
           onClick={() => setShowMovieSearch(false)}
+          aria-label="Cancel movie search"
         >
           Cancel
         </Button>}
@@ -210,6 +212,7 @@ const SyllabusManager: FC<SyllabusManagerProps> = ({ initialSyllabus, userId }) 
                 size="icon"
                 onClick={() => handleSendToTop(item.id)}
                 disabled={item.id === topUnassignedSyllabusItem?.id}
+                aria-label="Send to top"
               >
                 <ChevronsUp className="h-4 w-4" />
               </Button>
@@ -218,6 +221,7 @@ const SyllabusManager: FC<SyllabusManagerProps> = ({ initialSyllabus, userId }) 
                 size="icon"
                 onClick={() => handleMoveUp(item.id)}
                 disabled={index === 0}
+                aria-label="Move up"
               >
                 <ArrowUp className="h-4 w-4" />
               </Button>
@@ -226,6 +230,7 @@ const SyllabusManager: FC<SyllabusManagerProps> = ({ initialSyllabus, userId }) 
                 size="icon"
                 onClick={() => handleMoveDown(item.id)}
                 disabled={index === unassignedSyllabus.length - 1}
+                aria-label="Move down"
               >
                 <ArrowDown className="h-4 w-4" />
               </Button>
@@ -255,6 +260,7 @@ const SyllabusManager: FC<SyllabusManagerProps> = ({ initialSyllabus, userId }) 
                       <Button
                         size="sm"
                         onClick={() => handleSaveNotes(item.id)}
+                        aria-label="Save notes"
                       >
                         <Save className="h-3 w-3 mr-1" />
                         Save
@@ -263,6 +269,7 @@ const SyllabusManager: FC<SyllabusManagerProps> = ({ initialSyllabus, userId }) 
                         size="sm"
                         variant="outline"
                         onClick={handleCancelEditNotes}
+                        aria-label="Cancel notes"
                       >
                         <XIcon className="h-3 w-3 mr-1" />
                         Cancel
@@ -282,6 +289,7 @@ const SyllabusManager: FC<SyllabusManagerProps> = ({ initialSyllabus, userId }) 
                       variant="ghost"
                       size="sm"
                       onClick={() => handleStartEditNotes(item.id, item.notes)}
+                      aria-label="Edit notes"
                     >
                       <Edit3 className="h-3 w-3" />
                     </Button>
@@ -293,6 +301,7 @@ const SyllabusManager: FC<SyllabusManagerProps> = ({ initialSyllabus, userId }) 
               variant="ghost"
               size="icon"
               onClick={() => handleRemoveMovie(item.id)}
+              aria-label="Remove movie"
             >
               <X className="text-red-500 h-4 w-4" />
             </Button>

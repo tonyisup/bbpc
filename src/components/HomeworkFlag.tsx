@@ -1,8 +1,9 @@
 import { type FC } from "react";
 import { HiOutlineClipboardList, HiOutlinePaperClip, HiOutlineStar } from "react-icons/hi"
+import { type Assignment } from "@prisma/client";
 
 interface HomeworkFlagProps {
-  type: string
+  type: Assignment['type']
 }
 
 const HomeworkFlag: FC<HomeworkFlagProps> = ({ type }) => {

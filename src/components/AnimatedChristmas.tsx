@@ -1,13 +1,14 @@
 import React from 'react';
 
+const snowParticles = Array.from({ length: 12 }).map((_, i) => ({
+  id: i,
+  cx: Math.random() * 400,
+  delay: Math.random() * 5,
+  duration: 3 + Math.random() * 3,
+  size: 2 + Math.random() * 3,
+}));
+
 const ChristmasSnow = () => {
-  const snowParticles = Array.from({ length: 12 }).map((_, i) => ({
-    id: i,
-    cx: Math.random() * 400,
-    delay: Math.random() * 5,
-    duration: 3 + Math.random() * 3,
-    size: 2 + Math.random() * 3,
-  }));
 
   return (
     <div className="flex items-center justify-center p-4">
@@ -18,11 +19,13 @@ const ChristmasSnow = () => {
         xmlns="http://www.w3.org/2000/svg"
         className="rounded-lg shadow-xl"
         style={{ backgroundColor: '#1a472a' }}
+        role="img"
+        aria-labelledby="christmas-snow-title"
       >
         <defs>
+          <title id="christmas-snow-title">Animated Christmas snow decoration</title>
           <style>
             {`
-              @import url('https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap');
               @keyframes fall {
                 0% { transform: translateY(-20px) translateX(0px); opacity: 0; }
                 10% { opacity: 0.8; }
@@ -60,14 +63,13 @@ const ChristmasSnow = () => {
             cy="-10"
             r={p.size}
             style={{
-              // @ts-ignore
               '--duration': `${p.duration}s`,
               '--delay': `${p.delay}s`,
-            }}
+            } as React.CSSProperties}
           />
         ))}
       </svg>
-    </div>
+    </div >
   );
 };
 

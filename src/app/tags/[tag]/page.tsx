@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { api } from "@/trpc/react";
-import { motion, useMotionValue, useTransform, AnimatePresence } from "motion/react";
+import { motion, useMotionValue, useTransform, AnimatePresence, PanInfo } from "motion/react";
 import { X, Check, LinkIcon } from "lucide-react";
 import { v4 as uuidv4 } from "uuid";
 import ChristmasSnow from "@/components/AnimatedChristmas";
@@ -17,7 +17,8 @@ interface Movie {
   imdb_id?: string | null;
 }
 
-export default function TagPage({ params }: { params: { tag: string } }) {
+export default async function TagPage({ params }: { params: Promise<{ tag: string }> }) {
+  const { tag } = await params;
   const [sessionId, setSessionId] = useState<string>("");
   const [movies, setMovies] = useState<Movie[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -25,7 +26,7 @@ export default function TagPage({ params }: { params: { tag: string } }) {
 
   // Queries
   const { data: movieData, isLoading, refetch } = api.tag.getMoviesForTag.useQuery(
-    { tag: params.tag },
+    { tag: tag },
     {
       refetchOnWindowFocus: false,
       enabled: movies.length < 3, // Refetch when we're running low
@@ -33,7 +34,7 @@ export default function TagPage({ params }: { params: { tag: string } }) {
   );
 
   const { data: stats } = api.tag.getStats.useQuery(
-    { tag: params.tag, tmdbId: movies[currentIndex]?.id ?? 0 },
+    { tag: tag, tmdbId: movies[currentIndex]?.id ?? 0 },
     { enabled: !!movies[currentIndex] }
   );
 
@@ -50,7 +51,7 @@ export default function TagPage({ params }: { params: { tag: string } }) {
     setSessionId(sid);
 
     // Load voted IDs
-    const storedVotes = localStorage.getItem(`voted_movies_${params.tag}`);
+    const storedVotes = localStorage.getItem(`voted_movies_${tag}`);
     if (storedVotes) {
       try {
         setVotedMovieIds(JSON.parse(storedVotes));
@@ -58,7 +59,7 @@ export default function TagPage({ params }: { params: { tag: string } }) {
         console.error("Failed to parse voted movies", e);
       }
     }
-  }, [params.tag]);
+  }, [tag]);
 
   // Handle incoming movie data
   useEffect(() => {
@@ -71,7 +72,7 @@ export default function TagPage({ params }: { params: { tag: string } }) {
         setMovies((prev) => [...prev, ...newMovies]);
       }
     }
-  }, [movieData, votedMovieIds]);
+  }, [movieData, votedMovieIds, movies]);
 
   const handleVote = async (isTag: boolean) => {
     const currentMovie = movies[currentIndex];
@@ -84,7 +85,7 @@ export default function TagPage({ params }: { params: { tag: string } }) {
 
     // Save to DB
     submitVote.mutate({
-      tag: params.tag,
+      tag: tag,
       tmdbId: currentMovie.id,
       isTag,
       sessionId,
@@ -93,7 +94,7 @@ export default function TagPage({ params }: { params: { tag: string } }) {
     // Save to LocalStorage
     const newVotedIds = [...votedMovieIds, currentMovie.id];
     setVotedMovieIds(newVotedIds);
-    localStorage.setItem(`voted_movies_${params.tag}`, JSON.stringify(newVotedIds));
+    localStorage.setItem(`voted_movies_${tag}`, JSON.stringify(newVotedIds));
 
     // Wait a tiny bit for animation if triggered by button,
     // but the swipe logic usually handles the removal animation itself.
@@ -110,7 +111,7 @@ export default function TagPage({ params }: { params: { tag: string } }) {
   if (isLoading && movies.length === 0) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gray-950 text-white">
-        <div className="animate-pulse">Loading movies for "{params.tag}"...</div>
+        <div className="animate-pulse">Loading movies for "{tag}"...</div>
       </div>
     );
   }
@@ -119,11 +120,12 @@ export default function TagPage({ params }: { params: { tag: string } }) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-gray-950 text-white p-4 text-center">
         <h2 className="text-2xl font-bold mb-4">No more movies to vote on!</h2>
-        <p className="mb-8">You've gone through all the movies we found for "{params.tag}".</p>
+        <p className="mb-8">You've gone through all the movies we found for "{tag}".</p>
         <button
+          type="button"
           onClick={() => {
             setVotedMovieIds([]);
-            localStorage.removeItem(`voted_movies_${params.tag}`);
+            localStorage.removeItem(`voted_movies_${tag}`);
             refetch();
           }}
           className="px-6 py-2 bg-blue-600 rounded-full hover:bg-blue-700 transition-colors"
@@ -136,8 +138,8 @@ export default function TagPage({ params }: { params: { tag: string } }) {
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-gray-950 text-white overflow-hidden p-4">
-      {params.tag === "christmas" && <div className="mb-8"><h1 className="text-3xl text-center font-bold capitalize">Is it?</h1><ChristmasSnow /></div>}
-      {params.tag !== "christmas" && <h1 className="text-3xl font-bold mb-8 capitalize">Is it {params.tag} ?</h1>}
+      {tag === "christmas" && <div className="mb-8"><h1 className="text-3xl text-center font-bold capitalize">Is it?</h1><ChristmasSnow /></div>}
+      {tag !== "christmas" && <h1 className="text-3xl font-bold mb-8 capitalize">Is it {tag} ?</h1>}
 
       <div className="relative w-full max-w-sm h-[600px] flex flex-col items-center">
         <AnimatePresence>
@@ -170,7 +172,7 @@ export default function TagPage({ params }: { params: { tag: string } }) {
                 className="hover:text-white hover:underline transition-colors"
               >
                 {currentMovie.title}
-                <LinkIcon className="pl-2w-4 h-4 inline" />
+                <LinkIcon className="pl-2 w-4 h-4 inline" />
               </a>
             ) : (
               currentMovie.title
@@ -202,7 +204,7 @@ function SwipeCard({
   const rightOpacity = useTransform(x, [0, 150], [0, 1]);
   const leftOpacity = useTransform(x, [0, -150], [0, 1]);
 
-  const handleDragEnd = (_: any, info: any) => {
+  const handleDragEnd = (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
     if (info.offset.x > 100) {
       onVote(true);
     } else if (info.offset.x < -100) {
@@ -272,6 +274,7 @@ function SwipeCard({
       {/* Buttons for non-swipe interaction - placed outside the card but logically coupled */}
       <div className="absolute top-[520px] w-full flex justify-between px-8 z-10">
         <button
+          type="button"
           onClick={() => handleButtonVote(false)}
           className="w-16 h-16 rounded-full bg-red-500 hover:bg-red-600 flex items-center justify-center shadow-lg transition-transform hover:scale-110 active:scale-95"
           aria-label="Not the tag"
@@ -279,6 +282,7 @@ function SwipeCard({
           <X className="w-8 h-8 font-bold" />
         </button>
         <button
+          type="button"
           onClick={() => handleButtonVote(true)}
           className="w-16 h-16 rounded-full bg-green-500 hover:bg-green-600 flex items-center justify-center shadow-lg transition-transform hover:scale-110 active:scale-95"
           aria-label="Is the tag"

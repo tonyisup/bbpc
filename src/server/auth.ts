@@ -58,17 +58,9 @@ export const authOptions: NextAuthOptions = {
         const isAdmin = userRoles.some(ur => ur.role.admin);
 
 
-        const season = await db.season.findFirst({
-          orderBy: {
-            startedOn: 'desc',
-          },
-          where: {
-            endedOn: null,
-          },
-        });
         session.user.id = user.id;
         session.user.isAdmin = isAdmin;
-        session.user.points = await calculateUserPoints(db, user.email ?? "", season?.id ?? "");
+        session.user.points = await calculateUserPoints(db, user.email ?? "");
       }
       return session;
     },

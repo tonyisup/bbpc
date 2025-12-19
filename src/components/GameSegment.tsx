@@ -47,12 +47,10 @@ const GameSegment: FC<GameSegmentProps> = ({ assignment }) => {
 		</div>;
 	}
 
-	console.log('user data', userData);
-
 	if (!userData?.id) return (
 		<>
 			<div className="flex flex-col items-center gap-4 m-4">
-				<p className="text-2xl">Please <SignInButton /> to submit guesses tests</p>
+				<p className="text-2xl">Please <SignInButton /> to submit guesses</p>
 			</div>
 		</>
 	);

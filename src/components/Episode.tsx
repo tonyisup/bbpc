@@ -6,9 +6,7 @@ import type { Assignment as AssignmentType, Episode as EpisodeType, Link as Epis
 import Link from "next/link";
 import { AddExtraToNext } from "./AddExtraToNext";
 import { highlightText } from "@/utils/text";
-import { Button } from "./ui/button";
 import ShowInlinePreview from "./ShowInlinePreview";
-import GameSegment from "./GameSegment";
 import { PredictionGame } from "./PredictionGame";
 
 export type CompleteEpisode = EpisodeType & {
