@@ -61,24 +61,59 @@ export const tagRouter = createTRPCRouter({
       }
 
       // 2. Discover movies with this keyword
-      // We want random movies, so we'll fetch the first page to get total_pages,
-      // then pick a random page if total_pages > 1.
-      const discoverUrlBase = `${TMDB_API_BASE}/discover/movie?api_key=${process.env.TMDB_API_KEY}&with_keywords=${keyword.id}&language=en-US&include_adult=false&sort_by=popularity.desc`;
+      // Fetch both high and low rated movies for a fun mix
+      const baseParams = `api_key=${process.env.TMDB_API_KEY}&with_keywords=${keyword.id}&language=en-US&include_adult=false&vote_count.gte=10`;
+      const discoverUrlHigh = `${TMDB_API_BASE}/discover/movie?${baseParams}&sort_by=vote_average.desc`;
+      const discoverUrlLow = `${TMDB_API_BASE}/discover/movie?${baseParams}&sort_by=vote_average.asc`;
 
-      const firstPageResp = await fetch(`${discoverUrlBase}&page=1`);
-      const firstPageData = (await firstPageResp.json()) as DiscoverMovieResponse;
+      // Fetch first pages to get total_pages for both sorts
+      const [highRatedResp, lowRatedResp] = await Promise.all([
+        fetch(`${discoverUrlHigh}&page=1`),
+        fetch(`${discoverUrlLow}&page=1`)
+      ]);
 
-      let movies = firstPageData.results;
-      const totalPages = Math.min(firstPageData.total_pages, 500); // TMDB limits to 500 pages
+      const highRatedData = (await highRatedResp.json()) as DiscoverMovieResponse;
+      const lowRatedData = (await lowRatedResp.json()) as DiscoverMovieResponse;
 
-      if (totalPages > 1) {
-        const randomPage = Math.floor(Math.random() * totalPages) + 1;
-        if (randomPage !== 1) {
-          const randomPageResp = await fetch(`${discoverUrlBase}&page=${randomPage}`);
-          const randomPageData = (await randomPageResp.json()) as DiscoverMovieResponse;
-          movies = randomPageData.results;
+      const highTotalPages = Math.min(highRatedData.total_pages, 500);
+      const lowTotalPages = Math.min(lowRatedData.total_pages, 500);
+      const totalPages = Math.max(highTotalPages, lowTotalPages);
+
+      // Pick random pages for variety
+      let highMovies = highRatedData.results;
+      let lowMovies = lowRatedData.results;
+
+      if (highTotalPages > 1) {
+        const randomHighPage = Math.floor(Math.random() * highTotalPages) + 1;
+        if (randomHighPage !== 1) {
+          const resp = await fetch(`${discoverUrlHigh}&page=${randomHighPage}`);
+          highMovies = ((await resp.json()) as DiscoverMovieResponse).results;
         }
       }
+
+      if (lowTotalPages > 1) {
+        const randomLowPage = Math.floor(Math.random() * lowTotalPages) + 1;
+        if (randomLowPage !== 1) {
+          const resp = await fetch(`${discoverUrlLow}&page=${randomLowPage}`);
+          lowMovies = ((await resp.json()) as DiscoverMovieResponse).results;
+        }
+      }
+
+      // Interleave high and low rated movies for variety
+      const interleaved: typeof highMovies = [];
+      const maxLen = Math.max(highMovies.length, lowMovies.length);
+      for (let i = 0; i < maxLen; i++) {
+        if (i < highMovies.length) interleaved.push(highMovies[i]);
+        if (i < lowMovies.length) interleaved.push(lowMovies[i]);
+      }
+
+      // Remove duplicates (same movie might appear in both lists)
+      const seen = new Set<number>();
+      const movies = interleaved.filter(m => {
+        if (seen.has(m.id)) return false;
+        seen.add(m.id);
+        return true;
+      });
 
       // Process image URLs and fetch IMDB IDs
       const processedMovies = await Promise.all(movies.map(async (movie) => {
@@ -108,8 +143,8 @@ export const tagRouter = createTRPCRouter({
         movies: shuffled,
         pagination: {
           currentPage: input.page,
-          totalPages: Math.min(firstPageData.total_pages, 500),
-          totalResults: firstPageData.total_results,
+          totalPages: totalPages,
+          totalResults: highRatedData.total_results + lowRatedData.total_results,
         },
       };
     }),
