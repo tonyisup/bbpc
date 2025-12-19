@@ -405,4 +405,33 @@ export const tagRouter = createTRPCRouter({
         nextCursor,
       };
     }),
+
+  getTags: publicProcedure
+    .input(
+      z.object({
+        limit: z.number().min(1).max(100).default(50),
+        cursor: z.string().nullish(),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const items = await ctx.db.tag.findMany({
+        take: input.limit + 1,
+        where: {},
+        cursor: input.cursor ? { id: input.cursor } : undefined,
+        orderBy: {
+          name: "asc",
+        },
+      });
+
+      let nextCursor: typeof input.cursor | undefined = undefined;
+      if (items.length > input.limit) {
+        const nextItem = items.pop();
+        nextCursor = nextItem!.id;
+      }
+
+      return {
+        items,
+        nextCursor,
+      };
+    }),
 });

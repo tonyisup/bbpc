@@ -323,3 +323,10 @@ model TagVote {
   createdAt DateTime @default(now())
   sessionId String?
 }
+
+model Tag {
+  id          String   @id @default(dbgenerated("newid()")) @db.UniqueIdentifier
+  name        String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+}

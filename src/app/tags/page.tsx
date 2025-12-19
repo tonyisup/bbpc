@@ -1,5 +1,5 @@
-import { redirect } from "next/navigation";
+import { TagsPageClient } from "./TagsPageClient";
 
 export default async function TagsRootPage() {
-  redirect("/tags/christmas");
+  return <TagsPageClient />;
 }

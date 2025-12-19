@@ -9,6 +9,8 @@ import ChristmasSnow from "@/components/AnimatedChristmas";
 import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { signIn } from "next-auth/react";
+import { toast } from "sonner";
 
 interface Movie {
   id: number;
@@ -127,7 +129,8 @@ export function TagPageClient({ tag }: { tag: string }) {
   }, [movieData, votedMovieIds, movies, currentPage, tag]);
 
   const handleAddToSyllabus = async () => {
-    if (!session?.user || !currentMovie || isAddingToSyllabus || addedToSyllabus) return;
+    const user = session?.user;
+    if (!user || !currentMovie || isAddingToSyllabus || addedToSyllabus) return;
 
     setIsAddingToSyllabus(true);
     try {
@@ -149,7 +152,7 @@ export function TagPageClient({ tag }: { tag: string }) {
 
       // 2. Add to Syllabus
       await addToSyllabus.mutateAsync({
-        userId: session.user.id,
+        userId: user.id,
         movieId: savedMovie.id,
         order: 9999, // Append to end
       });
@@ -162,6 +165,83 @@ export function TagPageClient({ tag }: { tag: string }) {
       setIsAddingToSyllabus(false);
     }
   };
+
+  const currentMovie = movies[0];
+
+  const handleSignInToAdd = () => {
+    if (!currentMovie) return;
+    localStorage.setItem("pending_syllabus_add", JSON.stringify({
+      tag,
+      movie: currentMovie
+    }));
+    void signIn();
+  };
+
+  // Handle post-signin pending addition
+  useEffect(() => {
+    const user = session?.user;
+    if (user && hasFetchedOnce) {
+      const pending = localStorage.getItem("pending_syllabus_add");
+      if (pending) {
+        try {
+          const { tag: pendingTag, movie: pendingMovie } = JSON.parse(pending) as { tag: string, movie: Movie };
+          if (pendingTag === tag) {
+            // Remove early to prevent double-processing if effect re-runs
+            localStorage.removeItem("pending_syllabus_add");
+
+            // Check if this movie is already in our local voted list to avoid duplicates
+            if (votedMovieIds.includes(pendingMovie.id)) {
+              return;
+            }
+
+            setMovies(prev => [pendingMovie, ...prev]);
+
+            const year = new Date(pendingMovie.release_date).getFullYear();
+            let url = `https://www.themoviedb.org/movie/${pendingMovie.id}`;
+            if (pendingMovie.imdb_id) {
+              url = `https://www.imdb.com/title/${pendingMovie.imdb_id}`;
+            }
+
+            toast.promise(
+              (async () => {
+                const savedMovie = await addMovie.mutateAsync({
+                  title: pendingMovie.title,
+                  year: year,
+                  poster: pendingMovie.poster_path ?? "",
+                  url: url,
+                });
+
+                await addToSyllabus.mutateAsync({
+                  userId: user.id,
+                  movieId: savedMovie.id,
+                  order: 9999,
+                });
+
+                // // Record as "voted" so it doesn't show up again in the swipe list
+                // setVotedMovieIds(prev => {
+                //   if (prev.includes(pendingMovie.id)) return prev;
+                //   const newVotedIds = [...prev, pendingMovie.id];
+                //   localStorage.setItem(`voted_movies_${tag}`, JSON.stringify(newVotedIds));
+                //   return newVotedIds;
+                // });
+
+                // // Remove from current movies list if it happens to be there
+                // setMovies(prev => prev.filter(m => m.id !== pendingMovie.id));
+              })(),
+              {
+                loading: 'Adding movie from your previous session...',
+                success: `Added ${pendingMovie.title} to your syllabus!`,
+                error: 'Failed to add movie to syllabus.',
+              }
+            );
+          }
+        } catch (e) {
+          console.error("Failed to process pending syllabus add", e);
+          localStorage.removeItem("pending_syllabus_add");
+        }
+      }
+    }
+  }, [session, hasFetchedOnce, tag, votedMovieIds, addMovie, addToSyllabus]);
 
   const handlePassAndRefresh = () => {
     handleVote(null);
@@ -200,13 +280,12 @@ export function TagPageClient({ tag }: { tag: string }) {
     // Index stays 0 because we removed the first item
   };
 
-
-  const currentMovie = movies[0];
+  // const currentMovie = movies[0]; // Moved up
 
   // Show loading if we haven't fetched yet, are currently loading, or we're fetching more movies from another page
   if (!currentMovie && (isLoading || !hasFetchedOnce || currentPage < totalPages)) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-950 text-white">
+      <div className="flex min-h-screen items-center justify-center text-white">
         <div className="animate-pulse">{hasFetchedOnce ? "Loading more movies..." : `Loading movies for "${tag}"...`}</div>
       </div>
     );
@@ -214,7 +293,7 @@ export function TagPageClient({ tag }: { tag: string }) {
 
   if (!currentMovie && !isLoading && hasFetchedOnce && currentPage >= totalPages) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-gray-950 text-white p-4 text-center">
+      <div className="flex min-h-screen flex-col items-center justify-center text-white p-4 text-center">
         <h2 className="text-2xl font-bold mb-4">No more movies to vote on!</h2>
         <p className="mb-8">You've gone through all the movies we found for "{tag}".</p>
         <button
@@ -305,7 +384,11 @@ export function TagPageClient({ tag }: { tag: string }) {
               currentMovie.title
             )}
           </p>
-
+          {!session?.user && (
+            <p className="text-center text-sm text-gray-400 p-2">
+              Please <button onClick={handleSignInToAdd} className="font-semibold text-red-600 hover:text-red-400 transition-colors">Sign in</button> to add to syllabus
+            </p>
+          )}
           {session?.user && (
             <button
               onClick={handleAddToSyllabus}
@@ -383,7 +466,7 @@ function SwipeCard({
   if (!isFront) {
     return (
       <motion.div
-        className="absolute top-0 w-full h-[500px] rounded-xl overflow-hidden shadow-2xl bg-gray-900"
+        className="absolute top-0 w-full h-[500px] rounded-xl overflow-hidden shadow-2xl"
         style={{
           scale: 0.95,
           zIndex: 0,
@@ -406,7 +489,7 @@ function SwipeCard({
   return (
     <>
       <motion.div
-        className="absolute top-0 w-full h-[500px] rounded-xl overflow-hidden shadow-2xl bg-gray-900 cursor-grab active:cursor-grabbing"
+        className="absolute top-0 w-full h-[500px] rounded-xl overflow-hidden shadow-2xl cursor-grab active:cursor-grabbing"
         style={{ x, rotate, zIndex: 1 }}
         drag="x"
         dragConstraints={{ left: 0, right: 0 }}
