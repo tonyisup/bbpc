@@ -606,7 +606,7 @@ function SwipeCard({
       </motion.div>
 
       {/* Buttons for non-swipe interaction - placed outside the card but logically coupled */}
-      <div className="absolute top-[240px] sm:top-[380px] md:top-[460px] w-full flex justify-center px-8 sm:px-16 z-10 mt-4">
+      <div className="absolute top-[240px] sm:top-[380px] md:top-[460px] w-full flex justify-center gap-8 px-8 sm:px-16 z-10 mt-4">
         <button
           type="button"
           onClick={() => handleButtonVote(false)}
