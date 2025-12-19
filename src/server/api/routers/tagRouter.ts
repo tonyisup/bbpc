@@ -217,6 +217,32 @@ export const tagRouter = createTRPCRouter({
       };
     }),
 
+  getTagStats: publicProcedure.query(async ({ ctx }) => {
+    const stats = await ctx.db.tagVote.groupBy({
+      by: ["tag", "isTag"],
+      _count: {
+        isTag: true,
+      },
+    });
+
+    const aggregate = new Map<string, { yes: number; no: number; total: number }>();
+    for (const s of stats) {
+      const current = aggregate.get(s.tag) ?? { yes: 0, no: 0, total: 0 };
+      const count = s._count.isTag;
+      if (s.isTag === true) current.yes += count;
+      if (s.isTag === false) current.no += count;
+      current.total += count;
+      aggregate.set(s.tag, current);
+    }
+
+    return Array.from(aggregate.entries())
+      .map(([tag, counts]) => ({
+        tag,
+        ...counts,
+      }))
+      .sort((a, b) => b.total - a.total);
+  }),
+
   getAllStats: publicProcedure.query(async ({ ctx }) => {
     // 1. Group votes by tmdbId, tag, isTag
     const stats = await ctx.db.tagVote.groupBy({
