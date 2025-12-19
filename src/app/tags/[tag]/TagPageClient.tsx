@@ -24,6 +24,7 @@ export function TagPageClient({ tag }: { tag: string }) {
   const [votedMovieIds, setVotedMovieIds] = useState<number[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [hasFetchedOnce, setHasFetchedOnce] = useState(false);
 
   // Initialize page from localStorage
   useEffect(() => {
@@ -81,6 +82,8 @@ export function TagPageClient({ tag }: { tag: string }) {
   // Handle incoming movie data
   useEffect(() => {
     if (movieData) {
+      setHasFetchedOnce(true);
+
       // Update pagination info
       if (movieData.pagination) {
         setTotalPages(movieData.pagination.totalPages);
@@ -136,26 +139,19 @@ export function TagPageClient({ tag }: { tag: string }) {
     // Index stays 0 because we removed the first item
   };
 
+
   const currentMovie = movies[0];
 
-  if (isLoading && movies.length === 0) {
+  // Show loading if we haven't fetched yet or we're fetching more movies from another page
+  if (!currentMovie && (!hasFetchedOnce || currentPage < totalPages)) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gray-950 text-white">
-        <div className="animate-pulse">Loading movies for "{tag}"...</div>
+        <div className="animate-pulse">{hasFetchedOnce ? "Loading more movies..." : `Loading movies for "${tag}"...`}</div>
       </div>
     );
   }
 
-  // Show loading if we're fetching more movies from another page
-  if (!currentMovie && !isLoading && currentPage < totalPages) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-950 text-white">
-        <div className="animate-pulse">Loading more movies...</div>
-      </div>
-    );
-  }
-
-  if (!currentMovie && !isLoading && currentPage >= totalPages) {
+  if (!currentMovie && hasFetchedOnce && currentPage >= totalPages) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-gray-950 text-white p-4 text-center">
         <h2 className="text-2xl font-bold mb-4">No more movies to vote on!</h2>
@@ -167,6 +163,7 @@ export function TagPageClient({ tag }: { tag: string }) {
             localStorage.removeItem(`voted_movies_${tag}`);
             setCurrentPage(1);
             localStorage.setItem(`tag_page_${tag}`, "1");
+            setHasFetchedOnce(false);
             refetchMovies();
           }}
           className="px-6 py-2 bg-blue-600 rounded-full hover:bg-blue-700 transition-colors"
