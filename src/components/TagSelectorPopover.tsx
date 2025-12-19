@@ -68,7 +68,7 @@ export const TagSelectorPopover: FC<TagSelectorPopoverProps> = ({
               {allTags.map((tag) => (
                 <Link
                   key={tag.id}
-                  href={`/tags/${tag.name}?movieId=${movieId}`}
+                  href={`/tags/${tag.name}/${movieId}`}
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium
                     bg-gray-800 text-gray-300 hover:bg-blue-600 hover:text-white
                     transition-colors capitalize"

@@ -23,7 +23,7 @@ interface Movie {
   imdb_id?: string | null;
 }
 
-export function TagPageClient({ tag }: { tag: string }) {
+export function TagPageClient({ tag, initialMovieId }: { tag: string; initialMovieId?: number }) {
   const [sessionId, setSessionId] = useState<string>("");
   const [movies, setMovies] = useState<Movie[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -42,7 +42,7 @@ export function TagPageClient({ tag }: { tag: string }) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
-  const sharedMovieId = searchParams.get("movieId") ? parseInt(searchParams.get("movieId")!, 10) : undefined;
+  const sharedMovieId = initialMovieId;
 
   // Initialize page from localStorage
   useEffect(() => {
@@ -203,7 +203,7 @@ export function TagPageClient({ tag }: { tag: string }) {
 
   const handleShare = async () => {
     if (!currentMovie) return;
-    const url = `${window.location.origin}/tags/${tag}?movieId=${currentMovie.id}`;
+    const url = `${window.location.origin}/tags/${tag}/${currentMovie.id}`;
     try {
       await navigator.clipboard.writeText(url);
       toast.success("Link copied to clipboard!");
@@ -345,9 +345,9 @@ export function TagPageClient({ tag }: { tag: string }) {
       setHasVotedOnSharedMovie(true);
 
       // Clear the movieId from the URL so it doesn't reappear on refresh
-      const params = new URLSearchParams(searchParams.toString());
-      params.delete("movieId");
-      router.replace(`${pathname}${params.toString() ? `?${params.toString()}` : ""}`, { scroll: false });
+      // Clear the movieId from the URL so it doesn't reappear on refresh
+      // Navigate to the main tag page
+      router.replace(`/tags/${tag}`, { scroll: false });
     }
 
     // Optimistic UI update: move to next card immediately
@@ -500,9 +500,8 @@ export function TagPageClient({ tag }: { tag: string }) {
                     setSalt(s => s + 1);
                     setMovies((prev) => prev.slice(1));
                     // Clear the movieId from URL
-                    const params = new URLSearchParams(searchParams.toString());
-                    params.delete("movieId");
-                    router.replace(`${pathname}${params.toString() ? `?${params.toString()}` : ""}`, { scroll: false });
+                    // Clear the movieId from URL
+                    router.replace(`/tags/${tag}`, { scroll: false });
                   }}
                   className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-full text-white text-sm font-medium transition-colors"
                 >
