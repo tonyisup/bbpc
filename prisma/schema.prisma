@@ -233,7 +233,7 @@ model Point {
   seasonId         String             @db.UniqueIdentifier
   reason           String?
   earnedOn         DateTime           @db.DateTime
-  adjustment       Int                @default(0) @db.SmallInt
+  adjustment       Int?               @default(0) @db.SmallInt
   gamePointTypeId  Int?               @db.TinyInt
   AssignmentPoints AssignmentPoints[]
   GamblingPoints   GamblingPoints[]
