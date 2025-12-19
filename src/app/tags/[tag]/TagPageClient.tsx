@@ -3,9 +3,10 @@
 import { useEffect, useState } from "react";
 import { api } from "@/trpc/react";
 import { motion, useMotionValue, useTransform, AnimatePresence, PanInfo } from "motion/react";
-import { X, Check, LinkIcon, RefreshCwIcon } from "lucide-react";
+import { X, Check, LinkIcon, RefreshCwIcon, PlusCircle, CheckCircle } from "lucide-react";
 import { v4 as uuidv4 } from "uuid";
 import ChristmasSnow from "@/components/AnimatedChristmas";
+import { useSession } from "next-auth/react";
 
 interface Movie {
   id: number;
@@ -58,7 +59,18 @@ export function TagPageClient({ tag }: { tag: string }) {
     { enabled: !!movies[currentIndex] }
   );
 
+  const { data: session } = useSession();
+  const [isAddingToSyllabus, setIsAddingToSyllabus] = useState(false);
+  const [addedToSyllabus, setAddedToSyllabus] = useState(false);
+
   const submitVote = api.tag.submitVote.useMutation();
+  const addMovie = api.movie.add.useMutation();
+  const addToSyllabus = api.syllabus.add.useMutation();
+
+  useEffect(() => {
+    // Reset added state when current movie changes
+    setAddedToSyllabus(false);
+  }, [currentIndex]);
 
   // Initialize session and local storage
   useEffect(() => {
@@ -111,6 +123,43 @@ export function TagPageClient({ tag }: { tag: string }) {
       }
     }
   }, [movieData, votedMovieIds, movies, currentPage, tag]);
+
+  const handleAddToSyllabus = async () => {
+    if (!session?.user || !currentMovie || isAddingToSyllabus || addedToSyllabus) return;
+
+    setIsAddingToSyllabus(true);
+    try {
+      const year = new Date(currentMovie.release_date).getFullYear();
+
+      // Determine URL - prefer IMDB, fallback to TMDB
+      let url = `https://www.themoviedb.org/movie/${currentMovie.id}`;
+      if (currentMovie.imdb_id) {
+        url = `https://www.imdb.com/title/${currentMovie.imdb_id}`;
+      }
+
+      // 1. Add/Ensure movie exists in our DB
+      const savedMovie = await addMovie.mutateAsync({
+        title: currentMovie.title,
+        year: year,
+        poster: currentMovie.poster_path ?? "", // Fallback if null, schema might require string
+        url: url,
+      });
+
+      // 2. Add to Syllabus
+      await addToSyllabus.mutateAsync({
+        userId: session.user.id,
+        movieId: savedMovie.id,
+        order: 9999, // Append to end
+      });
+
+      setAddedToSyllabus(true);
+    } catch (error) {
+      console.error("Failed to add to syllabus:", error);
+      // Optional: Show error toast
+    } finally {
+      setIsAddingToSyllabus(false);
+    }
+  };
 
   const handlePassAndRefresh = () => {
     handleVote(null);
@@ -211,8 +260,8 @@ export function TagPageClient({ tag }: { tag: string }) {
 
       {/* Stats Bar */}
       {currentMovie && (
-        <div className="w-full max-w-sm">
-          <p className="text-center text-sm text-gray-400 p-4">
+        <div className="w-full max-w-sm flex flex-col items-center gap-2">
+          <p className="text-center text-sm text-gray-400 p-2">
             {currentMovie.imdb_id ? (
               <a
                 href={`https://www.imdb.com/title/${currentMovie.imdb_id}`}
@@ -227,7 +276,41 @@ export function TagPageClient({ tag }: { tag: string }) {
               currentMovie.title
             )}
           </p>
-          <StatsBar stats={stats} />
+
+          {session?.user && (
+            <button
+              onClick={handleAddToSyllabus}
+              disabled={isAddingToSyllabus || addedToSyllabus}
+              className={`
+                flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all
+                ${addedToSyllabus
+                  ? "bg-green-600/20 text-green-400 cursor-default"
+                  : "bg-blue-600/20 text-blue-400 hover:bg-blue-600/30 active:scale-95"
+                }
+                ${isAddingToSyllabus ? "opacity-50 cursor-not-allowed" : ""}
+              `}
+            >
+              {addedToSyllabus ? (
+                <>
+                  <CheckCircle className="w-4 h-4" />
+                  Added to Syllabus
+                </>
+              ) : (
+                <>
+                  {isAddingToSyllabus ? (
+                    <RefreshCwIcon className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <PlusCircle className="w-4 h-4" />
+                  )}
+                  Add to Syllabus
+                </>
+              )}
+            </button>
+          )}
+
+          <div className="w-full mt-2">
+            <StatsBar stats={stats} />
+          </div>
         </div>
       )}
     </div>
