@@ -146,7 +146,16 @@ export function TagPageClient({ tag }: { tag: string }) {
     );
   }
 
-  if (!currentMovie && !isLoading) {
+  // Show loading if we're fetching more movies from another page
+  if (!currentMovie && !isLoading && currentPage < totalPages) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gray-950 text-white">
+        <div className="animate-pulse">Loading more movies...</div>
+      </div>
+    );
+  }
+
+  if (!currentMovie && !isLoading && currentPage >= totalPages) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-gray-950 text-white p-4 text-center">
         <h2 className="text-2xl font-bold mb-4">No more movies to vote on!</h2>
@@ -262,13 +271,15 @@ function SwipeCard({
           y: 20
         }}
       >
-        {movie.poster_path ? (
-          <img src={movie.poster_path} alt={movie.title} className="w-full h-full object-contain" draggable={false} />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center bg-gray-800 text-gray-500">
-            No Poster
-          </div>
-        )}
+        <div className="w-full h-full flex items-center justify-center">
+          {movie.poster_path ? (
+            <img src={movie.poster_path} alt={movie.title} className="max-w-full max-h-full object-contain" draggable={false} />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center bg-gray-800 text-gray-500">
+              No Poster
+            </div>
+          )}
+        </div>
       </motion.div>
     )
   }
@@ -297,13 +308,15 @@ function SwipeCard({
           <span className="text-white font-black text-4xl border-4 border-white p-2 rounded transform rotate-12">NO</span>
         </motion.div>
 
-        {movie.poster_path ? (
-          <img src={movie.poster_path} alt={movie.title} className="w-full h-full object-cover pointer-events-none" />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center bg-gray-800 text-gray-500">
-            No Poster
-          </div>
-        )}
+        <div className="w-full h-full flex items-center justify-center">
+          {movie.poster_path ? (
+            <img src={movie.poster_path} alt={movie.title} className="max-w-full max-h-full object-contain pointer-events-none" />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center bg-gray-800 text-gray-500">
+              No Poster
+            </div>
+          )}
+        </div>
       </motion.div>
 
       {/* Buttons for non-swipe interaction - placed outside the card but logically coupled */}
