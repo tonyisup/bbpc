@@ -7,7 +7,7 @@ export interface DbCredentials {
 
 /**
  * Parses a database URL and extracts credentials.
- * Expected format: protocol://username:password@hostname/database
+ * Expected format: protocol://hostname;database=database;user=username;password=password
  * 
  * @param databaseUrl The raw DATABASE_URL string
  * @returns An object containing the extracted credentials
@@ -15,12 +15,10 @@ export interface DbCredentials {
  */
 export function parseDbUrl(databaseUrl: string): DbCredentials {
   try {
-    const url = new URL(databaseUrl);
-
-    const dbUser = decodeURIComponent(url.username);
-    const dbPassword = decodeURIComponent(url.password);
-    const dbHost = url.hostname;
-    const dbName = url.pathname.replace(/^\//, "");
+    const dbUser = decodeURIComponent(databaseUrl.split(";").find(param => param.startsWith("user="))?.split("=")[1] ?? "");
+    const dbPassword = decodeURIComponent(databaseUrl.split(";").find(param => param.startsWith("password="))?.split("=")[1] ?? "");
+    const dbHost = databaseUrl.split(";").find(param => param.startsWith("sqlserver://"))?.split("//")[1];
+    const dbName = decodeURIComponent(databaseUrl.split(";").find(param => param.startsWith("database="))?.split("=")[1] ?? "");
 
     if (!dbUser || !dbPassword || !dbHost || !dbName) {
       throw new Error("Incomplete database credentials in DATABASE_URL");
