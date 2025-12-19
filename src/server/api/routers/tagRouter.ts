@@ -52,10 +52,51 @@ export const tagRouter = createTRPCRouter({
       );
 
       if (!keyword) {
+        // Even if keyword not found, we should still return the specific movie if requested
+        let movies: {
+          id: number;
+          title: string;
+          poster_path: string | null;
+          backdrop_path: string | null;
+          overview: string;
+          release_date: string;
+          imdb_id: string | null | undefined;
+        }[] = [];
+
+        if (input.movieId) {
+          try {
+            const specificMovieUrl = `${TMDB_API_BASE}/movie/${input.movieId}?api_key=${process.env.TMDB_API_KEY}`;
+            console.log(`Fetching specific movie (no keyword): ${input.movieId}`);
+            const specificMovieResp = await fetch(specificMovieUrl);
+
+            if (specificMovieResp.ok) {
+              const specificMovieData = await specificMovieResp.json();
+              movies = [{
+                id: specificMovieData.id,
+                title: specificMovieData.title as string,
+                poster_path: specificMovieData.poster_path
+                  ? `https://image.tmdb.org/t/p/w500${specificMovieData.poster_path}`
+                  : null,
+                backdrop_path: specificMovieData.backdrop_path
+                  ? `https://image.tmdb.org/t/p/w1280${specificMovieData.backdrop_path}`
+                  : null,
+                overview: specificMovieData.overview as string,
+                release_date: specificMovieData.release_date as string,
+                imdb_id: specificMovieData.imdb_id as string | null | undefined,
+              }];
+              console.log(`Fetched movie for no-keyword case: ${movies[0]?.title}`);
+            } else {
+              console.error(`TMDB API returned ${specificMovieResp.status} for movie ${input.movieId} (no keyword)`);
+            }
+          } catch (e) {
+            console.error(`Failed to fetch specific movie ${input.movieId} (no keyword)`, e);
+          }
+        }
+
         return {
           tag: input.tag,
           keywordId: null,
-          movies: [],
+          movies,
           pagination: {
             currentPage: input.page,
             totalPages: searchData.total_pages,
@@ -167,7 +208,9 @@ export const tagRouter = createTRPCRouter({
 
         try {
           const specificMovieUrl = `${TMDB_API_BASE}/movie/${input.movieId}?api_key=${process.env.TMDB_API_KEY}`;
+          console.log(`Fetching specific movie: ${input.movieId}`);
           const specificMovieResp = await fetch(specificMovieUrl);
+
           if (specificMovieResp.ok) {
             const specificMovieData = await specificMovieResp.json();
             const specificMovie = {
@@ -183,7 +226,10 @@ export const tagRouter = createTRPCRouter({
               release_date: specificMovieData.release_date as string,
               imdb_id: specificMovieData.imdb_id as string | null | undefined,
             };
+            console.log(`Successfully fetched movie: ${specificMovie.title} (ID: ${specificMovie.id})`);
             shuffled.unshift(specificMovie);
+          } else {
+            console.error(`TMDB API returned ${specificMovieResp.status} for movie ${input.movieId}`);
           }
         } catch (e) {
           console.error(`Failed to fetch specific movie ${input.movieId}`, e);
