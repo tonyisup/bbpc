@@ -117,14 +117,28 @@ export const tagRouter = createTRPCRouter({
 
       // Process image URLs and fetch IMDB IDs
       const processedMovies = await Promise.all(movies.map(async (movie) => {
+        if (!movie) return null;
         // Fetch details to get imdb_id
         const detailsUrl = `${TMDB_API_BASE}/movie/${movie.id}?api_key=${process.env.TMDB_API_KEY}`;
         const detailsResp = await fetch(detailsUrl);
         const detailsData = await detailsResp.json();
 
+        if (!detailsData) {
+          return {
+            ...movie,
+            imdb_id: null,
+            poster_path: movie.poster_path
+              ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
+              : null,
+            backdrop_path: movie.backdrop_path
+              ? `https://image.tmdb.org/t/p/w1280${movie.backdrop_path}`
+              : null,
+          };
+        }
+
         return {
           ...movie,
-          imdb_id: detailsData.imdb_id as string | null,
+          imdb_id: (detailsData as { imdb_id: string | null }).imdb_id,
           poster_path: movie.poster_path
             ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
             : null,
@@ -135,7 +149,10 @@ export const tagRouter = createTRPCRouter({
       }));
 
       // Shuffle the results on the server side as well for good measure
-      const shuffled = processedMovies.sort(() => 0.5 - Math.random());
+      // Filter out nulls and force type
+      const shuffled = processedMovies
+        .filter((m): m is NonNullable<typeof m> => m !== null)
+        .sort(() => 0.5 - Math.random());
 
       return {
         tag: input.tag,
@@ -197,4 +214,81 @@ export const tagRouter = createTRPCRouter({
         total: yesCount + noCount,
       };
     }),
+
+  getAllStats: publicProcedure.query(async ({ ctx }) => {
+    // 1. Group votes by tmdbId, tag, isTag
+    const stats = await ctx.db.tagVote.groupBy({
+      by: ["tmdbId", "tag", "isTag"],
+      _count: {
+        isTag: true,
+      },
+    });
+
+    // 2. Aggregate into a structure: Map<tmdbId, Map<tag, { yes: number, no: number }>>
+    const movieStats = new Map<number, Map<string, { yes: number; no: number }>>();
+
+    for (const s of stats) {
+      if (!movieStats.has(s.tmdbId)) {
+        movieStats.set(s.tmdbId, new Map());
+      }
+      const tags = movieStats.get(s.tmdbId)!;
+      if (!tags.has(s.tag)) {
+        tags.set(s.tag, { yes: 0, no: 0 });
+      }
+      const count = s._count.isTag;
+      if (s.isTag === true) {
+        tags.get(s.tag)!.yes += count;
+      } else if (s.isTag === false) {
+        tags.get(s.tag)!.no += count;
+      }
+    }
+
+    // 3. Fetch movie details for each tmdbId
+    const tmdbIds = Array.from(movieStats.keys());
+    const movieDetails = await Promise.all(
+      tmdbIds.map(async (id) => {
+        try {
+          const detailsUrl = `${TMDB_API_BASE}/movie/${id}?api_key=${process.env.TMDB_API_KEY}`;
+          const resp = await fetch(detailsUrl);
+          if (!resp.ok) return null;
+          const data = await resp.json();
+          return {
+            id: data.id,
+            title: data.title as string,
+            poster_path: data.poster_path
+              ? `https://image.tmdb.org/t/p/w200${data.poster_path}`
+              : null,
+          };
+        } catch (e) {
+          console.error(`Failed to fetch movie ${id}`, e);
+          return null;
+        }
+      })
+    );
+
+    // 4. Construct final result
+    const result = tmdbIds
+      .map((id) => {
+        const details = movieDetails.find((m) => m?.id === id);
+        const title = details?.title ?? `Movie #${id}`;
+        const poster_path = details?.poster_path ?? null;
+
+        const tagsMap = movieStats.get(id)!;
+        const tags = Array.from(tagsMap.entries()).map(([tag, counts]) => ({
+          tag,
+          yes: counts.yes,
+          no: counts.no,
+        }));
+
+        return {
+          tmdbId: id,
+          title,
+          poster_path,
+          tags,
+        };
+      })
+      .sort((a, b) => a.title.localeCompare(b.title));
+
+    return result;
+  }),
 });
