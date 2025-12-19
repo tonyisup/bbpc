@@ -575,9 +575,9 @@ function SwipeCard({
           y: 20
         }}
       >
-        <div className="w-full h-full flex items-center justify-center">
+        <div className="w-full overflow-hidden flex items-center justify-center">
           {movie.poster_path ? (
-            <img src={movie.poster_path} alt={movie.title} className="max-w-full max-h-full object-contain" draggable={false} />
+            <img src={movie.poster_path} alt={movie.title} className="w-full h-auto object-cover" draggable={false} />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-gray-800 text-gray-500">
               No Poster
@@ -612,9 +612,9 @@ function SwipeCard({
           <span className="text-white font-black text-4xl border-4 border-white p-2 rounded transform rotate-12">NO</span>
         </motion.div>
 
-        <div className="w-full h-full flex items-center justify-center">
+        <div className="w-full overflow-hidden flex items-center justify-center">
           {movie.poster_path ? (
-            <img src={movie.poster_path} alt={movie.title} className="max-w-full max-h-full object-contain pointer-events-none" />
+            <img src={movie.poster_path} alt={movie.title} className="w-full h-auto object-cover pointer-events-none" />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-gray-800 text-gray-500">
               No Poster
@@ -624,7 +624,7 @@ function SwipeCard({
       </motion.div>
 
       {/* Buttons for non-swipe interaction - placed outside the card but logically coupled */}
-      <div className="absolute top-[240px] sm:top-[380px] md:top-[460px] w-full flex justify-center gap-4 sm:gap-8 z-10 mt-4 overflow-visible">
+      <div className="absolute top-[240px] sm:top-[380px] md:top-[460px] w-full flex justify-center gap-4 sm:gap-8 z-10 mt-4">
         <button
           type="button"
           onClick={() => handleButtonVote(false)}
