@@ -1,9 +1,5 @@
 'use client'
 
-import { useState } from "react";
-import { ChevronDown, ChevronUp } from "lucide-react";
-
-// Define types based on what we expect from the server
 interface Episode {
 	id: string;
 	title: string;

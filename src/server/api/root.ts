@@ -237,14 +237,17 @@ export const appRouter = createTRPCRouter({
 
   user: createTRPCRouter({
     points: protectedProcedure.query(({ ctx }) => {
-      console.log('user stuff', ctx.session.user);
+
       if (!ctx.session.user.email) {
         throw new Error("User not found");
       }
       return calculateUserPoints(ctx.db, ctx.session.user.email);
     }),
     me: protectedProcedure.query(({ ctx }) => {
-      return ctx.db.user.findFirst({
+      if (!ctx.session.user.email) {
+        throw new Error("User email not found in session");
+      }
+      return ctx.db.user.findUnique({
         where: { email: ctx.session.user.email },
       });
     }),
@@ -253,7 +256,10 @@ export const appRouter = createTRPCRouter({
         name: z.string(),
       }))
       .mutation(async ({ ctx, input }) => {
-        const user = await ctx.db.user.findFirst({
+        if (!ctx.session.user.email) {
+          throw new Error("User email not found in session");
+        }
+        const user = await ctx.db.user.findUnique({
           where: { email: ctx.session.user.email },
         });
         if (!user) {

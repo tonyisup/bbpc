@@ -156,6 +156,7 @@ const AssignmentPrediction: FC<AssignmentPredictionProps> = ({ assignment, hosts
 									const isSelected = guess?.Rating.id === rating.id;
 									return (
 										<button
+											type="button"
 											key={rating.id}
 											onClick={() => {
 												if (isSelected || isSubmitting) return;
