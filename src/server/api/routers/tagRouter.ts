@@ -31,14 +31,14 @@ const TMDB_API_BASE = "https://api.themoviedb.org/3";
 
 export const tagRouter = createTRPCRouter({
   getMoviesForTag: publicProcedure
-    .input(z.object({ tag: z.string() }))
+    .input(z.object({ tag: z.string(), page: z.number().min(1).default(1) }))
     .query(async ({ ctx, input }) => {
       if (!process.env.TMDB_API_KEY) {
         throw new Error("TMDB_API_KEY is not set");
       }
 
       // 1. Find the keyword ID
-      const searchUrl = `${TMDB_API_BASE}/search/keyword?api_key=${process.env.TMDB_API_KEY}&query=${encodeURIComponent(input.tag)}&page=1`;
+      const searchUrl = `${TMDB_API_BASE}/search/keyword?api_key=${process.env.TMDB_API_KEY}&query=${encodeURIComponent(input.tag)}&page=${input.page}`;
       const searchResp = await fetch(searchUrl);
       const searchData = (await searchResp.json()) as KeywordSearchResponse;
 
@@ -52,6 +52,11 @@ export const tagRouter = createTRPCRouter({
           tag: input.tag,
           keywordId: null,
           movies: [],
+          pagination: {
+            currentPage: input.page,
+            totalPages: searchData.total_pages,
+            totalResults: searchData.total_results,
+          },
         };
       }
 
@@ -101,6 +106,11 @@ export const tagRouter = createTRPCRouter({
         tag: input.tag,
         keywordId: keyword.id,
         movies: shuffled,
+        pagination: {
+          currentPage: input.page,
+          totalPages: Math.min(firstPageData.total_pages, 500),
+          totalResults: firstPageData.total_results,
+        },
       };
     }),
 
@@ -109,7 +119,7 @@ export const tagRouter = createTRPCRouter({
       z.object({
         tag: z.string(),
         tmdbId: z.number(),
-        isTag: z.boolean(),
+        isTag: z.boolean().nullable(),
         sessionId: z.string().optional(),
       })
     )

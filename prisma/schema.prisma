@@ -319,7 +319,7 @@ model TagVote {
   id        String   @id @default(dbgenerated("newid()")) @db.UniqueIdentifier
   tag       String
   tmdbId    Int
-  isTag     Boolean
+  isTag     Boolean?
   createdAt DateTime @default(now())
   sessionId String?
 }
