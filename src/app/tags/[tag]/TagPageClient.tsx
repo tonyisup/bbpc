@@ -47,6 +47,8 @@ export function TagPageClient({ tag }: { tag: string }) {
     { tag: tag, page: currentPage },
     {
       refetchOnWindowFocus: false,
+      refetchOnMount: 'always', // Always fetch fresh data on mount
+      staleTime: 0, // Consider data stale immediately to ensure fresh fetches
       enabled: movies.length < 3, // Refetch when we're running low
     }
   );
@@ -87,6 +89,14 @@ export function TagPageClient({ tag }: { tag: string }) {
       // Update pagination info
       if (movieData.pagination) {
         setTotalPages(movieData.pagination.totalPages);
+
+        // If stored page is higher than actual totalPages, reset to page 1
+        // This handles stale localStorage data
+        if (currentPage > movieData.pagination.totalPages && movieData.pagination.totalPages > 0) {
+          setCurrentPage(1);
+          localStorage.setItem(`tag_page_${tag}`, "1");
+          return; // Exit early, the query will refetch with page 1
+        }
       }
 
       const newMovies = movieData.movies.filter(
@@ -100,7 +110,7 @@ export function TagPageClient({ tag }: { tag: string }) {
         setCurrentPage((prev) => prev + 1);
       }
     }
-  }, [movieData, votedMovieIds, movies, currentPage]);
+  }, [movieData, votedMovieIds, movies, currentPage, tag]);
 
   const handlePassAndRefresh = () => {
     handleVote(null);
@@ -142,8 +152,8 @@ export function TagPageClient({ tag }: { tag: string }) {
 
   const currentMovie = movies[0];
 
-  // Show loading if we haven't fetched yet or we're fetching more movies from another page
-  if (!currentMovie && (!hasFetchedOnce || currentPage < totalPages)) {
+  // Show loading if we haven't fetched yet, are currently loading, or we're fetching more movies from another page
+  if (!currentMovie && (isLoading || !hasFetchedOnce || currentPage < totalPages)) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gray-950 text-white">
         <div className="animate-pulse">{hasFetchedOnce ? "Loading more movies..." : `Loading movies for "${tag}"...`}</div>
@@ -151,7 +161,7 @@ export function TagPageClient({ tag }: { tag: string }) {
     );
   }
 
-  if (!currentMovie && hasFetchedOnce && currentPage >= totalPages) {
+  if (!currentMovie && !isLoading && hasFetchedOnce && currentPage >= totalPages) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-gray-950 text-white p-4 text-center">
         <h2 className="text-2xl font-bold mb-4">No more movies to vote on!</h2>
