@@ -33,6 +33,7 @@ export function TagPageClient({ tag }: { tag: string }) {
   const [hasFetchedOnce, setHasFetchedOnce] = useState(false);
   const [sharedMovieLoaded, setSharedMovieLoaded] = useState(false);
   const [hasVotedOnSharedMovie, setHasVotedOnSharedMovie] = useState(false);
+  const [sharedMovieWasAlreadyVoted, setSharedMovieWasAlreadyVoted] = useState(false);
 
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -107,11 +108,15 @@ export function TagPageClient({ tag }: { tag: string }) {
     if (storedVotes) {
       try {
         let votedIds: number[] = JSON.parse(storedVotes);
-        // If there's a shared movie ID in the URL, remove it from votedIds
-        // so the user can see the shared movie even if they voted on it before
+
+        // If there's a shared movie ID in the URL and it's already been voted on,
+        // track this so we can show "Already Voted" UI, but still allow viewing
         if (sharedMovieId && votedIds.includes(sharedMovieId)) {
+          setSharedMovieWasAlreadyVoted(true);
+          // Remove from votedIds so the movie can still be displayed
           votedIds = votedIds.filter(id => id !== sharedMovieId);
         }
+
         setVotedMovieIds(votedIds);
       } catch (e) {
         console.error("Failed to parse voted movies", e);
@@ -412,7 +417,7 @@ export function TagPageClient({ tag }: { tag: string }) {
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center text-white overflow-hidden p-4">
+    <div className="flex min-h-screen flex-col items-center text-white  p-4">
       {tag === "christmas" && <div>
         <span className="flex items-center justify-center gap-2">
           <span className="text-3xl text-center font-bold capitalize">Is it?</span>
@@ -456,6 +461,7 @@ export function TagPageClient({ tag }: { tag: string }) {
                 index={index}
                 onVote={handleVote}
                 isFront={index === 0}
+                disableSwipe={sharedMovieId === movie.id && sharedMovieWasAlreadyVoted}
               />
             );
           })}
@@ -463,34 +469,61 @@ export function TagPageClient({ tag }: { tag: string }) {
 
         {/* Buttons for non-swipe interaction - placed outside the card stack */}
         {currentMovie && (
-          <div className="absolute top-[240px] sm:top-[380px] md:top-[460px] left-0 right-0 mx-auto w-full flex justify-center gap-4 sm:gap-8 z-10 mt-4">
-            <button
-              type="button"
-              onClick={() => handleVote(false)}
-              className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 aspect-square shrink-0 rounded-full bg-red-500 hover:bg-red-600 flex items-center justify-center shadow-lg transition-transform hover:scale-110 active:scale-95"
-              aria-label={`Is NOT ${tag}`}
-              title={`Is NOT ${tag}`}
-            >
-              <X className="w-6 h-6 sm:w-8 sm:h-8 font-bold" />
-            </button>
-            <button
-              type="button"
-              onClick={() => handlePassAndRefresh()}
-              className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 aspect-square shrink-0 rounded-full bg-blue-500 hover:bg-blue-600 flex items-center justify-center shadow-lg transition-transform hover:scale-110 active:scale-95"
-              aria-label="Pass and refresh"
-              title="Pass and refresh"
-            >
-              <RefreshCwIcon className="w-6 h-6 sm:w-8 sm:h-8 font-bold" />
-            </button>
-            <button
-              type="button"
-              onClick={() => handleVote(true)}
-              className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 aspect-square shrink-0 rounded-full bg-green-500 hover:bg-green-600 flex items-center justify-center shadow-lg transition-transform hover:scale-110 active:scale-95"
-              aria-label={`It IS ${tag}`}
-              title={`It IS ${tag}`}
-            >
-              <Check className="w-6 h-6 sm:w-8 sm:h-8 font-bold" />
-            </button>
+          <div className="absolute top-[240px] sm:top-[380px] md:top-[460px] left-0 right-0 mx-auto w-full flex flex-col items-center gap-2 z-10 mt-4">
+            {/* Show "Already Voted" message if this is the shared movie and user already voted */}
+            {sharedMovieId && currentMovie.id === sharedMovieId && sharedMovieWasAlreadyVoted ? (
+              <div className="flex flex-col items-center gap-3">
+                <div className="flex items-center gap-2 px-4 py-2 bg-gray-800/80 backdrop-blur-sm rounded-full text-gray-300">
+                  <CheckCircle className="w-5 h-5 text-green-400" />
+                  <span className="text-sm font-medium">You already voted on this movie</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    // Mark as voted in this session and move to next
+                    setHasVotedOnSharedMovie(true);
+                    setMovies((prev) => prev.slice(1));
+                    // Clear the movieId from URL
+                    const params = new URLSearchParams(searchParams.toString());
+                    params.delete("movieId");
+                    router.replace(`${pathname}${params.toString() ? `?${params.toString()}` : ""}`, { scroll: false });
+                  }}
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-full text-white text-sm font-medium transition-colors"
+                >
+                  Next Movie →
+                </button>
+              </div>
+            ) : (
+              <div className="flex justify-center gap-4 sm:gap-8">
+                <button
+                  type="button"
+                  onClick={() => handleVote(false)}
+                  className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 aspect-square shrink-0 rounded-full bg-red-500 hover:bg-red-600 flex items-center justify-center shadow-lg transition-transform hover:scale-110 active:scale-95"
+                  aria-label={`Is NOT ${tag}`}
+                  title={`Is NOT ${tag}`}
+                >
+                  <X className="w-6 h-6 sm:w-8 sm:h-8 font-bold" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handlePassAndRefresh()}
+                  className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 aspect-square shrink-0 rounded-full bg-blue-500 hover:bg-blue-600 flex items-center justify-center shadow-lg transition-transform hover:scale-110 active:scale-95"
+                  aria-label="Pass and refresh"
+                  title="Pass and refresh"
+                >
+                  <RefreshCwIcon className="w-6 h-6 sm:w-8 sm:h-8 font-bold" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleVote(true)}
+                  className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 aspect-square shrink-0 rounded-full bg-green-500 hover:bg-green-600 flex items-center justify-center shadow-lg transition-transform hover:scale-110 active:scale-95"
+                  aria-label={`It IS ${tag}`}
+                  title={`It IS ${tag}`}
+                >
+                  <Check className="w-6 h-6 sm:w-8 sm:h-8 font-bold" />
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -572,11 +605,13 @@ function SwipeCard({
   index,
   onVote,
   isFront,
+  disableSwipe = false,
 }: {
   movie: Movie,
   index: number,
   onVote: (vote: boolean) => void,
   isFront: boolean,
+  disableSwipe?: boolean,
 }) {
   const x = useMotionValue(0);
   const rotate = useTransform(x, [-200, 200], [-30, 30]);
@@ -604,7 +639,7 @@ function SwipeCard({
   if (!isFront) {
     return (
       <motion.div
-        className={`${cardClasses} rounded-xl overflow-hidden shadow-2xl`}
+        className={`${cardClasses} rounded-xl  shadow-2xl`}
         style={{
           scale: 0.95,
           zIndex: 0,
@@ -627,11 +662,11 @@ function SwipeCard({
   return (
     <>
       <motion.div
-        className={`${cardClasses} rounded-xl overflow-hidden shadow-2xl cursor-grab active:cursor-grabbing`}
-        style={{ x, rotate, zIndex: 1 }}
-        drag="x"
+        className={`${cardClasses} rounded-xl  shadow-2xl ${disableSwipe ? "" : "cursor-grab active:cursor-grabbing"}`}
+        style={{ x: disableSwipe ? 0 : x, rotate: disableSwipe ? 0 : rotate, zIndex: 1 }}
+        drag={disableSwipe ? false : "x"}
         dragConstraints={{ left: 0, right: 0 }}
-        onDragEnd={handleDragEnd}
+        onDragEnd={disableSwipe ? undefined : handleDragEnd}
         exit={{ opacity: 0, transition: { duration: 0.2 } }}
       >
         {/* Yes/No Overlays */}
@@ -675,7 +710,7 @@ function StatsBar({ stats }: { stats?: { yes: number, no: number, total: number 
   const noPercent = (stats.no / stats.total) * 100;
 
   return (
-    <div className="w-full h-14 flex rounded-md overflow-hidden text-lg font-bold">
+    <div className="w-full h-14 flex rounded-md  text-lg font-bold">
       {stats.no > 0 && (
         <div
           className="bg-red-500 h-full flex items-center justify-center text-white transition-all duration-500"

@@ -60,7 +60,7 @@ export const tagRouter = createTRPCRouter({
           backdrop_path: string | null;
           overview: string;
           release_date: string;
-          imdb_id: string | null | undefined;
+          imdb_id: string | null;
         }[] = [];
 
         if (input.movieId) {
@@ -82,7 +82,7 @@ export const tagRouter = createTRPCRouter({
                   : null,
                 overview: specificMovieData.overview as string,
                 release_date: specificMovieData.release_date as string,
-                imdb_id: specificMovieData.imdb_id as string | null | undefined,
+                imdb_id: (specificMovieData.imdb_id as string | null | undefined) ?? null,
               }];
               console.log(`Fetched movie for no-keyword case: ${movies[0]?.title}`);
             } else {
@@ -224,7 +224,7 @@ export const tagRouter = createTRPCRouter({
                 : null,
               overview: specificMovieData.overview as string,
               release_date: specificMovieData.release_date as string,
-              imdb_id: specificMovieData.imdb_id as string | null | undefined,
+              imdb_id: (specificMovieData.imdb_id as string | null | undefined) ?? null,
             };
             console.log(`Successfully fetched movie: ${specificMovie.title} (ID: ${specificMovie.id})`);
             shuffled.unshift(specificMovie);
@@ -258,6 +258,24 @@ export const tagRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ ctx, input }) => {
+      // Check for existing vote from this session to prevent duplicates
+      if (input.sessionId) {
+        const existingVote = await ctx.db.tagVote.findFirst({
+          where: {
+            tag: input.tag,
+            tmdbId: input.tmdbId,
+            sessionId: input.sessionId,
+          },
+        });
+
+        if (existingVote) {
+          console.warn(
+            `Duplicate vote attempt: session ${input.sessionId} already voted on movie ${input.tmdbId} for tag ${input.tag}`
+          );
+          return existingVote; // Return existing vote instead of creating duplicate
+        }
+      }
+
       return await ctx.db.tagVote.create({
         data: {
           tag: input.tag,
