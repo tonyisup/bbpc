@@ -103,14 +103,14 @@ const GamblingSection: FC<GamblingSectionProps> = ({ assignmentId, userId }) => 
       {!hasGambled() && (
         <div className="flex gap-2">
           <div className="flex flex-col gap-2">
-            <div className="flex gap-2 items-center">
-              <Label className="text-gray-300">Wanna bet?</Label>
-              {userPoints && Number(userPoints) > 0 && <Badge className="cursor-pointer" onClick={() => handleAutoBet(1)}>Bet 1</Badge>}
-              {userPoints && Number(userPoints) > 5 && <Badge className="cursor-pointer" onClick={() => handleAutoBet(5)}>Bet 5</Badge>}
-              {userPoints && Number(userPoints) > 10 && <Badge className="cursor-pointer" onClick={() => handleAutoBet(10)}>Bet 10</Badge>}
-              {userPoints && Number(userPoints) > 20 && <Badge className="cursor-pointer" onClick={() => handleAutoBet(20)}>Bet 20</Badge>}
-              {userPoints && Number(userPoints) > 50 && <Badge className="cursor-pointer" onClick={() => handleAutoBet(50)}>Bet 50</Badge>}
-              {userPoints && Number(userPoints) > 0 && <Badge className="cursor-pointer" onClick={() => handleAutoBet(Number(userPoints))}>ALL IN</Badge>}
+            <Label className="text-gray-300">Wanna bet?</Label>
+            <div className="flex gap-2 items-center flex-wrap">
+              {userPoints && Number(userPoints) > 0 && <Badge className="cursor-pointer whitespace-nowrap" onClick={() => handleAutoBet(1)}>Bet 1</Badge>}
+              {userPoints && Number(userPoints) > 5 && <Badge className="cursor-pointer whitespace-nowrap" onClick={() => handleAutoBet(5)}>Bet 5</Badge>}
+              {userPoints && Number(userPoints) > 10 && <Badge className="cursor-pointer whitespace-nowrap" onClick={() => handleAutoBet(10)}>Bet 10</Badge>}
+              {userPoints && Number(userPoints) > 20 && <Badge className="cursor-pointer whitespace-nowrap" onClick={() => handleAutoBet(20)}>Bet 20</Badge>}
+              {userPoints && Number(userPoints) > 50 && <Badge className="cursor-pointer whitespace-nowrap" onClick={() => handleAutoBet(50)}>Bet 50</Badge>}
+              {userPoints && Number(userPoints) > 0 && <Badge className="cursor-pointer whitespace-nowrap" onClick={() => handleAutoBet(Number(userPoints))}>ALL IN</Badge>}
             </div>
             <div className="flex gap-2">
               <Input
