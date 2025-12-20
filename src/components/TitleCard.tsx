@@ -34,7 +34,7 @@ const TitleCard: FC<TitleCardProps> = ({ title, titleSelected }) => {
         {/* The poster that animates */}
 
         <motion.div
-          layoutId="poster-container"
+          layoutId={`poster-container-${title.id}`}
           onClick={isExpanded ? undefined : toggleExpand}
           className={`cursor-pointer overflow-hidden rounded-md shadow-lg ${isExpanded ? "fixed inset-0 z-50 m-auto max-w-[300px] max-h-[450px]" : "w-[100px] h-[150px]"
             }`}
@@ -76,7 +76,7 @@ const TitleCard: FC<TitleCardProps> = ({ title, titleSelected }) => {
           </div>)}
 
           <motion.img
-            layoutId="poster-image"
+            layoutId={`poster-image-${title.id}`}
             src={title?.poster_path}
             alt={title?.title}
             className={`w-full h-full object-fill`}

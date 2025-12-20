@@ -589,6 +589,18 @@ export const appRouter = createTRPCRouter({
             assignmentId: input.assignmentId,
             userId: ctx.session.user.id,
           },
+          select: {
+            points: true,
+            Assignment: {
+              select: {
+                Movie: {
+                  select: {
+                    title: true
+                  }
+                }
+              }
+            }
+          }
         });
       }),
 
