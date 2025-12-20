@@ -20,7 +20,7 @@ const MovieFind: FC<MovieFindProps> = ({ selectMovie }) => {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [inputValue, setInputValue] = useState("");
 
-  const { data: resp } = api.movie.searchByPage.useQuery({
+  const { data: resp, isLoading } = api.movie.searchByPage.useQuery({
     page: 1,
     term: searchQuery,
   });
@@ -87,13 +87,19 @@ const MovieFind: FC<MovieFindProps> = ({ selectMovie }) => {
         />
         <Search className="pointer-events-none absolute left-2 top-1/2 size-4 -translate-y-1/2 select-none opacity-50" />
       </div>
-      <div className="flex flex-wrap gap-4 justify-center">
-        {resp?.results.map((title) => (
-          title?.poster_path && (
-            <TitleCard key={title.id} title={title} titleSelected={selectTitle} />
-          )
-        ))}
-      </div>
+      {isLoading ? (
+        <div className="flex justify-center p-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </div>
+      ) : (
+        <div className="flex flex-wrap gap-4 justify-center">
+          {resp?.results.map((title) => (
+            title?.poster_path && (
+              <TitleCard key={title.id} title={title} titleSelected={selectTitle} />
+            )
+          ))}
+        </div>
+      )}
     </div>
   );
 };
