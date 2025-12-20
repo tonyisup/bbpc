@@ -18,16 +18,22 @@ const GamblingSection: FC<GamblingSectionProps> = ({ assignmentId, userId }) => 
   const [gamblingPoints, setGamblingPoints] = useState<number>(0);
   const [canSubmitGamblingPoints, setCanSubmitGamblingPoints] = useState<boolean>(false);
 
-  const { data: userPoints } = api.user.points.useQuery(undefined);
+  const { data: userPoints, refetch: refetchUserPoints } = api.user.points.useQuery(undefined);
 
   // Fetch gambling points for this assignment
   const { data: assignmentGamblingPoints, refetch: refetchAssignmentGamblingPoints } = api.review.getGamblingPointsForAssignment.useQuery(
     { assignmentId: assignmentId }
   );
 
+  const utils = api.useUtils();
+
   const { mutate: submitGamblingPoints } = api.review.submitGamblingPoints.useMutation({
-    onSuccess: () => {
-      refetchAssignmentGamblingPoints();
+    onSuccess: async () => {
+      await Promise.all([
+        refetchAssignmentGamblingPoints(),
+        utils.user.points.invalidate(),
+        refetchUserPoints()
+      ]);
     },
     onError: (error) => {
       alert(`Error submitting gambling points: ${error.message}`);

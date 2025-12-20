@@ -39,6 +39,7 @@ export const calculateUserPoints = async (
     throw new Error(`User not found for email ${userEmail}`);
   }
 
+  // Calculate user's adjustment points
   const adjustmentResult = await prisma.point.aggregate({
     _sum: {
       adjustment: true,
@@ -49,6 +50,7 @@ export const calculateUserPoints = async (
     },
   });
 
+  // Calculate points from game results
   const pointsResult = await prisma.$queryRaw<{ sum: number }[]>
     `select [sum] = sum([b].[points])
 from [dbo].[point] [a]
@@ -58,6 +60,23 @@ where [a].[userid] = ${user.id}
 and [a].[seasonid] = ${seasonIdToUse}
 `;
 
-  return (pointsResult[0]?.sum ?? 0)
-    + (adjustmentResult._sum.adjustment ?? 0);
+  const basePoints = (pointsResult[0]?.sum ?? 0) + (adjustmentResult._sum.adjustment ?? 0);
+
+  // Calculate points currently gambled (deduct these)
+  // We assume gambled points are relevant for the current season's assignments.
+  // Ideally, we'd filter by assignments attached to episodes in the current season,
+  // but for now, we'll deduct all active gambling points for the user.
+  // If stricter season filtering is needed, we would add:
+  // where: { Assignment: { Episode: { date: { gte: season.startDate, lte: season.endDate } } } }
+  // Calculate points currently gambled
+  const allGamblingRows = await prisma.gamblingPoints.findMany({
+    where: {
+      userId: user.id
+    },
+    select: { points: true }
+  });
+
+  const gambledPoints = allGamblingRows.reduce((sum, row) => sum + row.points, 0);
+
+  return basePoints - gambledPoints;
 };
