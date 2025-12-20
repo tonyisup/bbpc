@@ -356,6 +356,7 @@ export const appRouter = createTRPCRouter({
         year: z.number(),
         poster: z.string(),
         url: z.string(),
+        tmdbId: z.number().optional(),
       }))
       .mutation(async ({ ctx, input }) => {
         const exists = await ctx.db.movie.findFirst({
@@ -373,6 +374,7 @@ export const appRouter = createTRPCRouter({
               year: input.year,
               poster: input.poster,
               url: input.url,
+              tmdbId: input.tmdbId,
             }
           })
         }
@@ -382,6 +384,7 @@ export const appRouter = createTRPCRouter({
             year: input.year,
             poster: input.poster,
             url: input.url,
+            tmdbId: input.tmdbId,
           }
         })
       }),
@@ -586,6 +589,18 @@ export const appRouter = createTRPCRouter({
             assignmentId: input.assignmentId,
             userId: ctx.session.user.id,
           },
+          select: {
+            points: true,
+            Assignment: {
+              select: {
+                Movie: {
+                  select: {
+                    title: true
+                  }
+                }
+              }
+            }
+          }
         });
       }),
 

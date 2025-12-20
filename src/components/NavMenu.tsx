@@ -2,7 +2,7 @@
 
 import type { FC } from "react";
 import Link from "next/link";
-import { HomeIcon, HistoryIcon, TrophyIcon, GamepadIcon, UserIcon, ShirtIcon, LogIn, LogOut, BookOpenIcon } from "lucide-react";
+import { HomeIcon, HistoryIcon, TrophyIcon, GamepadIcon, UserIcon, ShirtIcon, LogIn, LogOut, BookOpenIcon, Tag } from "lucide-react";
 import {
   NavigationMenu,
   NavigationMenuList,
@@ -50,6 +50,11 @@ const NavMenu: FC = () => {
               </Link>
             </NavigationMenuLink>
             <NavigationMenuLink asChild>
+              <Link href="/tags" className="flex items-center gap-2 px-4 py-2 transition hover:text-red-400">
+                <Tag className="w-4 h-4" />Tags
+              </Link>
+            </NavigationMenuLink>
+            <NavigationMenuLink asChild>
               <Link href="https://www.teepublic.com/user/badboyspodcast" target="_blank" className="flex items-center gap-2 px-4 py-2 transition hover:text-red-400">
                 <ShirtIcon className="w-4 h-4" />Merch
               </Link>
@@ -71,7 +76,7 @@ const NavMenu: FC = () => {
                 </Link>
               </NavigationMenuLink>
               <NavigationMenuLink asChild>
-                <button 
+                <button
                   onClick={() => signOut({ callbackUrl: window.location.pathname })}
                   className="flex items-center gap-2 px-4 py-2 transition hover:text-red-400"
                 >

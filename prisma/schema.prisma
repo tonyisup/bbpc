@@ -35,6 +35,7 @@ model Movie {
   year        Int          @db.SmallInt
   poster      String?
   url         String
+  tmdbId      Int?
   assignments Assignment[]
   reviews     Review[]
   syllabus    Syllabus[]
@@ -319,7 +320,14 @@ model TagVote {
   id        String   @id @default(dbgenerated("newid()")) @db.UniqueIdentifier
   tag       String
   tmdbId    Int
-  isTag     Boolean
+  isTag     Boolean?
   createdAt DateTime @default(now())
   sessionId String?
+}
+
+model Tag {
+  id          String   @id @default(dbgenerated("newid()")) @db.UniqueIdentifier
+  name        String   @unique
+  description String?
+  createdAt   DateTime @default(now())
 }

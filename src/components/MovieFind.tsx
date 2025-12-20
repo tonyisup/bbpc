@@ -40,7 +40,8 @@ const MovieFind: FC<MovieFindProps> = ({ selectMovie }) => {
         title: result.title,
         year: year,
         poster: result.poster_path,
-        url: result.imdb_path
+        url: result.imdb_path,
+        tmdbId: result.id
       });
     }
   });

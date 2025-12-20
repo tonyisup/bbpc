@@ -1,4 +1,4 @@
-import { type Metadata } from "next";
+import { type Metadata, type Viewport } from "next";
 import { Inter } from "next/font/google";
 import { getServerAuthSession } from "@/server/auth";
 import "@/styles/globals.css"
@@ -13,20 +13,21 @@ const inter = Inter({
   variable: "--font-sans",
 });
 
+export const viewport: Viewport = {
+  themeColor: "black",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+};
+
 export const metadata: Metadata = {
   title: "Bad Boys Podcast",
   description: "Random rants on all things movie",
   manifest: "/manifest.json",
-  themeColor: "black",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
     title: "Bad Boys Podcast",
-  },
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-    maximumScale: 1,
   },
   icons: [
     { rel: "icon", url: "/favicon.ico" },
@@ -57,15 +58,15 @@ export default async function RootLayout({
         <Providers session={session}>
           <div className="bg-black w-full flex flex-col min-h-screen items-center">
             <header className="flex sm:w-1/2 w-full items-center justify-between bg-[#020202]">
-                <NavMenu />
-                <div>
-                  <Link href="/">
-                    <Image src="/logo-short.png" alt="BBPC Logo" width={120} height={40} priority sizes="120px" />
-                  </Link>
-                </div>
-                <div className="px-4">
-                  <LeaveMessage />
-                </div>
+              <NavMenu />
+              <div>
+                <Link href="/">
+                  <Image src="/logo-short.png" alt="BBPC Logo" width={120} height={40} priority sizes="120px" />
+                </Link>
+              </div>
+              <div className="px-4">
+                <LeaveMessage />
+              </div>
             </header>
             <section>
               <p className="pb-2 text-center text-xs sm:text-lg text-red-900">Random rants on all things movie</p>
@@ -75,8 +76,13 @@ export default async function RootLayout({
                 {children}
               </div>
             </main>
-            <footer>
+            <footer className="w-full flex flex-col items-center">
               <ListenHere />
+              <div className="flex gap-4 text-xs text-gray-400 pb-8 flex-wrap justify-center">
+                <Link href="/privacy" className="hover:underline">Privacy Policy</Link>
+                <Link href="/terms" className="hover:underline">Terms of Service</Link>
+                <Link href="/data-deletion" className="hover:underline">Data Deletion</Link>
+              </div>
             </footer>
           </div>
         </Providers>
