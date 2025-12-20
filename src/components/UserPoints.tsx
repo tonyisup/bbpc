@@ -10,18 +10,18 @@ interface UserPointsProps {
   className?: string;
 }
 
-const UserPoints: FC<UserPointsProps> = ({ 
-  points, 
+const UserPoints: FC<UserPointsProps> = ({
+  points,
   showSpendButton = true,
   className = ""
 }) => {
   const pointsValue = points ? Number(points) : 0;
-  
+
   return (
     <div className={`flex gap-4 items-center space-around ${className}`}>
-      <div className="mb-6 p-4 bg-gray-800 rounded-lg text-center">
-        <h2 className="text-xl font-semibold mb-2">Your Points</h2>
-        <p className="text-3xl font-bold text-red-500">{pointsValue}</p>
+      <div className="p-4 flex gap-2 items-center">
+        <span className="text-xl font-semibold">Your Points</span>
+        <span className="text-3xl font-bold text-red-500">{pointsValue}</span>
       </div>
       {showSpendButton && (
         <Button variant="outline">

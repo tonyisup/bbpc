@@ -68,12 +68,15 @@ const GamblingSection: FC<GamblingSectionProps> = ({ assignmentId, userId }) => 
 
   if (!userPoints || Number(userPoints) <= 0) return null;
 
+  const hasGambled = () => {
+    return assignmentGamblingPoints && assignmentGamblingPoints.length > 0 && assignmentGamblingPoints[0] && assignmentGamblingPoints[0].points > 0;
+  }
   return (
     <div className="flex flex-col gap-2 items-center">
       <UserPoints points={Number(userPoints)} showSpendButton={false} />
-      {assignmentGamblingPoints && assignmentGamblingPoints.length > 0 && assignmentGamblingPoints[0] && assignmentGamblingPoints[0].points > 0 && (
+      {hasGambled() && (
         <div className="flex gap-2 items-center">
-          <p className="text-sm text-gray-300">You have gambled {assignmentGamblingPoints[0].points} points on this assignment!</p>
+          <p className="text-sm text-gray-300">You have gambled {assignmentGamblingPoints?.[0]?.points ?? "unknown"} points on this assignment!</p>
           <Button
             variant="destructive"
             size="sm"
@@ -91,39 +94,41 @@ const GamblingSection: FC<GamblingSectionProps> = ({ assignmentId, userId }) => 
           </Button>
         </div>
       )}
-      <div className="flex gap-2">
-        <div className="flex flex-col gap-2">
-          <div className="flex gap-2 items-center">
-            <Label className="text-gray-300">Wanna bet?</Label>
-            {userPoints && Number(userPoints) > 0 && <Badge className="cursor-pointer" onClick={() => handleAutoBet(1)}>Bet 1</Badge>}
-            {userPoints && Number(userPoints) > 5 && <Badge className="cursor-pointer" onClick={() => handleAutoBet(5)}>Bet 5</Badge>}
-            {userPoints && Number(userPoints) > 10 && <Badge className="cursor-pointer" onClick={() => handleAutoBet(10)}>Bet 10</Badge>}
-            {userPoints && Number(userPoints) > 20 && <Badge className="cursor-pointer" onClick={() => handleAutoBet(20)}>Bet 20</Badge>}
-            {userPoints && Number(userPoints) > 50 && <Badge className="cursor-pointer" onClick={() => handleAutoBet(50)}>Bet 50</Badge>}
-            {userPoints && Number(userPoints) > 0 && <Badge className="cursor-pointer" onClick={() => handleAutoBet(Number(userPoints))}>ALL IN</Badge>}
-          </div>
-          <div className="flex gap-2">
-            <Input
-              type="number"
-              placeholder="Points here..."
-              value={gamblingPoints}
-              onChange={(e) => setGamblingPoints(Number(e.target.value))}
-              className="bg-gray-800 border-gray-700 text-white"
-            />
-            <Button
-              disabled={!canSubmitGamblingPoints}
-              className="text-gray-300 rounded-md hover:bg-red-800 bg-gradient-to-r from-blue-900 to-blue-500 relative overflow-hidden group"
-              onClick={handleGamblingPointsSubmit}
-            >
-              <span className="absolute inset-0 bg-gradient-to-r from-transparent"></span>
-              <span className="px-4 py-2 relative z-10 flex items-center">
-                <span className="mr-1">Gamble!</span>
-                <span className="animate-bounce inline-block">✨</span>
-              </span>
-            </Button>
+      {!hasGambled() && (
+        <div className="flex gap-2">
+          <div className="flex flex-col gap-2">
+            <div className="flex gap-2 items-center">
+              <Label className="text-gray-300">Wanna bet?</Label>
+              {userPoints && Number(userPoints) > 0 && <Badge className="cursor-pointer" onClick={() => handleAutoBet(1)}>Bet 1</Badge>}
+              {userPoints && Number(userPoints) > 5 && <Badge className="cursor-pointer" onClick={() => handleAutoBet(5)}>Bet 5</Badge>}
+              {userPoints && Number(userPoints) > 10 && <Badge className="cursor-pointer" onClick={() => handleAutoBet(10)}>Bet 10</Badge>}
+              {userPoints && Number(userPoints) > 20 && <Badge className="cursor-pointer" onClick={() => handleAutoBet(20)}>Bet 20</Badge>}
+              {userPoints && Number(userPoints) > 50 && <Badge className="cursor-pointer" onClick={() => handleAutoBet(50)}>Bet 50</Badge>}
+              {userPoints && Number(userPoints) > 0 && <Badge className="cursor-pointer" onClick={() => handleAutoBet(Number(userPoints))}>ALL IN</Badge>}
+            </div>
+            <div className="flex gap-2">
+              <Input
+                type="number"
+                placeholder="Points here..."
+                value={gamblingPoints}
+                onChange={(e) => setGamblingPoints(Number(e.target.value))}
+                className="bg-gray-800 border-gray-700 text-white"
+              />
+              <Button
+                disabled={!canSubmitGamblingPoints}
+                className="text-gray-300 rounded-md hover:bg-red-800 bg-gradient-to-r from-blue-900 to-blue-500 relative overflow-hidden group"
+                onClick={handleGamblingPointsSubmit}
+              >
+                <span className="absolute inset-0 bg-gradient-to-r from-transparent"></span>
+                <span className="px-4 py-2 relative z-10 flex items-center">
+                  <span className="mr-1">Gamble!</span>
+                  <span className="animate-bounce inline-block">✨</span>
+                </span>
+              </Button>
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };
