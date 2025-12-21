@@ -97,7 +97,7 @@ const GamblingSection: FC<GamblingSectionProps> = ({ assignmentId, userId }) => 
           <Button
             variant="destructive"
             size="sm"
-            className="h-8 w-8 p-4"
+            className="h-8 w-8 p-1"
             onClick={() => {
               if (!userId) return;
               submitGamblingPoints({
