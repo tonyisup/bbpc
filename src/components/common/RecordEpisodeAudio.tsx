@@ -39,6 +39,12 @@ const RecordEpisodeAudio: React.FC<RecordEpisodeAudioProps> = ({ userId, episode
   const audioChunksRef = useRef<Blob[]>([]);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const isRecordingRef = useRef(false);
+
+  // Update ref to latest state
+  useEffect(() => {
+    isRecordingRef.current = isRecording;
+  }, [isRecording]);
 
   const utils = api.useUtils();
   const { mutate: updateAudio } = api.episode.updateAudioMessage.useMutation();
@@ -104,7 +110,7 @@ const RecordEpisodeAudio: React.FC<RecordEpisodeAudioProps> = ({ userId, episode
         timerRef.current = null
       }
 
-      if (mediaRecorderRef.current && isRecording) {
+      if (mediaRecorderRef.current && isRecordingRef.current) {
         mediaRecorderRef.current.stop()
       }
 
