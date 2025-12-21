@@ -10,10 +10,20 @@ import { UndoIcon } from "lucide-react";
 import UserPoints from "./UserPoints";
 import { cn } from "@/lib/utils";
 
+/**
+ * Props for the GamblingSection component.
+ */
 interface GamblingSectionProps {
+  /** The unique identifier for the assignment where the bet is being placed. */
   assignmentId: string;
+  /** The unique identifier for the user placing the bet. */
   userId: string;
 }
+
+/**
+ * A component that allows users to place bets (gambles) using their earned points on specific assignments.
+ * It handles balance checks, auto-betting options, and displaying existing bets.
+ */
 
 const GamblingSection: FC<GamblingSectionProps> = ({ assignmentId, userId }) => {
   const [gamblingPoints, setGamblingPoints] = useState<number>(0);

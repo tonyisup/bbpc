@@ -1,21 +1,33 @@
 'use client'
 
+/**
+ * Represents an episode of the show.
+ */
 interface Episode {
 	id: string;
 	title: string;
 	number: number;
 }
 
+/**
+ * Represents a movie analyzed in an episode.
+ */
 interface Movie {
 	title: string;
 }
 
+/**
+ * Represents an assignment consisting of an episode and a movie.
+ */
 interface Assignment {
 	id: string;
 	Episode: Episode;
 	Movie: Movie;
 }
 
+/**
+ * Represents a point entry for a user, which can be linked to assignments, gambles, or guesses.
+ */
 interface Point {
 	id: string;
 	reason: string | null;
@@ -39,7 +51,11 @@ interface Point {
 	}[];
 }
 
+/**
+ * Props for the PointHistory component.
+ */
 interface PointHistoryProps {
+	/** Array of Point objects to display in the history. */
 	points: Point[];
 }
 

@@ -16,10 +16,23 @@ import { Popover, PopoverContent, PopoverTrigger, PopoverClose } from "./ui/popo
 import PhoneNumber from "./common/PhoneNumber";
 import RecordAssignmentAudio from "./common/RecordAssignmentAudio";
 
+/**
+ * Props for the PredictionGame component.
+ */
 interface PredictionGameProps {
+	/** Array of assignments with their related data (Episode, Movie, etc.). */
 	assignments: AssignmentWithRelations[];
+	/** Optional search query for highlighting text in the game. */
 	searchQuery?: string;
 }
+
+/**
+ * The main container for the prediction game, allowing users to predict ratings for hosts.
+ * Renders a list of assignments where users can select ratings for each host and place bets.
+ *
+ * @param assignments - List of assignments to be shown.
+ * @param searchQuery - Text to be highlighted (e.g., from a search bar).
+ */
 
 export const PredictionGame: FC<PredictionGameProps> = ({ assignments, searchQuery = "" }) => {
 	const { data: session } = api.auth.getSession.useQuery();
@@ -56,13 +69,26 @@ export const PredictionGame: FC<PredictionGameProps> = ({ assignments, searchQue
 	);
 };
 
+/**
+ * Props for the AssignmentPrediction component.
+ */
 interface AssignmentPredictionProps {
+	/** The specific assignment being predicted. */
 	assignment: AssignmentWithRelations;
+	/** List of hosts for whom guesses are being made. */
 	hosts: User[];
+	/** List of available ratings that can be chosen. */
 	ratings: Rating[];
+	/** The ID of the currently logged-in user making the predictions. */
 	userId: string;
+	/** The search query for highlighting movie titles. */
 	searchQuery: string;
 }
+
+/**
+ * Renders the prediction UI for a single assignment.
+ * Handles individual host rating selection, collapsible views, and submission logic.
+ */
 
 const AssignmentPrediction: FC<AssignmentPredictionProps> = ({ assignment, hosts, ratings, userId, searchQuery }) => {
 	const utils = api.useUtils();
@@ -273,6 +299,9 @@ const AssignmentPrediction: FC<AssignmentPredictionProps> = ({ assignment, hosts
 	);
 }
 
+/**
+ * Component to trigger a popover containing the phone number information.
+ */
 const Call = () => {
 	return (
 		<Popover>
@@ -299,6 +328,9 @@ const Call = () => {
 	);
 }
 
+/**
+ * Component to trigger a popover for recording and sending audio messages (voicemails).
+ */
 const Message = ({ assignmentId, userId, count, children }: { assignmentId: string; userId: string; count?: number; children?: ReactNode }) => {
 	return (
 		<Popover>

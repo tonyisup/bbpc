@@ -17,10 +17,24 @@ import { toast } from "sonner"
 import { useAudioRecorder } from "@/hooks/useAudioRecorder"
 import { VoiceVisualizer } from "./common/VoiceVisualizer"
 
+/**
+ * Props for the VoiceMailRecorder component.
+ */
 interface VoiceMailRecorderProps {
+  /** The unique identifier of the episode associated with the voicemail. */
   episodeId: string;
+  /** The unique identifier of the user recording the voicemail. */
   userId: string;
 }
+
+/**
+ * A component that provides a UI for recording and submitting audio voicemails for a specific episode.
+ * Features include real-time recording visualization, playback preview, management of previous recordings,
+ * and the ability to add notes for hosts.
+ *
+ * @param episodeId - The episode context for the recording.
+ * @param userId - The user making the recording.
+ */
 
 export default function VoiceMailRecorder({ episodeId, userId }: VoiceMailRecorderProps) {
   const {

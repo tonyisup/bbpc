@@ -1,11 +1,24 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
 
+/**
+ * Options for the useAudioRecorder hook.
+ */
 interface UseAudioRecorderOptions {
+	/** Optional callback triggered when recording stops, providing the resulting Blob. */
 	onStop?: (blob: Blob) => void;
+	/** Whether to integrate with a service worker for background state management. */
 	serviceWorkerIntegration?: boolean;
 }
 
+/**
+ * A custom hook for managing audio recording and playback.
+ * Provides state and methods for starting/stopping recordings, monitoring volume/time,
+ * and handling playback of recorded blobs or remote audio messages.
+ *
+ * @param options - Configuration options for the recorder.
+ * @returns An object containing recorder state and control methods.
+ */
 export const useAudioRecorder = (options: UseAudioRecorderOptions = {}) => {
 	const [isRecording, setIsRecording] = useState(false);
 	const [recordingTime, setRecordingTime] = useState(0);
