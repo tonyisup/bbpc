@@ -227,7 +227,7 @@ const AssignmentPrediction: FC<AssignmentPredictionProps> = ({ assignment, hosts
 				<>
 					{/* Expanded Header */}
 					<div className="flex justify-between items-start">
-						<h3 className="font-bold text-xl text-white pl-2 border-l-4 border-purple-500">
+						<h3 className="font-bold text-xl text-white pl-2 border-l-4 border-red-500">
 							{assignment.Movie ? highlightText(assignment.Movie.title, searchQuery) : "Unknown Movie"}
 						</h3>
 						{hasAllGuesses && (
