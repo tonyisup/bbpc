@@ -3,6 +3,14 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Mic, Square, Play, Send, Loader2, X, ChevronDown, ChevronRight, Trash2 } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import { useUploadThing } from '../../utils/uploadthing';
 import { api } from '@/trpc/react';
 import { cn } from "@/lib/utils";
@@ -24,6 +32,8 @@ const RecordAssignmentAudio: React.FC<RecordAssignmentAudioProps> = ({ userId, a
   const [isUploaded, setIsUploaded] = useState(false);
   const [showRecordings, setShowRecordings] = useState(false);
   const [activeMessageId, setActiveMessageId] = useState<number | null>(null);
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [pendingDeleteId, setPendingDeleteId] = useState<number | null>(null);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
@@ -295,9 +305,8 @@ const RecordAssignmentAudio: React.FC<RecordAssignmentAudioProps> = ({ userId, a
                     title={`Delete recording ${msg.id}`}
                     aria-label={`Delete recording ${msg.id}`}
                     onClick={() => {
-                      if (confirm("Delete this recording?")) {
-                        deleteMessage({ id: msg.id });
-                      }
+                      setPendingDeleteId(msg.id);
+                      setIsConfirmOpen(true);
                     }}
                   >
                     <Trash2 className="h-4 w-4" />
@@ -410,14 +419,60 @@ const RecordAssignmentAudio: React.FC<RecordAssignmentAudioProps> = ({ userId, a
     </>
   );
 
+  const confirmationDialog = (
+    <Dialog open={isConfirmOpen} onOpenChange={setIsConfirmOpen}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Delete Recording</DialogTitle>
+          <DialogDescription>
+            Are you sure you want to delete this recording? This action cannot be undone.
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter className="sm:justify-end gap-2 flex-row justify-end">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => {
+              setIsConfirmOpen(false);
+              setPendingDeleteId(null);
+            }}
+          >
+            Cancel
+          </Button>
+          <Button
+            type="button"
+            variant="destructive"
+            onClick={() => {
+              if (pendingDeleteId !== null) {
+                deleteMessage({ id: pendingDeleteId });
+              }
+              setIsConfirmOpen(false);
+              setPendingDeleteId(null);
+            }}
+          >
+            Delete
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+
   if (isCompact) {
-    return <div className="w-full">{content}</div>;
+    return (
+      <>
+        <div className="w-full">{content}</div>
+        {confirmationDialog}
+      </>
+    );
   }
 
   return (
-    <Card className="w-full max-w-md mx-auto">
-      {content}
-    </Card>
+    <>
+      <Card className="w-full max-w-md mx-auto">
+        {content}
+      </Card>
+      {confirmationDialog}
+    </>
   );
 };
 

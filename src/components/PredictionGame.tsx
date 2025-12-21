@@ -274,63 +274,59 @@ const AssignmentPrediction: FC<AssignmentPredictionProps> = ({ assignment, hosts
 
 const Call = () => {
 	return (
-		<div className="flex flex-col gap-2 items-center">
-			<Popover>
-				<PopoverTrigger asChild>
-					<Button variant="outline"><Phone className="w-5 h-5" /></Button>
-				</PopoverTrigger>
-				<PopoverContent>
-					<div className="flex justify-between items-center">
-						<PhoneNumber />
-						<PopoverClose asChild>
-							<Button
-								variant="ghost"
-								size="icon"
-								className="h-8 w-8"
-								title="Close"
-								aria-label="Close"
-							>
-								<X className="h-4 w-4" />
-							</Button>
-						</PopoverClose>
-					</div>
-				</PopoverContent>
-			</Popover>
-		</div>
+		<Popover>
+			<PopoverTrigger asChild>
+				<Button variant="outline"><Phone className="w-5 h-5" /></Button>
+			</PopoverTrigger>
+			<PopoverContent>
+				<div className="flex justify-between items-center">
+					<PhoneNumber />
+					<PopoverClose asChild>
+						<Button
+							variant="ghost"
+							size="icon"
+							className="h-8 w-8"
+							title="Close"
+							aria-label="Close"
+						>
+							<X className="h-4 w-4" />
+						</Button>
+					</PopoverClose>
+				</div>
+			</PopoverContent>
+		</Popover>
 	);
 }
 
 const Message = ({ assignmentId, userId, count }: { assignmentId: string; userId: string; count?: number }) => {
 	return (
-		<div className="flex flex-col gap-2 items-center">
-			<Popover>
-				<PopoverTrigger asChild>
-					<Button variant="outline" className="flex items-center gap-2">
-						{count ?? 0} <Voicemail className="w-5 h-5" />
-					</Button>
-				</PopoverTrigger>
-				<PopoverContent className="w-[calc(100vw-2rem)] sm:w-96">
-					<div className="flex justify-between items-center mb-2">
-						<span className="text-sm text-gray-400">Got something to say?</span>
-						<PopoverClose asChild>
-							<Button
-								variant="ghost"
-								size="icon"
-								className="h-8 w-8"
-								title="Close"
-								aria-label="Close"
-							>
-								<X className="h-4 w-4" />
-							</Button>
-						</PopoverClose>
-					</div>
-					<RecordAssignmentAudio
-						assignmentId={assignmentId}
-						userId={userId}
-						mode="compact"
-					/>
-				</PopoverContent>
-			</Popover>
-		</div>
+		<Popover>
+			<PopoverTrigger asChild>
+				<Button variant="outline" className="flex items-center gap-2">
+					{count ?? 0} <Voicemail className="w-5 h-5" />
+				</Button>
+			</PopoverTrigger>
+			<PopoverContent className="w-[calc(100vw-2rem)] sm:w-96">
+				<div className="flex justify-between items-center mb-2">
+					<span className="text-sm text-gray-400">Got something to say?</span>
+					<PopoverClose asChild>
+						<Button
+							variant="ghost"
+							size="icon"
+							className="h-8 w-8"
+							title="Close"
+							aria-label="Close"
+						>
+							<X className="h-4 w-4" />
+						</Button>
+					</PopoverClose>
+				</div>
+				<RecordAssignmentAudio
+					assignmentId={assignmentId}
+					userId={userId}
+					mode="compact"
+				/>
+			</PopoverContent>
+		</Popover>
 	);
 }
