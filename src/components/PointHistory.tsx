@@ -1,21 +1,33 @@
 'use client'
 
+/**
+ * Represents an episode of the show.
+ */
 interface Episode {
 	id: string;
 	title: string;
 	number: number;
 }
 
+/**
+ * Represents a movie analyzed in an episode.
+ */
 interface Movie {
 	title: string;
 }
 
+/**
+ * Represents an assignment consisting of an episode and a movie.
+ */
 interface Assignment {
 	id: string;
 	Episode: Episode;
 	Movie: Movie;
 }
 
+/**
+ * Represents a point entry for a user, which can be linked to assignments, gambles, or guesses.
+ */
 interface Point {
 	id: string;
 	reason: string | null;
@@ -39,7 +51,11 @@ interface Point {
 	}[];
 }
 
+/**
+ * Props for the PointHistory component.
+ */
 interface PointHistoryProps {
+	/** Array of Point objects to display in the history. */
 	points: Point[];
 }
 
@@ -116,30 +132,33 @@ export default function PointHistory({ points }: PointHistoryProps) {
 							<div key={assignmentId} className="relative pl-6 border-l-2 border-indigo-500/50">
 								<h5 className="text-lg font-semibold mb-3 text-indigo-300">{assignment.title}</h5>
 								<div className="grid gap-3">
-									{assignment.points.map(point => (
-										<div key={point.id} className="flex justify-between items-center bg-gray-800/50 p-4 rounded-lg border border-gray-700/50 hover:border-indigo-500/30 transition-colors">
-											<div className="flex-1">
-												<div className="font-medium text-white text-lg">
-													{point.GamePointType?.title || point.reason || "Point Adjustment"}
-												</div>
-												{point.GamePointType?.description && (
-													<div className="text-sm text-gray-400 mt-1">
-														{point.GamePointType.description}
+									{assignment.points.map(point => {
+										const totalPoints = (point.GamePointType?.points ?? 0) + (point.adjustment ?? 0);
+										return (
+											<div key={point.id} className="flex justify-between items-center bg-gray-800/50 p-4 rounded-lg border border-gray-700/50 hover:border-indigo-500/30 transition-colors">
+												<div className="flex-1">
+													<div className="font-medium text-white text-lg">
+														{point.GamePointType?.title || point.reason || "Point Adjustment"}
 													</div>
-												)}
-												<div className="text-xs text-gray-500 mt-2 font-mono">
-													{new Date(point.earnedOn).toLocaleDateString(undefined, { dateStyle: 'long' })}
+													{point.GamePointType?.description && (
+														<div className="text-sm text-gray-400 mt-1">
+															{point.GamePointType.description}
+														</div>
+													)}
+													<div className="text-xs text-gray-500 mt-2 font-mono">
+														{new Date(point.earnedOn).toLocaleDateString(undefined, { dateStyle: 'long' })}
+													</div>
+												</div>
+												<div className={`text-2xl font-bold ml-4 ${totalPoints > 0
+													? 'text-emerald-400'
+													: 'text-red-400'
+													}`}>
+													{totalPoints > 0 ? '+' : ''}
+													{totalPoints}
 												</div>
 											</div>
-											<div className={`text-2xl font-bold ml-4 ${((point.GamePointType?.points ?? 0) + (point.adjustment ?? 0)) > 0
-												? 'text-emerald-400'
-												: 'text-red-400'
-												}`}>
-												{((point.GamePointType?.points ?? 0) + (point.adjustment ?? 0)) > 0 ? '+' : ''}
-												{((point.GamePointType?.points ?? 0) + (point.adjustment ?? 0))}
-											</div>
-										</div>
-									))}
+										);
+									})}
 								</div>
 							</div>
 						))}

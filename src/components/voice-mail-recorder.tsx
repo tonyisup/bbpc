@@ -1,44 +1,92 @@
-import { useState, useRef, useEffect, useCallback } from "react"
+import React, { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Mic, Square, Play, Send, Loader2 } from "lucide-react"
+import { Mic, Square, Play, Send, Loader2, X, ChevronDown, ChevronRight, Trash2 } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { Textarea } from "@/components/ui/textarea"
 import { api } from "@/trpc/react"
 import { useUploadThing } from "@/utils/uploadthing"
 import { toast } from "sonner"
+import { useAudioRecorder } from "@/hooks/useAudioRecorder"
+import { VoiceVisualizer } from "./common/VoiceVisualizer"
 
+/**
+ * Props for the VoiceMailRecorder component.
+ */
 interface VoiceMailRecorderProps {
+  /** The unique identifier of the episode associated with the voicemail. */
   episodeId: string;
+  /** The unique identifier of the user recording the voicemail. */
   userId: string;
 }
 
+/**
+ * A component that provides a UI for recording and submitting audio voicemails for a specific episode.
+ * Features include real-time recording visualization, playback preview, management of previous recordings,
+ * and the ability to add notes for hosts.
+ *
+ * @param episodeId - The episode context for the recording.
+ * @param userId - The user making the recording.
+ */
+
 export default function VoiceMailRecorder({ episodeId, userId }: VoiceMailRecorderProps) {
-  const [isRecording, setIsRecording] = useState(false)
-  const [recordingTime, setRecordingTime] = useState(0)
-  const [audioBlob, setAudioBlob] = useState<Blob | null>(null)
-  const [isPlaying, setIsPlaying] = useState(false)
-  const [permissionDenied, setPermissionDenied] = useState(false)
+  const {
+    isRecording,
+    recordingTime,
+    audioBlob,
+    isPlaying,
+    permissionDenied,
+    activeMessageId,
+    startRecording,
+    stopRecording,
+    playRecording,
+    stopPlayback,
+    playMessage,
+    resetRecording,
+    setAudioBlob,
+    volume
+  } = useAudioRecorder({ serviceWorkerIntegration: true });
+
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isUploaded, setIsUploaded] = useState(false)
+  const [showRecordings, setShowRecordings] = useState(false)
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false)
+  const [pendingDeleteId, setPendingDeleteId] = useState<number | null>(null)
+  const [notes, setNotes] = useState("")
 
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null)
-  const audioChunksRef = useRef<Blob[]>([])
-  const audioRef = useRef<HTMLAudioElement | null>(null)
-  const timerRef = useRef<NodeJS.Timeout | null>(null)
-  const serviceWorkerRef = useRef<ServiceWorker | null>(null)
-
-  const [notes, setNotes] = useState("");
+  const utils = api.useUtils();
   const { mutate: updateAudio } = api.episode.updateAudioMessage.useMutation();
-  const { data: countOfUserAudioMessagesForEpisode, refetch } = api.episode.getCountOfUserEpisodeAudioMessages.useQuery({
+
+  const { data: audioMessages, refetch: refetchMessages } = api.episode.getUserAudioMessages.useQuery({
+    episodeId,
+  });
+
+  const { data: countData } = api.episode.getCountOfUserEpisodeAudioMessages.useQuery({
     episodeId: episodeId,
-    userId: userId
+  });
+
+  const { mutate: deleteMessage } = api.episode.deleteAudioMessage.useMutation({
+    onSuccess: () => {
+      void refetchMessages();
+      void utils.episode.getCountOfUserEpisodeAudioMessages.invalidate({ episodeId });
+      toast.success("Recording deleted");
+    },
+    onError: (err) => {
+      toast.error("Failed to delete recording");
+    }
   });
 
   const { startUpload, isUploading } = useUploadThing("audioUploader", {
     onUploadError: (error: Error) => {
       console.error("Error uploading audio:", error);
       setIsSubmitting(false);
-      alert("Failed to upload audio. Please try again.");
+      toast.error("Failed to upload audio. Please try again.");
     },
     onClientUploadComplete: (data) => {
       const uploadedFile = data[0];
@@ -53,9 +101,8 @@ export default function VoiceMailRecorder({ episodeId, userId }: VoiceMailRecord
       }, {
         onSuccess: () => {
           setNotes("");
-          refetch();
-          setIsUploaded(true);
-          setTimeout(() => setIsUploaded(false), 5000);
+          void refetchMessages();
+          void utils.episode.getCountOfUserEpisodeAudioMessages.invalidate({ episodeId });
           setAudioBlob(null);
           setIsSubmitting(false);
           toast.success("Voice message submitted successfully!");
@@ -64,145 +111,16 @@ export default function VoiceMailRecorder({ episodeId, userId }: VoiceMailRecord
     },
   });
 
-  useEffect(() => {
-    // Register service worker
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js').then(registration => {
-        serviceWorkerRef.current = registration.active;
-      });
-    }
-
-    // Listen for messages from service worker
-    navigator.serviceWorker.addEventListener('message', (event) => {
-      if (event.data.type === 'STOP_RECORDING') {
-        stopRecording();
-      }
-    });
-
-    // Create audio element for playback
-    audioRef.current = new Audio()
-    audioRef.current.onended = () => setIsPlaying(false)
-
-    // Clean up on unmount
-    return () => {
-      if (timerRef.current) {
-        clearInterval(timerRef.current)
-        timerRef.current = null
-      }
-
-      if (mediaRecorderRef.current && isRecording) {
-        mediaRecorderRef.current.stop()
-      }
-
-      if (audioRef.current) {
-        audioRef.current.pause()
-        audioRef.current.src = ""
-      }
-    }
-  }, [])
-
-  const startRecording = async () => {
-    audioChunksRef.current = []
-    setAudioBlob(null)
-    setRecordingTime(0)
-
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
-      mediaRecorderRef.current = new MediaRecorder(stream)
-
-      mediaRecorderRef.current.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          audioChunksRef.current.push(event.data)
-        }
-      }
-
-      mediaRecorderRef.current.onstop = () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: "audio/wav" })
-        setAudioBlob(audioBlob)
-
-        // Stop all tracks on the stream to release the microphone
-        stream.getTracks().forEach((track) => track.stop())
-      }
-
-      mediaRecorderRef.current.start()
-      setIsRecording(true)
-      setPermissionDenied(false)
-
-      // Notify service worker about recording state
-      if (serviceWorkerRef.current) {
-        serviceWorkerRef.current.postMessage({
-          type: 'RECORDING_STATE',
-          isRecording: true,
-          duration: 0
-        });
-      }
-
-      // Start timer to track recording duration
-      timerRef.current = setInterval(() => {
-        setRecordingTime((prevTime) => {
-          const newTime = prevTime + 1;
-          // Update service worker with new duration
-          if (serviceWorkerRef.current) {
-            serviceWorkerRef.current.postMessage({
-              type: 'RECORDING_STATE',
-              isRecording: true,
-              duration: newTime
-            });
-          }
-          return newTime;
-        });
-      }, 1000)
-    } catch (error) {
-      console.error("Error accessing microphone:", error)
-      setPermissionDenied(true)
-    }
-  }
-
-  const stopRecording = useCallback(() => {
-    if (mediaRecorderRef.current && isRecording) {
-      mediaRecorderRef.current.stop()
-      setIsRecording(false)
-
-      // Notify service worker about recording state
-      if (serviceWorkerRef.current) {
-        serviceWorkerRef.current.postMessage({
-          type: 'RECORDING_STATE',
-          isRecording: false,
-          duration: recordingTime
-        });
-      }
-
-      if (timerRef.current) {
-        clearInterval(timerRef.current)
-        timerRef.current = null
-      }
-    }
-  }, [isRecording, recordingTime])
-
-  const playRecording = useCallback(() => {
-    if (audioBlob && audioRef.current) {
-      const audioUrl = URL.createObjectURL(audioBlob)
-      audioRef.current.src = audioUrl
-      audioRef.current.play()
-      setIsPlaying(true)
-    }
-  }, [audioBlob])
-
-  const stopPlayback = useCallback(() => {
-    if (audioRef.current) {
-      audioRef.current.pause()
-      audioRef.current.currentTime = 0
-      setIsPlaying(false)
-    }
-  }, [])
-
   const handleSubmit = async () => {
     if (!audioBlob) return
 
     setIsSubmitting(true)
 
     try {
-      const audioFile = new File([audioBlob], 'audio-message.wav', { type: 'audio/wav' });
+      const mimeType = audioBlob.type;
+      const extension = mimeType.split('/')[1]?.split(';')[0] || 'wav';
+      const fileName = `audio-message.${extension}`;
+      const audioFile = new File([audioBlob], fileName, { type: mimeType });
       await startUpload(
         [audioFile],
         { episodeId: episodeId }
@@ -210,21 +128,12 @@ export default function VoiceMailRecorder({ episodeId, userId }: VoiceMailRecord
     } catch (error) {
       console.error("Error submitting audio:", error)
       setIsSubmitting(false)
-      alert("Failed to submit voice message. Please try again.")
+      toast.error("Failed to submit voice message. Please try again.")
     }
   }
 
   const handleCancel = () => {
-    // Reset the component state
-    setAudioBlob(null)
-    setRecordingTime(0)
-
-    // If there's any playback happening, stop it
-    if (audioRef.current) {
-      audioRef.current.pause()
-      audioRef.current.currentTime = 0
-      setIsPlaying(false)
-    }
+    resetRecording();
   }
 
   const formatTime = (seconds: number) => {
@@ -233,89 +142,167 @@ export default function VoiceMailRecorder({ episodeId, userId }: VoiceMailRecord
     return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`
   }
 
-  return (
-    <Card className="w-full max-w-md mx-auto">
-      <CardHeader>
-        <CardTitle className="text-center">Record Voice Message</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="flex items-center justify-between text-sm text-muted-foreground">
-          <span>Recordings for this episode: {countOfUserAudioMessagesForEpisode}</span>
-        </div>
-        {permissionDenied && (
-          <Alert variant="destructive">
-            <AlertDescription>
-              Microphone access was denied. Please allow microphone access to record a voice message.
-            </AlertDescription>
-          </Alert>
-        )}
+  const confirmationDialog = (
+    <Dialog open={isConfirmOpen} onOpenChange={setIsConfirmOpen}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Delete Recording</DialogTitle>
+          <DialogDescription>
+            Are you sure you want to delete this recording? This action cannot be undone.
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter className="sm:justify-end gap-2 flex-row justify-end">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => {
+              setIsConfirmOpen(false);
+              setPendingDeleteId(null);
+            }}
+          >
+            Cancel
+          </Button>
+          <Button
+            type="button"
+            variant="destructive"
+            onClick={() => {
+              if (pendingDeleteId !== null) {
+                deleteMessage({ id: pendingDeleteId });
+              }
+              setIsConfirmOpen(false);
+              setPendingDeleteId(null);
+            }}
+          >
+            Delete
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
 
-        <div className="flex justify-center items-center h-32 bg-muted rounded-md relative">
-          {isRecording ? (
-            <div className="text-center">
-              <div className="flex items-center justify-center gap-2 mb-2">
-                <span className="h-3 w-3 rounded-full bg-red-500 animate-pulse"></span>
-                <span className="text-lg font-medium">Recording...</span>
+  return (
+    <div className="w-full space-y-4">
+      <div className="flex flex-col gap-2">
+        <button
+          type="button"
+          onClick={() => setShowRecordings(!showRecordings)}
+          className="flex items-center justify-between text-sm text-muted-foreground w-full hover:bg-muted/50 p-2 rounded transition-colors"
+        >
+          <span className="flex items-center gap-1 font-medium">
+            {showRecordings ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+            Your previous recordings: {audioMessages?.length ?? 0}
+          </span>
+        </button>
+
+        {showRecordings && audioMessages && audioMessages.length > 0 && (
+          <div className="flex flex-col gap-2 pl-2 border-l-2 border-muted max-h-40 overflow-y-auto">
+            {audioMessages.map((msg) => (
+              <div key={msg.id} className="flex items-center justify-between bg-muted/40 p-2 rounded-md group">
+                <div className="flex items-center gap-2">
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="h-8 w-8"
+                    onClick={() => playMessage(msg)}
+                    disabled={!msg.fileKey}
+                  >
+                    {isPlaying && activeMessageId === msg.id ? (
+                      <Square className="h-4 w-4 fill-current" />
+                    ) : (
+                      <Play className="h-4 w-4" />
+                    )}
+                  </Button>
+                  <span className="text-xs truncate max-w-[150px]">
+                    Recording #{msg.id} {msg.notes ? `- ${msg.notes}` : ""}
+                  </span>
+                </div>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="h-8 w-8 text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
+                  onClick={() => {
+                    setPendingDeleteId(msg.id);
+                    setIsConfirmOpen(true);
+                  }}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
               </div>
-              <div className="text-2xl font-bold">{formatTime(recordingTime)}</div>
-            </div>
-          ) : audioBlob ? (
-            <div className="text-center">
-              <div className="text-lg mb-2">Recording complete</div>
-              <div className="text-sm text-muted-foreground">{formatTime(recordingTime)} recorded</div>
-            </div>
-          ) : (
-            <div className="text-center text-muted-foreground">Press record to start your voice message</div>
-          )}
-        </div>
-        <div>
-          <div className="flex gap-2 mb-2 flex-wrap">
-            <Button variant="outline" size="sm" onClick={() => setNotes("Play during extras")}>Play during extras</Button>
-            <Button variant="outline" size="sm" onClick={() => setNotes("Play before assignments")}>Play before assignments</Button>
-            <Button variant="outline" size="sm" onClick={() => setNotes("Play after weekends")}>Play after weekends</Button>
+            ))}
           </div>
-          <textarea
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            placeholder="Add a note for the hosts..."
-            className="w-full h-24 p-2 border rounded-md"
-          />
+        )}
+      </div>
+
+      {permissionDenied && (
+        <Alert variant="destructive">
+          <AlertDescription>
+            Microphone access was denied. Please allow microphone access to record.
+          </AlertDescription>
+        </Alert>
+      )}
+
+      <div className="flex justify-center items-center h-32 bg-muted/50 rounded-lg relative overflow-hidden border border-dashed border-muted-foreground/20">
+        {isRecording ? (
+          <div className="text-center flex flex-col items-center">
+            <VoiceVisualizer volume={volume} isRecording={isRecording} className="mb-2" />
+            <div className="flex items-center justify-center gap-2 mb-2">
+              <span className="h-3 w-3 rounded-full bg-red-500 animate-pulse"></span>
+              <span className="text-lg font-medium text-red-500">Recording...</span>
+            </div>
+            <div className="text-2xl font-bold font-mono">{formatTime(recordingTime)}</div>
+          </div>
+        ) : audioBlob ? (
+          <div className="text-center">
+            <div className="text-sm font-medium text-muted-foreground mb-1">Recording complete</div>
+            <div className="text-2xl font-bold font-mono">{formatTime(recordingTime)}</div>
+          </div>
+        ) : (
+          <div className="text-center text-muted-foreground text-sm px-4">
+            Press the button below to start your recording for the next episode.
+          </div>
+        )}
+      </div>
+
+      <div className="space-y-3">
+        <div className="flex gap-2 flex-wrap">
+          <Button variant="secondary" size="sm" className="h-7 text-[10px]" onClick={() => setNotes("Play during extras")}>Play during extras</Button>
+          <Button variant="secondary" size="sm" className="h-7 text-[10px]" onClick={() => setNotes("Play before assignments")}>Play before assignments</Button>
+          <Button variant="secondary" size="sm" className="h-7 text-[10px]" onClick={() => setNotes("Play after weekends")}>Play after weekends</Button>
         </div>
-      </CardContent>
-      <CardFooter className="flex justify-between">
+        <Textarea
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          placeholder="Add a note for the hosts (optional)..."
+          className="min-h-[80px] bg-background text-sm resize-none"
+        />
+      </div>
+
+      <div className="flex justify-between gap-2 pt-2">
         {isRecording ? (
           <Button variant="destructive" onClick={stopRecording} className="w-full">
-            <Square className="mr-2 h-4 w-4" />
+            <Square className="mr-2 h-4 w-4 fill-current" />
             Stop Recording
           </Button>
         ) : audioBlob ? (
           <div className="w-full grid grid-cols-3 gap-2">
-            <Button variant="outline" onClick={handleCancel} className="col-span-1">
-              Cancel
+            <Button variant="outline" onClick={handleCancel}>
+              <X className="h-4 w-4" />
+              <span className="hidden sm:inline ml-2">Cancel</span>
             </Button>
             {isPlaying ? (
-              <Button variant="outline" onClick={stopPlayback} className="col-span-1">
-                <Square className="mr-2 h-4 w-4" />
-                Stop
+              <Button variant="outline" onClick={stopPlayback}>
+                <Square className="h-4 w-4 fill-current" />
+                <span className="hidden sm:inline ml-2">Stop</span>
               </Button>
             ) : (
-              <Button variant="outline" onClick={playRecording} className="col-span-1">
-                <Play className="mr-2 h-4 w-4" />
-                Preview
+              <Button variant="outline" onClick={playRecording}>
+                <Play className="h-4 w-4 fill-current" />
+                <span className="hidden sm:inline ml-2">Preview</span>
               </Button>
             )}
-            <Button onClick={handleSubmit} disabled={isSubmitting} className="col-span-1">
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Sending...
-                </>
-              ) : (
-                <>
-                  <Send className="mr-2 h-4 w-4" />
-                  Submit
-                </>
-              )}
+            <Button onClick={handleSubmit} disabled={isSubmitting}>
+              {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+              <span className="hidden sm:inline ml-2">{isSubmitting ? "Sending..." : "Submit"}</span>
             </Button>
           </div>
         ) : (
@@ -324,8 +311,9 @@ export default function VoiceMailRecorder({ episodeId, userId }: VoiceMailRecord
             Record Voice Message
           </Button>
         )}
-      </CardFooter>
-    </Card>
+      </div>
+
+      {confirmationDialog}
+    </div>
   )
 }
-

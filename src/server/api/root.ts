@@ -132,15 +132,47 @@ export const appRouter = createTRPCRouter({
     }),
     getCountOfUserEpisodeAudioMessages: protectedProcedure
       .input(z.object({
-        userId: z.string(),
         episodeId: z.string(),
       }))
       .query(async ({ ctx, input }) => {
         return ctx.db.audioEpisodeMessage.count({
           where: {
-            userId: input.userId,
+            userId: ctx.session.user.id,
             episodeId: input.episodeId,
           },
+        });
+      }),
+    getUserAudioMessages: protectedProcedure
+      .input(z.object({
+        episodeId: z.string(),
+      }))
+      .query(async ({ ctx, input }) => {
+        return ctx.db.audioEpisodeMessage.findMany({
+          where: {
+            userId: ctx.session.user.id,
+            episodeId: input.episodeId,
+          },
+          orderBy: {
+            id: 'desc'
+          }
+        });
+      }),
+    deleteAudioMessage: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        // Ensure the user owns the message before deleting
+        const message = await ctx.db.audioEpisodeMessage.findUnique({
+          where: { id: input.id }
+        });
+
+        if (!message || message.userId !== ctx.session.user.id) {
+          throw new Error("Unauthorized or message not found");
+        }
+
+        return ctx.db.audioEpisodeMessage.delete({
+          where: { id: input.id },
         });
       }),
     updateAudioMessage: protectedProcedure
@@ -153,7 +185,8 @@ export const appRouter = createTRPCRouter({
       .mutation(async ({ ctx, input }) => {
         return await ctx.db.audioEpisodeMessage.update({
           where: {
-            id: input.id
+            id: input.id,
+            userId: ctx.session.user.id,
           },
           data: {
             episodeId: input.episodeId,
@@ -606,13 +639,12 @@ export const appRouter = createTRPCRouter({
 
     getCountOfUserAudioMessagesForAssignment: protectedProcedure
       .input(z.object({
-        userId: z.string(),
         assignmentId: z.string(),
       }))
       .query(async ({ ctx, input }) => {
         return ctx.db.audioMessage.count({
           where: {
-            userId: input.userId,
+            userId: ctx.session.user.id,
             assignmentId: input.assignmentId,
           },
         });
@@ -620,13 +652,12 @@ export const appRouter = createTRPCRouter({
 
     getUserAudioMessagesForAssignment: protectedProcedure
       .input(z.object({
-        userId: z.string(),
         assignmentId: z.string(),
       }))
       .query(async ({ ctx, input }) => {
         return ctx.db.audioMessage.findMany({
           where: {
-            userId: input.userId,
+            userId: ctx.session.user.id,
             assignmentId: input.assignmentId,
           },
           orderBy: {
@@ -718,7 +749,8 @@ export const appRouter = createTRPCRouter({
       .mutation(async ({ ctx, input }) => {
         return await ctx.db.audioMessage.update({
           where: {
-            id: input.id
+            id: input.id,
+            userId: ctx.session.user.id
           },
           data: {
             assignmentId: input.assignmentId,

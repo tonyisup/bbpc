@@ -9,6 +9,9 @@ import { highlightText } from "@/utils/text";
 import ShowInlinePreview from "./ShowInlinePreview";
 import { PredictionGame } from "./PredictionGame";
 
+/**
+ * Represents an episode with all its related assignments, extras, and links.
+ */
 export type CompleteEpisode = EpisodeType & {
 	assignments: (AssignmentType & {
 		User: User;
@@ -24,12 +27,23 @@ export type CompleteEpisode = EpisodeType & {
 	links: EpisodeLink[];
 };
 
+/**
+ * Props for the Episode component.
+ */
 interface EpisodeProps {
+	/** Whether to allow the prediction game (guesses) for this episode. */
 	allowGuesses?: boolean,
+	/** Whether to explicitly show movie titles under the movie/show previews. */
 	showMovieTitles?: boolean,
+	/** Search query for highlighting relevant text within the episode details. */
 	searchQuery?: string,
+	/** The complete episode data. */
 	episode: CompleteEpisode;
 }
+
+/**
+ * Renders a full episode section, including the header (title, date, number), assignments, extras, and links.
+ */
 
 export const Episode: FC<EpisodeProps> = ({ episode, allowGuesses: isNextEpisode, showMovieTitles = false, searchQuery = "" }) => {
 	if (!episode) return null;
@@ -73,11 +87,18 @@ export const Episode: FC<EpisodeProps> = ({ episode, allowGuesses: isNextEpisode
 	</section>
 }
 
+/**
+ * Props for the EpisodeAssignments component.
+ */
 interface EpisodeAssignments {
 	showMovieTitles?: boolean,
 	assignments: AssignmentWithRelations[];
 	searchQuery?: string;
 }
+
+/**
+ * Renders a list of assignments for an episode, sorted by type (Homework -> Extra Credit -> Bonus).
+ */
 
 const EpisodeAssignments: FC<EpisodeAssignments> = ({ assignments, showMovieTitles = false, searchQuery = "" }) => {
 	if (!assignments || assignments.length == 0) return null;
@@ -93,6 +114,9 @@ const EpisodeAssignments: FC<EpisodeAssignments> = ({ assignments, showMovieTitl
 	</div>
 }
 
+/**
+ * Props for the EpisodeExtras component.
+ */
 interface EpisodeExtras {
 	showMovieTitles?: boolean,
 	searchQuery?: string,
@@ -104,6 +128,10 @@ interface EpisodeExtras {
 		})
 	})[];
 }
+
+/**
+ * Renders the "Extras" section for an episode, showing previews of additional movies or shows discussed.
+ */
 
 const EpisodeExtras: FC<EpisodeExtras> = ({ extras, showMovieTitles = false, searchQuery = "" }) => {
 	if (!extras || extras.length == 0) return null;
@@ -126,9 +154,16 @@ const EpisodeExtras: FC<EpisodeExtras> = ({ extras, showMovieTitles = false, sea
 	</div>
 }
 
+/**
+ * Props for the EpisodeLinks component.
+ */
 interface EpisodeLinkProps {
 	links: EpisodeLink[];
 }
+
+/**
+ * Renders a list of links associated with an episode (e.g., social media or reference links).
+ */
 const EpisodeLinks: FC<EpisodeLinkProps> = ({ links }) => {
 	if (!links || links.length == 0) return null;
 	return <div className="mt-4 w-full">

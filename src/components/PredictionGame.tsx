@@ -1,7 +1,7 @@
 "use client";
 
 
-import { type FC, useState } from "react";
+import { type FC, useState, type ReactNode } from "react";
 import { api } from "@/trpc/react";
 import { type AssignmentWithRelations } from "@/types/assignment";
 import { type User, type Rating } from "@prisma/client";
@@ -16,10 +16,23 @@ import { Popover, PopoverContent, PopoverTrigger, PopoverClose } from "./ui/popo
 import PhoneNumber from "./common/PhoneNumber";
 import RecordAssignmentAudio from "./common/RecordAssignmentAudio";
 
+/**
+ * Props for the PredictionGame component.
+ */
 interface PredictionGameProps {
+	/** Array of assignments with their related data (Episode, Movie, etc.). */
 	assignments: AssignmentWithRelations[];
+	/** Optional search query for highlighting text in the game. */
 	searchQuery?: string;
 }
+
+/**
+ * The main container for the prediction game, allowing users to predict ratings for hosts.
+ * Renders a list of assignments where users can select ratings for each host and place bets.
+ *
+ * @param assignments - List of assignments to be shown.
+ * @param searchQuery - Text to be highlighted (e.g., from a search bar).
+ */
 
 export const PredictionGame: FC<PredictionGameProps> = ({ assignments, searchQuery = "" }) => {
 	const { data: session } = api.auth.getSession.useQuery();
@@ -32,10 +45,10 @@ export const PredictionGame: FC<PredictionGameProps> = ({ assignments, searchQue
 
 
 	return (
-		<div className="flex flex-col gap-8 p-6 border rounded-xl border-gray-700 mt-6 bg-gray-900/50 backdrop-blur-sm shadow-xl">
+		<div className="flex flex-col gap-6 sm:gap-8 p-4 sm:p-6 border rounded-xl border-gray-700 mt-6 bg-gray-900/50 backdrop-blur-sm shadow-xl">
 			<div className="flex flex-col gap-2 border-b border-gray-700 pb-4">
-				<h2 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600">Prediction Game</h2>
-				<p className="text-sm text-gray-400">Predict what rating each host will give to the movies!</p>
+				<h2 className="text-xl sm:text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-red-300 to-red-600">Prediction Game</h2>
+				<p className="text-xs sm:text-sm text-gray-400">Predict what rating each host will give to the movies!</p>
 			</div>
 
 			<div className="flex flex-col gap-10">
@@ -56,13 +69,26 @@ export const PredictionGame: FC<PredictionGameProps> = ({ assignments, searchQue
 	);
 };
 
+/**
+ * Props for the AssignmentPrediction component.
+ */
 interface AssignmentPredictionProps {
+	/** The specific assignment being predicted. */
 	assignment: AssignmentWithRelations;
+	/** List of hosts for whom guesses are being made. */
 	hosts: User[];
+	/** List of available ratings that can be chosen. */
 	ratings: Rating[];
+	/** The ID of the currently logged-in user making the predictions. */
 	userId: string;
+	/** The search query for highlighting movie titles. */
 	searchQuery: string;
 }
+
+/**
+ * Renders the prediction UI for a single assignment.
+ * Handles individual host rating selection, collapsible views, and submission logic.
+ */
 
 const AssignmentPrediction: FC<AssignmentPredictionProps> = ({ assignment, hosts, ratings, userId, searchQuery }) => {
 	const utils = api.useUtils();
@@ -145,7 +171,6 @@ const AssignmentPrediction: FC<AssignmentPredictionProps> = ({ assignment, hosts
 	};
 
 	const { data: audioMessageCount } = api.review.getCountOfUserAudioMessagesForAssignment.useQuery({
-		userId: userId,
 		assignmentId: assignment.id
 	});
 
@@ -159,20 +184,20 @@ const AssignmentPrediction: FC<AssignmentPredictionProps> = ({ assignment, hosts
 			{/* Collapsed Header View */}
 			{isCollapsed ? (
 				<div
-					className="flex items-center gap-4 bg-gray-800/40 p-3 rounded-lg border border-gray-700/50 cursor-pointer hover:bg-gray-800/60 transition-colors"
+					className="flex items-center gap-2 sm:gap-4 bg-gray-800/40 p-2 sm:p-3 rounded-lg border border-gray-700/50 cursor-pointer hover:bg-gray-800/60 transition-colors"
 					onClick={() => setUserExpanded(true)}
 				>
-					<h3 className="font-bold text-xl text-white flex-grow truncate">
+					<h3 className="font-bold text-lg sm:text-xl text-white flex-grow truncate pr-2">
 						{assignment.Movie ? highlightText(assignment.Movie.title, searchQuery) : "Unknown Movie"}
 					</h3>
 
 					<div className="flex gap-3 items-center">
-						<div className="flex gap-2 mr-2">
+						<div className="flex gap-1 sm:gap-2 mr-1 sm:mr-2">
 							{hosts.map(host => {
 								const guess = getGuessForHost(host.id);
 								if (!guess) return null;
 								return (
-									<div key={host.id} title={host.name ?? "Host"} className="scale-90 opacity-90 hover:opacity-100 transition-opacity">
+									<div key={host.id} title={host.name ?? "Host"} className="scale-75 sm:scale-90 opacity-90 hover:opacity-100 transition-opacity">
 										<RatingIcon value={guess.Rating.value} />
 									</div>
 								);
@@ -180,18 +205,20 @@ const AssignmentPrediction: FC<AssignmentPredictionProps> = ({ assignment, hosts
 						</div>
 
 						{gamblingPoints && gamblingPoints.length > 0 && gamblingPoints[0] && gamblingPoints[0].points > 0 ? (
-							<div className="flex items-center bg-purple-900/50 px-2 py-1 rounded text-purple-200 font-bold text-sm border border-purple-500/30">
+							<div className="flex items-center bg-purple-900/50 px-1.5 py-0.5 sm:px-2 sm:py-1 rounded text-purple-200 font-bold text-[10px] sm:text-sm border border-purple-500/30 whitespace-nowrap">
 								{gamblingPoints[0].points} pts
 							</div>
 						) : (
-							<div className="flex items-center bg-purple-900/50 px-2 py-1 rounded text-purple-200 font-bold text-sm border border-purple-500/30">
+							<div className="flex items-center bg-purple-900/50 px-1.5 py-0.5 sm:px-2 sm:py-1 rounded text-purple-200 font-bold text-[10px] sm:text-sm border border-purple-500/30 whitespace-nowrap">
 								No Bet
 							</div>
 						)}
 
-						<div className="flex items-center bg-green-900/50 px-2 py-1 rounded text-green-200 font-bold text-sm border border-green-500/30">
-							{audioMessageCount ?? 0} <Voicemail className="pl-1 w-5 h-5" />
-						</div>
+						<Message assignmentId={assignment.id} userId={userId}>
+							<div className="flex items-center bg-green-900/50 px-1.5 py-0.5 sm:px-2 sm:py-1 rounded text-green-200 font-bold text-[10px] sm:text-sm border border-green-500/30 whitespace-nowrap">
+								{audioMessageCount ?? 0} <Voicemail className="pl-0.5 sm:pl-1 w-3 h-3 sm:w-5 h-5" />
+							</div>
+						</Message>
 
 						<ChevronDown className="text-gray-400 w-5 h-5" />
 					</div>
@@ -200,7 +227,7 @@ const AssignmentPrediction: FC<AssignmentPredictionProps> = ({ assignment, hosts
 				<>
 					{/* Expanded Header */}
 					<div className="flex justify-between items-start">
-						<h3 className="font-bold text-xl text-white pl-2 border-l-4 border-purple-500">
+						<h3 className="font-bold text-xl text-white pl-2 border-l-4 border-red-500">
 							{assignment.Movie ? highlightText(assignment.Movie.title, searchQuery) : "Unknown Movie"}
 						</h3>
 						{hasAllGuesses && (
@@ -219,8 +246,8 @@ const AssignmentPrediction: FC<AssignmentPredictionProps> = ({ assignment, hosts
 							const isSubmitting = submitGuess.isLoading && submitGuess.variables?.hostId === host.id;
 
 							return (
-								<div key={host.id} className="grid grid-cols-[120px_1fr] items-center gap-4 bg-gray-800/40 p-3 rounded-lg border border-gray-700/50 hover:border-gray-600 transition-colors">
-									<div className="font-medium text-gray-200 truncate" title={host.name ?? ""}>
+								<div key={host.id} className="flex flex-col sm:grid sm:grid-cols-[120px_1fr] items-start sm:items-center gap-2 sm:gap-4 bg-gray-800/40 p-3 rounded-lg border border-gray-700/50 hover:border-gray-600 transition-colors">
+									<div className="font-medium text-sm sm:text-base text-gray-200 truncate w-full" title={host.name ?? ""}>
 										{host.name}
 									</div>
 									<div className="flex flex-wrap gap-2">
@@ -241,9 +268,9 @@ const AssignmentPrediction: FC<AssignmentPredictionProps> = ({ assignment, hosts
 													}}
 													disabled={isSubmitting}
 													className={cn(
-														"px-3 py-1.5 rounded-md text-xs font-medium transition-all duration-200 border",
+														"px-2 py-1 sm:px-3 sm:py-1.5 rounded-md text-[10px] sm:text-xs font-medium transition-all duration-200 border",
 														isSelected
-															? "bg-purple-600 border-purple-500 text-white shadow-[0_0_10px_rgba(147,51,234,0.5)] scale-105"
+															? "border-red-500 text-white shadow-[0_0_10px_rgba(145,0,0,0.5)] scale-105"
 															: "bg-gray-700/50 border-gray-600 text-gray-400 hover:bg-gray-600 hover:text-gray-200 hover:border-gray-500",
 														isSubmitting && "opacity-50 cursor-not-allowed"
 													)}
@@ -272,13 +299,16 @@ const AssignmentPrediction: FC<AssignmentPredictionProps> = ({ assignment, hosts
 	);
 }
 
+/**
+ * Component to trigger a popover containing the phone number information.
+ */
 const Call = () => {
 	return (
 		<Popover>
 			<PopoverTrigger asChild>
 				<Button variant="outline"><Phone className="w-5 h-5" /></Button>
 			</PopoverTrigger>
-			<PopoverContent>
+			<PopoverContent onClick={(e) => e.stopPropagation()}>
 				<div className="flex justify-between items-center">
 					<PhoneNumber />
 					<PopoverClose asChild>
@@ -298,15 +328,20 @@ const Call = () => {
 	);
 }
 
-const Message = ({ assignmentId, userId, count }: { assignmentId: string; userId: string; count?: number }) => {
+/**
+ * Component to trigger a popover for recording and sending audio messages (voicemails).
+ */
+const Message = ({ assignmentId, userId, count, children }: { assignmentId: string; userId: string; count?: number; children?: ReactNode }) => {
 	return (
 		<Popover>
-			<PopoverTrigger asChild>
-				<Button variant="outline" className="flex items-center gap-2">
-					{count ?? 0} <Voicemail className="w-5 h-5" />
-				</Button>
+			<PopoverTrigger asChild onClick={(e) => children ? e.stopPropagation() : undefined}>
+				{children ?? (
+					<Button variant="outline" className="flex items-center gap-2">
+						{count ?? 0} <Voicemail className="w-5 h-5" />
+					</Button>
+				)}
 			</PopoverTrigger>
-			<PopoverContent className="w-[calc(100vw-2rem)] sm:w-96">
+			<PopoverContent className="w-[calc(100vw-2rem)] sm:w-96" onClick={(e) => e.stopPropagation()}>
 				<div className="flex justify-between items-center mb-2">
 					<span className="text-sm text-gray-400">Got something to say?</span>
 					<PopoverClose asChild>

@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Mic, Square, Play, Send, Loader2, X, ChevronDown, ChevronRight, Trash2 } from "lucide-react"
@@ -15,6 +15,8 @@ import { useUploadThing } from '../../utils/uploadthing';
 import { api } from '@/trpc/react';
 import { cn } from "@/lib/utils";
 import { toast } from 'sonner';
+import { useAudioRecorder } from '@/hooks/useAudioRecorder';
+import { VoiceVisualizer } from './VoiceVisualizer';
 
 interface RecordAssignmentAudioProps {
   userId: string;
@@ -23,40 +25,43 @@ interface RecordAssignmentAudioProps {
 }
 
 const RecordAssignmentAudio: React.FC<RecordAssignmentAudioProps> = ({ userId, assignmentId, mode = 'default' }) => {
-  const [isRecording, setIsRecording] = useState(false);
-  const [recordingTime, setRecordingTime] = useState(0);
-  const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [permissionDenied, setPermissionDenied] = useState(false);
+  const {
+    isRecording,
+    recordingTime,
+    audioBlob,
+    isPlaying,
+    permissionDenied,
+    activeMessageId,
+    startRecording,
+    stopRecording,
+    playRecording,
+    stopPlayback,
+    playMessage,
+    resetRecording,
+    setAudioBlob,
+    volume
+  } = useAudioRecorder();
+
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isUploaded, setIsUploaded] = useState(false);
   const [showRecordings, setShowRecordings] = useState(false);
-  const [activeMessageId, setActiveMessageId] = useState<number | null>(null);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [pendingDeleteId, setPendingDeleteId] = useState<number | null>(null);
-
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const audioChunksRef = useRef<Blob[]>([]);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   const utils = api.useUtils();
   const { mutate: updateAudio } = api.review.updateAudioMessage.useMutation();
 
   const { data: uploadInfo, refetch } = api.uploadInfo.getAssignmentUploadInfo.useQuery({
     assignmentId: assignmentId,
-    userId: userId,
   });
 
   const { data: audioMessages, refetch: refetchMessages } = api.review.getUserAudioMessagesForAssignment.useQuery({
-    userId,
     assignmentId,
   });
 
   const { mutate: deleteMessage } = api.review.deleteAudioMessage.useMutation({
     onSuccess: () => {
       void refetchMessages();
-      void utils.review.getCountOfUserAudioMessagesForAssignment.invalidate({ userId, assignmentId });
+      void utils.review.getCountOfUserAudioMessagesForAssignment.invalidate({ assignmentId });
       toast.success("Recording deleted");
     },
     onError: (err) => {
@@ -83,9 +88,7 @@ const RecordAssignmentAudio: React.FC<RecordAssignmentAudioProps> = ({ userId, a
         onSuccess: () => {
           refetch();
           void refetchMessages();
-          void utils.review.getCountOfUserAudioMessagesForAssignment.invalidate({ userId, assignmentId });
-          setIsUploaded(true);
-          setTimeout(() => setIsUploaded(false), 5000);
+          void utils.review.getCountOfUserAudioMessagesForAssignment.invalidate({ assignmentId });
           setAudioBlob(null);
           setIsSubmitting(false);
           toast.success("Voice message submitted successfully!");
@@ -94,132 +97,24 @@ const RecordAssignmentAudio: React.FC<RecordAssignmentAudioProps> = ({ userId, a
     },
   });
 
-  useEffect(() => {
-    // Create audio element for playback
-    audioRef.current = new Audio()
-    audioRef.current.onended = () => setIsPlaying(false)
-
-    // Clean up on unmount
-    return () => {
-      if (timerRef.current) {
-        clearInterval(timerRef.current)
-        timerRef.current = null
-      }
-
-      if (mediaRecorderRef.current && isRecording) {
-        mediaRecorderRef.current.stop()
-      }
-
-      if (audioRef.current) {
-        audioRef.current.pause()
-        audioRef.current.src = ""
-      }
-    }
-  }, [])
-
-  const startRecording = async () => {
-    audioChunksRef.current = []
-    setAudioBlob(null)
-    setRecordingTime(0)
-
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
-      mediaRecorderRef.current = new MediaRecorder(stream)
-
-      mediaRecorderRef.current.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          audioChunksRef.current.push(event.data)
-        }
-      }
-
-      mediaRecorderRef.current.onstop = () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: "audio/wav" })
-        setAudioBlob(audioBlob)
-
-        // Stop all tracks on the stream to release the microphone
-        stream.getTracks().forEach((track) => track.stop())
-      }
-
-      mediaRecorderRef.current.start()
-      setIsRecording(true)
-      setPermissionDenied(false)
-
-      // Clear any existing timer first
-      if (timerRef.current) {
-        clearInterval(timerRef.current)
-      }
-
-      // Start timer to track recording duration
-      timerRef.current = setInterval(() => {
-        setRecordingTime((prevTime) => prevTime + 1)
-      }, 1000)
-    } catch (error) {
-      console.error("Error accessing microphone:", error)
-      setPermissionDenied(true)
-    }
-  }
-
-  const stopRecording = () => {
-    if (mediaRecorderRef.current && isRecording) {
-      mediaRecorderRef.current.stop()
-      setIsRecording(false)
-
-      if (timerRef.current) {
-        clearInterval(timerRef.current)
-        timerRef.current = null
-      }
-    }
-  }
-
-  const playRecording = () => {
-    if (audioBlob && audioRef.current) {
-      const audioUrl = URL.createObjectURL(audioBlob)
-      audioRef.current.src = audioUrl
-      audioRef.current.play()
-      setIsPlaying(true)
-    }
-  }
-
-  const stopPlayback = () => {
-    if (audioRef.current) {
-      audioRef.current.pause()
-      audioRef.current.currentTime = 0
-      setIsPlaying(false)
-      setActiveMessageId(null)
-    }
-  }
-
-  const playMessage = (message: { id: number; fileKey: string | null }) => {
-    if (!message.fileKey || !audioRef.current) return;
-
-    if (isPlaying && activeMessageId === message.id) {
-      stopPlayback();
-      return;
-    }
-
-    const audioUrl = `https://utfs.io/f/${message.fileKey}`;
-    audioRef.current.src = audioUrl;
-    audioRef.current.play();
-    setIsPlaying(true);
-    setActiveMessageId(message.id);
-    setAudioBlob(null); // Clear pending recording if we play an old one
-  }
-
   const handleSubmit = async () => {
     if (!audioBlob) return
 
     setIsSubmitting(true)
 
     try {
-      let fileName = 'audio-message.wav';
+      const mimeType = audioBlob.type;
+      const extension = mimeType.split('/')[1]?.split(';')[0] || 'wav';
+      let fileName = `audio-message.${extension}`;
+
       if (uploadInfo) {
         const { episodeNumber, userName, movieName, messageCount } = uploadInfo;
         const safeMovieName = movieName ? movieName.replace(/[^a-zA-Z0-9]/g, '-') : 'unknown-movie';
         const safeUserName = userName ? userName.replace(/[^a-zA-Z0-9]/g, '-') : 'unknown-user';
-        fileName = `${episodeNumber}-${safeUserName}-${safeMovieName}-${messageCount + 1}.wav`;
+        fileName = `${episodeNumber}-${safeUserName}-${safeMovieName}-${messageCount + 1}.${extension}`;
       }
 
-      const audioFile = new File([audioBlob], fileName, { type: 'audio/wav' });
+      const audioFile = new File([audioBlob], fileName, { type: mimeType });
       await startUpload(
         [audioFile],
         { assignmentId: assignmentId }
@@ -232,16 +127,7 @@ const RecordAssignmentAudio: React.FC<RecordAssignmentAudioProps> = ({ userId, a
   }
 
   const handleCancel = () => {
-    // Reset the component state
-    setAudioBlob(null)
-    setRecordingTime(0)
-
-    // If there's any playback happening, stop it
-    if (audioRef.current) {
-      audioRef.current.pause()
-      audioRef.current.currentTime = 0
-      setIsPlaying(false)
-    }
+    resetRecording();
   }
 
   const formatTime = (seconds: number) => {
@@ -326,7 +212,8 @@ const RecordAssignmentAudio: React.FC<RecordAssignmentAudioProps> = ({ userId, a
 
         <div className="flex justify-center items-center py-8 bg-muted rounded-md relative">
           {isRecording ? (
-            <div className="text-center">
+            <div className="text-center flex flex-col items-center">
+              <VoiceVisualizer volume={volume} isRecording={isRecording} className="mb-2" />
               <div className="flex items-center justify-center gap-2 mb-2">
                 <span className="h-3 w-3 rounded-full bg-red-500 animate-pulse"></span>
                 <span className="text-lg font-medium">Recording...</span>

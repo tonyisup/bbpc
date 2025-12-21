@@ -9,15 +9,28 @@ import { X, ArrowUp, ArrowDown, Edit3, Save, X as XIcon, ChevronsUp } from "luci
 import MovieFind from "./MovieFind";
 import MovieInlinePreview from "./MovieInlinePreview";
 
+/**
+ * Props for the SyllabusManager component.
+ */
 interface SyllabusManagerProps {
+  /** The initial list of syllabus items with their related Movie and Assignment/Episode data. */
   initialSyllabus: (Syllabus & {
     Movie: Movie;
     Assignment: (Assignment & {
       Episode: Episode;
     }) | null;
   })[];
+  /** The ID of the user managing the syllabus. */
   userId: string;
 }
+
+/**
+ * A component for managing the movie syllabus, including adding, removing, reordering, and adding notes to movies.
+ * It separates movies into "unassigned" (potential upcoming episodes) and "assigned" (already reviewed) sections.
+ *
+ * @param initialSyllabus - The starting syllabus data.
+ * @param userId - Used for API mutations.
+ */
 
 const SyllabusManager: FC<SyllabusManagerProps> = ({ initialSyllabus, userId }) => {
   const [syllabus, setSyllabus] = useState(initialSyllabus);

@@ -17,6 +17,7 @@ export const env = createEnv({
     EMAIL_SERVER_HOST: z.string().optional(),
     EMAIL_SERVER_PORT: z.string().optional(),
     EMAIL_FROM: z.string().optional(),
+    MAX_RECORDING_TIME: z.string().optional(),
   },
   client: {
     // NEXT_PUBLIC_CLIENTVAR: z.string().min(1),
@@ -36,6 +37,7 @@ export const env = createEnv({
     EMAIL_SERVER_HOST: process.env.EMAIL_SERVER_HOST,
     EMAIL_SERVER_PORT: process.env.EMAIL_SERVER_PORT,
     EMAIL_FROM: process.env.EMAIL_FROM,
+    MAX_RECORDING_TIME: process.env.MAX_RECORDING_TIME,
   },
   skipValidation: !!process.env.SKIP_ENV_VALIDATION,
 });
