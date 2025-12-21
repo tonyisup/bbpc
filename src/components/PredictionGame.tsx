@@ -246,7 +246,7 @@ const AssignmentPrediction: FC<AssignmentPredictionProps> = ({ assignment, hosts
 							const isSubmitting = submitGuess.isLoading && submitGuess.variables?.hostId === host.id;
 
 							return (
-								<div key={host.id} className="flex flex-col sm:grid sm:grid-cols-[120px_1fr] items-start sm:items-center gap-2 sm:gap-4 bg-gray-800/40 p-3 rounded-lg border border-gray-700/50 hover:border-gray-600 transition-colors">
+								<div key={host.id} className="grid grid-cols-[100px_1fr] sm:grid-cols-[120px_1fr] items-center gap-2 sm:gap-4 bg-gray-800/40 p-3 rounded-lg border border-gray-700/50 hover:border-gray-600 transition-colors">
 									<div className="font-medium text-sm sm:text-base text-gray-200 truncate w-full" title={host.name ?? ""}>
 										{host.name}
 									</div>
