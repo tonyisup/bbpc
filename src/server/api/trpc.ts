@@ -62,7 +62,7 @@ const enforceUserIsAuthed = t.middleware(({ ctx, next }) => {
 export const protectedProcedure = t.procedure.use(enforceUserIsAuthed);
 
 const enforceUserIsAdmin = t.middleware(({ ctx, next }) => {
-  if (!ctx.session?.user?.isAdmin) {
+  if (!ctx.session?.user?.isAdmin && !ctx.session?.user?.isImpersonating) {
     throw new TRPCError({ code: "UNAUTHORIZED", message: "Admin access required" });
   }
   return next({

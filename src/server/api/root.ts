@@ -800,7 +800,7 @@ export const appRouter = createTRPCRouter({
           data: { impersonatedUserId: input.userId }
         });
       }),
-    stopImpersonating: protectedProcedure
+    stopImpersonating: adminProcedure
       .mutation(async ({ ctx }) => {
         const realUserId = ctx.session.user.realUser?.id;
         if (!realUserId) {
