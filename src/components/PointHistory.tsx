@@ -43,6 +43,14 @@ interface PointHistoryProps {
 	points: Point[];
 }
 
+/**
+ * Render a point history grouped by episode and assignment.
+ *
+ * Groups the provided points by the associated Episode (derived from Assignment data) and then by Assignment, sorts episodes by episode number descending, and renders each assignment's points with titles, descriptions, earned date, and computed totals.
+ *
+ * @param points - Array of Point objects to display. Points without an associated Assignment are placed under "Miscellaneous" -> "General".
+ * @returns The JSX element representing the grouped and formatted point history.
+ */
 export default function PointHistory({ points }: PointHistoryProps) {
 	// Group points by Episode -> Assignment
 	const groupedPoints = points.reduce((acc, point) => {
