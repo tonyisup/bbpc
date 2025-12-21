@@ -129,7 +129,7 @@ const GamblingSection: FC<GamblingSectionProps> = ({ assignmentId, userId }) => 
                 placeholder="Points here..."
                 value={gamblingPoints}
                 onChange={(e) => setGamblingPoints(Number(e.target.value))}
-                className="bg-gray-800 border-gray-700 text-white"
+                className="bg-gray-800 border-gray-700 text-white max-w-[100px]"
               />
               <Button
                 disabled={!canSubmitGamblingPoints}
