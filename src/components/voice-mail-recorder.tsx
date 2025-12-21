@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from "react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Mic, Square, Play, Send, Loader2, X, ChevronDown, ChevronRight, Trash2 } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import {
@@ -15,7 +14,6 @@ import { Textarea } from "@/components/ui/textarea"
 import { api } from "@/trpc/react"
 import { useUploadThing } from "@/utils/uploadthing"
 import { toast } from "sonner"
-import { cn } from "@/lib/utils"
 
 interface VoiceMailRecorderProps {
   episodeId: string;
@@ -41,6 +39,13 @@ export default function VoiceMailRecorder({ episodeId, userId }: VoiceMailRecord
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const timerRef = useRef<NodeJS.Timeout | null>(null)
   const serviceWorkerRef = useRef<ServiceWorker | null>(null)
+  const stopRecordingRef = useRef<() => void>(() => { })
+  const isRecordingRef = useRef(false)
+
+  // Update refs to latest state
+  useEffect(() => {
+    isRecordingRef.current = isRecording
+  }, [isRecording])
 
   const utils = api.useUtils();
   const { mutate: updateAudio } = api.episode.updateAudioMessage.useMutation();
@@ -106,7 +111,7 @@ export default function VoiceMailRecorder({ episodeId, userId }: VoiceMailRecord
     // Listen for messages from service worker
     const messageHandler = (event: MessageEvent) => {
       if (event.data.type === 'STOP_RECORDING') {
-        stopRecording();
+        stopRecordingRef.current();
       }
     };
     navigator.serviceWorker.addEventListener('message', messageHandler);
@@ -124,7 +129,7 @@ export default function VoiceMailRecorder({ episodeId, userId }: VoiceMailRecord
         timerRef.current = null
       }
 
-      if (mediaRecorderRef.current && isRecording) {
+      if (mediaRecorderRef.current && isRecordingRef.current) {
         mediaRecorderRef.current.stop()
       }
 
@@ -133,7 +138,7 @@ export default function VoiceMailRecorder({ episodeId, userId }: VoiceMailRecord
         audioRef.current.src = ""
       }
     }
-  }, [isRecording])
+  }, []) // Empty dependency array allows timer to persist
 
   const startRecording = async () => {
     audioChunksRef.current = []
@@ -212,6 +217,11 @@ export default function VoiceMailRecorder({ episodeId, userId }: VoiceMailRecord
       }
     }
   }, [isRecording, recordingTime])
+
+  // Keep stopRecordingRef updated
+  useEffect(() => {
+    stopRecordingRef.current = stopRecording
+  }, [stopRecording])
 
   const playRecording = useCallback(async () => {
     if (audioBlob && audioRef.current) {
