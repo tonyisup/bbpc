@@ -31,6 +31,7 @@ export const useAudioRecorder = (options: UseAudioRecorderOptions = {}) => {
 	const mediaRecorderRef = useRef<MediaRecorder | null>(null);
 	const audioChunksRef = useRef<Blob[]>([]);
 	const audioRef = useRef<HTMLAudioElement | null>(null);
+	const lastAudioUrlRef = useRef<string | null>(null);
 	const timerRef = useRef<NodeJS.Timeout | null>(null);
 	const serviceWorkerRef = useRef<ServiceWorker | null>(null);
 	const isRecordingRef = useRef(false);
@@ -75,14 +76,30 @@ export const useAudioRecorder = (options: UseAudioRecorderOptions = {}) => {
 		}
 	}, [isRecording, recordingTime, options.serviceWorkerIntegration]);
 
+	const revokeLastAudioUrl = useCallback(() => {
+		if (lastAudioUrlRef.current) {
+			URL.revokeObjectURL(lastAudioUrlRef.current);
+			lastAudioUrlRef.current = null;
+		}
+		if (audioRef.current) {
+			audioRef.current.src = "";
+			try {
+				audioRef.current.load();
+			} catch (e) {
+				// Ignore
+			}
+		}
+	}, []);
+
 	const stopPlayback = useCallback(() => {
 		if (audioRef.current) {
 			audioRef.current.pause();
 			audioRef.current.currentTime = 0;
-			setIsPlaying(false);
-			setActiveMessageId(null);
 		}
-	}, []);
+		setIsPlaying(false);
+		setActiveMessageId(null);
+		revokeLastAudioUrl();
+	}, [revokeLastAudioUrl]);
 
 	const resetRecording = useCallback(() => {
 		setAudioBlob(null);
@@ -114,7 +131,7 @@ export const useAudioRecorder = (options: UseAudioRecorderOptions = {}) => {
 	useEffect(() => {
 		// Audio setup
 		audioRef.current = new Audio();
-		audioRef.current.onended = () => setIsPlaying(false);
+		audioRef.current.onended = () => stopPlayback();
 
 		return () => {
 			if (timerRef.current) {
@@ -127,6 +144,7 @@ export const useAudioRecorder = (options: UseAudioRecorderOptions = {}) => {
 				audioRef.current.pause();
 				audioRef.current.src = "";
 			}
+			revokeLastAudioUrl();
 			if (animationFrameRef.current) {
 				cancelAnimationFrame(animationFrameRef.current);
 			}
@@ -134,7 +152,7 @@ export const useAudioRecorder = (options: UseAudioRecorderOptions = {}) => {
 				void audioContextRef.current.close();
 			}
 		};
-	}, []);
+	}, [stopPlayback, revokeLastAudioUrl]);
 
 	const startRecording = async () => {
 		audioChunksRef.current = [];
@@ -231,7 +249,9 @@ export const useAudioRecorder = (options: UseAudioRecorderOptions = {}) => {
 	const playRecording = async () => {
 		if (audioBlob && audioRef.current) {
 			try {
+				revokeLastAudioUrl();
 				const audioUrl = URL.createObjectURL(audioBlob);
+				lastAudioUrlRef.current = audioUrl;
 				audioRef.current.src = audioUrl;
 				await audioRef.current.play();
 				setIsPlaying(true);
@@ -253,6 +273,7 @@ export const useAudioRecorder = (options: UseAudioRecorderOptions = {}) => {
 		}
 
 		try {
+			revokeLastAudioUrl();
 			const audioUrl = `https://utfs.io/f/${message.fileKey}`;
 			audioRef.current.src = audioUrl;
 			await audioRef.current.play();
