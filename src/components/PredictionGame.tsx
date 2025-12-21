@@ -336,7 +336,7 @@ const Message = ({ assignmentId, userId, count, children }: { assignmentId: stri
 		<Popover>
 			<PopoverTrigger asChild onClick={(e) => children ? e.stopPropagation() : undefined}>
 				{children ?? (
-					<Button variant="outline" className="flex items-center gap-2 p-8">
+					<Button variant="outline" className="flex items-center gap-2">
 						{count ?? 0} <Voicemail className="w-5 h-5" />
 					</Button>
 				)}
