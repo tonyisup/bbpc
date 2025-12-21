@@ -407,7 +407,7 @@ export const appRouter = createTRPCRouter({
               year: input.year,
               poster: input.poster,
               url: input.url,
-              tmdbid: input.tmdbId,
+              tmdbId: input.tmdbId,
             }
           })
         }
@@ -417,7 +417,7 @@ export const appRouter = createTRPCRouter({
             year: input.year,
             poster: input.poster,
             url: input.url,
-            tmdbid: input.tmdbId,
+            tmdbId: input.tmdbId,
           }
         })
       }),
