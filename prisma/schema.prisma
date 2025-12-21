@@ -35,7 +35,7 @@ model Movie {
   year        Int          @db.SmallInt
   poster      String?
   url         String
-  tmdbId      Int?
+  tmdbid      Int?
   assignments Assignment[]
   reviews     Review[]
   syllabus    Syllabus[]
@@ -189,6 +189,7 @@ model User {
   sessions            Session[]
   syllabus            Syllabus[]
   roles               UserRole[]
+  impersonatedUserId  String?
 }
 
 model Guess {
