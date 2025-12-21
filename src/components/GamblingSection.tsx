@@ -83,7 +83,7 @@ const GamblingSection: FC<GamblingSectionProps> = ({ assignmentId, userId }) => 
     setGamblingPoints(amount);
   }
 
-  if (!userPoints || Number(userPoints) <= 0) return null;
+  if (userPoints === null || userPoints === undefined || Number(userPoints) < 0) return null;
 
   const hasGambled = () => {
     return assignmentGamblingPoints && assignmentGamblingPoints.length > 0 && assignmentGamblingPoints[0] && assignmentGamblingPoints[0].points > 0;
