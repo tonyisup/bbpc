@@ -301,7 +301,7 @@ const RecordAssignmentAudio: React.FC<RecordAssignmentAudioProps> = ({ userId, a
                   <Button
                     size="icon"
                     variant="ghost"
-                    className="h-8 w-8 text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="h-8 w-8 text-destructive opacity-50 hover:opacity-100 transition-opacity"
                     title={`Delete recording ${msg.id}`}
                     aria-label={`Delete recording ${msg.id}`}
                     onClick={() => {
