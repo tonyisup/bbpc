@@ -175,7 +175,15 @@ export const useAudioRecorder = (options: UseAudioRecorderOptions = {}) => {
 			audioContextRef.current = audioContext;
 			analyserRef.current = analyser;
 
-			mediaRecorderRef.current = new MediaRecorder(stream);
+			const mimeType = [
+				'audio/webm;codecs=opus',
+				'audio/webm',
+				'audio/ogg;codecs=opus',
+				'audio/ogg',
+				'audio/wav',
+			].find(type => MediaRecorder.isTypeSupported(type));
+
+			mediaRecorderRef.current = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
 
 			mediaRecorderRef.current.ondataavailable = (event) => {
 				if (event.data.size > 0) {
@@ -184,7 +192,7 @@ export const useAudioRecorder = (options: UseAudioRecorderOptions = {}) => {
 			};
 
 			mediaRecorderRef.current.onstop = () => {
-				const blob = new Blob(audioChunksRef.current, { type: "audio/wav" });
+				const blob = new Blob(audioChunksRef.current, { type: mediaRecorderRef.current?.mimeType });
 				setAudioBlob(blob);
 				options.onStop?.(blob);
 				stream.getTracks().forEach((track) => track.stop());

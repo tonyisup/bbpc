@@ -106,14 +106,17 @@ const RecordEpisodeAudio: React.FC<RecordEpisodeAudioProps> = ({ userId, episode
     setIsSubmitting(true)
 
     try {
-      let fileName = 'audio-message.wav';
+      const mimeType = audioBlob.type;
+      const extension = mimeType.split('/')[1]?.split(';')[0] || 'wav';
+      let fileName = `audio-message.${extension}`;
+
       if (uploadInfo) {
         const { episodeNumber, userName, messageCount } = uploadInfo;
         const safeUserName = userName ? userName.replace(/[^a-zA-Z0-9]/g, '-') : 'unknown-user';
-        fileName = `${episodeNumber}-${safeUserName}-${messageCount + 1}.wav`;
+        fileName = `${episodeNumber}-${safeUserName}-${messageCount + 1}.${extension}`;
       }
 
-      const audioFile = new File([audioBlob], fileName, { type: 'audio/wav' });
+      const audioFile = new File([audioBlob], fileName, { type: mimeType });
       await startUpload(
         [audioFile],
         { episodeId: episodeId }

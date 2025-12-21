@@ -120,7 +120,10 @@ export default function VoiceMailRecorder({ episodeId, userId }: VoiceMailRecord
     setIsSubmitting(true)
 
     try {
-      const audioFile = new File([audioBlob], 'audio-message.wav', { type: 'audio/wav' });
+      const mimeType = audioBlob.type;
+      const extension = mimeType.split('/')[1]?.split(';')[0] || 'wav';
+      const fileName = `audio-message.${extension}`;
+      const audioFile = new File([audioBlob], fileName, { type: mimeType });
       await startUpload(
         [audioFile],
         { episodeId: episodeId }
