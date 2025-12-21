@@ -16,6 +16,7 @@ import { api } from '@/trpc/react';
 import { cn } from "@/lib/utils";
 import { toast } from 'sonner';
 import { useAudioRecorder } from '@/hooks/useAudioRecorder';
+import { VoiceVisualizer } from './VoiceVisualizer';
 
 interface RecordAssignmentAudioProps {
   userId: string;
@@ -37,7 +38,8 @@ const RecordAssignmentAudio: React.FC<RecordAssignmentAudioProps> = ({ userId, a
     stopPlayback,
     playMessage,
     resetRecording,
-    setAudioBlob
+    setAudioBlob,
+    volume
   } = useAudioRecorder();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -210,7 +212,8 @@ const RecordAssignmentAudio: React.FC<RecordAssignmentAudioProps> = ({ userId, a
 
         <div className="flex justify-center items-center py-8 bg-muted rounded-md relative">
           {isRecording ? (
-            <div className="text-center">
+            <div className="text-center flex flex-col items-center">
+              <VoiceVisualizer volume={volume} isRecording={isRecording} className="mb-2" />
               <div className="flex items-center justify-center gap-2 mb-2">
                 <span className="h-3 w-3 rounded-full bg-red-500 animate-pulse"></span>
                 <span className="text-lg font-medium">Recording...</span>

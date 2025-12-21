@@ -15,6 +15,7 @@ import { api } from "@/trpc/react"
 import { useUploadThing } from "@/utils/uploadthing"
 import { toast } from "sonner"
 import { useAudioRecorder } from "@/hooks/useAudioRecorder"
+import { VoiceVisualizer } from "./common/VoiceVisualizer"
 
 interface VoiceMailRecorderProps {
   episodeId: string;
@@ -35,7 +36,8 @@ export default function VoiceMailRecorder({ episodeId, userId }: VoiceMailRecord
     stopPlayback,
     playMessage,
     resetRecording,
-    setAudioBlob
+    setAudioBlob,
+    volume
   } = useAudioRecorder({ serviceWorkerIntegration: true });
 
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -227,7 +229,8 @@ export default function VoiceMailRecorder({ episodeId, userId }: VoiceMailRecord
 
       <div className="flex justify-center items-center h-32 bg-muted/50 rounded-lg relative overflow-hidden border border-dashed border-muted-foreground/20">
         {isRecording ? (
-          <div className="text-center">
+          <div className="text-center flex flex-col items-center">
+            <VoiceVisualizer volume={volume} isRecording={isRecording} className="mb-2" />
             <div className="flex items-center justify-center gap-2 mb-2">
               <span className="h-3 w-3 rounded-full bg-red-500 animate-pulse"></span>
               <span className="text-lg font-medium text-red-500">Recording...</span>

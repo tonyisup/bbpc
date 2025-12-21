@@ -13,6 +13,7 @@ export const useAudioRecorder = (options: UseAudioRecorderOptions = {}) => {
 	const [isPlaying, setIsPlaying] = useState(false);
 	const [permissionDenied, setPermissionDenied] = useState(false);
 	const [activeMessageId, setActiveMessageId] = useState<number | null>(null);
+	const [volume, setVolume] = useState(0);
 
 	const mediaRecorderRef = useRef<MediaRecorder | null>(null);
 	const audioChunksRef = useRef<Blob[]>([]);
@@ -20,6 +21,10 @@ export const useAudioRecorder = (options: UseAudioRecorderOptions = {}) => {
 	const timerRef = useRef<NodeJS.Timeout | null>(null);
 	const serviceWorkerRef = useRef<ServiceWorker | null>(null);
 	const isRecordingRef = useRef(false);
+
+	const audioContextRef = useRef<AudioContext | null>(null);
+	const analyserRef = useRef<AnalyserNode | null>(null);
+	const animationFrameRef = useRef<number | null>(null);
 
 	// Sync ref with state for use in cleanup/event listeners
 	useEffect(() => {
@@ -30,6 +35,7 @@ export const useAudioRecorder = (options: UseAudioRecorderOptions = {}) => {
 		if (mediaRecorderRef.current && isRecordingRef.current) {
 			mediaRecorderRef.current.stop();
 			setIsRecording(false);
+			setVolume(0);
 
 			if (options.serviceWorkerIntegration && serviceWorkerRef.current) {
 				serviceWorkerRef.current.postMessage({
@@ -42,6 +48,16 @@ export const useAudioRecorder = (options: UseAudioRecorderOptions = {}) => {
 			if (timerRef.current) {
 				clearInterval(timerRef.current);
 				timerRef.current = null;
+			}
+
+			if (animationFrameRef.current) {
+				cancelAnimationFrame(animationFrameRef.current);
+				animationFrameRef.current = null;
+			}
+
+			if (audioContextRef.current) {
+				void audioContextRef.current.close();
+				audioContextRef.current = null;
 			}
 		}
 	}, [isRecording, recordingTime, options.serviceWorkerIntegration]);
@@ -58,6 +74,7 @@ export const useAudioRecorder = (options: UseAudioRecorderOptions = {}) => {
 	const resetRecording = useCallback(() => {
 		setAudioBlob(null);
 		setRecordingTime(0);
+		setVolume(0);
 		stopPlayback();
 	}, [stopPlayback]);
 
@@ -97,6 +114,12 @@ export const useAudioRecorder = (options: UseAudioRecorderOptions = {}) => {
 				audioRef.current.pause();
 				audioRef.current.src = "";
 			}
+			if (animationFrameRef.current) {
+				cancelAnimationFrame(animationFrameRef.current);
+			}
+			if (audioContextRef.current) {
+				void audioContextRef.current.close();
+			}
 		};
 	}, []);
 
@@ -104,9 +127,23 @@ export const useAudioRecorder = (options: UseAudioRecorderOptions = {}) => {
 		audioChunksRef.current = [];
 		setAudioBlob(null);
 		setRecordingTime(0);
+		setVolume(0);
 
 		try {
 			const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+			// Web Audio API setup for loudness indicator
+			const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+			const analyser = audioContext.createAnalyser();
+			const source = audioContext.createMediaStreamSource(stream);
+			source.connect(analyser);
+			analyser.fftSize = 256;
+			const bufferLength = analyser.frequencyBinCount;
+			const dataArray = new Uint8Array(bufferLength);
+
+			audioContextRef.current = audioContext;
+			analyserRef.current = analyser;
+
 			mediaRecorderRef.current = new MediaRecorder(stream);
 
 			mediaRecorderRef.current.ondataavailable = (event) => {
@@ -124,7 +161,27 @@ export const useAudioRecorder = (options: UseAudioRecorderOptions = {}) => {
 
 			mediaRecorderRef.current.start();
 			setIsRecording(true);
+			isRecordingRef.current = true; // Sync immediately
 			setPermissionDenied(false);
+
+			if (audioContext.state === 'suspended') {
+				await audioContext.resume();
+			}
+
+			const updateVolume = () => {
+				if (!isRecordingRef.current) return;
+				analyser.getByteFrequencyData(dataArray);
+				let max = 0;
+				for (let i = 0; i < bufferLength; i++) {
+					if (dataArray[i]! > max) max = dataArray[i]!;
+				}
+				// Normalize to 0-100 range
+				const normalizedVolume = Math.min(100, Math.round((max / 255) * 100));
+				setVolume(normalizedVolume);
+				animationFrameRef.current = requestAnimationFrame(updateVolume);
+			};
+
+			updateVolume();
 
 			if (options.serviceWorkerIntegration && serviceWorkerRef.current) {
 				serviceWorkerRef.current.postMessage({
@@ -204,6 +261,7 @@ export const useAudioRecorder = (options: UseAudioRecorderOptions = {}) => {
 		isPlaying,
 		permissionDenied,
 		activeMessageId,
+		volume,
 		startRecording,
 		stopRecording,
 		playRecording,
