@@ -35,27 +35,33 @@ export const useAudioRecorder = (options: UseAudioRecorderOptions = {}) => {
 	const timerRef = useRef<NodeJS.Timeout | null>(null);
 	const serviceWorkerRef = useRef<ServiceWorker | null>(null);
 	const isRecordingRef = useRef(false);
+	const recordingTimeRef = useRef(0);
 
 	const audioContextRef = useRef<AudioContext | null>(null);
 	const analyserRef = useRef<AnalyserNode | null>(null);
 	const animationFrameRef = useRef<number | null>(null);
 
-	// Sync ref with state for use in cleanup/event listeners
+	// Sync refs with state for use in cleanup/event listeners
 	useEffect(() => {
 		isRecordingRef.current = isRecording;
 	}, [isRecording]);
+
+	useEffect(() => {
+		recordingTimeRef.current = recordingTime;
+	}, [recordingTime]);
 
 	const stopRecording = useCallback(() => {
 		if (mediaRecorderRef.current && isRecordingRef.current) {
 			mediaRecorderRef.current.stop();
 			setIsRecording(false);
+			isRecordingRef.current = false;
 			setVolume(0);
 
 			if (options.serviceWorkerIntegration && serviceWorkerRef.current) {
 				serviceWorkerRef.current.postMessage({
 					type: 'RECORDING_STATE',
 					isRecording: false,
-					duration: recordingTime
+					duration: recordingTimeRef.current
 				});
 			}
 
@@ -74,7 +80,7 @@ export const useAudioRecorder = (options: UseAudioRecorderOptions = {}) => {
 				audioContextRef.current = null;
 			}
 		}
-	}, [isRecording, recordingTime, options.serviceWorkerIntegration]);
+	}, [options.serviceWorkerIntegration]);
 
 	const revokeLastAudioUrl = useCallback(() => {
 		if (lastAudioUrlRef.current) {
@@ -104,6 +110,7 @@ export const useAudioRecorder = (options: UseAudioRecorderOptions = {}) => {
 	const resetRecording = useCallback(() => {
 		setAudioBlob(null);
 		setRecordingTime(0);
+		recordingTimeRef.current = 0;
 		setVolume(0);
 		stopPlayback();
 	}, [stopPlayback]);
@@ -158,6 +165,7 @@ export const useAudioRecorder = (options: UseAudioRecorderOptions = {}) => {
 		audioChunksRef.current = [];
 		setAudioBlob(null);
 		setRecordingTime(0);
+		recordingTimeRef.current = 0;
 		setVolume(0);
 
 		try {
@@ -237,6 +245,7 @@ export const useAudioRecorder = (options: UseAudioRecorderOptions = {}) => {
 			timerRef.current = setInterval(() => {
 				setRecordingTime((prev) => {
 					const next = prev + 1;
+					recordingTimeRef.current = next;
 					if (options.serviceWorkerIntegration && serviceWorkerRef.current) {
 						serviceWorkerRef.current.postMessage({
 							type: 'RECORDING_STATE',
