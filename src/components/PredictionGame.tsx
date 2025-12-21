@@ -145,7 +145,6 @@ const AssignmentPrediction: FC<AssignmentPredictionProps> = ({ assignment, hosts
 	};
 
 	const { data: audioMessageCount } = api.review.getCountOfUserAudioMessagesForAssignment.useQuery({
-		userId: userId,
 		assignmentId: assignment.id
 	});
 

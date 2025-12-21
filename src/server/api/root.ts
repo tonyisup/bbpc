@@ -606,13 +606,12 @@ export const appRouter = createTRPCRouter({
 
     getCountOfUserAudioMessagesForAssignment: protectedProcedure
       .input(z.object({
-        userId: z.string(),
         assignmentId: z.string(),
       }))
       .query(async ({ ctx, input }) => {
         return ctx.db.audioMessage.count({
           where: {
-            userId: input.userId,
+            userId: ctx.session.user.id,
             assignmentId: input.assignmentId,
           },
         });
@@ -620,13 +619,12 @@ export const appRouter = createTRPCRouter({
 
     getUserAudioMessagesForAssignment: protectedProcedure
       .input(z.object({
-        userId: z.string(),
         assignmentId: z.string(),
       }))
       .query(async ({ ctx, input }) => {
         return ctx.db.audioMessage.findMany({
           where: {
-            userId: input.userId,
+            userId: ctx.session.user.id,
             assignmentId: input.assignmentId,
           },
           orderBy: {

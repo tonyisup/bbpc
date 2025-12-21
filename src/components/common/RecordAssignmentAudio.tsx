@@ -45,18 +45,16 @@ const RecordAssignmentAudio: React.FC<RecordAssignmentAudioProps> = ({ userId, a
 
   const { data: uploadInfo, refetch } = api.uploadInfo.getAssignmentUploadInfo.useQuery({
     assignmentId: assignmentId,
-    userId: userId,
   });
 
   const { data: audioMessages, refetch: refetchMessages } = api.review.getUserAudioMessagesForAssignment.useQuery({
-    userId,
     assignmentId,
   });
 
   const { mutate: deleteMessage } = api.review.deleteAudioMessage.useMutation({
     onSuccess: () => {
       void refetchMessages();
-      void utils.review.getCountOfUserAudioMessagesForAssignment.invalidate({ userId, assignmentId });
+      void utils.review.getCountOfUserAudioMessagesForAssignment.invalidate({ assignmentId });
       toast.success("Recording deleted");
     },
     onError: (err) => {
@@ -83,7 +81,7 @@ const RecordAssignmentAudio: React.FC<RecordAssignmentAudioProps> = ({ userId, a
         onSuccess: () => {
           refetch();
           void refetchMessages();
-          void utils.review.getCountOfUserAudioMessagesForAssignment.invalidate({ userId, assignmentId });
+          void utils.review.getCountOfUserAudioMessagesForAssignment.invalidate({ assignmentId });
           setIsUploaded(true);
           setTimeout(() => setIsUploaded(false), 5000);
           setAudioBlob(null);

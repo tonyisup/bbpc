@@ -18,7 +18,6 @@ const RecordEpisodeAudio: React.FC<RecordEpisodeAudioProps> = ({ userId, episode
 
   const { data: uploadInfo, refetch } = api.uploadInfo.getEpisodeUploadInfo.useQuery({
     episodeId: episodeId,
-    userId: userId,
   });
 
   const { startUpload, isUploading } = useUploadThing("audioUploader", {
@@ -29,16 +28,18 @@ const RecordEpisodeAudio: React.FC<RecordEpisodeAudioProps> = ({ userId, episode
       const uploadedFile = data[0];
       if (!uploadedFile) return;
       if (!uploadedFile.serverData.uploadedId) return;
-      updateAudio({ 
-        id: uploadedFile.serverData.uploadedId, 
+      updateAudio({
+        id: uploadedFile.serverData.uploadedId,
         episodeId: episodeId,
         fileKey: uploadedFile.key
-      }, { onSuccess: () => {
-        refetch();
-        setIsUploaded(true);
-        setTimeout(() => setIsUploaded(false), 5000);
-        setAudioUrl(null);
-      }});
+      }, {
+        onSuccess: () => {
+          refetch();
+          setIsUploaded(true);
+          setTimeout(() => setIsUploaded(false), 5000);
+          setAudioUrl(null);
+        }
+      });
     },
   });
   // const [loudness, setLoudness] = useState(0);
@@ -55,20 +56,20 @@ const RecordEpisodeAudio: React.FC<RecordEpisodeAudioProps> = ({ userId, episode
     const analyser = audioContext.createAnalyser();
     analyser.fftSize = 256;
     source.connect(analyser);
-/* 
-    const dataArray = new Uint8Array(analyser.frequencyBinCount);
-
-    const updateLoudness = () => {
-      analyser.getByteFrequencyData(dataArray);
-      const sum = dataArray.reduce((a, b) => a + b, 0);
-      const average = sum / dataArray.length;
-      setLoudness(average);
-      if (isRecording) {
-        requestAnimationFrame(updateLoudness);
-      }
-    };
-
-    updateLoudness(); */
+    /* 
+        const dataArray = new Uint8Array(analyser.frequencyBinCount);
+    
+        const updateLoudness = () => {
+          analyser.getByteFrequencyData(dataArray);
+          const sum = dataArray.reduce((a, b) => a + b, 0);
+          const average = sum / dataArray.length;
+          setLoudness(average);
+          if (isRecording) {
+            requestAnimationFrame(updateLoudness);
+          }
+        };
+    
+        updateLoudness(); */
 
     mediaRecorder.ondataavailable = (event) => {
       audioChunksRef.current.push(event.data);
@@ -154,7 +155,7 @@ const RecordEpisodeAudio: React.FC<RecordEpisodeAudioProps> = ({ userId, episode
         </button>
       </div>
       <div className="min-h-6">
-        {!isUploading && !isUploaded && !isRecording && audioUrl && !isUploading && 
+        {!isUploading && !isUploaded && !isRecording && audioUrl && !isUploading &&
           <p className="text-gray-600 text-2xl font-bold">
             Send it!
           </p>
@@ -164,19 +165,19 @@ const RecordEpisodeAudio: React.FC<RecordEpisodeAudioProps> = ({ userId, episode
             Standby...
           </p>
         }
-        {isUploading && 
+        {isUploading &&
           <p className="text-yellow-600 text-2xl font-bold animate-pulse">
             Uploading...
           </p>
         }
-        {isUploaded && 
+        {isUploaded &&
           <p className="text-green-600 text-2xl font-bold">
             Uploaded!
           </p>
-        }      
-        {isRecording && 
+        }
+        {isRecording &&
           <p className="text-red-600 text-2xl font-bold animate-pulse">
-            Recording... 
+            Recording...
           </p>
         }
       </div>

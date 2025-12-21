@@ -6,7 +6,6 @@ export const uploadInfoRouter = createTRPCRouter({
   getAssignmentUploadInfo: protectedProcedure
     .input(z.object({
       assignmentId: z.string(),
-      userId: z.string(),
     }))
     .query(async ({ ctx, input }) => {
       const assignment = await ctx.db.assignment.findUnique({
@@ -22,7 +21,7 @@ export const uploadInfoRouter = createTRPCRouter({
       }
 
       const user = await ctx.db.user.findUnique({
-        where: { id: input.userId },
+        where: { id: ctx.session.user.id },
       });
 
       if (!user) {
@@ -31,7 +30,7 @@ export const uploadInfoRouter = createTRPCRouter({
 
       const messageCount = await ctx.db.audioMessage.count({
         where: {
-          userId: input.userId,
+          userId: ctx.session.user.id,
           assignmentId: input.assignmentId,
         },
       });
@@ -47,7 +46,6 @@ export const uploadInfoRouter = createTRPCRouter({
   getEpisodeUploadInfo: protectedProcedure
     .input(z.object({
       episodeId: z.string(),
-      userId: z.string(),
     }))
     .query(async ({ ctx, input }) => {
       const episode = await ctx.db.episode.findUnique({
@@ -59,7 +57,7 @@ export const uploadInfoRouter = createTRPCRouter({
       }
 
       const user = await ctx.db.user.findUnique({
-        where: { id: input.userId },
+        where: { id: ctx.session.user.id },
       });
 
       if (!user) {
@@ -68,7 +66,7 @@ export const uploadInfoRouter = createTRPCRouter({
 
       const messageCount = await ctx.db.audioEpisodeMessage.count({
         where: {
-          userId: input.userId,
+          userId: ctx.session.user.id,
           episodeId: input.episodeId,
         },
       });
