@@ -18,6 +18,12 @@ declare module "next-auth" {
       points?: number;
       name?: string;
       image?: string;
+      isImpersonating?: boolean;
+      realUser?: {
+        id: string;
+        name?: string;
+        image?: string;
+      };
     };
   }
 
@@ -48,7 +54,7 @@ export const authOptions: NextAuthOptions = {
     },
     session: async ({ session, user }) => {
       if (session.user) {
-        // Get user roles
+        // Get original user roles
         const userRoles = await db.userRole.findMany({
           where: { userId: user.id },
           include: { role: true },
@@ -57,9 +63,38 @@ export const authOptions: NextAuthOptions = {
         // Check if user has admin role
         const isAdmin = userRoles.some(ur => ur.role.admin);
 
+        // Get the user from DB to check for impersonation
+        const dbUser = await db.user.findUnique({
+          where: { id: user.id },
+          select: { impersonatedUserId: true, name: true, image: true }
+        });
+
+        if (isAdmin && dbUser?.impersonatedUserId) {
+          const impersonatedUser = await db.user.findUnique({
+            where: { id: dbUser.impersonatedUserId },
+            select: { id: true, name: true, image: true, email: true }
+          });
+
+          if (impersonatedUser) {
+            session.user.id = impersonatedUser.id;
+            session.user.name = impersonatedUser.name ?? "";
+            session.user.email = impersonatedUser.email ?? "";
+            session.user.image = impersonatedUser.image ?? "";
+            session.user.isAdmin = false; // Impersonated user is not admin
+            session.user.isImpersonating = true;
+            session.user.realUser = {
+              id: user.id,
+              name: dbUser.name ?? "",
+              image: dbUser.image ?? "",
+            };
+            session.user.points = await calculateUserPoints(db, impersonatedUser.email ?? "");
+            return session;
+          }
+        }
 
         session.user.id = user.id;
         session.user.isAdmin = isAdmin;
+        session.user.isImpersonating = false;
         session.user.points = await calculateUserPoints(db, user.email ?? "");
       }
       return session;
