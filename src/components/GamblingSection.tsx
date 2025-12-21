@@ -8,6 +8,7 @@ import { Label } from "./ui/label";
 import { Badge } from "./ui/badge";
 import { UndoIcon } from "lucide-react";
 import UserPoints from "./UserPoints";
+import { cn } from "@/lib/utils";
 
 interface GamblingSectionProps {
   assignmentId: string;
@@ -128,7 +129,7 @@ const GamblingSection: FC<GamblingSectionProps> = ({ assignmentId, userId }) => 
                 <span className="absolute inset-0 bg-gradient-to-r from-transparent"></span>
                 <span className="px-4 py-2 relative z-10 flex items-center">
                   <span className="mr-1">Bet!</span>
-                  <span className="animate-bounce inline-block">✨</span>
+                  <span className={cn(canSubmitGamblingPoints ? "animate-bounce" : "", "inline-block")}>✨</span>
                 </span>
               </Button>
             </div>
