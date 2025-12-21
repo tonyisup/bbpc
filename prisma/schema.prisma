@@ -35,7 +35,7 @@ model Movie {
   year        Int          @db.SmallInt
   poster      String?
   url         String
-  tmdbid      Int?
+  tmdbId      Int?
   assignments Assignment[]
   reviews     Review[]
   syllabus    Syllabus[]
