@@ -306,7 +306,7 @@ const Call = () => {
 	return (
 		<Popover>
 			<PopoverTrigger asChild>
-				<Button variant="outline" size="icon" className="h-8 w-8"><Phone className="w-5 h-5" /></Button>
+				<Button variant="outline" className="flex items-center gap-2"><Phone className="w-5 h-5" /></Button>
 			</PopoverTrigger>
 			<PopoverContent onClick={(e) => e.stopPropagation()}>
 				<div className="flex justify-between items-center">
