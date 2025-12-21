@@ -213,13 +213,19 @@ export default function VoiceMailRecorder({ episodeId, userId }: VoiceMailRecord
     }
   }, [isRecording, recordingTime])
 
-  const playRecording = useCallback(() => {
+  const playRecording = useCallback(async () => {
     if (audioBlob && audioRef.current) {
-      const audioUrl = URL.createObjectURL(audioBlob)
-      audioRef.current.src = audioUrl
-      audioRef.current.play()
-      setIsPlaying(true)
-      setActiveMessageId(null) // Clear active message if playing new recording
+      try {
+        const audioUrl = URL.createObjectURL(audioBlob)
+        audioRef.current.src = audioUrl
+        await audioRef.current.play()
+        setIsPlaying(true)
+        setActiveMessageId(null) // Clear active message if playing new recording
+      } catch (error) {
+        console.error("Playback failed:", error)
+        setIsPlaying(false)
+        toast.error("Failed to play recording")
+      }
     }
   }, [audioBlob])
 
@@ -232,7 +238,7 @@ export default function VoiceMailRecorder({ episodeId, userId }: VoiceMailRecord
     }
   }, [])
 
-  const playMessage = (message: { id: number; fileKey: string | null }) => {
+  const playMessage = async (message: { id: number; fileKey: string | null }) => {
     if (!message.fileKey || !audioRef.current) return;
 
     if (isPlaying && activeMessageId === message.id) {
@@ -240,12 +246,19 @@ export default function VoiceMailRecorder({ episodeId, userId }: VoiceMailRecord
       return;
     }
 
-    const audioUrl = `https://utfs.io/f/${message.fileKey}`;
-    audioRef.current.src = audioUrl;
-    audioRef.current.play();
-    setIsPlaying(true);
-    setActiveMessageId(message.id);
-    setAudioBlob(null); // Clear pending recording if we play an old one
+    try {
+      const audioUrl = `https://utfs.io/f/${message.fileKey}`;
+      audioRef.current.src = audioUrl;
+      await audioRef.current.play();
+      setIsPlaying(true);
+      setActiveMessageId(message.id);
+      setAudioBlob(null); // Clear pending recording if we play an old one
+    } catch (error) {
+      console.error("Playback failed:", error);
+      setIsPlaying(false);
+      setActiveMessageId(null);
+      toast.error("Failed to play message");
+    }
   }
 
   const handleSubmit = async () => {
