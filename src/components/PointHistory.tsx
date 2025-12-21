@@ -20,7 +20,7 @@ interface Point {
 	id: string;
 	reason: string | null;
 	earnedOn: Date | string;
-	adjustment: number;
+	adjustment: number | null;
 	GamePointType: {
 		title: string;
 		points: number;
@@ -43,6 +43,14 @@ interface PointHistoryProps {
 	points: Point[];
 }
 
+/**
+ * Render a point history grouped by episode and assignment.
+ *
+ * Groups the provided points by the associated Episode (derived from Assignment data) and then by Assignment, sorts episodes by episode number descending, and renders each assignment's points with titles, descriptions, earned date, and computed totals.
+ *
+ * @param points - Array of Point objects to display. Points without an associated Assignment are placed under "Miscellaneous" -> "General".
+ * @returns The JSX element representing the grouped and formatted point history.
+ */
 export default function PointHistory({ points }: PointHistoryProps) {
 	// Group points by Episode -> Assignment
 	const groupedPoints = points.reduce((acc, point) => {
@@ -123,12 +131,12 @@ export default function PointHistory({ points }: PointHistoryProps) {
 													{new Date(point.earnedOn).toLocaleDateString(undefined, { dateStyle: 'long' })}
 												</div>
 											</div>
-											<div className={`text-2xl font-bold ml-4 ${((point.GamePointType?.points ?? 0) + point.adjustment) > 0
+											<div className={`text-2xl font-bold ml-4 ${((point.GamePointType?.points ?? 0) + (point.adjustment ?? 0)) > 0
 												? 'text-emerald-400'
 												: 'text-red-400'
 												}`}>
-												{((point.GamePointType?.points ?? 0) + point.adjustment) > 0 ? '+' : ''}
-												{((point.GamePointType?.points ?? 0) + point.adjustment)}
+												{((point.GamePointType?.points ?? 0) + (point.adjustment ?? 0)) > 0 ? '+' : ''}
+												{((point.GamePointType?.points ?? 0) + (point.adjustment ?? 0))}
 											</div>
 										</div>
 									))}
