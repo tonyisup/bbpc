@@ -1,7 +1,7 @@
 "use client";
 
 
-import { type FC, useState } from "react";
+import { type FC, useState, type ReactNode } from "react";
 import { api } from "@/trpc/react";
 import { type AssignmentWithRelations } from "@/types/assignment";
 import { type User, type Rating } from "@prisma/client";
@@ -188,9 +188,11 @@ const AssignmentPrediction: FC<AssignmentPredictionProps> = ({ assignment, hosts
 							</div>
 						)}
 
-						<div className="flex items-center bg-green-900/50 px-2 py-1 rounded text-green-200 font-bold text-sm border border-green-500/30">
-							{audioMessageCount ?? 0} <Voicemail className="pl-1 w-5 h-5" />
-						</div>
+						<Message assignmentId={assignment.id} userId={userId}>
+							<div className="flex items-center bg-green-900/50 px-2 py-1 rounded text-green-200 font-bold text-sm border border-green-500/30">
+								{audioMessageCount ?? 0} <Voicemail className="pl-1 w-5 h-5" />
+							</div>
+						</Message>
 
 						<ChevronDown className="text-gray-400 w-5 h-5" />
 					</div>
@@ -277,7 +279,7 @@ const Call = () => {
 			<PopoverTrigger asChild>
 				<Button variant="outline"><Phone className="w-5 h-5" /></Button>
 			</PopoverTrigger>
-			<PopoverContent>
+			<PopoverContent onClick={(e) => e.stopPropagation()}>
 				<div className="flex justify-between items-center">
 					<PhoneNumber />
 					<PopoverClose asChild>
@@ -297,15 +299,17 @@ const Call = () => {
 	);
 }
 
-const Message = ({ assignmentId, userId, count }: { assignmentId: string; userId: string; count?: number }) => {
+const Message = ({ assignmentId, userId, count, children }: { assignmentId: string; userId: string; count?: number; children?: ReactNode }) => {
 	return (
 		<Popover>
-			<PopoverTrigger asChild>
-				<Button variant="outline" className="flex items-center gap-2">
-					{count ?? 0} <Voicemail className="w-5 h-5" />
-				</Button>
+			<PopoverTrigger asChild onClick={(e) => children ? e.stopPropagation() : undefined}>
+				{children ?? (
+					<Button variant="outline" className="flex items-center gap-2">
+						{count ?? 0} <Voicemail className="w-5 h-5" />
+					</Button>
+				)}
 			</PopoverTrigger>
-			<PopoverContent className="w-[calc(100vw-2rem)] sm:w-96">
+			<PopoverContent className="w-[calc(100vw-2rem)] sm:w-96" onClick={(e) => e.stopPropagation()}>
 				<div className="flex justify-between items-center mb-2">
 					<span className="text-sm text-gray-400">Got something to say?</span>
 					<PopoverClose asChild>
