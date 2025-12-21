@@ -187,9 +187,9 @@ const AssignmentPrediction: FC<AssignmentPredictionProps> = ({ assignment, hosts
 					className="flex items-center gap-2 sm:gap-4 bg-gray-800/40 p-2 sm:p-3 rounded-lg border border-gray-700/50 cursor-pointer hover:bg-gray-800/60 transition-colors"
 					onClick={() => setUserExpanded(true)}
 				>
-					<h3 className="font-bold text-lg sm:text-xl text-white flex-grow truncate pr-2">
+					<span className="font-bold text-lg sm:text-md text-white flex-grow pr-2">
 						{assignment.Movie ? highlightText(assignment.Movie.title, searchQuery) : "Unknown Movie"}
-					</h3>
+					</span>
 
 					<div className="flex gap-3 items-center">
 						<div className="flex gap-1 sm:gap-2 mr-1 sm:mr-2">
