@@ -1,7 +1,7 @@
 "use client";
 
 
-import { type FC } from "react";
+import { type FC, useState } from "react";
 import { api } from "@/trpc/react";
 import { type AssignmentWithRelations } from "@/types/assignment";
 import { type User, type Rating } from "@prisma/client";
@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import RatingIcon from "./RatingIcon";
 import GamblingSection from "./GamblingSection";
 import { SignInButton } from "./Auth";
+import { ChevronDown, ChevronUp } from "lucide-react";
 
 interface PredictionGameProps {
 	assignments: AssignmentWithRelations[];
@@ -61,9 +62,15 @@ interface AssignmentPredictionProps {
 
 const AssignmentPrediction: FC<AssignmentPredictionProps> = ({ assignment, hosts, ratings, userId, searchQuery }) => {
 	const utils = api.useUtils();
+	const [userExpanded, setUserExpanded] = useState(false);
+
 	const { data: existingGuesses, isLoading } = api.review.getGuessesForAssignmentForUser.useQuery({
 		assignmentId: assignment.id,
 		userId: userId
+	});
+
+	const { data: gamblingPoints } = api.review.getGamblingPointsForAssignment.useQuery({
+		assignmentId: assignment.id
 	});
 
 	const submitGuess = api.review.submitGuess.useMutation({
@@ -135,61 +142,111 @@ const AssignmentPrediction: FC<AssignmentPredictionProps> = ({ assignment, hosts
 
 	if (isLoading) return <div className="animate-pulse h-32 bg-gray-800/50 rounded-lg"></div>;
 
+	const hasAllGuesses = hosts.length > 0 && hosts.every(host => !!getGuessForHost(host.id));
+	const isCollapsed = hasAllGuesses && !userExpanded;
+
 	return (
-		<div className="flex flex-col gap-4">
-			<h3 className="font-bold text-xl text-white pl-2 border-l-4 border-purple-500">
-				{assignment.Movie ? highlightText(assignment.Movie.title, searchQuery) : "Unknown Movie"}
-			</h3>
+		<div className="flex flex-col gap-4 relative">
+			{/* Collapsed Header View */}
+			{isCollapsed ? (
+				<div
+					className="flex items-center gap-4 bg-gray-800/40 p-3 rounded-lg border border-gray-700/50 cursor-pointer hover:bg-gray-800/60 transition-colors"
+					onClick={() => setUserExpanded(true)}
+				>
+					<h3 className="font-bold text-xl text-white flex-grow truncate">
+						{assignment.Movie ? highlightText(assignment.Movie.title, searchQuery) : "Unknown Movie"}
+					</h3>
 
-			<div className="grid gap-3">
-				{hosts.map(host => {
-					const guess = getGuessForHost(host.id);
-					const isSubmitting = submitGuess.isLoading && submitGuess.variables?.hostId === host.id;
-
-					return (
-						<div key={host.id} className="grid grid-cols-[120px_1fr] items-center gap-4 bg-gray-800/40 p-3 rounded-lg border border-gray-700/50 hover:border-gray-600 transition-colors">
-							<div className="font-medium text-gray-200 truncate" title={host.name ?? ""}>
-								{host.name}
-							</div>
-							<div className="flex flex-wrap gap-2">
-								{ratings.map(rating => {
-									const isSelected = guess?.Rating.id === rating.id;
-									return (
-										<button
-											type="button"
-											key={rating.id}
-											onClick={() => {
-												if (isSelected || isSubmitting) return;
-												submitGuess.mutate({
-													assignmentId: assignment.id,
-													hostId: host.id,
-													guesserId: userId,
-													ratingId: rating.id
-												});
-											}}
-											disabled={isSubmitting}
-											className={cn(
-												"px-3 py-1.5 rounded-md text-xs font-medium transition-all duration-200 border",
-												isSelected
-													? "bg-purple-600 border-purple-500 text-white shadow-[0_0_10px_rgba(147,51,234,0.5)] scale-105"
-													: "bg-gray-700/50 border-gray-600 text-gray-400 hover:bg-gray-600 hover:text-gray-200 hover:border-gray-500",
-												isSubmitting && "opacity-50 cursor-not-allowed"
-											)}
-											title={rating.name}
-										>
-											<RatingIcon value={rating.value} />
-										</button>
-									);
-								})}
-							</div>
+					<div className="flex gap-3 items-center">
+						<div className="flex gap-2 mr-2">
+							{hosts.map(host => {
+								const guess = getGuessForHost(host.id);
+								if (!guess) return null;
+								return (
+									<div key={host.id} title={host.name ?? "Host"} className="scale-90 opacity-90 hover:opacity-100 transition-opacity">
+										<RatingIcon value={guess.Rating.value} />
+									</div>
+								);
+							})}
 						</div>
-					);
-				})}
-			</div>
 
-			<div className="pt-4 border-t border-gray-700/50">
-				<GamblingSection assignmentId={assignment.id} userId={userId} />
-			</div>
+						{gamblingPoints && gamblingPoints.length > 0 && gamblingPoints[0] && gamblingPoints[0].points > 0 && (
+							<div className="flex items-center bg-purple-900/50 px-2 py-1 rounded text-purple-200 font-bold text-sm border border-purple-500/30">
+								{gamblingPoints[0].points} pts
+							</div>
+						)}
+
+						<ChevronDown className="text-gray-400 w-5 h-5" />
+					</div>
+				</div>
+			) : (
+				<>
+					{/* Expanded Header */}
+					<div className="flex justify-between items-start">
+						<h3 className="font-bold text-xl text-white pl-2 border-l-4 border-purple-500">
+							{assignment.Movie ? highlightText(assignment.Movie.title, searchQuery) : "Unknown Movie"}
+						</h3>
+						{hasAllGuesses && (
+							<button
+								onClick={() => setUserExpanded(false)}
+								className="p-1 hover:bg-gray-800 rounded text-gray-400 hover:text-white transition-colors"
+							>
+								<ChevronUp className="w-5 h-5" />
+							</button>
+						)}
+					</div>
+
+					<div className="grid gap-3">
+						{hosts.map(host => {
+							const guess = getGuessForHost(host.id);
+							const isSubmitting = submitGuess.isLoading && submitGuess.variables?.hostId === host.id;
+
+							return (
+								<div key={host.id} className="grid grid-cols-[120px_1fr] items-center gap-4 bg-gray-800/40 p-3 rounded-lg border border-gray-700/50 hover:border-gray-600 transition-colors">
+									<div className="font-medium text-gray-200 truncate" title={host.name ?? ""}>
+										{host.name}
+									</div>
+									<div className="flex flex-wrap gap-2">
+										{ratings.map(rating => {
+											const isSelected = guess?.Rating.id === rating.id;
+											return (
+												<button
+													type="button"
+													key={rating.id}
+													onClick={() => {
+														if (isSelected || isSubmitting) return;
+														submitGuess.mutate({
+															assignmentId: assignment.id,
+															hostId: host.id,
+															guesserId: userId,
+															ratingId: rating.id
+														});
+													}}
+													disabled={isSubmitting}
+													className={cn(
+														"px-3 py-1.5 rounded-md text-xs font-medium transition-all duration-200 border",
+														isSelected
+															? "bg-purple-600 border-purple-500 text-white shadow-[0_0_10px_rgba(147,51,234,0.5)] scale-105"
+															: "bg-gray-700/50 border-gray-600 text-gray-400 hover:bg-gray-600 hover:text-gray-200 hover:border-gray-500",
+														isSubmitting && "opacity-50 cursor-not-allowed"
+													)}
+													title={rating.name}
+												>
+													<RatingIcon value={rating.value} />
+												</button>
+											);
+										})}
+									</div>
+								</div>
+							);
+						})}
+					</div>
+
+					<div className="pt-4 border-t border-gray-700/50">
+						<GamblingSection assignmentId={assignment.id} userId={userId} />
+					</div>
+				</>
+			)}
 		</div>
 	);
 }
