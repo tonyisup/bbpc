@@ -170,9 +170,13 @@ const AssignmentPrediction: FC<AssignmentPredictionProps> = ({ assignment, hosts
 							})}
 						</div>
 
-						{gamblingPoints && gamblingPoints.length > 0 && gamblingPoints[0] && gamblingPoints[0].points > 0 && (
+						{gamblingPoints && gamblingPoints.length > 0 && gamblingPoints[0] && gamblingPoints[0].points > 0 ? (
 							<div className="flex items-center bg-purple-900/50 px-2 py-1 rounded text-purple-200 font-bold text-sm border border-purple-500/30">
 								{gamblingPoints[0].points} pts
+							</div>
+						) : (
+							<div className="flex items-center bg-purple-900/50 px-2 py-1 rounded text-purple-200 font-bold text-sm border border-purple-500/30">
+								No Bet
 							</div>
 						)}
 
