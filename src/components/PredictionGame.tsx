@@ -288,7 +288,7 @@ const AssignmentPrediction: FC<AssignmentPredictionProps> = ({ assignment, hosts
 
 					<div className="flex gap-4 flex-wrap items-center justify-between pt-4 border-t border-gray-700/50">
 						<GamblingSection assignmentId={assignment.id} userId={userId} />
-						<div className="flex gap-4">
+						<div className="flex w-full justify-center gap-4">
 							<Call />
 							<Message assignmentId={assignment.id} userId={userId} count={audioMessageCount} />
 						</div>
@@ -306,7 +306,7 @@ const Call = () => {
 	return (
 		<Popover>
 			<PopoverTrigger asChild>
-				<Button variant="outline"><Phone className="w-5 h-5" /></Button>
+				<Button variant="outline" size="icon" className="h-8 w-8"><Phone className="w-5 h-5" /></Button>
 			</PopoverTrigger>
 			<PopoverContent onClick={(e) => e.stopPropagation()}>
 				<div className="flex justify-between items-center">
@@ -336,7 +336,7 @@ const Message = ({ assignmentId, userId, count, children }: { assignmentId: stri
 		<Popover>
 			<PopoverTrigger asChild onClick={(e) => children ? e.stopPropagation() : undefined}>
 				{children ?? (
-					<Button variant="outline" className="flex items-center gap-2">
+					<Button variant="outline" className="flex items-center gap-2 p-8">
 						{count ?? 0} <Voicemail className="w-5 h-5" />
 					</Button>
 				)}

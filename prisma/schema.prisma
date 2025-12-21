@@ -189,6 +189,7 @@ model User {
   sessions            Session[]
   syllabus            Syllabus[]
   roles               UserRole[]
+  impersonatedUserId  String?
 }
 
 model Guess {

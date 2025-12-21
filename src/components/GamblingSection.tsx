@@ -97,7 +97,7 @@ const GamblingSection: FC<GamblingSectionProps> = ({ assignmentId, userId }) => 
           <Button
             variant="destructive"
             size="sm"
-            className="h-8 w-8 p-0"
+            className="h-8 w-8 p-1"
             onClick={() => {
               if (!userId) return;
               submitGamblingPoints({
@@ -116,12 +116,13 @@ const GamblingSection: FC<GamblingSectionProps> = ({ assignmentId, userId }) => 
           <div className="flex flex-col gap-2">
             <Label className="text-gray-300">Wanna bet?</Label>
             <div className="flex gap-2 items-center flex-wrap">
-              {userPoints && Number(userPoints) > 0 && <Badge className="cursor-pointer whitespace-nowrap" onClick={() => handleAutoBet(1)}>Bet 1</Badge>}
-              {userPoints && Number(userPoints) > 5 && <Badge className="cursor-pointer whitespace-nowrap" onClick={() => handleAutoBet(5)}>Bet 5</Badge>}
-              {userPoints && Number(userPoints) > 10 && <Badge className="cursor-pointer whitespace-nowrap" onClick={() => handleAutoBet(10)}>Bet 10</Badge>}
-              {userPoints && Number(userPoints) > 20 && <Badge className="cursor-pointer whitespace-nowrap" onClick={() => handleAutoBet(20)}>Bet 20</Badge>}
-              {userPoints && Number(userPoints) > 50 && <Badge className="cursor-pointer whitespace-nowrap" onClick={() => handleAutoBet(50)}>Bet 50</Badge>}
-              {userPoints && Number(userPoints) > 0 && <Badge className="cursor-pointer whitespace-nowrap" onClick={() => handleAutoBet(Number(userPoints))}>ALL IN</Badge>}
+              {userPoints && Number(userPoints) > 0 && <Badge className="cursor-pointer whitespace-nowrap bg-red-200 hover:bg-red-600 hover:text-white" onClick={() => handleAutoBet(1)}>Bet 1</Badge>}
+              {userPoints && Number(userPoints) > 5 && <Badge className="cursor-pointer whitespace-nowrap bg-red-200 hover:bg-red-600 hover:text-white" onClick={() => handleAutoBet(5)}>Bet 5</Badge>}
+              {userPoints && Number(userPoints) > 10 && <Badge className="cursor-pointer whitespace-nowrap bg-red-200 hover:bg-red-600 hover:text-white" onClick={() => handleAutoBet(10)}>Bet 10</Badge>}
+              {userPoints && Number(userPoints) > 20 && <Badge className="cursor-pointer whitespace-nowrap bg-red-200 hover:bg-red-600 hover:text-white" onClick={() => handleAutoBet(20)}>Bet 20</Badge>}
+              {userPoints && Number(userPoints) > 50 && <Badge className="cursor-pointer whitespace-nowrap bg-red-200 hover:bg-red-600 hover:text-white" onClick={() => handleAutoBet(50)}>Bet 50</Badge>}
+              {userPoints && Number(userPoints) > 0 && <Badge className="cursor-pointer whitespace-nowrap bg-red-200 hover:bg-red-600 hover:text-white" onClick={() => handleAutoBet(Number(userPoints))}>ALL IN</Badge>}
+              <Badge className="cursor-pointer whitespace-nowrap bg-red-200 hover:bg-red-600 hover:text-white" onClick={() => handleAutoBet(0)}>NVM!</Badge>
             </div>
             <div className="flex gap-2">
               <Input
@@ -133,7 +134,7 @@ const GamblingSection: FC<GamblingSectionProps> = ({ assignmentId, userId }) => 
               />
               <Button
                 disabled={!canSubmitGamblingPoints}
-                className="text-gray-300 rounded-md hover:bg-red-800 bg-gradient-to-r from-blue-900 to-blue-500 relative overflow-hidden group"
+                className="text-gray-300 rounded-md bg-transparent hover:bg-red-800 border-[3px] border-red-800 hover:border-red-400 relative overflow-hidden group"
                 onClick={handleGamblingPointsSubmit}
               >
                 <span className="absolute inset-0 bg-gradient-to-r from-transparent"></span>
