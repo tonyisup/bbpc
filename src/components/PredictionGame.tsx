@@ -38,35 +38,56 @@ export const PredictionGame: FC<PredictionGameProps> = ({ assignments, searchQue
 	const { data: session } = api.auth.getSession.useQuery();
 	const { data: hosts } = api.user.hosts.useQuery();
 	const { data: ratings } = api.movie.ratings.useQuery();
+	const [isAdminCollapsed, setIsAdminCollapsed] = useState(true);
 
 	if (!session?.user) return <div className="p-4 text-center text-gray-400">Please <SignInButton /> to play the game.</div>;
 	if (!hosts || !ratings) return <div className="p-4 text-center text-gray-400">Loading prediction game...</div>;
-
-
+	const isAdmin = session.user.isAdmin;
 
 	return (
 		<div className="flex flex-col gap-6 sm:gap-8 p-4 sm:p-6 border rounded-xl border-gray-700 mt-6 bg-gray-900/50 backdrop-blur-sm shadow-xl">
-			<div className="flex flex-col gap-2 border-b border-gray-700 pb-4">
-				<h2 className="text-xl sm:text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-red-300 to-red-600">Prediction Game</h2>
-				<p className="text-xs sm:text-sm text-gray-400">Predict what rating each host will give to the movies!</p>
+			<div
+				className={cn(
+					"flex flex-col gap-2 pb-4",
+					isAdmin ? "cursor-pointer select-none" : "border-b border-gray-700"
+				)}
+				onClick={() => isAdmin && setIsAdminCollapsed(!isAdminCollapsed)}
+			>
+				<div className="flex items-center justify-between">
+					<div className="flex flex-col gap-1">
+						<h2 className="text-xl sm:text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-red-300 to-red-600">Prediction Game</h2>
+						{(!isAdmin || !isAdminCollapsed) && (
+							<p className="text-xs sm:text-sm text-gray-400">Predict what rating each host will give to the movies!</p>
+						)}
+					</div>
+					{isAdmin && (
+						<div className="flex items-center gap-2">
+							<span className="text-[10px] text-gray-500 uppercase tracking-wider font-semibold">Admin</span>
+							{isAdminCollapsed ? <ChevronDown className="text-gray-400 w-5 h-5" /> : <ChevronUp className="text-gray-400 w-5 h-5" />}
+						</div>
+					)}
+				</div>
 			</div>
 
-			<div className="flex flex-col gap-10">
-				{assignments.map((assignment) => (
-					<AssignmentPrediction
-						key={assignment.id}
-						assignment={assignment}
-						hosts={hosts}
-						ratings={ratings}
-						userId={session.user?.id ?? ""}
-						searchQuery={searchQuery}
-					/>
-				))}
-			</div>
+			{(!isAdmin || !isAdminCollapsed) && (
+				<div className="flex flex-col gap-10">
+					{assignments.map((assignment) => (
+						<AssignmentPrediction
+							key={assignment.id}
+							assignment={assignment}
+							hosts={hosts}
+							ratings={ratings}
+							userId={session.user?.id ?? ""}
+							searchQuery={searchQuery}
+						/>
+					))}
+				</div>
+			)}
 
 			{/* Ability to gamble per assignment here */}
 		</div>
 	);
+
 };
 
 /**
