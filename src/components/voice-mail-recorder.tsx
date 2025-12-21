@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from "react"
+import React, { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Mic, Square, Play, Send, Loader2, X, ChevronDown, ChevronRight, Trash2 } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
@@ -14,6 +14,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { api } from "@/trpc/react"
 import { useUploadThing } from "@/utils/uploadthing"
 import { toast } from "sonner"
+import { useAudioRecorder } from "@/hooks/useAudioRecorder"
 
 interface VoiceMailRecorderProps {
   episodeId: string;
@@ -21,31 +22,28 @@ interface VoiceMailRecorderProps {
 }
 
 export default function VoiceMailRecorder({ episodeId, userId }: VoiceMailRecorderProps) {
-  const [isRecording, setIsRecording] = useState(false)
-  const [recordingTime, setRecordingTime] = useState(0)
-  const [audioBlob, setAudioBlob] = useState<Blob | null>(null)
-  const [isPlaying, setIsPlaying] = useState(false)
-  const [permissionDenied, setPermissionDenied] = useState(false)
+  const {
+    isRecording,
+    recordingTime,
+    audioBlob,
+    isPlaying,
+    permissionDenied,
+    activeMessageId,
+    startRecording,
+    stopRecording,
+    playRecording,
+    stopPlayback,
+    playMessage,
+    resetRecording,
+    setAudioBlob
+  } = useAudioRecorder({ serviceWorkerIntegration: true });
+
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isUploaded, setIsUploaded] = useState(false)
   const [showRecordings, setShowRecordings] = useState(false)
-  const [activeMessageId, setActiveMessageId] = useState<number | null>(null)
   const [isConfirmOpen, setIsConfirmOpen] = useState(false)
   const [pendingDeleteId, setPendingDeleteId] = useState<number | null>(null)
   const [notes, setNotes] = useState("")
-
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null)
-  const audioChunksRef = useRef<Blob[]>([])
-  const audioRef = useRef<HTMLAudioElement | null>(null)
-  const timerRef = useRef<NodeJS.Timeout | null>(null)
-  const serviceWorkerRef = useRef<ServiceWorker | null>(null)
-  const stopRecordingRef = useRef<() => void>(() => { })
-  const isRecordingRef = useRef(false)
-
-  // Update refs to latest state
-  useEffect(() => {
-    isRecordingRef.current = isRecording
-  }, [isRecording])
 
   const utils = api.useUtils();
   const { mutate: updateAudio } = api.episode.updateAudioMessage.useMutation();
@@ -100,177 +98,6 @@ export default function VoiceMailRecorder({ episodeId, userId }: VoiceMailRecord
     },
   });
 
-  useEffect(() => {
-    // Register service worker
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js').then(registration => {
-        serviceWorkerRef.current = registration.active;
-      });
-    }
-
-    // Listen for messages from service worker
-    const messageHandler = (event: MessageEvent) => {
-      if (event.data.type === 'STOP_RECORDING') {
-        stopRecordingRef.current();
-      }
-    };
-    navigator.serviceWorker.addEventListener('message', messageHandler);
-
-    // Create audio element for playback
-    audioRef.current = new Audio()
-    audioRef.current.onended = () => setIsPlaying(false)
-
-    // Clean up on unmount
-    return () => {
-      navigator.serviceWorker.removeEventListener('message', messageHandler);
-
-      if (timerRef.current) {
-        clearInterval(timerRef.current)
-        timerRef.current = null
-      }
-
-      if (mediaRecorderRef.current && isRecordingRef.current) {
-        mediaRecorderRef.current.stop()
-      }
-
-      if (audioRef.current) {
-        audioRef.current.pause()
-        audioRef.current.src = ""
-      }
-    }
-  }, []) // Empty dependency array allows timer to persist
-
-  const startRecording = async () => {
-    audioChunksRef.current = []
-    setAudioBlob(null)
-    setRecordingTime(0)
-
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
-      mediaRecorderRef.current = new MediaRecorder(stream)
-
-      mediaRecorderRef.current.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          audioChunksRef.current.push(event.data)
-        }
-      }
-
-      mediaRecorderRef.current.onstop = () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: "audio/wav" })
-        setAudioBlob(audioBlob)
-
-        // Stop all tracks on the stream to release the microphone
-        stream.getTracks().forEach((track) => track.stop())
-      }
-
-      mediaRecorderRef.current.start()
-      setIsRecording(true)
-      setPermissionDenied(false)
-
-      // Notify service worker about recording state
-      if (serviceWorkerRef.current) {
-        serviceWorkerRef.current.postMessage({
-          type: 'RECORDING_STATE',
-          isRecording: true,
-          duration: 0
-        });
-      }
-
-      // Start timer to track recording duration
-      timerRef.current = setInterval(() => {
-        setRecordingTime((prevTime) => {
-          const newTime = prevTime + 1;
-          // Update service worker with new duration
-          if (serviceWorkerRef.current) {
-            serviceWorkerRef.current.postMessage({
-              type: 'RECORDING_STATE',
-              isRecording: true,
-              duration: newTime
-            });
-          }
-          return newTime;
-        });
-      }, 1000)
-    } catch (error) {
-      console.error("Error accessing microphone:", error)
-      setPermissionDenied(true)
-    }
-  }
-
-  const stopRecording = useCallback(() => {
-    if (mediaRecorderRef.current && isRecording) {
-      mediaRecorderRef.current.stop()
-      setIsRecording(false)
-
-      // Notify service worker about recording state
-      if (serviceWorkerRef.current) {
-        serviceWorkerRef.current.postMessage({
-          type: 'RECORDING_STATE',
-          isRecording: false,
-          duration: recordingTime
-        });
-      }
-
-      if (timerRef.current) {
-        clearInterval(timerRef.current)
-        timerRef.current = null
-      }
-    }
-  }, [isRecording, recordingTime])
-
-  // Keep stopRecordingRef updated
-  useEffect(() => {
-    stopRecordingRef.current = stopRecording
-  }, [stopRecording])
-
-  const playRecording = useCallback(async () => {
-    if (audioBlob && audioRef.current) {
-      try {
-        const audioUrl = URL.createObjectURL(audioBlob)
-        audioRef.current.src = audioUrl
-        await audioRef.current.play()
-        setIsPlaying(true)
-        setActiveMessageId(null) // Clear active message if playing new recording
-      } catch (error) {
-        console.error("Playback failed:", error)
-        setIsPlaying(false)
-        toast.error("Failed to play recording")
-      }
-    }
-  }, [audioBlob])
-
-  const stopPlayback = useCallback(() => {
-    if (audioRef.current) {
-      audioRef.current.pause()
-      audioRef.current.currentTime = 0
-      setIsPlaying(false)
-      setActiveMessageId(null)
-    }
-  }, [])
-
-  const playMessage = async (message: { id: number; fileKey: string | null }) => {
-    if (!message.fileKey || !audioRef.current) return;
-
-    if (isPlaying && activeMessageId === message.id) {
-      stopPlayback();
-      return;
-    }
-
-    try {
-      const audioUrl = `https://utfs.io/f/${message.fileKey}`;
-      audioRef.current.src = audioUrl;
-      await audioRef.current.play();
-      setIsPlaying(true);
-      setActiveMessageId(message.id);
-      setAudioBlob(null); // Clear pending recording if we play an old one
-    } catch (error) {
-      console.error("Playback failed:", error);
-      setIsPlaying(false);
-      setActiveMessageId(null);
-      toast.error("Failed to play message");
-    }
-  }
-
   const handleSubmit = async () => {
     if (!audioBlob) return
 
@@ -290,13 +117,7 @@ export default function VoiceMailRecorder({ episodeId, userId }: VoiceMailRecord
   }
 
   const handleCancel = () => {
-    setAudioBlob(null)
-    setRecordingTime(0)
-    if (audioRef.current) {
-      audioRef.current.pause()
-      audioRef.current.currentTime = 0
-      setIsPlaying(false)
-    }
+    resetRecording();
   }
 
   const formatTime = (seconds: number) => {
