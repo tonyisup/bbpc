@@ -20,7 +20,7 @@ interface Point {
 	id: string;
 	reason: string | null;
 	earnedOn: Date | string;
-	adjustment: number;
+	adjustment: number | null;
 	GamePointType: {
 		title: string;
 		points: number;
@@ -123,12 +123,12 @@ export default function PointHistory({ points }: PointHistoryProps) {
 													{new Date(point.earnedOn).toLocaleDateString(undefined, { dateStyle: 'long' })}
 												</div>
 											</div>
-											<div className={`text-2xl font-bold ml-4 ${((point.GamePointType?.points ?? 0) + point.adjustment) > 0
+											<div className={`text-2xl font-bold ml-4 ${((point.GamePointType?.points ?? 0) + (point.adjustment ?? 0)) > 0
 												? 'text-emerald-400'
 												: 'text-red-400'
 												}`}>
-												{((point.GamePointType?.points ?? 0) + point.adjustment) > 0 ? '+' : ''}
-												{((point.GamePointType?.points ?? 0) + point.adjustment)}
+												{((point.GamePointType?.points ?? 0) + (point.adjustment ?? 0)) > 0 ? '+' : ''}
+												{((point.GamePointType?.points ?? 0) + (point.adjustment ?? 0))}
 											</div>
 										</div>
 									))}
