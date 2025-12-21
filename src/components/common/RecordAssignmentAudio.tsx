@@ -43,7 +43,6 @@ const RecordAssignmentAudio: React.FC<RecordAssignmentAudioProps> = ({ userId, a
   } = useAudioRecorder();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isUploaded, setIsUploaded] = useState(false);
   const [showRecordings, setShowRecordings] = useState(false);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [pendingDeleteId, setPendingDeleteId] = useState<number | null>(null);
@@ -90,8 +89,6 @@ const RecordAssignmentAudio: React.FC<RecordAssignmentAudioProps> = ({ userId, a
           refetch();
           void refetchMessages();
           void utils.review.getCountOfUserAudioMessagesForAssignment.invalidate({ assignmentId });
-          setIsUploaded(true);
-          setTimeout(() => setIsUploaded(false), 5000);
           setAudioBlob(null);
           setIsSubmitting(false);
           toast.success("Voice message submitted successfully!");

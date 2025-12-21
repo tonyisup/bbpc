@@ -55,7 +55,6 @@ export default function VoiceMailRecorder({ episodeId, userId }: VoiceMailRecord
   } = useAudioRecorder({ serviceWorkerIntegration: true });
 
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isUploaded, setIsUploaded] = useState(false)
   const [showRecordings, setShowRecordings] = useState(false)
   const [isConfirmOpen, setIsConfirmOpen] = useState(false)
   const [pendingDeleteId, setPendingDeleteId] = useState<number | null>(null)
@@ -104,8 +103,6 @@ export default function VoiceMailRecorder({ episodeId, userId }: VoiceMailRecord
           setNotes("");
           void refetchMessages();
           void utils.episode.getCountOfUserEpisodeAudioMessages.invalidate({ episodeId });
-          setIsUploaded(true);
-          setTimeout(() => setIsUploaded(false), 5000);
           setAudioBlob(null);
           setIsSubmitting(false);
           toast.success("Voice message submitted successfully!");

@@ -19,12 +19,11 @@ import { useAudioRecorder } from '@/hooks/useAudioRecorder';
 import { VoiceVisualizer } from './VoiceVisualizer';
 
 interface RecordEpisodeAudioProps {
-  userId: string;
   episodeId: string;
   mode?: 'default' | 'compact';
 }
 
-const RecordEpisodeAudio: React.FC<RecordEpisodeAudioProps> = ({ userId, episodeId, mode = 'default' }) => {
+const RecordEpisodeAudio: React.FC<RecordEpisodeAudioProps> = ({ episodeId, mode = 'default' }) => {
   const {
     isRecording,
     recordingTime,
@@ -43,7 +42,6 @@ const RecordEpisodeAudio: React.FC<RecordEpisodeAudioProps> = ({ userId, episode
   } = useAudioRecorder();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isUploaded, setIsUploaded] = useState(false);
   const [showRecordings, setShowRecordings] = useState(false);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [pendingDeleteId, setPendingDeleteId] = useState<number | null>(null);
@@ -90,8 +88,6 @@ const RecordEpisodeAudio: React.FC<RecordEpisodeAudioProps> = ({ userId, episode
           refetch();
           void refetchMessages();
           void utils.episode.getCountOfUserEpisodeAudioMessages.invalidate({ episodeId });
-          setIsUploaded(true);
-          setTimeout(() => setIsUploaded(false), 5000);
           setAudioBlob(null);
           setIsSubmitting(false);
           toast.success("Voice message submitted successfully!");
