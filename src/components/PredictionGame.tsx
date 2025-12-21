@@ -10,9 +10,9 @@ import { cn } from "@/lib/utils";
 import RatingIcon from "./RatingIcon";
 import GamblingSection from "./GamblingSection";
 import { SignInButton } from "./Auth";
-import { ChevronDown, ChevronUp, Phone, Voicemail } from "lucide-react";
+import { ChevronDown, ChevronUp, Phone, Voicemail, X } from "lucide-react";
 import { Button } from "./ui/button";
-import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
+import { Popover, PopoverContent, PopoverTrigger, PopoverClose } from "./ui/popover";
 import PhoneNumber from "./common/PhoneNumber";
 import RecordAssignmentAudio from "./common/RecordAssignmentAudio";
 
@@ -144,6 +144,11 @@ const AssignmentPrediction: FC<AssignmentPredictionProps> = ({ assignment, hosts
 		});
 	};
 
+	const { data: audioMessageCount } = api.review.getCountOfUserAudioMessagesForAssignment.useQuery({
+		userId: userId,
+		assignmentId: assignment.id
+	});
+
 	if (isLoading) return <div className="animate-pulse h-32 bg-gray-800/50 rounded-lg"></div>;
 
 	const hasAllGuesses = hosts.length > 0 && hosts.every(host => !!getGuessForHost(host.id));
@@ -183,6 +188,10 @@ const AssignmentPrediction: FC<AssignmentPredictionProps> = ({ assignment, hosts
 								No Bet
 							</div>
 						)}
+
+						<div className="flex items-center bg-green-900/50 px-2 py-1 rounded text-green-200 font-bold text-sm border border-green-500/30">
+							{audioMessageCount ?? 0} <Voicemail className="pl-1 w-5 h-5" />
+						</div>
 
 						<ChevronDown className="text-gray-400 w-5 h-5" />
 					</div>
@@ -254,7 +263,7 @@ const AssignmentPrediction: FC<AssignmentPredictionProps> = ({ assignment, hosts
 						<GamblingSection assignmentId={assignment.id} userId={userId} />
 						<div className="flex gap-4">
 							<Call />
-							<Message assignmentId={assignment.id} userId={userId} />
+							<Message assignmentId={assignment.id} userId={userId} count={audioMessageCount} />
 						</div>
 					</div>
 				</>
@@ -271,24 +280,54 @@ const Call = () => {
 					<Button variant="outline"><Phone className="w-5 h-5" /></Button>
 				</PopoverTrigger>
 				<PopoverContent>
-					<PhoneNumber />
+					<div className="flex justify-between items-center">
+						<PhoneNumber />
+						<PopoverClose asChild>
+							<Button
+								variant="ghost"
+								size="icon"
+								className="h-8 w-8"
+								title="Close"
+								aria-label="Close"
+							>
+								<X className="h-4 w-4" />
+							</Button>
+						</PopoverClose>
+					</div>
 				</PopoverContent>
 			</Popover>
 		</div>
 	);
 }
 
-const Message = ({ assignmentId, userId }: { assignmentId: string; userId: string }) => {
+const Message = ({ assignmentId, userId, count }: { assignmentId: string; userId: string; count?: number }) => {
 	return (
 		<div className="flex flex-col gap-2 items-center">
 			<Popover>
 				<PopoverTrigger asChild>
-					<Button variant="outline"><Voicemail className="w-5 h-5" /></Button>
+					<Button variant="outline" className="flex items-center gap-2">
+						{count ?? 0} <Voicemail className="w-5 h-5" />
+					</Button>
 				</PopoverTrigger>
-				<PopoverContent>
+				<PopoverContent className="w-[calc(100vw-2rem)] sm:w-96">
+					<div className="flex justify-between items-center mb-2">
+						<span className="text-sm text-gray-400">Got something to say?</span>
+						<PopoverClose asChild>
+							<Button
+								variant="ghost"
+								size="icon"
+								className="h-8 w-8"
+								title="Close"
+								aria-label="Close"
+							>
+								<X className="h-4 w-4" />
+							</Button>
+						</PopoverClose>
+					</div>
 					<RecordAssignmentAudio
 						assignmentId={assignmentId}
 						userId={userId}
+						mode="compact"
 					/>
 				</PopoverContent>
 			</Popover>

@@ -618,6 +618,42 @@ export const appRouter = createTRPCRouter({
         });
       }),
 
+    getUserAudioMessagesForAssignment: protectedProcedure
+      .input(z.object({
+        userId: z.string(),
+        assignmentId: z.string(),
+      }))
+      .query(async ({ ctx, input }) => {
+        return ctx.db.audioMessage.findMany({
+          where: {
+            userId: input.userId,
+            assignmentId: input.assignmentId,
+          },
+          orderBy: {
+            id: 'desc'
+          }
+        });
+      }),
+
+    deleteAudioMessage: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        // Ensure the user owns the message before deleting
+        const message = await ctx.db.audioMessage.findUnique({
+          where: { id: input.id }
+        });
+
+        if (!message || message.userId !== ctx.session.user.id) {
+          throw new Error("Unauthorized or message not found");
+        }
+
+        return ctx.db.audioMessage.delete({
+          where: { id: input.id },
+        });
+      }),
+
     getGuessesForAssignmentForUser: protectedProcedure
       .input(z.object({
         assignmentId: z.string(),
