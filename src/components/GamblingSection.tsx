@@ -78,11 +78,11 @@ const GamblingSection: FC<GamblingSectionProps> = ({ assignmentId, userId }) => 
     return assignmentGamblingPoints && assignmentGamblingPoints.length > 0 && assignmentGamblingPoints[0] && assignmentGamblingPoints[0].points > 0;
   }
   return (
-    <div className="flex flex-col gap-2 items-center">
+    <div className="flex gap-2 items-center">
       <UserPoints points={Number(userPoints)} showSpendButton={false} />
       {hasGambled() && (
         <div className="flex gap-2 items-center">
-          <p className="text-sm text-gray-300">You have gambled {assignmentGamblingPoints?.[0]?.points ?? "unknown"} points on {assignmentGamblingPoints?.[0]?.Assignment?.Movie?.title ?? "unknown"}!</p>
+          <p className="text-sm text-gray-300">You have bet {assignmentGamblingPoints?.[0]?.points ?? "unknown"} points on {assignmentGamblingPoints?.[0]?.Assignment?.Movie?.title ?? "unknown"}!</p>
           <Button
             variant="destructive"
             size="sm"
@@ -127,7 +127,7 @@ const GamblingSection: FC<GamblingSectionProps> = ({ assignmentId, userId }) => 
               >
                 <span className="absolute inset-0 bg-gradient-to-r from-transparent"></span>
                 <span className="px-4 py-2 relative z-10 flex items-center">
-                  <span className="mr-1">Gamble!</span>
+                  <span className="mr-1">Bet!</span>
                   <span className="animate-bounce inline-block">✨</span>
                 </span>
               </Button>

@@ -10,7 +10,11 @@ import { cn } from "@/lib/utils";
 import RatingIcon from "./RatingIcon";
 import GamblingSection from "./GamblingSection";
 import { SignInButton } from "./Auth";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown, ChevronUp, Phone, Voicemail } from "lucide-react";
+import { Button } from "./ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
+import PhoneNumber from "./common/PhoneNumber";
+import RecordAssignmentAudio from "./common/RecordAssignmentAudio";
 
 interface PredictionGameProps {
 	assignments: AssignmentWithRelations[];
@@ -246,11 +250,48 @@ const AssignmentPrediction: FC<AssignmentPredictionProps> = ({ assignment, hosts
 						})}
 					</div>
 
-					<div className="pt-4 border-t border-gray-700/50">
+					<div className="flex gap-4 flex-wrap items-center justify-between pt-4 border-t border-gray-700/50">
 						<GamblingSection assignmentId={assignment.id} userId={userId} />
+						<div className="flex gap-4">
+							<Call />
+							<Message assignmentId={assignment.id} userId={userId} />
+						</div>
 					</div>
 				</>
 			)}
+		</div>
+	);
+}
+
+const Call = () => {
+	return (
+		<div className="flex flex-col gap-2 items-center">
+			<Popover>
+				<PopoverTrigger asChild>
+					<Button variant="outline"><Phone className="w-5 h-5" /></Button>
+				</PopoverTrigger>
+				<PopoverContent>
+					<PhoneNumber />
+				</PopoverContent>
+			</Popover>
+		</div>
+	);
+}
+
+const Message = ({ assignmentId, userId }: { assignmentId: string; userId: string }) => {
+	return (
+		<div className="flex flex-col gap-2 items-center">
+			<Popover>
+				<PopoverTrigger asChild>
+					<Button variant="outline"><Voicemail className="w-5 h-5" /></Button>
+				</PopoverTrigger>
+				<PopoverContent>
+					<RecordAssignmentAudio
+						assignmentId={assignmentId}
+						userId={userId}
+					/>
+				</PopoverContent>
+			</Popover>
 		</div>
 	);
 }

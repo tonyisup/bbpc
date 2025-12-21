@@ -20,8 +20,8 @@ const UserPoints: FC<UserPointsProps> = ({
   return (
     <div className={`flex gap-4 items-center space-around ${className}`}>
       <div className="p-4 flex gap-2 items-center">
-        <span className="text-xl font-semibold">Your Points</span>
         <span className="text-3xl font-bold text-red-500">{pointsValue}</span>
+        <span className="text-xl font-semibold">pts</span>
       </div>
       {showSpendButton && (
         <Button variant="outline">
