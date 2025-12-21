@@ -9,6 +9,8 @@ interface UseAudioRecorderOptions {
 	onStop?: (blob: Blob) => void;
 	/** Whether to integrate with a service worker for background state management. */
 	serviceWorkerIntegration?: boolean;
+	/** Optional maximum recording duration in seconds. */
+	maxDuration?: number;
 }
 
 /**
@@ -242,19 +244,30 @@ export const useAudioRecorder = (options: UseAudioRecorderOptions = {}) => {
 				clearInterval(timerRef.current);
 			}
 
+			// MAX_RECORDING_TIME env var is in seconds. Default to 300 (5 minutes).
+			const maxDuration = options.maxDuration ?? Number(process.env.NEXT_PUBLIC_MAX_RECORDING_TIME || process.env.MAX_RECORDING_TIME || 300);
+
 			timerRef.current = setInterval(() => {
-				setRecordingTime((prev) => {
-					const next = prev + 1;
-					recordingTimeRef.current = next;
-					if (options.serviceWorkerIntegration && serviceWorkerRef.current) {
-						serviceWorkerRef.current.postMessage({
-							type: 'RECORDING_STATE',
-							isRecording: true,
-							duration: next
-						});
-					}
-					return next;
-				});
+				const current = recordingTimeRef.current;
+				const next = current + 1;
+
+				if (next >= maxDuration) {
+					setRecordingTime(maxDuration);
+					recordingTimeRef.current = maxDuration;
+					stopRecording();
+					return;
+				}
+
+				setRecordingTime(next);
+				recordingTimeRef.current = next;
+
+				if (options.serviceWorkerIntegration && serviceWorkerRef.current) {
+					serviceWorkerRef.current.postMessage({
+						type: 'RECORDING_STATE',
+						isRecording: true,
+						duration: next
+					});
+				}
 			}, 1000);
 		} catch (error) {
 			console.error("Error accessing microphone:", error);
