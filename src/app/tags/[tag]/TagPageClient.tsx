@@ -461,7 +461,7 @@ export function TagPageClient({ tag, initialMovieId }: { tag: string; initialMov
         </Link>
       </span>}
 
-      <div className="relative w-full max-w-sm h-[300px] sm:h-[450px] md:h-[550px] mx-auto flex justify-center">
+      <div className="relative w-full max-w-sm md:max-w-md h-[500px] sm:h-[600px] md:h-[700px] mx-auto flex justify-center">
         <AnimatePresence>
           {movies.map((movie, index) => {
             // Only render the top 2 cards for performance
@@ -482,7 +482,7 @@ export function TagPageClient({ tag, initialMovieId }: { tag: string; initialMov
 
         {/* Buttons for non-swipe interaction - placed outside the card stack */}
         {currentMovie && (
-          <div className="absolute top-[240px] sm:top-[380px] md:top-[460px] left-0 right-0 mx-auto w-full flex flex-col items-center gap-2 z-10 mt-4">
+          <div className="absolute top-[400px] sm:top-[500px] md:top-[590px] left-0 right-0 mx-auto w-full flex flex-col items-center gap-2 z-10 mt-4">
             {/* Show "Already Voted" message if this is the shared movie and user already voted */}
             {sharedMovieId && currentMovie.id === sharedMovieId && sharedMovieWasAlreadyVoted ? (
               <div className="flex flex-col items-center gap-3">
@@ -545,7 +545,7 @@ export function TagPageClient({ tag, initialMovieId }: { tag: string; initialMov
 
       {/* Stats Bar */}
       {currentMovie && (
-        <div className="w-full max-w-sm flex flex-col items-center gap-2">
+        <div className="w-full max-w-sm md:max-w-md flex flex-col items-center gap-2">
           <p className="text-center text-sm text-gray-400 p-2 break-words w-full px-4">
             {currentMovie.imdb_id ? (
               <a
@@ -648,7 +648,7 @@ function SwipeCard({
     onVote(vote);
   }
 
-  const cardClasses = "absolute top-0 w-[150px] sm:w-[250px] md:w-[300px]";
+  const cardClasses = "absolute top-0 w-[260px] sm:w-[320px] md:w-[380px]";
 
   // If it's not the front card, it sits behind
   if (!isFront) {
