@@ -678,7 +678,7 @@ function SwipeCard({
         preventSwipe={disableSwipe ? ['up', 'down', 'left', 'right'] : ['up', 'down']}
         onSwipeRequirementFulfilled={onSwipeRequirementFulfilled}
         onSwipeRequirementUnfulfilled={onSwipeRequirementUnfulfilled}
-        className={cardClasses}
+        className={`${cardClasses} z-10`}
         swipeRequirementType="position"
         swipeThreshold={100}
     >
