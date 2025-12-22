@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { api } from "@/trpc/react";
 import { motion, AnimatePresence } from "motion/react";
 import { X, Check, LinkIcon, RefreshCwIcon, PlusCircle, CheckCircle, Info, Share2 } from "lucide-react";
@@ -662,19 +662,23 @@ function SwipeCard({
   }
 
   // Wrappers for TinderCard events to update local state for overlays
-  const onSwipeRequirementFulfilled = (dir: string) => {
+  const onSwipeRequirementFulfilled = useCallback((dir: string) => {
       setSwipeDir(dir);
-  }
+  }, []);
 
-  const onSwipeRequirementUnfulfilled = () => {
+  const onSwipeRequirementUnfulfilled = useCallback(() => {
       setSwipeDir(null);
-  }
+  }, []);
+
+  const handleCardLeftScreen = useCallback(() => {
+    onCardLeftScreen(movie.id.toString());
+  }, [onCardLeftScreen, movie.id]);
 
   return (
     <TinderCard
         ref={isFront ? cardRef : null}
         onSwipe={onSwipe}
-        onCardLeftScreen={() => onCardLeftScreen(movie.id.toString())}
+        onCardLeftScreen={handleCardLeftScreen}
         preventSwipe={disableSwipe ? ['up', 'down', 'left', 'right'] : ['up', 'down']}
         onSwipeRequirementFulfilled={onSwipeRequirementFulfilled}
         onSwipeRequirementUnfulfilled={onSwipeRequirementUnfulfilled}
@@ -687,16 +691,17 @@ function SwipeCard({
           style={{ cursor: disableSwipe ? 'default' : 'grab' }}
         >
             {/* Yes/No Overlays */}
-            {swipeDir === 'right' && (
-                <div className="absolute inset-0 bg-green-500/40 z-10 flex items-center justify-center pointer-events-none transition-opacity duration-200">
-                    <span className="text-white font-black text-4xl border-4 border-white p-2 rounded transform -rotate-12">YES</span>
-                </div>
-            )}
-            {swipeDir === 'left' && (
-                <div className="absolute inset-0 bg-red-500/40 z-10 flex items-center justify-center pointer-events-none transition-opacity duration-200">
-                    <span className="text-white font-black text-4xl border-4 border-white p-2 rounded transform rotate-12">NO</span>
-                </div>
-            )}
+            <div
+              className={`absolute inset-0 bg-green-500/40 z-10 flex items-center justify-center pointer-events-none transition-opacity duration-200 ${swipeDir === 'right' ? 'opacity-100' : 'opacity-0'}`}
+            >
+                <span className="text-white font-black text-4xl border-4 border-white p-2 rounded transform -rotate-12">YES</span>
+            </div>
+
+            <div
+              className={`absolute inset-0 bg-red-500/40 z-10 flex items-center justify-center pointer-events-none transition-opacity duration-200 ${swipeDir === 'left' ? 'opacity-100' : 'opacity-0'}`}
+            >
+                <span className="text-white font-black text-4xl border-4 border-white p-2 rounded transform rotate-12">NO</span>
+            </div>
 
             {movie.poster_path ? (
                 <img src={movie.poster_path} alt={movie.title} className="w-full h-full object-contain pointer-events-none" />
