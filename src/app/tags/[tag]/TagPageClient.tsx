@@ -512,7 +512,46 @@ export function TagPageClient({ tag, initialMovieId }: { tag: string; initialMov
                 </button>
               </div>
             ) : (
-              <div className="flex justify-center gap-4 sm:gap-8">
+              <div className="flex justify-center gap-2 sm:gap-4 md:gap-6">
+                {/* Add to Syllabus / Sign in Toggle */}
+                {!session?.user ? (
+                  <button
+                    type="button"
+                    onClick={handleSignInToAdd}
+                    className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 aspect-square shrink-0 rounded-full bg-gray-800/80 hover:bg-gray-700/80 flex items-center justify-center shadow-lg transition-transform hover:scale-110 active:scale-95 text-red-500/80"
+                    aria-label="Sign in to add to syllabus"
+                    title="Sign in to add to syllabus"
+                  >
+                    <PlusCircle className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8" />
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleAddToSyllabus}
+                    disabled={isAddingToSyllabus || addedToSyllabus}
+                    className={`
+                      w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 aspect-square shrink-0 rounded-full flex items-center justify-center shadow-lg transition-all hover:scale-110 active:scale-95
+                      ${addedToSyllabus
+                        ? "bg-green-600/30 text-green-400 border border-green-500/50"
+                        : "bg-gray-800/80 hover:bg-gray-700/80 text-blue-400"
+                      }
+                      ${isAddingToSyllabus ? "opacity-50 cursor-not-allowed" : ""}
+                    `}
+                    aria-label={addedToSyllabus ? "Added to Syllabus" : "Add to Syllabus"}
+                    title={addedToSyllabus ? "Added to Syllabus" : "Add to Syllabus"}
+                  >
+                    {addedToSyllabus ? (
+                      <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8" />
+                    ) : (
+                      isAddingToSyllabus ? (
+                        <RefreshCwIcon className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 animate-spin" />
+                      ) : (
+                        <PlusCircle className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8" />
+                      )
+                    )}
+                  </button>
+                )}
+
                 <button
                   type="button"
                   onClick={() => handleButtonVote(false)}
@@ -522,6 +561,7 @@ export function TagPageClient({ tag, initialMovieId }: { tag: string; initialMov
                 >
                   <X className="w-6 h-6 sm:w-8 sm:h-8 font-bold" />
                 </button>
+
                 <button
                   type="button"
                   onClick={() => handlePassAndRefresh()}
@@ -531,6 +571,7 @@ export function TagPageClient({ tag, initialMovieId }: { tag: string; initialMov
                 >
                   <RefreshCwIcon className="w-6 h-6 sm:w-8 sm:h-8 font-bold" />
                 </button>
+
                 <button
                   type="button"
                   onClick={() => handleButtonVote(true)}
@@ -540,6 +581,16 @@ export function TagPageClient({ tag, initialMovieId }: { tag: string; initialMov
                 >
                   <Check className="w-6 h-6 sm:w-8 sm:h-8 font-bold" />
                 </button>
+
+                <button
+                  type="button"
+                  onClick={handleShare}
+                  className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 aspect-square shrink-0 rounded-full bg-gray-800/80 hover:bg-gray-700/80 flex items-center justify-center shadow-lg transition-transform hover:scale-110 active:scale-95 text-white"
+                  aria-label="Share this movie"
+                  title="Share this movie"
+                >
+                  <Share2 className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8" />
+                </button>
               </div>
             )}
           </div>
@@ -548,55 +599,8 @@ export function TagPageClient({ tag, initialMovieId }: { tag: string; initialMov
 
       {/* Stats Bar */}
       {currentMovie && (
-        <div className="w-full max-w-sm md:max-w-md flex flex-col items-center gap-2">
-          {!session?.user && (
-            <p className="text-center text-sm text-gray-400 p-2">
-              Please <button onClick={handleSignInToAdd} className="font-semibold text-red-600 hover:text-red-400 transition-colors">Sign in</button> to add to syllabus
-            </p>
-          )}
-          {session?.user && (
-            <button
-              onClick={handleAddToSyllabus}
-              disabled={isAddingToSyllabus || addedToSyllabus}
-              className={`
-                flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all
-                ${addedToSyllabus
-                  ? "bg-green-600/20 text-green-400 cursor-default"
-                  : "bg-blue-600/20 text-blue-400 hover:bg-blue-600/30 active:scale-95"
-                }
-                ${isAddingToSyllabus ? "opacity-50 cursor-not-allowed" : ""}
-              `}
-            >
-              {addedToSyllabus ? (
-                <>
-                  <CheckCircle className="w-4 h-4" />
-                  Added to Syllabus
-                </>
-              ) : (
-                <>
-                  {isAddingToSyllabus ? (
-                    <RefreshCwIcon className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <PlusCircle className="w-4 h-4" />
-                  )}
-                  Add to Syllabus
-                </>
-              )}
-            </button>
-          )}
-
-          <div className="w-full mt-2 flex items-center gap-2 px-4">
-            <StatsBar stats={stats} />
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={handleShare}
-              title="Share this movie"
-              className="shrink-0"
-            >
-              <Share2 className="h-4 w-4" />
-            </Button>
-          </div>
+        <div className="w-full max-w-sm md:max-w-md flex flex-col items-center gap-2 mt-2 px-4">
+          <StatsBar stats={stats} />
         </div>
       )}
     </div>
