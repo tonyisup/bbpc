@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useRef, useCallback, useImperativeHandle, forwardRef } from "react";
 import { api } from "@/trpc/react";
 import { motion, AnimatePresence } from "motion/react";
 import { X, Check, LinkIcon, RefreshCwIcon, PlusCircle, CheckCircle, Info, Share2 } from "lucide-react";
@@ -339,7 +339,7 @@ export function TagPageClient({ tag, initialMovieId }: { tag: string; initialMov
   // Called by buttons to trigger a swipe animation
   const handleButtonVote = (isTag: boolean) => {
     if (cardRef.current) {
-        cardRef.current.swipe(isTag ? 'right' : 'left');
+      cardRef.current.swipe(isTag ? 'right' : 'left');
     }
   }
 
@@ -379,8 +379,8 @@ export function TagPageClient({ tag, initialMovieId }: { tag: string; initialMov
   };
 
   const onCardLeftScreen = (myIdentifier: string) => {
-      // Remove the card from the state to bring the next one forward
-      setMovies((prev) => prev.slice(1));
+    // Remove the card from the state to bring the next one forward
+    setMovies((prev) => prev.slice(1));
   }
 
 
@@ -465,24 +465,24 @@ export function TagPageClient({ tag, initialMovieId }: { tag: string; initialMov
         </Link>
       </span>}
 
-      <div className="relative w-full max-w-sm md:max-w-md h-[500px] sm:h-[600px] md:h-[700px] mx-auto flex justify-center">
+      <div className="relative w-full max-w-sm md:max-w-md h-[480px] sm:h-[580px] md:h-[680px] mx-auto flex justify-center">
         {movies.map((movie, index) => {
-            // Only render the top 2 cards for performance
-            if (index > 1) return null;
+          // Only render the top 2 cards for performance
+          if (index > 1) return null;
 
-            return (
-              <SwipeCard
-                key={movie.id}
-                movie={movie}
-                index={index}
-                onSwipe={onSwipe}
-                onCardLeftScreen={onCardLeftScreen}
-                cardRef={cardRef}
-                isFront={index === 0}
-                disableSwipe={sharedMovieId === movie.id && sharedMovieWasAlreadyVoted}
-              />
-            );
-          })}
+          return (
+            <SwipeCard
+              key={movie.id}
+              movie={movie}
+              index={index}
+              onSwipe={onSwipe}
+              onCardLeftScreen={onCardLeftScreen}
+              cardRef={cardRef}
+              isFront={index === 0}
+              disableSwipe={sharedMovieId === movie.id && sharedMovieWasAlreadyVoted}
+            />
+          );
+        })}
 
         {/* Buttons for non-swipe interaction - placed outside the card stack */}
         {currentMovie && (
@@ -549,21 +549,6 @@ export function TagPageClient({ tag, initialMovieId }: { tag: string; initialMov
       {/* Stats Bar */}
       {currentMovie && (
         <div className="w-full max-w-sm md:max-w-md flex flex-col items-center gap-2">
-          <p className="text-center text-sm text-gray-400 p-2 break-words w-full px-4">
-            {currentMovie.imdb_id ? (
-              <a
-                href={`https://www.imdb.com/title/${currentMovie.imdb_id}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hover:text-white hover:underline transition-colors"
-              >
-                {currentMovie.title}
-                <LinkIcon className="pl-2 w-4 h-4 inline" />
-              </a>
-            ) : (
-              currentMovie.title
-            )}
-          </p>
           {!session?.user && (
             <p className="text-center text-sm text-gray-400 p-2">
               Please <button onClick={handleSignInToAdd} className="font-semibold text-red-600 hover:text-red-400 transition-colors">Sign in</button> to add to syllabus
@@ -618,6 +603,38 @@ export function TagPageClient({ tag, initialMovieId }: { tag: string; initialMov
   );
 }
 
+const Overlays = forwardRef<{ setDir: (dir: string | null) => void }, {}>(
+  (props, ref) => {
+    const [swipeDir, setSwipeDir] = useState<string | null>(null);
+
+    useImperativeHandle(ref, () => ({
+      setDir: (dir: string | null) => setSwipeDir(dir),
+    }));
+
+    return (
+      <>
+        {/* Yes/No Overlays */}
+        <div
+          className={`absolute inset-0 bg-green-500/40 z-10 flex items-center justify-center pointer-events-none transition-opacity duration-200 ${swipeDir === "right" ? "opacity-100" : "opacity-0"}`}
+        >
+          <span className="text-white font-black text-4xl border-4 border-white p-2 rounded transform -rotate-12">
+            YES
+          </span>
+        </div>
+
+        <div
+          className={`absolute inset-0 bg-red-500/40 z-10 flex items-center justify-center pointer-events-none transition-opacity duration-200 ${swipeDir === "left" ? "opacity-100" : "opacity-0"}`}
+        >
+          <span className="text-white font-black text-4xl border-4 border-white p-2 rounded transform rotate-12">
+            NO
+          </span>
+        </div>
+      </>
+    );
+  }
+);
+Overlays.displayName = "Overlays";
+
 function SwipeCard({
   movie,
   index,
@@ -635,7 +652,20 @@ function SwipeCard({
   isFront: boolean,
   disableSwipe?: boolean,
 }) {
-  const [swipeDir, setSwipeDir] = useState<string | null>(null);
+  const overlayRef = useRef<{ setDir: (dir: string | null) => void }>(null);
+
+  // Wrappers for TinderCard events to update local state for overlays
+  const onSwipeRequirementFulfilled = useCallback((dir: string) => {
+    overlayRef.current?.setDir(dir);
+  }, []);
+
+  const onSwipeRequirementUnfulfilled = useCallback(() => {
+    overlayRef.current?.setDir(null);
+  }, []);
+
+  const handleCardLeftScreen = useCallback(() => {
+    onCardLeftScreen(movie.id.toString());
+  }, [onCardLeftScreen, movie.id]);
 
   const cardClasses = "absolute top-0 w-[260px] sm:w-[320px] md:w-[380px] h-[390px] sm:h-[480px] md:h-[570px]";
 
@@ -648,6 +678,21 @@ function SwipeCard({
         animate={{ scale: 0.95, y: 20, zIndex: 0 }}
         transition={{ duration: 0.2 }}
       >
+        {/*
+        {currentMovie.imdb_id ? (
+              <a
+                href={`https://www.imdb.com/title/${currentMovie.imdb_id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-white hover:underline transition-colors"
+              >
+                {currentMovie.title}
+                <LinkIcon className="pl-2 w-4 h-4 inline" />
+              </a>
+            ) : (
+              currentMovie.title
+            )}
+             */}
         <div className="w-full h-full bg-gray-900 flex items-center justify-center rounded-xl overflow-hidden">
           {movie.poster_path ? (
             <img src={movie.poster_path} alt={movie.title} className="w-full h-full object-contain" draggable={false} />
@@ -661,56 +706,51 @@ function SwipeCard({
     )
   }
 
-  // Wrappers for TinderCard events to update local state for overlays
-  const onSwipeRequirementFulfilled = useCallback((dir: string) => {
-      setSwipeDir(dir);
-  }, []);
-
-  const onSwipeRequirementUnfulfilled = useCallback(() => {
-      setSwipeDir(null);
-  }, []);
-
-  const handleCardLeftScreen = useCallback(() => {
-    onCardLeftScreen(movie.id.toString());
-  }, [onCardLeftScreen, movie.id]);
-
   return (
     <TinderCard
-        ref={isFront ? cardRef : null}
-        onSwipe={onSwipe}
-        onCardLeftScreen={handleCardLeftScreen}
-        preventSwipe={disableSwipe ? ['up', 'down', 'left', 'right'] : ['up', 'down']}
-        onSwipeRequirementFulfilled={onSwipeRequirementFulfilled}
-        onSwipeRequirementUnfulfilled={onSwipeRequirementUnfulfilled}
-        className={`${cardClasses} z-10`}
-        swipeRequirementType="position"
-        swipeThreshold={100}
+      ref={isFront ? cardRef : null}
+      onSwipe={onSwipe}
+      onCardLeftScreen={handleCardLeftScreen}
+      preventSwipe={disableSwipe ? ['up', 'down', 'left', 'right'] : ['up', 'down']}
+      onSwipeRequirementFulfilled={onSwipeRequirementFulfilled}
+      onSwipeRequirementUnfulfilled={onSwipeRequirementUnfulfilled}
+      className={`${cardClasses} z-10`}
+      swipeRequirementType="position"
+      swipeThreshold={100}
     >
-        <div
-          className="relative w-full h-full bg-gray-900 flex items-center justify-center rounded-xl shadow-2xl overflow-hidden"
-          style={{ cursor: disableSwipe ? 'default' : 'grab' }}
-        >
-            {/* Yes/No Overlays */}
-            <div
-              className={`absolute inset-0 bg-green-500/40 z-10 flex items-center justify-center pointer-events-none transition-opacity duration-200 ${swipeDir === 'right' ? 'opacity-100' : 'opacity-0'}`}
-            >
-                <span className="text-white font-black text-4xl border-4 border-white p-2 rounded transform -rotate-12">YES</span>
-            </div>
+      <div
+        className="relative w-full h-full bg-gray-900 flex items-center justify-center rounded-xl shadow-2xl overflow-hidden"
+        style={{ cursor: disableSwipe ? 'default' : 'grab' }}
+      >
+        <Overlays ref={overlayRef} />
 
-            <div
-              className={`absolute inset-0 bg-red-500/40 z-10 flex items-center justify-center pointer-events-none transition-opacity duration-200 ${swipeDir === 'left' ? 'opacity-100' : 'opacity-0'}`}
-            >
-                <span className="text-white font-black text-4xl border-4 border-white p-2 rounded transform rotate-12">NO</span>
-            </div>
-
-            {movie.poster_path ? (
-                <img src={movie.poster_path} alt={movie.title} className="w-full h-full object-contain pointer-events-none" />
-            ) : (
-                <div className="w-full h-full flex items-center justify-center bg-gray-800 text-gray-500">
-                    No Poster
-                </div>
-            )}
-        </div>
+        {movie.poster_path ? (
+          <img src={movie.poster_path} alt={movie.title} className="w-full h-full object-contain pointer-events-none" />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center bg-gray-800 text-gray-500">
+            No Poster
+          </div>
+        )}
+        {movie.imdb_id ? (
+          <motion.button
+            whileTap={{ scale: 0.9 }}
+            whileHover={{ scale: 1.05 }}
+            onMouseDown={(e) => e.stopPropagation()}
+            onPointerDown={(e) => e.stopPropagation()}
+            onTouchStart={(e) => e.stopPropagation()}
+            onTouchStartCapture={(e) => e.stopPropagation()}
+            onClick={(e) => {
+              e.stopPropagation();
+              window.open(`https://www.imdb.com/title/${movie.imdb_id}`, '_blank');
+            }}
+            className="absolute bottom-2 z-20 pointer-events-auto"
+          >
+            <span className="bg-black/50 p-2 rounded-md text-white text-xl">{(new Date(movie?.release_date)).getFullYear()}</span>
+          </motion.button>
+        ) : (
+          <span className="absolute bottom-2 bg-black/50 p-2 rounded-md text-white text-xl z-20">{(new Date(movie?.release_date)).getFullYear()}</span>
+        )}
+      </div>
     </TinderCard>
   );
 }
