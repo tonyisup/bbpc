@@ -71,7 +71,7 @@ export const Episode: FC<EpisodeProps> = ({ episode, allowGuesses: isNextEpisode
 				<p>{highlightText(episode?.description ?? "", searchQuery)}</p>
 			</div>
 			<EpisodeAssignments assignments={episode.assignments as AssignmentWithRelations[]} showMovieTitles={showMovieTitles} searchQuery={searchQuery} />
-			{isNextEpisode && episode.assignments.length > 0 && <PredictionGame assignments={episode.assignments as AssignmentWithRelations[]} searchQuery={searchQuery} />}
+			{isNextEpisode && episode.assignments.filter(a => a.playable).length > 0 && <PredictionGame assignments={episode.assignments.filter(a => a.playable) as AssignmentWithRelations[]} searchQuery={searchQuery} />}
 		</div>
 		<div>
 			{episode.extras.length > 0 && (
