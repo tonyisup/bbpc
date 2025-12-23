@@ -27,6 +27,8 @@ model Link {
   text      String
   episodeId String?  @db.UniqueIdentifier
   Episode   Episode? @relation(fields: [episodeId], references: [id], onDelete: Cascade)
+
+  @@index([episodeId])
 }
 
 model Movie {
@@ -74,6 +76,11 @@ model Review {
   Rating            Rating?            @relation(fields: [ratingId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   Show              Show?              @relation(fields: [showId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   User              User?              @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([movieId])
+  @@index([ratingId])
+  @@index([showId])
+  @@index([userId])
 }
 
 model ExtraReview {
@@ -82,6 +89,9 @@ model ExtraReview {
   episodeId String  @db.UniqueIdentifier
   Episode   Episode @relation(fields: [episodeId], references: [id], onUpdate: NoAction)
   Review    Review  @relation(fields: [reviewId], references: [id], onUpdate: NoAction)
+
+  @@index([episodeId])
+  @@index([reviewId])
 }
 
 model AssignmentReview {
@@ -91,6 +101,9 @@ model AssignmentReview {
   Assignment   Assignment @relation(fields: [assignmentId], references: [id], onUpdate: NoAction)
   Review       Review     @relation(fields: [reviewId], references: [id], onUpdate: NoAction)
   guesses      Guess[]
+
+  @@index([assignmentId])
+  @@index([reviewId])
 }
 
 model Assignment {
@@ -107,6 +120,10 @@ model Assignment {
   audioMessages     AudioMessage[]
   gamblingPoints    GamblingPoints[]
   syllabus          Syllabus[]
+
+  @@index([episodeId])
+  @@index([movieId])
+  @@index([userId])
 }
 
 model Banger {
@@ -118,6 +135,9 @@ model Banger {
   userId    String?
   Episode   Episode? @relation(fields: [episodeId], references: [id], onDelete: Cascade)
   User      User?    @relation(fields: [userId], references: [id])
+
+  @@index([episodeId])
+  @@index([userId])
 }
 
 model Role {
@@ -134,6 +154,9 @@ model UserRole {
   roleId Int    @db.TinyInt
   role   Role   @relation(fields: [roleId], references: [id], onUpdate: NoAction)
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([roleId])
+  @@index([userId])
 }
 
 model Account {
@@ -205,6 +228,12 @@ model Guess {
   Rating            Rating           @relation(fields: [ratingId], references: [id], onUpdate: NoAction)
   Season            Season           @relation(fields: [seasonId], references: [id], onUpdate: NoAction)
   User              User             @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([assignmntReviewId])
+  @@index([pointsId])
+  @@index([ratingId])
+  @@index([seasonId])
+  @@index([userId])
 }
 
 model Season {
@@ -218,6 +247,8 @@ model Season {
   Guess          Guess[]
   Point          Point[]
   gameType       GameType         @relation(fields: [gameTypeId], references: [id], onDelete: Cascade)
+
+  @@index([gameTypeId])
 }
 
 model GameType {
@@ -243,6 +274,10 @@ model Point {
   GamePointType    GamePointType?     @relation(fields: [gamePointTypeId], references: [id], onDelete: Cascade)
   Season           Season             @relation(fields: [seasonId], references: [id], onUpdate: NoAction)
   User             User               @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([gamePointTypeId])
+  @@index([seasonId])
+  @@index([userId])
 }
 
 model AudioMessage {
@@ -254,6 +289,9 @@ model AudioMessage {
   fileKey      String?
   Assignment   Assignment? @relation(fields: [assignmentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   User         User        @relation(fields: [userId], references: [id])
+
+  @@index([assignmentId])
+  @@index([userId])
 }
 
 model AudioEpisodeMessage {
@@ -266,6 +304,9 @@ model AudioEpisodeMessage {
   notes     String?
   Episode   Episode? @relation(fields: [episodeId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   User      User     @relation(fields: [userId], references: [id])
+
+  @@index([episodeId])
+  @@index([userId])
 }
 
 model GamblingPoints {
@@ -281,6 +322,11 @@ model GamblingPoints {
   Point        Point?     @relation(fields: [pointsId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   Season       Season?    @relation(fields: [seasonId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   User         User       @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([assignmentId])
+  @@index([pointsId])
+  @@index([seasonId])
+  @@index([userId])
 }
 
 model Syllabus {
@@ -294,6 +340,10 @@ model Syllabus {
   Assignment   Assignment? @relation(fields: [assignmentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   Movie        Movie       @relation(fields: [movieId], references: [id], onDelete: Cascade, onUpdate: NoAction)
   User         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([assignmentId])
+  @@index([movieId])
+  @@index([userId])
 }
 
 model AssignmentPoints {
@@ -304,6 +354,10 @@ model AssignmentPoints {
   Assignment   Assignment @relation(fields: [assignmentId], references: [id], onUpdate: NoAction)
   Point        Point      @relation(fields: [pointsId], references: [id], onDelete: Cascade, onUpdate: NoAction)
   User         User       @relation(fields: [userId], references: [id], onUpdate: NoAction)
+
+  @@index([assignmentId])
+  @@index([pointsId])
+  @@index([userId])
 }
 
 model GamePointType {
@@ -315,6 +369,8 @@ model GamePointType {
   gameTypeId  Int      @db.TinyInt
   GameType    GameType @relation(fields: [gameTypeId], references: [id], onDelete: Cascade)
   Point       Point[]
+
+  @@index([gameTypeId])
 }
 
 model TagVote {
