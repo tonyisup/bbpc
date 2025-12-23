@@ -5,14 +5,14 @@ type PrismaTransactionClient = Omit<
   "$connect" | "$disconnect" | "$on" | "$transaction" | "$extends"
 >;
 
-export const getCurrentSeasonID = async (prisma: PrismaTransactionClient): Promise<string> => {
+export const getCurrentSeasonID = async (prisma: PrismaTransactionClient): Promise<string | null> => {
   const season = await prisma.season.findFirst({
     orderBy: {
       startedOn: 'desc',
     },
     where: { endedOn: null }
   });
-  return season?.id ?? '';
+  return season?.id ?? null;
 };
 
 export const calculateUserPoints = async (
@@ -28,6 +28,11 @@ export const calculateUserPoints = async (
   let seasonIdToUse = seasonId;
   if (!seasonIdToUse) {
     seasonIdToUse = await getCurrentSeasonID(prisma);
+  }
+
+  if (!seasonIdToUse) {
+    // If no season is active and none was provided, user has no points for the context
+    return 0;
   }
 
   const user = await prisma.user.findFirst({
