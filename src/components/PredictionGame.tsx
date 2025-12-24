@@ -15,6 +15,7 @@ import { Button } from "./ui/button";
 import { Popover, PopoverContent, PopoverTrigger, PopoverClose } from "./ui/popover";
 import PhoneNumber from "./common/PhoneNumber";
 import RecordAssignmentAudio from "./common/RecordAssignmentAudio";
+import { useFeatureFlagEnabled } from 'posthog-js/react'
 
 /**
  * Props for the PredictionGame component.
@@ -39,6 +40,7 @@ export const PredictionGame: FC<PredictionGameProps> = ({ assignments, searchQue
 	const { data: hosts } = api.user.hosts.useQuery();
 	const { data: ratings } = api.movie.ratings.useQuery();
 	const [isAdminCollapsed, setIsAdminCollapsed] = useState(true);
+	const flagEnabled = useFeatureFlagEnabled('new-season-format')
 
 	if (!session?.user) return <div className="p-4 text-center text-gray-400">Please <SignInButton /> to play the game.</div>;
 	if (!hosts || !ratings) return <div className="p-4 text-center text-gray-400">Loading prediction game...</div>;
@@ -85,6 +87,7 @@ export const PredictionGame: FC<PredictionGameProps> = ({ assignments, searchQue
 			)}
 
 			{/* Ability to gamble per assignment here */}
+			{flagEnabled && (<span>Flag enabled</span>)}
 		</div>
 	);
 
