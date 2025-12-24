@@ -93,12 +93,23 @@ const AssignmentGamblingBoard: FC<AssignmentGamblingBoardProps> = ({ assignmentI
 								value={amount}
 								onChange={(e) => setAmount(e.target.value)}
 								className="h-8 bg-gray-800 border-gray-700 text-white"
+								disabled={existingBet?.successful !== null && existingBet?.successful !== undefined}
 							/>
-							<Button size="sm" onClick={handleBet} disabled={submitBet.isLoading} className="h-8">
+							<Button
+								size="sm"
+								onClick={handleBet}
+								disabled={submitBet.isLoading || (existingBet?.successful !== null && existingBet?.successful !== undefined)}
+								className="h-8"
+							>
 								{submitBet.isLoading ? <Loader2 className="animate-spin w-3 h-3" /> : "Bet"}
 							</Button>
 						</div>
-						{existingBet && (
+						{existingBet?.successful !== null && existingBet?.successful !== undefined && (
+							<p className="text-[10px] text-amber-500 font-medium italic">
+								Bet confirmed and locked.
+							</p>
+						)}
+						{existingBet && (existingBet.successful === null || existingBet.successful === undefined) && (
 							<Button variant="ghost" size="sm" onClick={() => {
 								setAmount("0");
 								submitBet.mutate({ userId, gamblingTypeId: type.id, points: 0, assignmentId, targetUserId: targetHostId });
