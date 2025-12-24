@@ -227,15 +227,21 @@ const AssignmentPrediction: FC<AssignmentPredictionProps> = ({
 						Review: {
 							id: "temp-id",
 							userId: newGuess.hostId,
+							movieId: null,
+							ratingId: null,
+							ReviewdOn: null,
+							showId: null,
 							User: {
 								id: newGuess.hostId,
 								name: "Loading...",
 								email: "",
-								image: null
+								image: null,
+								emailVerified: null,
+								impersonatedUserId: null
 							}
 						}
 					}
-				};
+				} as any; // Using 'any' for optimistic update temporary data
 
 				return { ...old, [assignment.id]: [...filtered, mockGuess] };
 			});

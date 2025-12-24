@@ -4,7 +4,6 @@ import { useEffect, useState, useRef, useCallback, useImperativeHandle, forwardR
 import { api } from "@/trpc/react";
 import { motion, AnimatePresence } from "motion/react";
 import { X, Check, LinkIcon, RefreshCwIcon, PlusCircle, CheckCircle, Info, Share, Share2 } from "lucide-react";
-import { v4 as uuidv4 } from "uuid";
 import ChristmasSnow from "@/components/AnimatedChristmas";
 import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
@@ -26,7 +25,6 @@ interface Movie {
 }
 
 export function TagPageClient({ tag, initialMovieId }: { tag: string; initialMovieId?: number }) {
-  const [sessionId, setSessionId] = useState<string>("");
   const [movies, setMovies] = useState<Movie[]>([]);
   // currentIndex is always 0 with the slicing strategy, but keeping state for compatibility if needed, though unused effectively.
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -152,6 +150,12 @@ export function TagPageClient({ tag, initialMovieId }: { tag: string; initialMov
   const addToSyllabus = api.syllabus.add.useMutation();
   const removeFromSyllabus = api.syllabus.remove.useMutation();
 
+  // Fetch user's voted movies from the database (only when logged in)
+  const { data: userVotedIds } = api.tag.getUserVotes.useQuery(
+    { tag: tag },
+    { enabled: !!session?.user }
+  );
+
 
   const currentMovie = movies[0]; // Always index 0
 
@@ -160,36 +164,19 @@ export function TagPageClient({ tag, initialMovieId }: { tag: string; initialMov
     setAddedToSyllabus(false);
   }, [currentMovie?.id]);
 
-  // Initialize session and local storage
+  // Initialize voted IDs from database query
   useEffect(() => {
-    // Session ID for this visit (or could persist if desired, but "anonymous" usually implies session-based or device-based)
-    let sid = localStorage.getItem("tag_vote_session_id");
-    if (!sid) {
-      sid = uuidv4();
-      localStorage.setItem("tag_vote_session_id", sid);
-    }
-    setSessionId(sid);
-
-    // Load voted IDs
-    const storedVotes = localStorage.getItem(`voted_movies_${tag}`);
-    if (storedVotes) {
-      try {
-        let votedIds: number[] = JSON.parse(storedVotes);
-
-        // If there's a shared movie ID in the URL and it's already been voted on,
-        // track this so we can show "Already Voted" UI, but still allow viewing
-        if (sharedMovieId && votedIds.includes(sharedMovieId)) {
-          setSharedMovieWasAlreadyVoted(true);
-          // Remove from votedIds so the movie can still be displayed
-          votedIds = votedIds.filter(id => id !== sharedMovieId);
-        }
-
-        setVotedMovieIds(votedIds);
-      } catch (e) {
-        console.error("Failed to parse voted movies", e);
+    if (userVotedIds) {
+      // Check if shared movie was already voted on
+      if (sharedMovieId && userVotedIds.includes(sharedMovieId)) {
+        setSharedMovieWasAlreadyVoted(true);
+        // Set voted IDs excluding the shared movie so it can be displayed
+        setVotedMovieIds(userVotedIds.filter(id => id !== sharedMovieId));
+      } else {
+        setVotedMovieIds(userVotedIds);
       }
     }
-  }, [tag, sharedMovieId]);
+  }, [userVotedIds, sharedMovieId]);
 
   // Handle incoming movie data
   useEffect(() => {
@@ -480,6 +467,13 @@ export function TagPageClient({ tag, initialMovieId }: { tag: string; initialMov
 
     if (!currentMovie) return;
 
+    // Require authentication to vote
+    if (!session?.user) {
+      toast.error("Please sign in to vote");
+      signIn();
+      return;
+    }
+
     // Prevent duplicate votes on the same movie
     if (votedMovieIds.includes(currentMovie.id)) {
       console.warn(`Already voted on movie ${currentMovie.id}, skipping`);
@@ -492,18 +486,16 @@ export function TagPageClient({ tag, initialMovieId }: { tag: string; initialMov
       router.replace(`/tags/${tag}`, { scroll: false });
     }
 
-    // Save to DB
+    // Save to DB (authenticated via protectedProcedure)
     submitVote.mutate({
       tag: tag,
       tmdbId: currentMovie.id,
       isTag,
-      sessionId,
     });
 
-    // Save to LocalStorage
+    // Update local state for immediate UI feedback
     const newVotedIds = [...votedMovieIds, currentMovie.id];
     setVotedMovieIds(newVotedIds);
-    localStorage.setItem(`voted_movies_${tag}`, JSON.stringify(newVotedIds));
   };
 
   const onCardLeftScreen = (myIdentifier: string) => {
@@ -541,6 +533,7 @@ export function TagPageClient({ tag, initialMovieId }: { tag: string; initialMov
         <button
           type="button"
           onClick={() => {
+            // Reset local UI state only - votes persist in DB
             setVotedMovieIds([]);
             setMovies([]);
             setHasVotedOnSharedMovie(false);
@@ -548,9 +541,7 @@ export function TagPageClient({ tag, initialMovieId }: { tag: string; initialMov
             setSharedMovieLoaded(false);
             setIgnoreSharedMovie(false);
             setSalt(s => s + 1);
-            localStorage.removeItem(`voted_movies_${tag}`);
             setCurrentPage(1);
-            localStorage.setItem(`tag_page_${tag}`, "1");
             setHasFetchedOnce(false);
           }}
           className="px-6 py-2 bg-blue-600 rounded-full hover:bg-blue-700 transition-colors"

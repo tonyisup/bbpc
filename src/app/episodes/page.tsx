@@ -20,6 +20,7 @@ export default async function EpisodesPage() {
             include: {
               User: true,
               Movie: true,
+              Show: true,
             },
           },
         },
@@ -32,8 +33,8 @@ export default async function EpisodesPage() {
     <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16">
       <div className="flex justify-between items-center w-full max-w-4xl">
         <h2 className="text-2xl font-bold">All Episodes</h2>
-        <Link 
-          href="/history" 
+        <Link
+          href="/history"
           className="text-red-600 hover:text-red-700"
         >
           Search Episodes

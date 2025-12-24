@@ -14,9 +14,9 @@ interface AddExtraToNextProps {
     })[];
     extras: (ExtraReview & {
       Review: (Review & {
-        User: User;
-        Movie: Movie;
-        Show: Show;
+        User: User | null;
+        Movie: Movie | null;
+        Show: Show | null;
       })
     })[];
     links: EpisodeLink[];

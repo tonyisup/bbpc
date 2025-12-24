@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { createTRPCRouter, publicProcedure } from "@/server/api/trpc";
+import { createTRPCRouter, publicProcedure, protectedProcedure } from "@/server/api/trpc";
 import { tmdb } from "@/server/tmdb/client";
 
 // Define response types for TMDB
@@ -250,32 +250,31 @@ export const tagRouter = createTRPCRouter({
       };
     }),
 
-  submitVote: publicProcedure
+  submitVote: protectedProcedure
     .input(
       z.object({
         tag: z.string(),
         tmdbId: z.number(),
         isTag: z.boolean().nullable(),
-        sessionId: z.string().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
-      // Check for existing vote from this session to prevent duplicates
-      if (input.sessionId) {
-        const existingVote = await ctx.db.tagVote.findFirst({
-          where: {
-            tag: input.tag,
-            tmdbId: input.tmdbId,
-            sessionId: input.sessionId,
-          },
-        });
+      const userId = ctx.session.user.id;
 
-        if (existingVote) {
-          console.warn(
-            `Duplicate vote attempt: session ${input.sessionId} already voted on movie ${input.tmdbId} for tag ${input.tag}`
-          );
-          return existingVote; // Return existing vote instead of creating duplicate
-        }
+      // Check for existing vote from this user to prevent duplicates
+      const existingVote = await ctx.db.tagVote.findFirst({
+        where: {
+          tag: input.tag,
+          tmdbId: input.tmdbId,
+          userId: userId,
+        },
+      });
+
+      if (existingVote) {
+        console.warn(
+          `Duplicate vote attempt: user ${userId} already voted on movie ${input.tmdbId} for tag ${input.tag}`
+        );
+        return existingVote;
       }
 
       return await ctx.db.tagVote.create({
@@ -283,9 +282,24 @@ export const tagRouter = createTRPCRouter({
           tag: input.tag,
           tmdbId: input.tmdbId,
           isTag: input.isTag,
-          sessionId: input.sessionId,
+          userId: userId,
         },
       });
+    }),
+
+  getUserVotes: protectedProcedure
+    .input(z.object({ tag: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const votes = await ctx.db.tagVote.findMany({
+        where: {
+          tag: input.tag,
+          userId: ctx.session.user.id,
+        },
+        select: {
+          tmdbId: true,
+        },
+      });
+      return votes.map(v => v.tmdbId);
     }),
 
   getStats: publicProcedure

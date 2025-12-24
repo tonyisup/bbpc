@@ -1,14 +1,16 @@
 'use client';
 
 import { api } from "@/trpc/react";
-import type { 
-  ExtraReview, 
-  Movie, 
-  Review, 
-  User, 
-  Episode as EpisodeType, 
-  Link as EpisodeLink, 
-  Assignment as AssignmentType } from "@prisma/client";
+import type {
+  ExtraReview,
+  Movie,
+  Review,
+  User,
+  Episode as EpisodeType,
+  Link as EpisodeLink,
+  Assignment as AssignmentType,
+  Show
+} from "@prisma/client";
 import { Episode } from "@/components/Episode";
 import SearchFilter from "@/components/common/SearchFilter";
 import { useSearchParams, useRouter } from "next/navigation";
@@ -20,7 +22,7 @@ function SearchResults({ query }: { query: string }) {
     {
       enabled: query.length > 0,
       initialData: [],
-      
+
     }
   );
 
@@ -45,8 +47,9 @@ function SearchResults({ query }: { query: string }) {
         })[];
         extras: (ExtraReview & {
           Review: (Review & {
-            User: User;
-            Movie: Movie;
+            User: User | null;
+            Movie: Movie | null;
+            Show: Show | null;
           })
         })[];
         links: EpisodeLink[];
@@ -79,8 +82,8 @@ export default function HistoryPage() {
     <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16">
       <div className="flex justify-between items-center w-full max-w-4xl">
         <h2 className="text-2xl font-bold">Search Episodes</h2>
-        <Link 
-          href="/episodes" 
+        <Link
+          href="/episodes"
           className="text-red-600 hover:text-red-700"
         >
           View All

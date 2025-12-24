@@ -43,6 +43,7 @@ export default async function EpisodePage({
             include: {
               Movie: true,
               User: true,
+              Show: true,
             },
           },
         },
@@ -72,7 +73,7 @@ export default async function EpisodePage({
             Back to Episodes
           </Link>
         </Button>
-      </div>  
+      </div>
       {episode && <Episode episode={episode} />}
     </div>
   );

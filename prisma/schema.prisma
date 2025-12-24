@@ -213,6 +213,7 @@ model User {
   sessions            Session[]
   syllabus            Syllabus[]
   roles               UserRole[]
+  tagVotes            TagVote[]
   impersonatedUserId  String?
 }
 
@@ -381,6 +382,11 @@ model TagVote {
   isTag     Boolean?
   createdAt DateTime @default(now())
   sessionId String?
+  userId    String?
+  User      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([tag, userId])
 }
 
 model Tag {

@@ -1,5 +1,9 @@
-import { headers } from "next/headers";
 import { appRouter } from "@/server/api/root";
-import { createTRPCContext } from "@/server/api/trpc";
+import { createTRPCContext, createCallerFactory } from "@/server/api/trpc";
 
-export const api = createTRPCContext().createCaller(appRouter); 
+const createCaller = createCallerFactory(appRouter);
+
+export const getServerApi = async () => {
+  const context = await createTRPCContext();
+  return createCaller(context);
+}; 
