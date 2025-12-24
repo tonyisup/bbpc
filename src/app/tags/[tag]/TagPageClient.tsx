@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef, useCallback, useImperativeHandle, forwardRef } from "react";
 import { api } from "@/trpc/react";
 import { motion, AnimatePresence } from "motion/react";
-import { X, Check, LinkIcon, RefreshCwIcon, PlusCircle, CheckCircle, Info, Share2 } from "lucide-react";
+import { X, Check, LinkIcon, RefreshCwIcon, PlusCircle, CheckCircle, Info, Share, Share2 } from "lucide-react";
 import { v4 as uuidv4 } from "uuid";
 import ChristmasSnow from "@/components/AnimatedChristmas";
 import { useSession } from "next-auth/react";
@@ -42,6 +42,7 @@ export function TagPageClient({ tag, initialMovieId }: { tag: string; initialMov
   const [salt, setSalt] = useState(0);
   const [ignoreSharedMovie, setIgnoreSharedMovie] = useState(false);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const [showAlternateShareIcon, setShowAlternateShareIcon] = useState(false);
 
   // Confirmation state
   const [confirmConfig, setConfirmConfig] = useState<{
@@ -55,7 +56,7 @@ export function TagPageClient({ tag, initialMovieId }: { tag: string; initialMov
     title: "",
     description: "",
     actionKey: "",
-    onConfirm: () => {},
+    onConfirm: () => { },
   });
 
   const requestConfirmation = (
@@ -111,6 +112,14 @@ export function TagPageClient({ tag, initialMovieId }: { tag: string; initialMov
   useEffect(() => {
     localStorage.setItem(`tag_page_${tag}`, currentPage.toString());
   }, [tag, currentPage]);
+
+  // Toggle share icon every 3 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setShowAlternateShareIcon((prev) => !prev);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Queries
   const { data: movieData, isLoading, isFetching, refetch: refetchMovies } = api.tag.getMoviesForTag.useQuery(
@@ -678,7 +687,33 @@ export function TagPageClient({ tag, initialMovieId }: { tag: string; initialMov
                   aria-label="Share this movie"
                   title="Share this movie"
                 >
-                  <Share2 className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8" />
+                  <div className="relative w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 overflow-hidden">
+                    <AnimatePresence mode="wait">
+                      {showAlternateShareIcon ? (
+                        <motion.div
+                          key="share"
+                          initial={{ x: 20, opacity: 0 }}
+                          animate={{ x: 0, opacity: 1 }}
+                          exit={{ x: -20, opacity: 0 }}
+                          transition={{ duration: 0.3, ease: "easeInOut" }}
+                          className="absolute inset-0 flex items-center justify-center"
+                        >
+                          <Share className="w-full h-full" />
+                        </motion.div>
+                      ) : (
+                        <motion.div
+                          key="share2"
+                          initial={{ x: 20, opacity: 0 }}
+                          animate={{ x: 0, opacity: 1 }}
+                          exit={{ x: -20, opacity: 0 }}
+                          transition={{ duration: 0.3, ease: "easeInOut" }}
+                          className="absolute inset-0 flex items-center justify-center"
+                        >
+                          <Share2 className="w-full h-full" />
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
                 </button>
               </div>
             )}
