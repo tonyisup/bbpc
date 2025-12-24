@@ -32,6 +32,7 @@ export function TagPageClient({ tag, initialMovieId }: { tag: string; initialMov
   const [votedMovieIds, setVotedMovieIds] = useState<number[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [hasPagination, setHasPagination] = useState(false);
   const [hasFetchedOnce, setHasFetchedOnce] = useState(false);
   const [sharedMovieLoaded, setSharedMovieLoaded] = useState(false);
   const [hasVotedOnSharedMovie, setHasVotedOnSharedMovie] = useState(false);
@@ -141,6 +142,7 @@ export function TagPageClient({ tag, initialMovieId }: { tag: string; initialMov
       setIsTransitioning(false);
       setIsInitialLoad(false);
 
+      setHasPagination(movieData.pagination !== null);
       // Update pagination info
       if (movieData.pagination) {
         setTotalPages(movieData.pagination.totalPages);
@@ -405,7 +407,7 @@ export function TagPageClient({ tag, initialMovieId }: { tag: string; initialMov
   // - We've exhausted all pages
   const canShowNoMovies = (!sharedMovieId || sharedMovieLoaded) && !isInitialLoad && !isTransitioning;
 
-  if (!currentMovie && !isLoading && !isFetching && !isTransitioning && hasFetchedOnce && !isInitialLoad && currentPage >= totalPages && canShowNoMovies) {
+  if (!currentMovie && !isLoading && !isFetching && !isTransitioning && hasFetchedOnce && !isInitialLoad && hasPagination && currentPage >= totalPages && canShowNoMovies) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center text-white p-4 text-center">
         <h2 className="text-2xl font-bold mb-4">No more movies to vote on!</h2>

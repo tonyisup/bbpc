@@ -19,6 +19,10 @@ export interface Title {
   media_type: string,
   imdb_id: string,
   imdb_path: string,
+  genres: {
+    id: number,
+    name: string,
+  }[],
 }
 interface MovieSearchResponse {
   page: number,
@@ -72,8 +76,8 @@ export const tmdb = {
   getShows: async (page: number, searchTerm = ""): Promise<MovieSearchResponse> => {
     if (!searchTerm) return { page: 0, results: [] }
     if (!env.TMDB_API_KEY) {
-        console.warn("TMDB_API_KEY missing, returning empty results");
-        return { page: 0, results: [] };
+      console.warn("TMDB_API_KEY missing, returning empty results");
+      return { page: 0, results: [] };
     }
     try {
       const resp = await fetch(`${SEARCH_TV_URL}&query=${searchTerm}&page=${page}`)
