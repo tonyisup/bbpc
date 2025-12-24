@@ -89,6 +89,17 @@ export default async function ProfilePage() {
       GamblingPoints: {
         take: 1,
         select: {
+          Assignment: {
+            select: {
+              id: true,
+              Episode: {
+                select: { id: true, number: true, title: true }
+              },
+              Movie: {
+                select: { title: true }
+              }
+            }
+          },
           GamblingType: {
             select: {
               title: true
@@ -170,8 +181,6 @@ export default async function ProfilePage() {
           ...p,
           earnedOn: p.earnedOn.toISOString()
         })) ?? []} />
-        <GamblingHistory history={gamblingHistory as any} />
-
       </div>
       <SignOutButton />
     </div>

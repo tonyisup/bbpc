@@ -114,8 +114,10 @@ const AssignmentGamblingBoard: FC<AssignmentGamblingBoardProps> = ({ assignmentI
 	};
 
 	return (
-		<div className="flex flex-col items-center gap-6 p-6 bg-gray-900/30 rounded-2xl border border-gray-800 shadow-inner max-w-2xl mx-auto w-full">
-			<div className="grid grid-cols-7 gap-y-2 w-full items-center">
+		<div className="flex flex-col items-center gap-2 p-6 bg-gray-900/30 rounded-2xl border border-gray-800 shadow-inner max-w-2xl mx-auto w-full">
+			<div className="relative grid grid-cols-7 w-full items-center">
+				<span className="absolute top-0 right-0 text-[10px] text-gray-500 font-bold mb-1 opacity-70">Wanna bet?</span>
+
 				{/* Row 1: Top Arch Bet (2x) - MCP & Harley */}
 				<div className="col-start-1 col-span-5 row-start-1 relative flex justify-center h-20">
 					<div className="absolute top-10 w-[85%] h-14 border-t-2 border-x-2 border-gray-700 rounded-t-[120px] pointer-events-none opacity-50" />
@@ -126,46 +128,46 @@ const AssignmentGamblingBoard: FC<AssignmentGamblingBoardProps> = ({ assignmentI
 
 				{/* Row 2: Host Name Cards + Trio Agree */}
 				<div className="col-start-1 row-start-2 flex justify-center">
-					<div className="w-full flex justify-center py-2 px-1 border-2 border-gray-700 rounded-xl bg-gray-800/50 shadow-md">
+					<div className="w-full flex justify-center py-2 px-1 rounded-xl bg-gray-800/50 shadow-md">
 						<UserTag user={hosts[0]!} />
 					</div>
 				</div>
 				<div className="col-start-3 row-start-2 flex justify-center">
-					<div className="w-full flex justify-center py-2 px-1 border-2 border-gray-700 rounded-xl bg-gray-800/50 shadow-md">
+					<div className="w-full flex justify-center py-2 px-1 rounded-xl bg-gray-800/50 shadow-md">
 						<UserTag user={hosts[1]!} />
 					</div>
 				</div>
 				<div className="col-start-5 row-start-2 flex justify-center">
-					<div className="w-full flex justify-center py-2 px-1 border-2 border-gray-700 rounded-xl bg-gray-800/50 shadow-md">
+					<div className="w-full flex justify-center py-2 px-1 rounded-xl bg-gray-800/50 shadow-md">
 						<UserTag user={hosts[2]!} />
 					</div>
 				</div>
-				<div className="col-start-7 row-start-2 flex flex-col items-center border-l border-gray-700/50 pl-4 py-2">
+				<div className="col-start-7 row-start-2 flex flex-col items-center pl-4 py-2">
 					<BettingCoinProps lookupId="rating-guess-3x" label="All Three" />
 				</div>
 
 				{/* Row 3: 1x Bets */}
-				<div className="col-start-1 row-start-3 flex flex-col items-center pt-4">
+				<div className="col-start-1 row-start-3 flex flex-col items-center">
 					<span className="text-[10px] text-gray-500 font-bold mb-1 opacity-70">1x</span>
 					<BettingCoinProps lookupId="rating-guess-1x" targetHostId={hosts[0]?.id} label={hosts[0]?.name?.split(' ')[0] ?? ""} />
 				</div>
-				<div className="col-start-3 row-start-3 flex flex-col items-center pt-4">
+				<div className="col-start-3 row-start-3 flex flex-col items-center">
 					<span className="text-[10px] text-gray-500 font-bold mb-1 opacity-70">1x</span>
 					<BettingCoinProps lookupId="rating-guess-1x" targetHostId={hosts[1]?.id} label={hosts[1]?.name?.split(' ')[0] ?? ""} />
 				</div>
-				<div className="col-start-5 row-start-3 flex flex-col items-center pt-4">
+				<div className="col-start-5 row-start-3 flex flex-col items-center">
 					<span className="text-[10px] text-gray-500 font-bold mb-1 opacity-70">1x</span>
 					<BettingCoinProps lookupId="rating-guess-1x" targetHostId={hosts[2]?.id} label={hosts[2]?.name?.split(' ')[0] ?? ""} />
 				</div>
 
 				{/* Row 4: Pair Agree Bets (positioned between hosts) */}
-				<div className="col-start-2 row-start-4 flex flex-col items-center pt-6">
+				<div className="col-start-2 row-start-4 flex flex-col items-center">
 					<div className="w-12 h-4 border-b-2 border-x-2 border-gray-700 rounded-b-xl opacity-50 mb-1" />
 					<div className="whitespace-nowrap flex justify-center">
 						<BettingCoinProps lookupId="rating-guess-2x" label="MCP & Fonso" />
 					</div>
 				</div>
-				<div className="col-start-4 row-start-4 flex flex-col items-center pt-6">
+				<div className="col-start-4 row-start-4 flex flex-col items-center">
 					<div className="w-12 h-4 border-b-2 border-x-2 border-gray-700 rounded-b-xl opacity-50 mb-1" />
 					<div className="whitespace-nowrap flex justify-center">
 						<BettingCoinProps lookupId="rating-guess-2x" label="Fonso & Harley" />

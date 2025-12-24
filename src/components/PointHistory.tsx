@@ -42,7 +42,10 @@ interface Point {
 		Assignment: Assignment;
 	}[];
 	GamblingPoints: {
-		Assignment: Assignment;
+		Assignment: Assignment | null;
+		GamblingType: {
+			title: string;
+		} | null;
 	}[];
 	Guess: {
 		AssignmentReview: {
@@ -77,7 +80,7 @@ export default function PointHistory({ points }: PointHistoryProps) {
 		let assignmentTitle = "General";
 
 		// Try to find associated assignment and episode
-		let assignment: Assignment | undefined;
+		let assignment: Assignment | null | undefined;
 
 		if (point.AssignmentPoints.length > 0) {
 			assignment = point.AssignmentPoints[0]?.Assignment;
