@@ -8,14 +8,15 @@ import { type User, type Rating } from "@prisma/client";
 import { highlightText } from "@/utils/text";
 import { cn } from "@/lib/utils";
 import RatingIcon from "./RatingIcon";
-import GamblingSection from "./GamblingSection";
 import { SignInButton } from "./Auth";
-import { ChevronDown, ChevronUp, Phone, Voicemail, X } from "lucide-react";
+import { ChevronDown, ChevronUp, Coins, Phone, Voicemail, X } from "lucide-react";
 import { Button } from "./ui/button";
 import { Popover, PopoverContent, PopoverTrigger, PopoverClose } from "./ui/popover";
 import PhoneNumber from "./common/PhoneNumber";
 import RecordAssignmentAudio from "./common/RecordAssignmentAudio";
 import { useFeatureFlagEnabled } from 'posthog-js/react'
+import UserTag from "./UserTag";
+import AssignmentGamblingBoard from "./AssignmentGamblingBoard";
 
 /**
  * Props for the PredictionGame component.
@@ -73,7 +74,6 @@ export const PredictionGame: FC<PredictionGameProps> = ({ assignments, searchQue
 
 			{(!isAdmin || !isAdminCollapsed) && (
 				<div className="flex flex-col gap-10">
-					<GamblingWrapper userId={session.user?.id ?? ""} />
 					<PredictionGameDataWrapper
 						assignments={assignments}
 						hosts={hosts}
@@ -86,32 +86,6 @@ export const PredictionGame: FC<PredictionGameProps> = ({ assignments, searchQue
 		</div>
 	);
 };
-
-const GamblingWrapper: FC<{ userId: string }> = ({ userId }) => {
-	const { data: activeGamblingTypes, isLoading } = api.gambling.getAllActive.useQuery();
-
-	if (isLoading) return <div className="animate-pulse h-20 bg-gray-800/50 rounded-lg mb-4"></div>;
-	if (!activeGamblingTypes || activeGamblingTypes.length === 0) return null;
-
-	return (
-		<div className="flex flex-col gap-4 p-4 border rounded-xl border-purple-800/50 bg-purple-900/10 backdrop-blur-sm">
-			<h3 className="text-lg font-bold text-purple-300 flex items-center gap-2">
-				🎰 Active Bets
-			</h3>
-			<div className="grid gap-4">
-				{activeGamblingTypes.map((type) => (
-					<GamblingSection
-						key={type.id}
-						gamblingTypeId={type.id}
-						userId={userId}
-						title={type.title}
-					/>
-				))}
-			</div>
-		</div>
-	);
-};
-
 
 /**
  * Internal wrapper to handle data fetching for multiple assignments at once.
@@ -384,6 +358,11 @@ const AssignmentPrediction: FC<AssignmentPredictionProps> = ({
 						})}
 					</div>
 
+					<AssignmentGamblingBoard
+						assignmentId={assignment.id}
+						userId={userId}
+						hosts={hosts}
+					/>
 					<div className="flex gap-4 flex-wrap items-center justify-between pt-4 border-t border-gray-700/50">
 						<div className="flex w-full justify-center gap-4">
 							<Call />

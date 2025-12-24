@@ -22,12 +22,16 @@ export const appRouter = createTRPCRouter({
         userId: z.string(),
         gamblingTypeId: z.string(),
         points: z.number(),
+        assignmentId: z.string().optional(),
+        targetUserId: z.string().optional(),
       }))
       .mutation(async ({ ctx, input }) => {
         const existingPoints = await ctx.db.gamblingPoints.findFirst({
           where: {
             userId: input.userId,
             gamblingTypeId: input.gamblingTypeId,
+            assignmentId: input.assignmentId,
+            targetUserId: input.targetUserId,
           },
         });
 
@@ -42,9 +46,25 @@ export const appRouter = createTRPCRouter({
               userId: input.userId,
               gamblingTypeId: input.gamblingTypeId,
               points: input.points,
+              assignmentId: input.assignmentId,
+              targetUserId: input.targetUserId,
             },
           });
         }
+      }),
+    getForAssignment: protectedProcedure
+      .input(z.object({ assignmentId: z.string() }))
+      .query(async ({ ctx, input }) => {
+        return ctx.db.gamblingPoints.findMany({
+          where: {
+            assignmentId: input.assignmentId,
+            userId: ctx.session.user.id,
+          },
+          include: {
+            GamblingType: true,
+            TargetUser: true,
+          }
+        });
       }),
     getUsersGamblingPointsForActiveEvents: protectedProcedure
       .query(async ({ ctx }) => {
