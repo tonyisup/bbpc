@@ -71,16 +71,13 @@ export const PredictionGame: FC<PredictionGameProps> = ({ assignments, searchQue
 
 			{(!isAdmin || !isAdminCollapsed) && (
 				<div className="flex flex-col gap-10">
-					{assignments.map((assignment) => (
-						<AssignmentPrediction
-							key={assignment.id}
-							assignment={assignment}
-							hosts={hosts}
-							ratings={ratings}
-							userId={session.user?.id ?? ""}
-							searchQuery={searchQuery}
-						/>
-					))}
+					<PredictionGameDataWrapper
+						assignments={assignments}
+						hosts={hosts}
+						ratings={ratings}
+						userId={session.user?.id ?? ""}
+						searchQuery={searchQuery}
+					/>
 				</div>
 			)}
 
@@ -88,6 +85,55 @@ export const PredictionGame: FC<PredictionGameProps> = ({ assignments, searchQue
 		</div>
 	);
 
+};
+
+
+/**
+ * Internal wrapper to handle data fetching for multiple assignments at once.
+ */
+const PredictionGameDataWrapper: FC<{
+	assignments: AssignmentWithRelations[];
+	hosts: User[];
+	ratings: Rating[];
+	userId: string;
+	searchQuery: string;
+}> = ({ assignments, hosts, ratings, userId, searchQuery }) => {
+	const assignmentIds = assignments.map(a => a.id);
+
+	const { data: allGuesses, isLoading: isLoadingGuesses } = api.review.getUsersGuessesForAssignments.useQuery({
+		assignmentIds,
+		userId
+	});
+
+	const { data: allGamblingPoints, isLoading: isLoadingGambling } = api.review.getUsersGamblingPointsForAssignments.useQuery({
+		assignmentIds
+	});
+
+	const { data: allAudioMessageCounts, isLoading: isLoadingAudio } = api.review.getUsersAudioMessagesCountForAssignments.useQuery({
+		assignmentIds
+	});
+
+	if (isLoadingGuesses || isLoadingGambling || isLoadingAudio) {
+		return <div className="animate-pulse h-64 bg-gray-800/50 rounded-lg"></div>;
+	}
+
+	return (
+		<>
+			{assignments.map((assignment) => (
+				<AssignmentPrediction
+					key={assignment.id}
+					assignment={assignment}
+					hosts={hosts}
+					ratings={ratings}
+					userId={userId}
+					searchQuery={searchQuery}
+					initialGuesses={allGuesses?.[assignment.id] ?? []}
+					initialGamblingPoints={allGamblingPoints?.[assignment.id] ?? []}
+					initialAudioMessageCount={allAudioMessageCounts?.[assignment.id] ?? 0}
+				/>
+			))}
+		</>
+	);
 };
 
 /**
@@ -104,6 +150,12 @@ interface AssignmentPredictionProps {
 	userId: string;
 	/** The search query for highlighting movie titles. */
 	searchQuery: string;
+	/** Pre-fetched guesses for this assignment. */
+	initialGuesses: any[];
+	/** Pre-fetched gambling points for this assignment. */
+	initialGamblingPoints: any[];
+	/** Pre-fetched audio message count for this assignment. */
+	initialAudioMessageCount: number;
 }
 
 /**
@@ -111,39 +163,56 @@ interface AssignmentPredictionProps {
  * Handles individual host rating selection, collapsible views, and submission logic.
  */
 
-const AssignmentPrediction: FC<AssignmentPredictionProps> = ({ assignment, hosts, ratings, userId, searchQuery }) => {
+const AssignmentPrediction: FC<AssignmentPredictionProps> = ({
+	assignment,
+	hosts,
+	ratings,
+	userId,
+	searchQuery,
+	initialGuesses,
+	initialGamblingPoints,
+	initialAudioMessageCount
+}) => {
 	const utils = api.useUtils();
 	const [userExpanded, setUserExpanded] = useState(false);
 
-	const { data: existingGuesses, isLoading } = api.review.getGuessesForAssignmentForUser.useQuery({
-		assignmentId: assignment.id,
-		userId: userId
-	});
+	// These are now handled in the parent wrapper, but keeping them reactive if needed
+	// by using the invalidated data from the cache.
+	const { data: existingGuesses } = api.review.getUsersGuessesForAssignments.useQuery(
+		{ assignmentIds: [assignment.id], userId },
+		{ initialData: { [assignment.id]: initialGuesses } }
+	);
 
-	const { data: gamblingPoints } = api.review.getGamblingPointsForAssignment.useQuery({
-		assignmentId: assignment.id
-	});
+	const { data: gamblingPointsData } = api.review.getUsersGamblingPointsForAssignments.useQuery(
+		{ assignmentIds: [assignment.id] },
+		{ initialData: { [assignment.id]: initialGamblingPoints } }
+	);
+
+	const { data: audioMessageCountData } = api.review.getUsersAudioMessagesCountForAssignments.useQuery(
+		{ assignmentIds: [assignment.id] },
+		{ initialData: { [assignment.id]: initialAudioMessageCount } }
+	);
+
+	const guesses = existingGuesses?.[assignment.id] ?? initialGuesses;
+	const gamblingPoints = gamblingPointsData?.[assignment.id] ?? initialGamblingPoints;
+	const audioMessageCount = audioMessageCountData?.[assignment.id] ?? initialAudioMessageCount;
 
 	const submitGuess = api.review.submitGuess.useMutation({
 		onMutate: async (newGuess) => {
-			await utils.review.getGuessesForAssignmentForUser.cancel({ assignmentId: assignment.id, userId });
-			const previousGuesses = utils.review.getGuessesForAssignmentForUser.getData({ assignmentId: assignment.id, userId });
+			await utils.review.getUsersGuessesForAssignments.cancel({ assignmentIds: [assignment.id], userId });
+			const previous = utils.review.getUsersGuessesForAssignments.getData({ assignmentIds: [assignment.id], userId });
 
-			utils.review.getGuessesForAssignmentForUser.setData({ assignmentId: assignment.id, userId }, (old) => {
-				const oldGuesses = old ?? [];
-				// Remove existing guess for this host
-				const filtered = oldGuesses.filter(g => {
-					// Check both User object and userId field for robustness
+			utils.review.getUsersGuessesForAssignments.setData({ assignmentIds: [assignment.id], userId }, (old) => {
+				const oldGuesses = old?.[assignment.id] ?? [];
+				const filtered = oldGuesses.filter((g: any) => {
 					const reviewUserId = g.AssignmentReview?.Review?.userId;
 					const reviewUserObjId = g.AssignmentReview?.Review?.User?.id;
-					const hostId = reviewUserId ?? reviewUserObjId;
-					return hostId !== newGuess.hostId;
+					return (reviewUserId ?? reviewUserObjId) !== newGuess.hostId;
 				});
 
 				const rating = ratings.find(r => r.id === newGuess.ratingId);
-				if (!rating) return [...filtered];
+				if (!rating) return old;
 
-				// Create mock new guess
 				const mockGuess = {
 					id: "temp-id",
 					ratingId: newGuess.ratingId,
@@ -166,36 +235,34 @@ const AssignmentPrediction: FC<AssignmentPredictionProps> = ({ assignment, hosts
 							}
 						}
 					}
-				} as any;
+				};
 
-				return [...filtered, mockGuess];
+				return { ...old, [assignment.id]: [...filtered, mockGuess] };
 			});
 
-			return { previousGuesses };
+			return { previous };
 		},
 		onError: (err, newGuess, context) => {
 			console.error("Failed to submit guess:", err);
-			utils.review.getGuessesForAssignmentForUser.setData({ assignmentId: assignment.id, userId }, context?.previousGuesses);
+			utils.review.getUsersGuessesForAssignments.setData({ assignmentIds: [assignment.id], userId }, context?.previous);
 		},
 		onSettled: () => {
-			utils.review.getGuessesForAssignmentForUser.invalidate({ assignmentId: assignment.id, userId });
+			utils.review.getUsersGuessesForAssignments.invalidate();
+			// Also invalidate the wrapper query
+			utils.review.getUsersGuessesForAssignments.invalidate({ assignmentIds: [assignment.id], userId });
 		}
 	});
 
 	const getGuessForHost = (hostId: string) => {
-		if (!existingGuesses) return null;
-		return existingGuesses.find(g => {
+		if (!guesses) return null;
+		return guesses.find((g: any) => {
 			const reviewUserId = g.AssignmentReview?.Review?.userId;
 			const reviewUserObjId = g.AssignmentReview?.Review?.User?.id;
 			return (reviewUserId ?? reviewUserObjId) === hostId;
 		});
 	};
 
-	const { data: audioMessageCount } = api.review.getCountOfUserAudioMessagesForAssignment.useQuery({
-		assignmentId: assignment.id
-	});
-
-	if (isLoading) return <div className="animate-pulse h-32 bg-gray-800/50 rounded-lg"></div>;
+	/* These are pre-fetched */
 
 	const hasAllGuesses = hosts.length > 0 && hosts.every(host => !!getGuessForHost(host.id));
 	const isCollapsed = hasAllGuesses && !userExpanded;

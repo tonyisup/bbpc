@@ -608,6 +608,113 @@ export const appRouter = createTRPCRouter({
         }
       }),
 
+    getUsersGuessesForAssignments: protectedProcedure
+      .input(z.object({
+        assignmentIds: z.array(z.string()),
+        userId: z.string()
+      }))
+      .query(async ({ ctx, input }) => {
+        const assignmentReviews = await ctx.db.assignmentReview.findMany({
+          where: {
+            assignmentId: { in: input.assignmentIds }
+          },
+          select: {
+            id: true,
+            assignmentId: true
+          }
+        });
+
+        const guesses = await ctx.db.guess.findMany({
+          where: {
+            assignmntReviewId: {
+              in: assignmentReviews.map(ar => ar.id)
+            },
+            userId: input.userId
+          },
+          include: {
+            Rating: true,
+            AssignmentReview: {
+              include: {
+                Review: {
+                  include: {
+                    User: true
+                  }
+                }
+              }
+            }
+          }
+        });
+
+        // Group guesses by assignmentId
+        const result: Record<string, typeof guesses> = {};
+        for (const ar of assignmentReviews) {
+          result[ar.assignmentId] = guesses.filter(g => g.assignmntReviewId === ar.id);
+        }
+        return result;
+      }),
+
+    getUsersGamblingPointsForAssignments: protectedProcedure
+      .input(z.object({
+        assignmentIds: z.array(z.string())
+      }))
+      .query(async ({ ctx, input }) => {
+        if (!ctx.session.user.id) {
+          throw new Error("User not authenticated");
+        }
+
+        const gamblingPoints = await ctx.db.gamblingPoints.findMany({
+          where: {
+            assignmentId: { in: input.assignmentIds },
+            userId: ctx.session.user.id,
+          },
+          select: {
+            points: true,
+            assignmentId: true,
+            Assignment: {
+              select: {
+                Movie: {
+                  select: {
+                    title: true
+                  }
+                }
+              }
+            }
+          }
+        });
+
+        const result: Record<string, typeof gamblingPoints> = {};
+        for (const gp of gamblingPoints) {
+          if (!result[gp.assignmentId]) result[gp.assignmentId] = [];
+          result[gp.assignmentId]!.push(gp);
+        }
+        return result;
+      }),
+
+    getUsersAudioMessagesCountForAssignments: protectedProcedure
+      .input(z.object({
+        assignmentIds: z.array(z.string()),
+      }))
+      .query(async ({ ctx, input }) => {
+        const counts = await ctx.db.audioMessage.groupBy({
+          by: ['assignmentId'],
+          where: {
+            userId: ctx.session.user.id,
+            assignmentId: { in: input.assignmentIds },
+          },
+          _count: {
+            _all: true
+          }
+        });
+
+        const result: Record<string, number> = {};
+        for (const c of counts) {
+          if (c.assignmentId) {
+            result[c.assignmentId] = c._count._all;
+          }
+        }
+        return result;
+      }),
+
     getGamblingPointsForAssignment: protectedProcedure
       .input(z.object({
         assignmentId: z.string(),
