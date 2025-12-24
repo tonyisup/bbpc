@@ -19,9 +19,9 @@ export type CompleteEpisode = EpisodeType & {
 	})[];
 	extras: (ExtraReview & {
 		Review: Review & {
-			User: User;
-			Movie: Movie;
-			Show: Show;
+			User: User | null;
+			Movie: Movie | null;
+			Show: Show | null;
 		};
 	})[];
 	links: EpisodeLink[];
@@ -71,7 +71,7 @@ export const Episode: FC<EpisodeProps> = ({ episode, allowGuesses: isNextEpisode
 				<p>{highlightText(episode?.description ?? "", searchQuery)}</p>
 			</div>
 			<EpisodeAssignments assignments={episode.assignments as AssignmentWithRelations[]} showMovieTitles={showMovieTitles} searchQuery={searchQuery} />
-			{isNextEpisode && <PredictionGame assignments={episode.assignments as AssignmentWithRelations[]} searchQuery={searchQuery} />}
+			{isNextEpisode && episode.assignments.filter(a => a.playable).length > 0 && <PredictionGame assignments={episode.assignments.filter(a => a.playable) as AssignmentWithRelations[]} searchQuery={searchQuery} />}
 		</div>
 		<div>
 			{episode.extras.length > 0 && (
@@ -122,9 +122,9 @@ interface EpisodeExtras {
 	searchQuery?: string,
 	extras: (ExtraReview & {
 		Review: (Review & {
-			User: User;
-			Movie: Movie;
-			Show: Show;
+			User: User | null;
+			Movie: Movie | null;
+			Show: Show | null;
 		})
 	})[];
 }

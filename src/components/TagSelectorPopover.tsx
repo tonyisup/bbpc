@@ -38,6 +38,7 @@ export const TagSelectorPopover: FC<TagSelectorPopoverProps> = ({
   );
 
   const allTags = data?.pages.flatMap((page) => page.items) ?? [];
+  const { data: movie, isLoading: movieLoading } = api.movie.getTitle.useQuery({ id: movieId });
 
   return (
     <Popover open={open} onOpenChange={onOpenChange}>
@@ -48,8 +49,33 @@ export const TagSelectorPopover: FC<TagSelectorPopoverProps> = ({
         sideOffset={8}
       >
         <div className="p-4 border-b border-gray-800">
-          <h4 className="font-semibold text-white text-sm">Choose a tag for:</h4>
-          <p className="text-gray-400 text-sm truncate mt-1">{movieTitle}</p>
+          <h4 className="font-semibold text-white text-sm">Choose a tag to vote on</h4>
+          <p className="text-gray-400 text-sm truncate mt-1">Is {movieTitle} a(n)...</p>
+        </div>
+
+        <div className="p-4 border-b border-gray-800">
+          {movieLoading ? (
+            <div className="flex items-center justify-center text-gray-400">
+              <Loader2 className="h-5 w-5 animate-spin mr-2" />
+              <span className="text-sm">Loading genres...</span>
+            </div>
+          ) : (movie?.genres?.length ?? 0) > 0 ? (
+            <div className="flex items-center justify-center gap-2 text-gray-500">
+              {movie?.genres?.map((genre) => (
+                <Link
+                  key={genre.id}
+                  href={`/tags/${genre.name}/${movieId}`}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium
+                    bg-gray-800 text-gray-300 hover:bg-blue-600 hover:text-white
+                    transition-colors capitalize"
+                  onClick={() => onOpenChange(false)}
+                >
+                  <Tag className="h-3 w-3" />
+                  {genre.name}
+                </Link>
+              ))}
+            </div>
+          ) : null}
         </div>
 
         <div className="p-2 max-h-64 overflow-y-auto">
@@ -65,13 +91,13 @@ export const TagSelectorPopover: FC<TagSelectorPopoverProps> = ({
             </div>
           ) : (
             <div className="flex flex-wrap gap-2 p-2">
-              {allTags.map((tag) => (
+              {allTags.filter((tag) => !movie?.genres?.some((genre) => genre.name.toLowerCase() === tag.name.toLowerCase())).map((tag) => (
                 <Link
                   key={tag.id}
                   href={`/tags/${tag.name}/${movieId}`}
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium
-                    bg-gray-800 text-gray-300 hover:bg-blue-600 hover:text-white
-                    transition-colors capitalize"
+                      bg-gray-800 text-gray-300 hover:bg-blue-600 hover:text-white
+                      transition-colors capitalize"
                   onClick={() => onOpenChange(false)}
                 >
                   <Tag className="h-3 w-3" />
