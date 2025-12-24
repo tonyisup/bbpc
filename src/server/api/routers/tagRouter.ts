@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { createTRPCRouter, publicProcedure, protectedProcedure } from "@/server/api/trpc";
 import { tmdb } from "@/server/tmdb/client";
+import { getCurrentSeasonID } from "@/utils/points";
 
 // Define response types for TMDB
 interface KeywordSearchResponse {
@@ -277,13 +278,36 @@ export const tagRouter = createTRPCRouter({
         return existingVote;
       }
 
-      return await ctx.db.tagVote.create({
-        data: {
-          tag: input.tag,
-          tmdbId: input.tmdbId,
-          isTag: input.isTag,
-          userId: userId,
-        },
+      return await ctx.db.$transaction(async (tx) => {
+        const vote = await tx.tagVote.create({
+          data: {
+            tag: input.tag,
+            tmdbId: input.tmdbId,
+            isTag: input.isTag,
+            userId: userId,
+          },
+        });
+
+        const gamePointType = await tx.gamePointType.findFirst({
+          where: { lookupID: "tag-vote" },
+        });
+
+        const seasonId = await getCurrentSeasonID(tx);
+
+        if (gamePointType && seasonId) {
+          await tx.point.create({
+            data: {
+              userId: userId,
+              seasonId: seasonId,
+              gamePointTypeId: gamePointType.id,
+              adjustment: 0,
+              reason: `Voted on tag: ${input.tag}`,
+              earnedOn: new Date(),
+            },
+          });
+        }
+
+        return vote;
       });
     }),
 
