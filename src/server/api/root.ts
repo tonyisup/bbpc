@@ -694,7 +694,7 @@ export const appRouter = createTRPCRouter({
           if (!result[ar.assignmentId]) {
             result[ar.assignmentId] = [];
           }
-          result[ar.assignmentId].push(...guesses.filter(g => g.assignmntReviewId === ar.id));
+          result[ar.assignmentId]?.push(...guesses.filter(g => g.assignmntReviewId === ar.id));
         }
         return result;
       }),

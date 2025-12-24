@@ -31,9 +31,11 @@ const AssignmentGamblingBoard: FC<AssignmentGamblingBoardProps> = ({ assignmentI
 	});
 
 	const getBetFor = (lookupId: string, targetHostId?: string) => {
+		const type = gamblingTypes?.find(t => t.lookupId === lookupId);
+		if (!type) return undefined;
 		return myBets?.find(b =>
-			b.GamblingType?.lookupId === lookupId &&
-			(!targetHostId || b.targetUserId === targetHostId)
+			b.gamblingTypeId === type.id &&
+			(!targetHostId || (b as any).targetUserId === targetHostId)
 		);
 	};
 
@@ -117,8 +119,8 @@ const AssignmentGamblingBoard: FC<AssignmentGamblingBoardProps> = ({ assignmentI
 				{/* Row 1: Top Arch Bet (2x) - MCP & Harley */}
 				<div className="col-start-1 col-span-5 row-start-1 relative flex justify-center h-20">
 					<div className="absolute top-10 w-[85%] h-14 border-t-2 border-x-2 border-gray-700 rounded-t-[120px] pointer-events-none opacity-50" />
-					<div className="z-10 bg-[#0a0c10] px-4 py-1 rounded-full self-start">
-						<BettingCoinProps lookupId="rating-guess-2x" label="MCP & Harley Agree" />
+					<div className="z-10 px-4 py-1 rounded-full self-start">
+						<BettingCoinProps lookupId="rating-guess-2x" label="MCP & Harley" />
 					</div>
 				</div>
 
@@ -139,7 +141,7 @@ const AssignmentGamblingBoard: FC<AssignmentGamblingBoardProps> = ({ assignmentI
 					</div>
 				</div>
 				<div className="col-start-7 row-start-2 flex flex-col items-center border-l border-gray-700/50 pl-4 py-2">
-					<BettingCoinProps lookupId="rating-guess-3x" label="Trio Agree" />
+					<BettingCoinProps lookupId="rating-guess-3x" label="All Three" />
 				</div>
 
 				{/* Row 3: 1x Bets */}
@@ -160,13 +162,13 @@ const AssignmentGamblingBoard: FC<AssignmentGamblingBoardProps> = ({ assignmentI
 				<div className="col-start-2 row-start-4 flex flex-col items-center pt-6">
 					<div className="w-12 h-4 border-b-2 border-x-2 border-gray-700 rounded-b-xl opacity-50 mb-1" />
 					<div className="whitespace-nowrap flex justify-center">
-						<BettingCoinProps lookupId="rating-guess-2x" label="MCP & Fonso Agree" />
+						<BettingCoinProps lookupId="rating-guess-2x" label="MCP & Fonso" />
 					</div>
 				</div>
 				<div className="col-start-4 row-start-4 flex flex-col items-center pt-6">
 					<div className="w-12 h-4 border-b-2 border-x-2 border-gray-700 rounded-b-xl opacity-50 mb-1" />
 					<div className="whitespace-nowrap flex justify-center">
-						<BettingCoinProps lookupId="rating-guess-2x" label="Fonso & Harley Agree" />
+						<BettingCoinProps lookupId="rating-guess-2x" label="Fonso & Harley" />
 					</div>
 				</div>
 			</div>
