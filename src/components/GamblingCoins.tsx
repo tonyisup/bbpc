@@ -14,36 +14,34 @@ import { cn } from "@/lib/utils";
  * Props for the GamblingSection component.
  */
 interface GamblingSectionProps {
-  /** The unique identifier for the gambling type. */
-  gamblingTypeId: string;
+  /** The unique identifier for the assignment where the bet is being placed. */
+  assignmentId: string;
   /** The unique identifier for the user placing the bet. */
   userId: string;
-  /** The title of the gambling event. */
-  title: string;
 }
 
 /**
- * A component that allows users to place bets (gambles) using their earned points on specific gambling events.
+ * A component that allows users to place bets (gambles) using their earned points on specific assignments.
  * It handles balance checks, auto-betting options, and displaying existing bets.
  */
 
-const GamblingSection: FC<GamblingSectionProps> = ({ gamblingTypeId, userId, title }) => {
+const GamblingCoins: FC<GamblingSectionProps> = ({ assignmentId, userId }) => {
   const [gamblingPoints, setGamblingPoints] = useState<number>(0);
   const [canSubmitGamblingPoints, setCanSubmitGamblingPoints] = useState<boolean>(false);
 
   const { data: userPoints, refetch: refetchUserPoints } = api.user.points.useQuery(undefined);
 
-  // Fetch gambling points for this type
-  const { data: eventGamblingPoints, refetch: refetchEventGamblingPoints } = api.gambling.getGamblingPointsForType.useQuery(
-    { gamblingTypeId: gamblingTypeId }
+  // Fetch gambling points for this assignment
+  const { data: assignmentGamblingPoints, refetch: refetchAssignmentGamblingPoints } = api.review.getGamblingPointsForAssignment.useQuery(
+    { assignmentId: assignmentId }
   );
 
   const utils = api.useUtils();
 
-  const { mutate: submitGamblingPoints } = api.gambling.submitPoints.useMutation({
+  const { mutate: submitGamblingPoints } = api.review.submitGamblingPoints.useMutation({
     onSuccess: async () => {
       await Promise.all([
-        refetchEventGamblingPoints(),
+        refetchAssignmentGamblingPoints(),
         utils.user.points.invalidate(),
         refetchUserPoints()
       ]);
@@ -55,7 +53,7 @@ const GamblingSection: FC<GamblingSectionProps> = ({ gamblingTypeId, userId, tit
 
   const handleGamblingPointsSubmit = () => {
     if (!userId) return;
-    if (gamblingPoints === undefined || gamblingPoints === null) return;
+    if (!gamblingPoints) return;
 
     if (isNaN(gamblingPoints) || gamblingPoints < 0) {
       alert("Please enter a valid number of points");
@@ -64,7 +62,7 @@ const GamblingSection: FC<GamblingSectionProps> = ({ gamblingTypeId, userId, tit
 
     submitGamblingPoints({
       userId: userId,
-      gamblingTypeId: gamblingTypeId,
+      assignmentId: assignmentId,
       points: gamblingPoints
     });
   };
@@ -88,14 +86,14 @@ const GamblingSection: FC<GamblingSectionProps> = ({ gamblingTypeId, userId, tit
   if (userPoints === null || userPoints === undefined || Number(userPoints) < 0) return null;
 
   const hasGambled = () => {
-    return eventGamblingPoints && eventGamblingPoints.length > 0 && eventGamblingPoints[0] && eventGamblingPoints[0].points > 0;
+    return assignmentGamblingPoints && assignmentGamblingPoints.length > 0 && assignmentGamblingPoints[0] && assignmentGamblingPoints[0].points > 0;
   }
   return (
     <div className="flex gap-2 items-center">
       <UserPoints points={Number(userPoints)} showSpendButton={false} />
       {hasGambled() && (
         <div className="flex gap-2 items-center">
-          <p className="text-sm text-gray-300">You have bet {eventGamblingPoints?.[0]?.points ?? "unknown"} points on {title}!</p>
+          <p className="text-sm text-gray-300">You have bet {assignmentGamblingPoints?.[0]?.points ?? "unknown"} points on {assignmentGamblingPoints?.[0]?.Assignment?.Movie?.title ?? "unknown"}!</p>
           <Button
             variant="destructive"
             size="sm"
@@ -104,7 +102,7 @@ const GamblingSection: FC<GamblingSectionProps> = ({ gamblingTypeId, userId, tit
               if (!userId) return;
               submitGamblingPoints({
                 userId: userId,
-                gamblingTypeId: gamblingTypeId,
+                assignmentId: assignmentId,
                 points: 0
               });
             }}
@@ -116,7 +114,7 @@ const GamblingSection: FC<GamblingSectionProps> = ({ gamblingTypeId, userId, tit
       {!hasGambled() && (
         <div className="flex gap-2">
           <div className="flex flex-col gap-2">
-            <Label className="text-gray-300">Wanna bet on {title}?</Label>
+            <Label className="text-gray-300">Wanna bet?</Label>
             <div className="flex gap-2 items-center flex-wrap">
               {userPoints && Number(userPoints) > 0 && <Badge className="cursor-pointer whitespace-nowrap bg-red-200 hover:bg-red-600 hover:text-white" onClick={() => handleAutoBet(1)}>Bet 1</Badge>}
               {userPoints && Number(userPoints) > 5 && <Badge className="cursor-pointer whitespace-nowrap bg-red-200 hover:bg-red-600 hover:text-white" onClick={() => handleAutoBet(5)}>Bet 5</Badge>}
@@ -153,4 +151,4 @@ const GamblingSection: FC<GamblingSectionProps> = ({ gamblingTypeId, userId, tit
   );
 };
 
-export default GamblingSection;
+export default GamblingCoins;

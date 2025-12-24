@@ -89,15 +89,9 @@ export default async function ProfilePage() {
       GamblingPoints: {
         take: 1,
         select: {
-          Assignment: {
+          GamblingType: {
             select: {
-              id: true,
-              Episode: {
-                select: { id: true, number: true, title: true }
-              },
-              Movie: {
-                select: { title: true }
-              }
+              title: true
             }
           }
         }
@@ -131,19 +125,15 @@ export default async function ProfilePage() {
     orderBy: { createdAt: 'desc' },
     select: {
       id: true,
-      assignmentId: true,
+      gamblingTypeId: true,
       points: true,
       createdAt: true,
       successful: true,
-      Assignment: {
+      GamblingType: {
         select: {
           id: true,
-          Movie: {
-            select: {
-              title: true,
-              year: true
-            }
-          }
+          title: true,
+          lookupId: true,
         }
       }
     }

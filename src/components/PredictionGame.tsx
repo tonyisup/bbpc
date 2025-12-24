@@ -73,6 +73,7 @@ export const PredictionGame: FC<PredictionGameProps> = ({ assignments, searchQue
 
 			{(!isAdmin || !isAdminCollapsed) && (
 				<div className="flex flex-col gap-10">
+					<GamblingWrapper userId={session.user?.id ?? ""} />
 					<PredictionGameDataWrapper
 						assignments={assignments}
 						hosts={hosts}
@@ -82,12 +83,33 @@ export const PredictionGame: FC<PredictionGameProps> = ({ assignments, searchQue
 					/>
 				</div>
 			)}
-
-			{/* Ability to gamble per assignment here */}
-			{flagEnabled && (<span>Flag enabled</span>)}
 		</div>
 	);
+};
 
+const GamblingWrapper: FC<{ userId: string }> = ({ userId }) => {
+	const { data: activeGamblingTypes, isLoading } = api.gambling.getAllActive.useQuery();
+
+	if (isLoading) return <div className="animate-pulse h-20 bg-gray-800/50 rounded-lg mb-4"></div>;
+	if (!activeGamblingTypes || activeGamblingTypes.length === 0) return null;
+
+	return (
+		<div className="flex flex-col gap-4 p-4 border rounded-xl border-purple-800/50 bg-purple-900/10 backdrop-blur-sm">
+			<h3 className="text-lg font-bold text-purple-300 flex items-center gap-2">
+				🎰 Active Bets
+			</h3>
+			<div className="grid gap-4">
+				{activeGamblingTypes.map((type) => (
+					<GamblingSection
+						key={type.id}
+						gamblingTypeId={type.id}
+						userId={userId}
+						title={type.title}
+					/>
+				))}
+			</div>
+		</div>
+	);
 };
 
 
@@ -108,15 +130,12 @@ const PredictionGameDataWrapper: FC<{
 		userId
 	});
 
-	const { data: allGamblingPoints, isLoading: isLoadingGambling } = api.review.getUsersGamblingPointsForAssignments.useQuery({
-		assignmentIds
-	});
 
 	const { data: allAudioMessageCounts, isLoading: isLoadingAudio } = api.review.getUsersAudioMessagesCountForAssignments.useQuery({
 		assignmentIds
 	});
 
-	if (isLoadingGuesses || isLoadingGambling || isLoadingAudio) {
+	if (isLoadingGuesses || isLoadingAudio) {
 		return <div className="animate-pulse h-64 bg-gray-800/50 rounded-lg"></div>;
 	}
 
@@ -131,7 +150,6 @@ const PredictionGameDataWrapper: FC<{
 					userId={userId}
 					searchQuery={searchQuery}
 					initialGuesses={allGuesses?.[assignment.id] ?? []}
-					initialGamblingPoints={allGamblingPoints?.[assignment.id] ?? []}
 					initialAudioMessageCount={allAudioMessageCounts?.[assignment.id] ?? 0}
 				/>
 			))}
@@ -155,8 +173,6 @@ interface AssignmentPredictionProps {
 	searchQuery: string;
 	/** Pre-fetched guesses for this assignment. */
 	initialGuesses: any[];
-	/** Pre-fetched gambling points for this assignment. */
-	initialGamblingPoints: any[];
 	/** Pre-fetched audio message count for this assignment. */
 	initialAudioMessageCount: number;
 }
@@ -173,7 +189,6 @@ const AssignmentPrediction: FC<AssignmentPredictionProps> = ({
 	userId,
 	searchQuery,
 	initialGuesses,
-	initialGamblingPoints,
 	initialAudioMessageCount
 }) => {
 	const utils = api.useUtils();
@@ -186,10 +201,6 @@ const AssignmentPrediction: FC<AssignmentPredictionProps> = ({
 		{ initialData: { [assignment.id]: initialGuesses } }
 	);
 
-	const { data: gamblingPointsData } = api.review.getUsersGamblingPointsForAssignments.useQuery(
-		{ assignmentIds: [assignment.id] },
-		{ initialData: { [assignment.id]: initialGamblingPoints } }
-	);
 
 	const { data: audioMessageCountData } = api.review.getUsersAudioMessagesCountForAssignments.useQuery(
 		{ assignmentIds: [assignment.id] },
@@ -197,7 +208,6 @@ const AssignmentPrediction: FC<AssignmentPredictionProps> = ({
 	);
 
 	const guesses = existingGuesses?.[assignment.id] ?? initialGuesses;
-	const gamblingPoints = gamblingPointsData?.[assignment.id] ?? initialGamblingPoints;
 	const audioMessageCount = audioMessageCountData?.[assignment.id] ?? initialAudioMessageCount;
 
 	const submitGuess = api.review.submitGuess.useMutation({
@@ -301,15 +311,6 @@ const AssignmentPrediction: FC<AssignmentPredictionProps> = ({
 							})}
 						</div>
 
-						{gamblingPoints && gamblingPoints.length > 0 && gamblingPoints[0] && gamblingPoints[0].points > 0 ? (
-							<div className="flex items-center bg-purple-900/50 px-1.5 py-0.5 sm:px-2 sm:py-1 rounded text-purple-200 font-bold text-[10px] sm:text-sm border border-purple-500/30 whitespace-nowrap">
-								{gamblingPoints[0].points} pts
-							</div>
-						) : (
-							<div className="flex items-center bg-purple-900/50 px-1.5 py-0.5 sm:px-2 sm:py-1 rounded text-purple-200 font-bold text-[10px] sm:text-sm border border-purple-500/30 whitespace-nowrap">
-								No Bet
-							</div>
-						)}
 
 						<Message assignmentId={assignment.id} userId={userId}>
 							<div className="flex items-center bg-green-900/50 px-1.5 py-0.5 sm:px-2 sm:py-1 rounded text-green-200 font-bold text-[10px] sm:text-sm border border-green-500/30 whitespace-nowrap">
@@ -384,7 +385,6 @@ const AssignmentPrediction: FC<AssignmentPredictionProps> = ({
 					</div>
 
 					<div className="flex gap-4 flex-wrap items-center justify-between pt-4 border-t border-gray-700/50">
-						<GamblingSection assignmentId={assignment.id} userId={userId} />
 						<div className="flex w-full justify-center gap-4">
 							<Call />
 							<Message assignmentId={assignment.id} userId={userId} count={audioMessageCount} />

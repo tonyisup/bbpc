@@ -11,6 +11,65 @@ import { tagRouter } from "./routers/tagRouter";
 export const appRouter = createTRPCRouter({
   tag: tagRouter,
   uploadInfo: uploadInfoRouter,
+  gambling: createTRPCRouter({
+    getAllActive: publicProcedure.query(({ ctx }) => {
+      return ctx.db.gamblingType.findMany({
+        where: { isActive: true },
+      });
+    }),
+    submitPoints: protectedProcedure
+      .input(z.object({
+        userId: z.string(),
+        gamblingTypeId: z.string(),
+        points: z.number(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const existingPoints = await ctx.db.gamblingPoints.findFirst({
+          where: {
+            userId: input.userId,
+            gamblingTypeId: input.gamblingTypeId,
+          },
+        });
+
+        if (existingPoints) {
+          return ctx.db.gamblingPoints.update({
+            where: { id: existingPoints.id },
+            data: { points: input.points },
+          });
+        } else {
+          return ctx.db.gamblingPoints.create({
+            data: {
+              userId: input.userId,
+              gamblingTypeId: input.gamblingTypeId,
+              points: input.points,
+            },
+          });
+        }
+      }),
+    getUsersGamblingPointsForActiveEvents: protectedProcedure
+      .query(async ({ ctx }) => {
+        if (!ctx.session.user.id) throw new Error("User not authenticated");
+        return ctx.db.gamblingPoints.findMany({
+          where: {
+            userId: ctx.session.user.id,
+            GamblingType: { isActive: true }
+          },
+          include: { GamblingType: true }
+        });
+      }),
+    getGamblingPointsForType: protectedProcedure
+      .input(z.object({ gamblingTypeId: z.string() }))
+      .query(async ({ ctx, input }) => {
+        if (!ctx.session.user.id) throw new Error("User not authenticated");
+        return ctx.db.gamblingPoints.findMany({
+          where: {
+            gamblingTypeId: input.gamblingTypeId,
+            userId: ctx.session.user.id,
+          },
+          include: { GamblingType: true }
+        });
+      }),
+  }),
   episode: createTRPCRouter({
     next: publicProcedure.query(async ({ ctx }) => {
       return ctx.db.episode.findFirst({
@@ -571,42 +630,6 @@ export const appRouter = createTRPCRouter({
         return review;
       }),
 
-    submitGamblingPoints: protectedProcedure
-      .input(z.object({
-        userId: z.string(),
-        assignmentId: z.string(),
-        points: z.number(),
-      }))
-      .mutation(async ({ ctx, input }) => {
-        // Check if user has already submitted gambling points for this assignment
-        const existingPoints = await ctx.db.gamblingPoints.findFirst({
-          where: {
-            userId: input.userId,
-            assignmentId: input.assignmentId,
-          },
-        });
-
-        if (existingPoints) {
-          // Update existing points
-          return ctx.db.gamblingPoints.update({
-            where: {
-              id: existingPoints.id,
-            },
-            data: {
-              points: input.points,
-            },
-          });
-        } else {
-          // Create new gambling points
-          return ctx.db.gamblingPoints.create({
-            data: {
-              userId: input.userId,
-              assignmentId: input.assignmentId,
-              points: input.points,
-            },
-          });
-        }
-      }),
 
     getUsersGuessesForAssignments: protectedProcedure
       .input(z.object({
@@ -656,42 +679,6 @@ export const appRouter = createTRPCRouter({
         return result;
       }),
 
-    getUsersGamblingPointsForAssignments: protectedProcedure
-      .input(z.object({
-        assignmentIds: z.array(z.string())
-      }))
-      .query(async ({ ctx, input }) => {
-        if (!ctx.session.user.id) {
-          throw new Error("User not authenticated");
-        }
-
-        const gamblingPoints = await ctx.db.gamblingPoints.findMany({
-          where: {
-            assignmentId: { in: input.assignmentIds },
-            userId: ctx.session.user.id,
-          },
-          select: {
-            points: true,
-            assignmentId: true,
-            Assignment: {
-              select: {
-                Movie: {
-                  select: {
-                    title: true
-                  }
-                }
-              }
-            }
-          }
-        });
-
-        const result: Record<string, typeof gamblingPoints> = {};
-        for (const gp of gamblingPoints) {
-          if (!result[gp.assignmentId]) result[gp.assignmentId] = [];
-          result[gp.assignmentId]!.push(gp);
-        }
-        return result;
-      }),
 
     getUsersAudioMessagesCountForAssignments: protectedProcedure
       .input(z.object({
@@ -718,34 +705,6 @@ export const appRouter = createTRPCRouter({
         return result;
       }),
 
-    getGamblingPointsForAssignment: protectedProcedure
-      .input(z.object({
-        assignmentId: z.string(),
-      }))
-      .query(async ({ ctx, input }) => {
-        if (!ctx.session.user.id) {
-          throw new Error("User not authenticated");
-        }
-
-        return ctx.db.gamblingPoints.findMany({
-          where: {
-            assignmentId: input.assignmentId,
-            userId: ctx.session.user.id,
-          },
-          select: {
-            points: true,
-            Assignment: {
-              select: {
-                Movie: {
-                  select: {
-                    title: true
-                  }
-                }
-              }
-            }
-          }
-        });
-      }),
 
     getCountOfUserAudioMessagesForAssignment: protectedProcedure
       .input(z.object({

@@ -1,12 +1,9 @@
 import { type FC } from "react";
-import type { GamblingPoints, Assignment, Movie } from "@prisma/client";
-import Link from "next/link";
+import type { GamblingPoints, GamblingType } from "@prisma/client";
 
 interface GamblingHistoryProps {
   history: (GamblingPoints & {
-    Assignment: Assignment & {
-      Movie: Movie;
-    };
+    GamblingType: GamblingType;
   })[];
 }
 
@@ -39,11 +36,11 @@ export const GamblingHistory: FC<GamblingHistoryProps> = ({ history }) => {
                 {pendingBets.map((gamble) => (
                   <div key={gamble.id} className="flex justify-between items-center bg-gray-800/50 p-4 rounded-lg border border-gray-700/50 hover:border-indigo-500/30 transition-colors">
                     <div className="flex-1">
-                      <Link href={`/assignment/${gamble.assignmentId}`} className="font-medium text-white text-lg hover:text-indigo-400 transition-colors">
-                        {gamble.Assignment.Movie.title}
-                      </Link>
+                      <div className="font-medium text-white text-lg">
+                        {gamble.GamblingType.title}
+                      </div>
                       <div className="text-sm text-gray-400 mt-1">
-                        {gamble.Assignment.Movie.year}
+                        {gamble.GamblingType.description}
                       </div>
                       <div className="text-xs text-gray-500 mt-2 font-mono">
                         {new Date(gamble.createdAt).toLocaleDateString(undefined, { dateStyle: 'long' })}
@@ -66,11 +63,11 @@ export const GamblingHistory: FC<GamblingHistoryProps> = ({ history }) => {
                 {completedBets.map((gamble) => (
                   <div key={gamble.id} className="flex justify-between items-center bg-gray-800/50 p-4 rounded-lg border border-gray-700/50 hover:border-indigo-500/30 transition-colors">
                     <div className="flex-1">
-                      <Link href={`/assignment/${gamble.assignmentId}`} className="font-medium text-white text-lg hover:text-indigo-400 transition-colors">
-                        {gamble.Assignment.Movie.title}
-                      </Link>
+                      <div className="font-medium text-white text-lg">
+                        {gamble.GamblingType.title}
+                      </div>
                       <div className="text-sm text-gray-400 mt-1">
-                        {gamble.Assignment.Movie.year}
+                        {gamble.GamblingType.description}
                       </div>
                       <div className="text-xs text-gray-500 mt-2 font-mono">
                         {new Date(gamble.createdAt).toLocaleDateString(undefined, { dateStyle: 'long' })}
