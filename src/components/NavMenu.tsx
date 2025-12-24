@@ -20,7 +20,7 @@ const NavMenu: FC = () => {
   return (
     <div className="flex items-center gap-2">
       <ImpersonationSelector />
-      <NavigationMenu orientation="vertical">
+      <NavigationMenu orientation="vertical" delayDuration={0}>
         <NavigationMenuList>
           <NavigationMenuItem>
             <NavigationMenuTrigger>

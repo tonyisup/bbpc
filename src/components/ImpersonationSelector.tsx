@@ -89,7 +89,7 @@ export const ImpersonationSelector: FC = () => {
 						</div>
 					) : (
 						<div className="py-2">
-							{users?.filter(u => u.id !== session.user.id).map((user) => (
+							{users?.filter(u => u.id !== session.user?.id).map((user) => (
 								<button
 									key={user.id}
 									onClick={() => impersonateMutation.mutate({ userId: user.id })}
