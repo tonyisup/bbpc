@@ -671,35 +671,49 @@ export function TagPageClient({ tag, initialMovieId }: { tag: string; initialMov
                   </button>
                 )}
 
-                <button
-                  type="button"
-                  onClick={() => handleButtonVote(false)}
-                  className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 aspect-square shrink-0 rounded-full bg-red-500 hover:bg-red-600 flex items-center justify-center shadow-lg transition-transform hover:scale-110 active:scale-95"
-                  aria-label={`Is NOT ${tag}`}
-                  title={`Is NOT ${tag}`}
-                >
-                  <X className="w-6 h-6 sm:w-8 sm:h-8 font-bold" />
-                </button>
+                {!session?.user ? (
+                  <button
+                    type="button"
+                    onClick={() => signIn()}
+                    className="p-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 rounded-full text-white text-sm font-medium shadow-lg transition-all hover:scale-105 active:scale-95 whitespace-nowrap"
+                    aria-label="Sign in to vote"
+                    title="Sign in to vote"
+                  >
+                    Sign in to vote
+                  </button>
+                ) : (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => handleButtonVote(false)}
+                      className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 aspect-square shrink-0 rounded-full bg-red-500 hover:bg-red-600 flex items-center justify-center shadow-lg transition-transform hover:scale-110 active:scale-95"
+                      aria-label={`Is NOT ${tag}`}
+                      title={`Is NOT ${tag}`}
+                    >
+                      <X className="w-6 h-6 sm:w-8 sm:h-8 font-bold" />
+                    </button>
 
-                <button
-                  type="button"
-                  onClick={() => handlePassAndRefresh()}
-                  className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 aspect-square shrink-0 rounded-full bg-blue-500 hover:bg-blue-600 flex items-center justify-center shadow-lg transition-transform hover:scale-110 active:scale-95"
-                  aria-label="Pass and refresh"
-                  title="Pass and refresh"
-                >
-                  <RefreshCwIcon className="w-6 h-6 sm:w-8 sm:h-8 font-bold" />
-                </button>
+                    <button
+                      type="button"
+                      onClick={() => handlePassAndRefresh()}
+                      className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 aspect-square shrink-0 rounded-full bg-blue-500 hover:bg-blue-600 flex items-center justify-center shadow-lg transition-transform hover:scale-110 active:scale-95"
+                      aria-label="Pass and refresh"
+                      title="Pass and refresh"
+                    >
+                      <RefreshCwIcon className="w-6 h-6 sm:w-8 sm:h-8 font-bold" />
+                    </button>
 
-                <button
-                  type="button"
-                  onClick={() => handleButtonVote(true)}
-                  className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 aspect-square shrink-0 rounded-full bg-green-500 hover:bg-green-600 flex items-center justify-center shadow-lg transition-transform hover:scale-110 active:scale-95"
-                  aria-label={`It IS ${tag}`}
-                  title={`It IS ${tag}`}
-                >
-                  <Check className="w-6 h-6 sm:w-8 sm:h-8 font-bold" />
-                </button>
+                    <button
+                      type="button"
+                      onClick={() => handleButtonVote(true)}
+                      className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 aspect-square shrink-0 rounded-full bg-green-500 hover:bg-green-600 flex items-center justify-center shadow-lg transition-transform hover:scale-110 active:scale-95"
+                      aria-label={`It IS ${tag}`}
+                      title={`It IS ${tag}`}
+                    >
+                      <Check className="w-6 h-6 sm:w-8 sm:h-8 font-bold" />
+                    </button>
+                  </>
+                )}
 
                 <button
                   type="button"
