@@ -22,6 +22,15 @@ export function TagsPageClient() {
   const [inputValue, setInputValue] = useState("");
   const [customTag, setCustomTag] = useState("");
   const router = useRouter();
+  const placeholderOptions = ["custom tag...", "western", "space", "beach", "documentary"];
+  const [placeholderIdx, setPlaceholderIdx] = useState(0);
+  const placeholderText = placeholderOptions[placeholderIdx];
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setPlaceholderIdx((i) => (i + 1) % placeholderOptions.length);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, []);
   const [selectedMovie, setSelectedMovie] = useState<SelectedMovie | null>(null);
   const [popoverOpen, setPopoverOpen] = useState(false);
 
@@ -303,7 +312,7 @@ export function TagsPageClient() {
                   <div className="flex items-center gap-2">
                     <input
                       type="text"
-                      placeholder="Custom tag..."
+                      placeholder={placeholderText}
                       value={customTag}
                       onChange={(e) => setCustomTag(e.target.value)}
                       onKeyDown={(e) => {
@@ -314,7 +323,7 @@ export function TagsPageClient() {
                           }
                         }
                       }}
-                      className="w-full rounded-lg border border-gray-700 bg-gray-800 px-4 py-2 text-white placeholder-gray-500 focus:border-blue-500 focus:ring-blue-500"
+                      className="w-full rounded-lg border border-gray-700 bg-gray-800 px-4 py-2 text-white placeholder-gray-500 focus:border-blue-5 focus:ring-blue-5"
                     />
                     <button
                       type="button"
