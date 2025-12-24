@@ -150,6 +150,7 @@ export function TagPageClient({ tag, initialMovieId }: { tag: string; initialMov
   const submitVote = api.tag.submitVote.useMutation();
   const addMovie = api.movie.add.useMutation();
   const addToSyllabus = api.syllabus.add.useMutation();
+  const removeFromSyllabus = api.syllabus.remove.useMutation();
 
 
   const currentMovie = movies[0]; // Always index 0
@@ -311,13 +312,28 @@ export function TagPageClient({ tag, initialMovieId }: { tag: string; initialMov
           });
 
           // 2. Add to Syllabus
-          await addToSyllabus.mutateAsync({
+          const syllabusEntry = await addToSyllabus.mutateAsync({
             userId: user.id,
             movieId: savedMovie.id,
             order: 9999, // Append to end
           });
 
           setAddedToSyllabus(true);
+          toast.success(`Added "${currentMovie.title}" to your syllabus!`, {
+            action: {
+              label: "Undo",
+              onClick: async () => {
+                try {
+                  await removeFromSyllabus.mutateAsync({ id: syllabusEntry.id });
+                  setAddedToSyllabus(false);
+                  toast.success("Removed from syllabus");
+                } catch (err) {
+                  console.error("Failed to undo:", err);
+                  toast.error("Failed to undo");
+                }
+              },
+            },
+          });
         } catch (error) {
           console.error("Failed to add to syllabus:", error);
           // Optional: Show error toast
@@ -372,8 +388,9 @@ export function TagPageClient({ tag, initialMovieId }: { tag: string; initialMov
 
             setIsAddingToSyllabus(true);
 
-            toast.promise(
-              (async () => {
+            (async () => {
+              const toastId = toast.loading('Adding movie from your previous session...');
+              try {
                 const savedMovie = await addMovie.mutateAsync({
                   title: pendingMovie.title,
                   year: year,
@@ -382,23 +399,36 @@ export function TagPageClient({ tag, initialMovieId }: { tag: string; initialMov
                   tmdbId: pendingMovie.id,
                 });
 
-                await addToSyllabus.mutateAsync({
+                const syllabusEntry = await addToSyllabus.mutateAsync({
                   userId: user.id,
                   movieId: savedMovie.id,
                   order: 9999,
                 });
 
                 setAddedToSyllabus(true);
-              })(),
-              {
-                loading: 'Adding movie from your previous session...',
-                success: `Added ${pendingMovie.title} to your syllabus!`,
-                error: 'Failed to add movie to syllabus.',
-                finally: () => {
-                  setIsAddingToSyllabus(false);
-                }
+                toast.success(`Added ${pendingMovie.title} to your syllabus!`, {
+                  id: toastId,
+                  action: {
+                    label: "Undo",
+                    onClick: async () => {
+                      try {
+                        await removeFromSyllabus.mutateAsync({ id: syllabusEntry.id });
+                        setAddedToSyllabus(false);
+                        toast.success("Removed from syllabus");
+                      } catch (err) {
+                        console.error("Failed to undo:", err);
+                        toast.error("Failed to undo");
+                      }
+                    },
+                  },
+                });
+              } catch (error) {
+                console.error("Failed to add to syllabus:", error);
+                toast.error('Failed to add movie to syllabus.', { id: toastId });
+              } finally {
+                setIsAddingToSyllabus(false);
               }
-            );
+            })();
           }
         } catch (e) {
           console.error("Failed to process pending syllabus add", e);
@@ -406,7 +436,7 @@ export function TagPageClient({ tag, initialMovieId }: { tag: string; initialMov
         }
       }
     }
-  }, [session, hasFetchedOnce, tag, votedMovieIds, addMovie, addToSyllabus]);
+  }, [session, hasFetchedOnce, tag, votedMovieIds, addMovie, addToSyllabus, removeFromSyllabus]);
 
   const handlePassAndRefresh = () => {
     requestConfirmation(
