@@ -109,7 +109,11 @@ const PredictionGameDataWrapper: FC<{
 		assignmentIds
 	});
 
-	if (isLoadingGuesses || isLoadingAudio) {
+	const { data: allGamblePoints, isLoading: isLoadingGambling } = api.gambling.getUsersGamblingPointsForAssignments.useQuery({
+		assignmentIds
+	});
+
+	if (isLoadingGuesses || isLoadingAudio || isLoadingGambling) {
 		return <div className="animate-pulse h-64 bg-gray-800/50 rounded-lg"></div>;
 	}
 
@@ -125,6 +129,7 @@ const PredictionGameDataWrapper: FC<{
 					searchQuery={searchQuery}
 					initialGuesses={allGuesses?.[assignment.id] ?? []}
 					initialAudioMessageCount={allAudioMessageCounts?.[assignment.id] ?? 0}
+					initialGamblePoints={allGamblePoints?.[assignment.id] ?? []}
 				/>
 			))}
 		</>
@@ -149,6 +154,8 @@ interface AssignmentPredictionProps {
 	initialGuesses: any[];
 	/** Pre-fetched audio message count for this assignment. */
 	initialAudioMessageCount: number;
+	/** Pre-fetched gambling points for this assignment. */
+	initialGamblePoints: any[];
 }
 
 /**
@@ -163,7 +170,8 @@ const AssignmentPrediction: FC<AssignmentPredictionProps> = ({
 	userId,
 	searchQuery,
 	initialGuesses,
-	initialAudioMessageCount
+	initialAudioMessageCount,
+	initialGamblePoints
 }) => {
 	const utils = api.useUtils();
 	const [userExpanded, setUserExpanded] = useState(false);
@@ -181,8 +189,16 @@ const AssignmentPrediction: FC<AssignmentPredictionProps> = ({
 		{ initialData: { [assignment.id]: initialAudioMessageCount } }
 	);
 
+	const { data: gamblePointsData } = api.gambling.getUsersGamblingPointsForAssignments.useQuery(
+		{ assignmentIds: [assignment.id] },
+		{ initialData: { [assignment.id]: initialGamblePoints } }
+	);
+
 	const guesses = existingGuesses?.[assignment.id] ?? initialGuesses;
 	const audioMessageCount = audioMessageCountData?.[assignment.id] ?? initialAudioMessageCount;
+	const gamblePoints = gamblePointsData?.[assignment.id] ?? initialGamblePoints;
+
+	const gambleAmountForAssignment = gamblePoints.reduce((acc: number, p: any) => acc + p.points, 0);
 
 	const submitGuess = api.review.submitGuess.useMutation({
 		onMutate: async (newGuess) => {
@@ -284,6 +300,12 @@ const AssignmentPrediction: FC<AssignmentPredictionProps> = ({
 								);
 							})}
 						</div>
+						{gambleAmountForAssignment > 0 && (
+							<div className="flex items-center bg-purple-900/50 px-1.5 py-0.5 sm:px-2 sm:py-1 rounded text-purple-200 font-bold text-[10px] sm:text-sm border border-purple-500/30 whitespace-nowrap">
+								{gambleAmountForAssignment} <Coins className="pl-0.5 sm:pl-1 w-3 h-3 sm:w-5 h-5" />
+							</div>
+						)}
+
 
 
 						<Message assignmentId={assignment.id} userId={userId}>

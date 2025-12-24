@@ -89,6 +89,32 @@ export const appRouter = createTRPCRouter({
           include: { GamblingType: true }
         });
       }),
+    getUsersGamblingPointsForAssignments: protectedProcedure
+      .input(z.object({
+        assignmentIds: z.array(z.string()),
+      }))
+      .query(async ({ ctx, input }) => {
+        const points = await ctx.db.gamblingPoints.findMany({
+          where: {
+            assignmentId: { in: input.assignmentIds },
+            userId: ctx.session.user.id,
+          },
+          include: {
+            GamblingType: true,
+          },
+        });
+
+        const result: Record<string, typeof points> = {};
+        for (const p of points) {
+          if (p.assignmentId) {
+            if (!result[p.assignmentId]) {
+              result[p.assignmentId] = [];
+            }
+            result[p.assignmentId]?.push(p);
+          }
+        }
+        return result;
+      }),
   }),
   episode: createTRPCRouter({
     next: publicProcedure.query(async ({ ctx }) => {
