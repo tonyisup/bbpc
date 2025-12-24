@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef, useCallback, useImperativeHandle, forwardRef } from "react";
 import { api } from "@/trpc/react";
 import { motion, AnimatePresence } from "motion/react";
-import { X, Check, LinkIcon, RefreshCwIcon, PlusCircle, CheckCircle, Info, Share2 } from "lucide-react";
+import { X, Check, LinkIcon, RefreshCwIcon, PlusCircle, CheckCircle, Info, Share, Share2 } from "lucide-react";
 import { v4 as uuidv4 } from "uuid";
 import ChristmasSnow from "@/components/AnimatedChristmas";
 import { useSession } from "next-auth/react";
@@ -13,6 +13,7 @@ import { signIn } from "next-auth/react";
 import { toast } from "sonner";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import TinderCard from "react-tinder-card";
+import { ConfirmationDialog } from "@/components/ConfirmationDialog";
 
 interface Movie {
   id: number;
@@ -32,6 +33,7 @@ export function TagPageClient({ tag, initialMovieId }: { tag: string; initialMov
   const [votedMovieIds, setVotedMovieIds] = useState<number[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [hasPagination, setHasPagination] = useState(false);
   const [hasFetchedOnce, setHasFetchedOnce] = useState(false);
   const [sharedMovieLoaded, setSharedMovieLoaded] = useState(false);
   const [hasVotedOnSharedMovie, setHasVotedOnSharedMovie] = useState(false);
@@ -40,6 +42,52 @@ export function TagPageClient({ tag, initialMovieId }: { tag: string; initialMov
   const [salt, setSalt] = useState(0);
   const [ignoreSharedMovie, setIgnoreSharedMovie] = useState(false);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const [showAlternateShareIcon, setShowAlternateShareIcon] = useState(false);
+
+  // Confirmation state
+  const [confirmConfig, setConfirmConfig] = useState<{
+    isOpen: boolean;
+    title: string;
+    description: string;
+    actionKey: string;
+    onConfirm: () => void;
+  }>({
+    isOpen: false,
+    title: "",
+    description: "",
+    actionKey: "",
+    onConfirm: () => { },
+  });
+
+  const requestConfirmation = (
+    actionKey: string,
+    title: string,
+    description: string,
+    callback: () => void
+  ) => {
+    const dontAskAgain = localStorage.getItem(`dont_ask_again_${actionKey}`);
+    if (dontAskAgain === "true") {
+      callback();
+      return;
+    }
+
+    setConfirmConfig({
+      isOpen: true,
+      title,
+      description,
+      actionKey,
+      onConfirm: callback,
+    });
+  };
+
+  const handleConfirmAction = (dontAskAgain: boolean) => {
+    if (dontAskAgain) {
+      localStorage.setItem(`dont_ask_again_${confirmConfig.actionKey}`, "true");
+    }
+    confirmConfig.onConfirm();
+    setConfirmConfig((prev) => ({ ...prev, isOpen: false }));
+  };
+
 
   // Ref for the currently active card to allow programmatic swipes
   const cardRef = useRef<any>(null);
@@ -64,6 +112,14 @@ export function TagPageClient({ tag, initialMovieId }: { tag: string; initialMov
   useEffect(() => {
     localStorage.setItem(`tag_page_${tag}`, currentPage.toString());
   }, [tag, currentPage]);
+
+  // Toggle share icon every 3 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setShowAlternateShareIcon((prev) => !prev);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Queries
   const { data: movieData, isLoading, isFetching, refetch: refetchMovies } = api.tag.getMoviesForTag.useQuery(
@@ -94,6 +150,7 @@ export function TagPageClient({ tag, initialMovieId }: { tag: string; initialMov
   const submitVote = api.tag.submitVote.useMutation();
   const addMovie = api.movie.add.useMutation();
   const addToSyllabus = api.syllabus.add.useMutation();
+  const removeFromSyllabus = api.syllabus.remove.useMutation();
 
 
   const currentMovie = movies[0]; // Always index 0
@@ -141,6 +198,7 @@ export function TagPageClient({ tag, initialMovieId }: { tag: string; initialMov
       setIsTransitioning(false);
       setIsInitialLoad(false);
 
+      setHasPagination(movieData.pagination !== null);
       // Update pagination info
       if (movieData.pagination) {
         setTotalPages(movieData.pagination.totalPages);
@@ -206,64 +264,100 @@ export function TagPageClient({ tag, initialMovieId }: { tag: string; initialMov
     }
   }, [movieData, votedMovieIds, movies, currentPage, tag, sharedMovieId, sharedMovieLoaded, hasVotedOnSharedMovie]);
 
-  const handleShare = async () => {
-    if (!currentMovie) return;
-    const url = `${window.location.origin}/tags/${tag}/${currentMovie.id}`;
-    try {
-      await navigator.clipboard.writeText(url);
-      toast.success("Link copied to clipboard!");
-    } catch (err) {
-      console.error("Failed to copy link:", err);
-      toast.error("Failed to copy link");
-    }
+  const handleShare = () => {
+    requestConfirmation(
+      "share_movie",
+      "Share this movie?",
+      "This will copy the link to your clipboard.",
+      async () => {
+        if (!currentMovie) return;
+        const url = `${window.location.origin}/tags/${tag}/${currentMovie.id}`;
+        try {
+          await navigator.clipboard.writeText(url);
+          toast.success("Link copied to clipboard!");
+        } catch (err) {
+          console.error("Failed to copy link:", err);
+          toast.error("Failed to copy link");
+        }
+      }
+    );
   };
 
-  const handleAddToSyllabus = async () => {
-    const user = session?.user;
-    if (!user || !currentMovie || isAddingToSyllabus || addedToSyllabus) return;
+  const handleAddToSyllabus = () => {
+    requestConfirmation(
+      "add_to_syllabus",
+      "Add to Syllabus?",
+      `Are you sure you want to add "${currentMovie?.title}" to your syllabus?`,
+      async () => {
+        const user = session?.user;
+        if (!user || !currentMovie || isAddingToSyllabus || addedToSyllabus) return;
 
-    setIsAddingToSyllabus(true);
-    try {
-      const year = new Date(currentMovie.release_date).getFullYear();
+        setIsAddingToSyllabus(true);
+        try {
+          const year = new Date(currentMovie.release_date).getFullYear();
 
-      // Determine URL - prefer IMDB, fallback to TMDB
-      let url = `https://www.themoviedb.org/movie/${currentMovie.id}`;
-      if (currentMovie.imdb_id) {
-        url = `https://www.imdb.com/title/${currentMovie.imdb_id}`;
+          // Determine URL - prefer IMDB, fallback to TMDB
+          let url = `https://www.themoviedb.org/movie/${currentMovie.id}`;
+          if (currentMovie.imdb_id) {
+            url = `https://www.imdb.com/title/${currentMovie.imdb_id}`;
+          }
+
+          // 1. Add/Ensure movie exists in our DB
+          const savedMovie = await addMovie.mutateAsync({
+            title: currentMovie.title,
+            year: year,
+            poster: currentMovie.poster_path ?? "", // Fallback if null, schema might require string
+            url: url,
+            tmdbId: currentMovie.id,
+          });
+
+          // 2. Add to Syllabus
+          const syllabusEntry = await addToSyllabus.mutateAsync({
+            userId: user.id,
+            movieId: savedMovie.id,
+            order: 9999, // Append to end
+          });
+
+          setAddedToSyllabus(true);
+          toast.success(`Added "${currentMovie.title}" to your syllabus!`, {
+            action: {
+              label: "Undo",
+              onClick: async () => {
+                try {
+                  await removeFromSyllabus.mutateAsync({ id: syllabusEntry.id });
+                  setAddedToSyllabus(false);
+                  toast.success("Removed from syllabus");
+                } catch (err) {
+                  console.error("Failed to undo:", err);
+                  toast.error("Failed to undo");
+                }
+              },
+            },
+          });
+        } catch (error) {
+          console.error("Failed to add to syllabus:", error);
+          // Optional: Show error toast
+        } finally {
+          setIsAddingToSyllabus(false);
+        }
       }
-
-      // 1. Add/Ensure movie exists in our DB
-      const savedMovie = await addMovie.mutateAsync({
-        title: currentMovie.title,
-        year: year,
-        poster: currentMovie.poster_path ?? "", // Fallback if null, schema might require string
-        url: url,
-        tmdbId: currentMovie.id,
-      });
-
-      // 2. Add to Syllabus
-      await addToSyllabus.mutateAsync({
-        userId: user.id,
-        movieId: savedMovie.id,
-        order: 9999, // Append to end
-      });
-
-      setAddedToSyllabus(true);
-    } catch (error) {
-      console.error("Failed to add to syllabus:", error);
-      // Optional: Show error toast
-    } finally {
-      setIsAddingToSyllabus(false);
-    }
+    );
   };
 
   const handleSignInToAdd = () => {
-    if (!currentMovie) return;
-    localStorage.setItem("pending_syllabus_add", JSON.stringify({
-      tag,
-      movie: currentMovie
-    }));
-    void signIn();
+    requestConfirmation(
+      "sign_in_to_add",
+      "Sign In to Add?",
+      "You need to sign in to add this movie to your syllabus. Continue?",
+      () => {
+        if (!currentMovie) return;
+        localStorage.setItem("pending_syllabus_add", JSON.stringify({
+          tag,
+          movie: currentMovie
+        }));
+        void signIn();
+      }
+    );
   };
 
   // Handle post-signin pending addition
@@ -294,8 +388,9 @@ export function TagPageClient({ tag, initialMovieId }: { tag: string; initialMov
 
             setIsAddingToSyllabus(true);
 
-            toast.promise(
-              (async () => {
+            (async () => {
+              const toastId = toast.loading('Adding movie from your previous session...');
+              try {
                 const savedMovie = await addMovie.mutateAsync({
                   title: pendingMovie.title,
                   year: year,
@@ -304,23 +399,36 @@ export function TagPageClient({ tag, initialMovieId }: { tag: string; initialMov
                   tmdbId: pendingMovie.id,
                 });
 
-                await addToSyllabus.mutateAsync({
+                const syllabusEntry = await addToSyllabus.mutateAsync({
                   userId: user.id,
                   movieId: savedMovie.id,
                   order: 9999,
                 });
 
                 setAddedToSyllabus(true);
-              })(),
-              {
-                loading: 'Adding movie from your previous session...',
-                success: `Added ${pendingMovie.title} to your syllabus!`,
-                error: 'Failed to add movie to syllabus.',
-                finally: () => {
-                  setIsAddingToSyllabus(false);
-                }
+                toast.success(`Added ${pendingMovie.title} to your syllabus!`, {
+                  id: toastId,
+                  action: {
+                    label: "Undo",
+                    onClick: async () => {
+                      try {
+                        await removeFromSyllabus.mutateAsync({ id: syllabusEntry.id });
+                        setAddedToSyllabus(false);
+                        toast.success("Removed from syllabus");
+                      } catch (err) {
+                        console.error("Failed to undo:", err);
+                        toast.error("Failed to undo");
+                      }
+                    },
+                  },
+                });
+              } catch (error) {
+                console.error("Failed to add to syllabus:", error);
+                toast.error('Failed to add movie to syllabus.', { id: toastId });
+              } finally {
+                setIsAddingToSyllabus(false);
               }
-            );
+            })();
           }
         } catch (e) {
           console.error("Failed to process pending syllabus add", e);
@@ -328,19 +436,39 @@ export function TagPageClient({ tag, initialMovieId }: { tag: string; initialMov
         }
       }
     }
-  }, [session, hasFetchedOnce, tag, votedMovieIds, addMovie, addToSyllabus]);
+  }, [session, hasFetchedOnce, tag, votedMovieIds, addMovie, addToSyllabus, removeFromSyllabus]);
 
   const handlePassAndRefresh = () => {
-    // Manually skip the current movie
-    setMovies((prev) => prev.slice(1));
-    refetchMovies();
+    requestConfirmation(
+      "pass_movie",
+      "Pass this movie?",
+      "This will skip the current movie and load a new one.",
+      () => {
+        // Manually skip the current movie
+        setMovies((prev) => prev.slice(1));
+        refetchMovies();
+      }
+    );
   }
 
   // Called by buttons to trigger a swipe animation
   const handleButtonVote = (isTag: boolean) => {
-    if (cardRef.current) {
-      cardRef.current.swipe(isTag ? 'right' : 'left');
-    }
+    const actionKey = isTag ? "vote_yes" : "vote_no";
+    const title = isTag ? `Vote Yes for ${tag}?` : `Vote No for ${tag}?`;
+    const description = isTag
+      ? `Are you sure you want to vote YES that this movie is ${tag}?`
+      : `Are you sure you want to vote NO that this movie is NOT ${tag}?`;
+
+    requestConfirmation(
+      actionKey,
+      title,
+      description,
+      () => {
+        if (cardRef.current) {
+          cardRef.current.swipe(isTag ? 'right' : 'left');
+        }
+      }
+    );
   }
 
   // Called when the card is swiped (either by drag or by button triggered swipe)
@@ -405,7 +533,7 @@ export function TagPageClient({ tag, initialMovieId }: { tag: string; initialMov
   // - We've exhausted all pages
   const canShowNoMovies = (!sharedMovieId || sharedMovieLoaded) && !isInitialLoad && !isTransitioning;
 
-  if (!currentMovie && !isLoading && !isFetching && !isTransitioning && hasFetchedOnce && !isInitialLoad && currentPage >= totalPages && canShowNoMovies) {
+  if (!currentMovie && !isLoading && !isFetching && !isTransitioning && hasFetchedOnce && !isInitialLoad && hasPagination && currentPage >= totalPages && canShowNoMovies) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center text-white p-4 text-center">
         <h2 className="text-2xl font-bold mb-4">No more movies to vote on!</h2>
@@ -589,7 +717,33 @@ export function TagPageClient({ tag, initialMovieId }: { tag: string; initialMov
                   aria-label="Share this movie"
                   title="Share this movie"
                 >
-                  <Share2 className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8" />
+                  <div className="relative w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 overflow-hidden">
+                    <AnimatePresence mode="wait">
+                      {showAlternateShareIcon ? (
+                        <motion.div
+                          key="share"
+                          initial={{ x: 20, opacity: 0 }}
+                          animate={{ x: 0, opacity: 1 }}
+                          exit={{ x: -20, opacity: 0 }}
+                          transition={{ duration: 0.3, ease: "easeInOut" }}
+                          className="absolute inset-0 flex items-center justify-center"
+                        >
+                          <Share className="w-full h-full" />
+                        </motion.div>
+                      ) : (
+                        <motion.div
+                          key="share2"
+                          initial={{ x: 20, opacity: 0 }}
+                          animate={{ x: 0, opacity: 1 }}
+                          exit={{ x: -20, opacity: 0 }}
+                          transition={{ duration: 0.3, ease: "easeInOut" }}
+                          className="absolute inset-0 flex items-center justify-center"
+                        >
+                          <Share2 className="w-full h-full" />
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
                 </button>
               </div>
             )}
@@ -603,6 +757,18 @@ export function TagPageClient({ tag, initialMovieId }: { tag: string; initialMov
           <StatsBar stats={stats} />
         </div>
       )}
+
+      <ConfirmationDialog
+        isOpen={confirmConfig.isOpen}
+        onOpenChange={(open) => {
+          if (!open) {
+            setConfirmConfig((prev) => ({ ...prev, isOpen: false }));
+          }
+        }}
+        title={confirmConfig.title}
+        description={confirmConfig.description}
+        onConfirm={handleConfirmAction}
+      />
     </div>
   );
 }

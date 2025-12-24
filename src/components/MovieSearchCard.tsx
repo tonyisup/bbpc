@@ -19,7 +19,7 @@ export interface MovieSearchCardProps {
 export const MovieSearchCard: FC<MovieSearchCardProps> = ({ movie, onClick, children }) => {
   return (
     <div
-      className={`bg-gray-900 rounded-lg overflow-hidden shadow-lg flex flex-col border border-gray-800 ${onClick ? "cursor-pointer hover:border-blue-500/50 transition-colors" : ""}`}
+      className={`cursor-pointer bg-gray-900 rounded-lg overflow-hidden shadow-lg flex flex-col border border-gray-800 ${onClick ? "cursor-pointer hover:border-blue-500/50 transition-colors" : ""}`}
       onClick={onClick}
     >
       <div className="relative h-48 bg-gray-800 group overflow-hidden">

@@ -4,7 +4,8 @@ import { useEffect, useRef, useState, useMemo } from "react";
 import { api } from "@/trpc/react";
 import Link from "next/link";
 import { motion } from "motion/react";
-import { Tag, Sparkles, ChevronRight, Hash, Search, X } from "lucide-react";
+import { Tag, Sparkles, ChevronRight, Hash, Search, X, ScanSearch } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { debounce } from "lodash";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -19,6 +20,17 @@ interface SelectedMovie {
 export function TagsPageClient() {
   const [searchQuery, setSearchQuery] = useState("");
   const [inputValue, setInputValue] = useState("");
+  const [customTag, setCustomTag] = useState("");
+  const router = useRouter();
+  const placeholderOptions = ["custom tag...", "western", "space", "beach", "documentary"];
+  const [placeholderIdx, setPlaceholderIdx] = useState(0);
+  const placeholderText = placeholderOptions[placeholderIdx];
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setPlaceholderIdx((i) => (i + 1) % placeholderOptions.length);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, []);
   const [selectedMovie, setSelectedMovie] = useState<SelectedMovie | null>(null);
   const [popoverOpen, setPopoverOpen] = useState(false);
 
@@ -295,7 +307,38 @@ export function TagsPageClient() {
                 </div>
               )}
               {!hasNextPage && allTags.length > 0 && (
-                <p className="text-sm text-gray-500 italic">No more tags to discover</p>
+                <div className="flex flex-col items-center justify-center gap-6">
+                  <p className="text-sm text-gray-500 italic">No more tags to discover</p>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      placeholder={placeholderText}
+                      value={customTag}
+                      onChange={(e) => setCustomTag(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          const tag = customTag.trim();
+                          if (tag) {
+                            router.push(`/tags/${tag}`);
+                          }
+                        }
+                      }}
+                      className="w-full rounded-lg border border-gray-700 bg-gray-800 px-4 py-2 text-white placeholder-gray-500 focus:border-blue-5 focus:ring-blue-5"
+                    />
+                    <button
+                      type="button"
+                      className="rounded-lg bg-gradient-to-br from-blue-600/20 to-purple-600/20 p-2 text-blue-400/70 hover:from-blue-600/30 hover:to-purple-600/30 transition-colors"
+                      onClick={() => {
+                        const tag = customTag.trim();
+                        if (tag) {
+                          router.push(`/tags/${tag}`);
+                        }
+                      }}
+                    >
+                      <ScanSearch />
+                    </button>
+                  </div>
+                </div>
               )}
             </div>
           </>
