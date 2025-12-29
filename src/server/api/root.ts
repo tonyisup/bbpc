@@ -244,6 +244,13 @@ export const appRouter = createTRPCRouter({
       });
       return userRoles.some(ur => ur.role.admin);
     }),
+    isHost: protectedProcedure.query(async ({ ctx }) => {
+      const userRoles = await ctx.db.userRole.findMany({
+        where: { userId: ctx.session.user.id },
+        include: { role: true },
+      });
+      return userRoles.some(ur => ur.role.name === 'Host');
+    }),
     getPhoneNumber: publicProcedure.query(async () => {
       const phoneNumber = process.env.PHONE_NUMBER;
       if (!phoneNumber) {
