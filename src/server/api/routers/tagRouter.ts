@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { createTRPCRouter, publicProcedure, protectedProcedure } from "@/server/api/trpc";
 import { tmdb } from "@/server/tmdb/client";
+import { getCurrentSeasonID } from "@/utils/points";
 
 // Define response types for TMDB
 interface KeywordSearchResponse {
@@ -277,7 +278,7 @@ export const tagRouter = createTRPCRouter({
         return existingVote;
       }
 
-      return await ctx.db.tagVote.create({
+      const vote = await ctx.db.tagVote.create({
         data: {
           tag: input.tag,
           tmdbId: input.tmdbId,
@@ -285,6 +286,36 @@ export const tagRouter = createTRPCRouter({
           userId: userId,
         },
       });
+
+      // Award a point of type 'tag-vote'
+      try {
+        const seasonId = await getCurrentSeasonID(ctx.db);
+        if (seasonId) {
+          const gamePointType = await ctx.db.gamePointType.findUnique({
+            where: { lookupID: "tag-vote" },
+          });
+
+          if (gamePointType) {
+            await ctx.db.point.create({
+              data: {
+                userId: userId,
+                seasonId: seasonId,
+                gamePointTypeId: gamePointType.id,
+                earnedOn: new Date(),
+                reason: `Vote on tag: ${input.tag} for movie ${input.tmdbId}`,
+              },
+            });
+          } else {
+            console.warn("GamePointType 'tag-vote' not found. Skipping point award.");
+          }
+        } else {
+          console.warn("No active season found. Skipping point award.");
+        }
+      } catch (e) {
+        console.error("Failed to award point for tag vote", e);
+      }
+
+      return vote;
     }),
 
   getUserVotes: protectedProcedure

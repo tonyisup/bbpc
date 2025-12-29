@@ -14,11 +14,14 @@ model Episode {
   date                DateTime?             @db.Date
   description         String?
   status              String?               @default("published")
+  notes               String?
   assignments         Assignment[]
   AudioEpisodeMessage AudioEpisodeMessage[]
   bangers             Banger[]
   extras              ExtraReview[]
   links               Link[]
+
+  @@index([number])
 }
 
 model Link {
@@ -61,6 +64,8 @@ model Rating {
   category String?
   guesses  Guess[]
   reviews  Review[]
+
+  @@index([value])
 }
 
 model Review {
@@ -176,6 +181,7 @@ model Account {
   user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
+  @@index([userId])
 }
 
 model Session {
@@ -184,6 +190,8 @@ model Session {
   userId       String
   expires      DateTime
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model VerificationToken {
