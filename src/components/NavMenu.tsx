@@ -77,7 +77,7 @@ const NavMenu: FC = () => {
                 </NavigationMenuLink>
                 <NavigationMenuLink asChild>
                   <Link href="/year" className="flex items-center gap-2 px-4 py-2 transition hover:text-red-400">
-                    <CalendarIcon className="w-4 h-4" />Year In Review
+                    <CalendarIcon className="w-4 h-4" />Year
                   </Link>
                 </NavigationMenuLink>
                 <NavigationMenuLink asChild>
