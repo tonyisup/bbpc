@@ -296,13 +296,34 @@ export const tagRouter = createTRPCRouter({
           });
 
           if (gamePointType) {
+            // Try to get movie title from TMDB for a better reason string
+            let movieTitle = `Movie #${input.tmdbId}`;
+            try {
+              const movieData = await tmdb.getMovie(input.tmdbId);
+              if (movieData) {
+                movieTitle = movieData.title;
+              }
+            } catch (e) {
+              console.warn(`Could not fetch title for TMDB ID ${input.tmdbId}`);
+            }
+
+            // Check if we have this movie in our local database
+            const localMovie = await ctx.db.movie.findFirst({
+              where: { tmdbId: input.tmdbId },
+              select: { id: true },
+            });
+
+            const reason = localMovie
+              ? `Vote on tag: ${input.tag} for ${movieTitle} [movieId:${localMovie.id}]`
+              : `Vote on tag: ${input.tag} for ${movieTitle} [tmdbId:${input.tmdbId}]`;
+
             await ctx.db.point.create({
               data: {
                 userId: userId,
                 seasonId: seasonId,
                 gamePointTypeId: gamePointType.id,
                 earnedOn: new Date(),
-                reason: `Vote on tag: ${input.tag} for movie ${input.tmdbId}`,
+                reason: reason,
               },
             });
           } else {
