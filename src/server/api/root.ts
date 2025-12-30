@@ -7,8 +7,10 @@ import { showRouter } from "./routers/showRouter";
 import { uploadInfoRouter } from "./routers/uploadInfo";
 import { calculateUserPoints } from "@/utils/points";
 import { tagRouter } from "./routers/tagRouter";
+import { yearRouter } from "./routers/yearRouter";
 
 export const appRouter = createTRPCRouter({
+  year: yearRouter,
   tag: tagRouter,
   uploadInfo: uploadInfoRouter,
   episode: createTRPCRouter({
