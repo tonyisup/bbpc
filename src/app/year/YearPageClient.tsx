@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { api } from "@/trpc/react";
 import MovieCard from "@/components/MovieCard";
-import { LayoutGrid, List, Table as TableIcon, ArrowDownUp, Loader2 } from "lucide-react";
+import { LayoutGrid, List, Table as TableIcon, ArrowDownUp, Loader2, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import RatingIcon from "@/components/RatingIcon";
@@ -129,8 +129,29 @@ export function YearPageClient() {
                             {sortedItems.map((item) => (
                                 <div key={item.id} className="relative group">
                                     <MovieCard movie={item.movie} width={200} height={300} />
-                                    {/* Optional overlay info for grid */}
-                                    <div className="mt-2 text-center text-sm text-zinc-400">
+                                    {/* Grid Overlay with Links */}
+                                    <div className="absolute inset-0 bg-black/80 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center p-2 rounded-lg gap-2">
+                                         {item.episode && (
+                                            <Link href={`/episodes/${item.episode.id}`} className="text-white hover:text-primary font-semibold text-sm flex items-center gap-1 bg-white/10 px-3 py-1.5 rounded-full backdrop-blur-sm hover:bg-white/20 transition-colors">
+                                                Episode {item.episode.number}
+                                            </Link>
+                                         )}
+
+                                         {item.movie.url && (
+                                            <a href={item.movie.url} target="_blank" rel="noreferrer" className="text-yellow-500 hover:text-yellow-400 font-semibold text-sm flex items-center gap-1 bg-white/10 px-3 py-1.5 rounded-full backdrop-blur-sm hover:bg-white/20 transition-colors">
+                                                IMDb <ExternalLink className="h-3 w-3" />
+                                            </a>
+                                         )}
+
+                                         {item.rating && (
+                                            <div className="mt-2 bg-zinc-800/80 px-2 py-1 rounded flex items-center gap-1">
+                                                <RatingIcon value={item.rating.value} />
+                                                <span className="text-white text-xs">{item.rating.value}</span>
+                                            </div>
+                                         )}
+                                    </div>
+
+                                    <div className="mt-2 text-center text-sm text-zinc-400 group-hover:opacity-0 transition-opacity">
                                          {item.episode && (
                                             <div className="text-xs">
                                                 Ep #{item.episode.number}
@@ -194,7 +215,7 @@ export function YearPageClient() {
                                                         </a>
                                                     )}
                                                     {item.episode && (
-                                                        <Link href={`/episode/${item.episode.id}`} className="text-green-400 hover:underline">
+                                                        <Link href={`/episodes/${item.episode.id}`} className="text-green-400 hover:underline">
                                                             Episode
                                                         </Link>
                                                     )}
@@ -236,7 +257,7 @@ export function YearPageClient() {
                                         <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 mt-2">
                                              {item.episode && (
                                                 <div className="text-sm text-zinc-300">
-                                                    Reviewed on <Link href={`/episode/${item.episode.id}`} className="text-primary hover:underline font-semibold">Episode {item.episode.number}</Link>
+                                                    Reviewed on <Link href={`/episodes/${item.episode.id}`} className="text-primary hover:underline font-semibold">Episode {item.episode.number}</Link>
                                                     <span className="text-zinc-500 ml-2">({item.date ? new Date(item.date).toLocaleDateString() : ''})</span>
                                                 </div>
                                              )}
