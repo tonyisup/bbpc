@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { api } from "@/trpc/react";
 import MovieCard from "@/components/MovieCard";
-import { LayoutGrid, List, Table as TableIcon, ArrowDownUp, Loader2, ExternalLink, Check } from "lucide-react";
+import { LayoutGrid, List, Table as TableIcon, ArrowDownUp, Loader2, ExternalLink, Check, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import RatingIcon from "@/components/RatingIcon";
@@ -56,8 +56,24 @@ export function YearPageClient() {
 		{ enabled: !!selectedListId }
 	);
 
+	// Utils for cache invalidation
+	const utils = api.useUtils();
+
 	// Mutation for adding/updating items in the list
-	const upsertItem = api.rankedList.upsertItem.useMutation();
+	const upsertItem = api.rankedList.upsertItem.useMutation({
+		onSuccess: () => {
+			void utils.rankedList.getListById.invalidate({ id: selectedListId! });
+			void utils.rankedList.getMyLists.invalidate();
+		},
+	});
+
+	// Mutation for removing items from the list
+	const removeItem = api.rankedList.removeItem.useMutation({
+		onSuccess: () => {
+			void utils.rankedList.getListById.invalidate({ id: selectedListId! });
+			void utils.rankedList.getMyLists.invalidate();
+		},
+	});
 
 	// Sort items
 	const sortedItems = items?.slice().sort((a, b) => {
@@ -195,6 +211,44 @@ export function YearPageClient() {
 											</option>
 										))}
 									</select>
+								</div>
+							)}
+
+							{/* Current Ranked Items Display */}
+							{selectedListId && selectedList && selectedList.RankedItem.length > 0 && (
+								<div className="bg-zinc-900/40 p-6 rounded-lg border border-zinc-800 space-y-4">
+									<h2 className="text-lg font-bold text-white border-b border-zinc-700 pb-2 flex items-center gap-2">
+										<Check className="w-5 h-5 text-primary" />
+										Current Rankings: {selectedList.title || selectedList.RankedListType.name}
+									</h2>
+									<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+										{selectedList.RankedItem.map((item) => (
+											<div key={item.id} className="flex items-center gap-3 bg-zinc-800/40 p-2 rounded border border-zinc-700/50 group hover:bg-zinc-800/80 transition-colors">
+												<div className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm">
+													{item.rank}
+												</div>
+												{item.Movie?.poster && (
+													<img src={item.Movie.poster} alt="" className="w-8 h-12 object-cover rounded shadow" />
+												)}
+												<div className="flex-grow min-w-0">
+													<p className="text-sm font-bold text-white truncate">{item.Movie?.title}</p>
+													<p className="text-xs text-zinc-400">{item.Movie?.year}</p>
+												</div>
+												<Button
+													variant="ghost"
+													size="icon"
+													className="h-8 w-8 text-zinc-500 hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
+													onClick={() => {
+														if (confirm("Remove this item from the list?")) {
+															removeItem.mutate({ itemId: item.id });
+														}
+													}}
+												>
+													<Trash2 className="w-4 h-4" />
+												</Button>
+											</div>
+										))}
+									</div>
 								</div>
 							)}
 
