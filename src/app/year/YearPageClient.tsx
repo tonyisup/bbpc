@@ -159,6 +159,12 @@ export function YearPageClient() {
 		return sortDesc ? dateB - dateA : dateA - dateB;
 	});
 
+	// Filter items if a list is selected (hide items already in the list)
+	const filteredItems = sortedItems?.filter((item) => {
+		if (!selectedListId || !selectedList?.RankedItem) return true;
+		return !selectedList.RankedItem.some((rankedItem) => rankedItem.movieId === item.movie.id);
+	});
+
 	const years = Array.from({ length: 10 }, (_, i) => currentYear - i);
 
 	return (
@@ -326,7 +332,7 @@ export function YearPageClient() {
 							)}
 
 							<div className="flex flex-col gap-4">
-								{sortedItems.map((item) => (
+								{filteredItems?.map((item) => (
 									<div key={item.id} className="flex flex-col md:flex-row gap-4 bg-zinc-900/40 p-4 rounded-lg border border-zinc-800/50 hover:bg-zinc-900/80 transition-colors">
 										<div className="flex-shrink-0 mx-auto md:mx-0">
 											{item.movie.poster ? (
