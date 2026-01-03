@@ -6,11 +6,18 @@ type PrismaTransactionClient = Omit<
 >;
 
 export const getCurrentSeasonID = async (prisma: PrismaTransactionClient): Promise<string | null> => {
+  const now = new Date();
   const season = await prisma.season.findFirst({
     orderBy: {
       startedOn: 'desc',
     },
-    where: { endedOn: null }
+    where: {
+      startedOn: { lte: now },
+      OR: [
+        { endedOn: { gte: now } },
+        { endedOn: null },
+      ],
+    },
   });
   return season?.id ?? null;
 };

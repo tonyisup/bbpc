@@ -14,11 +14,15 @@ model Episode {
   date                DateTime?             @db.Date
   description         String?
   status              String?               @default("published")
+  notes               String?
   assignments         Assignment[]
   AudioEpisodeMessage AudioEpisodeMessage[]
   bangers             Banger[]
   extras              ExtraReview[]
   links               Link[]
+  RankedItem          RankedItem[]
+
+  @@index([number])
 }
 
 model Link {
@@ -39,17 +43,19 @@ model Movie {
   url         String
   tmdbId      Int?
   assignments Assignment[]
+  RankedItem  RankedItem[]
   reviews     Review[]
   syllabus    Syllabus[]
 }
 
 model Show {
-  id      String   @id @default(dbgenerated("newid()")) @db.UniqueIdentifier
-  title   String
-  year    Int      @db.SmallInt
-  poster  String?
-  url     String
-  reviews Review[]
+  id         String       @id @default(dbgenerated("newid()")) @db.UniqueIdentifier
+  title      String
+  year       Int          @db.SmallInt
+  poster     String?
+  url        String
+  RankedItem RankedItem[]
+  reviews    Review[]
 }
 
 model Rating {
@@ -61,6 +67,8 @@ model Rating {
   category String?
   guesses  Guess[]
   reviews  Review[]
+
+  @@index([value])
 }
 
 model Review {
@@ -176,6 +184,7 @@ model Account {
   user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
+  @@index([userId])
 }
 
 model Session {
@@ -184,6 +193,8 @@ model Session {
   userId       String
   expires      DateTime
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model VerificationToken {
@@ -200,6 +211,7 @@ model User {
   email               String?               @unique
   emailVerified       DateTime?
   image               String?
+  impersonatedUserId  String?
   accounts            Account[]
   assignments         Assignment[]
   AssignmentPoints    AssignmentPoints[]
@@ -209,9 +221,11 @@ model User {
   gamblingPoints      GamblingPoints[]
   guesses             Guess[]
   Point               Point[]
+  RankedList          RankedList[]
   reviews             Review[]
   sessions            Session[]
   syllabus            Syllabus[]
+  tagVotes            TagVote[]
   roles               UserRole[]
   tagVotes            TagVote[]
   impersonatedUserId  String?
@@ -413,4 +427,52 @@ model Tag {
   name        String   @unique
   description String?
   createdAt   DateTime @default(now())
+}
+
+model RankedItem {
+  id           String     @id @default(dbgenerated("newid()")) @db.UniqueIdentifier
+  rankedListId String     @db.UniqueIdentifier
+  movieId      String?    @db.UniqueIdentifier
+  showId       String?    @db.UniqueIdentifier
+  episodeId    String?    @db.UniqueIdentifier
+  rank         Int
+  comment      String?    @db.Text
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime
+  Episode      Episode?   @relation(fields: [episodeId], references: [id])
+  Movie        Movie?     @relation(fields: [movieId], references: [id])
+  RankedList   RankedList @relation(fields: [rankedListId], references: [id], onDelete: Cascade)
+  Show         Show?      @relation(fields: [showId], references: [id])
+
+  @@index([episodeId])
+  @@index([movieId])
+  @@index([rankedListId])
+  @@index([showId])
+}
+
+model RankedList {
+  id               String         @id @default(dbgenerated("newid()")) @db.UniqueIdentifier
+  userId           String
+  rankedListTypeId String         @db.UniqueIdentifier
+  status           String         @default("DRAFT")
+  title            String?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime
+  RankedItem       RankedItem[]
+  RankedListType   RankedListType @relation(fields: [rankedListTypeId], references: [id], onDelete: Cascade)
+  User             User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([rankedListTypeId])
+  @@index([userId])
+}
+
+model RankedListType {
+  id          String       @id @default(dbgenerated("newid()")) @db.UniqueIdentifier
+  name        String
+  description String?
+  maxItems    Int
+  targetType  String
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime
+  RankedList  RankedList[]
 }
