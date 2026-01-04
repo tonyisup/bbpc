@@ -179,4 +179,50 @@ export const rankedListRouter = createTRPCRouter({
 				where: { id: input.itemId },
 			});
 		}),
+
+	// Reorder items in a ranked list
+	reorderItems: protectedProcedure
+		.input(
+			z.object({
+				rankedListId: z.string(),
+				itemIds: z.array(z.string()),
+			})
+		)
+		.mutation(async ({ ctx, input }) => {
+			const list = await ctx.db.rankedList.findUnique({
+				where: { id: input.rankedListId },
+				include: { RankedListType: true },
+			});
+
+			if (!list) {
+				throw new TRPCError({ code: "NOT_FOUND", message: "List not found" });
+			}
+
+			// Check ownership
+			const userRoles = await ctx.db.userRole.findMany({
+				where: { userId: ctx.session.user.id },
+				include: { role: true },
+			});
+			const isAdmin = userRoles.some((ur) => ur.role.admin);
+
+			if (list.userId !== ctx.session.user.id && !isAdmin) {
+				throw new TRPCError({ code: "FORBIDDEN" });
+			}
+
+			// Perform updates in a transaction
+			return await ctx.db.$transaction(
+				input.itemIds.map((itemId, index) =>
+					ctx.db.rankedItem.updateMany({
+						where: {
+							id: itemId,
+							rankedListId: input.rankedListId,
+						},
+						data: {
+							rank: index + 1,
+							updatedAt: new Date(),
+						},
+					})
+				)
+			);
+		}),
 });

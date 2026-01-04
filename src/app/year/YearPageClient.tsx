@@ -4,13 +4,71 @@ import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { api } from "@/trpc/react";
 import MovieCard from "@/components/MovieCard";
-import { LayoutGrid, List, Table as TableIcon, ArrowDownUp, Loader2, ExternalLink, Check, Trash2 } from "lucide-react";
+import { LayoutGrid, List, ArrowDownUp, Loader2, ExternalLink, Check, Trash2, GripVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import RatingIcon from "@/components/RatingIcon";
 import UserTag from "@/components/UserTag";
+import { Reorder, useDragControls } from "motion/react";
 
 type ViewMode = "grid" | "table" | "list";
+
+// Separate component for reorder item to use drag controls
+function RankedItemRow({ item, index, onRemove, onDragEnd }: {
+	item: any,
+	index: number,
+	onRemove: () => void,
+	onDragEnd: () => void
+}) {
+	const dragControls = useDragControls();
+
+	return (
+		<Reorder.Item
+			value={item}
+			id={item.id}
+			dragListener={false}
+			dragControls={dragControls}
+			onDragStart={() => {
+				if (typeof navigator !== "undefined" && navigator.vibrate) {
+					navigator.vibrate(50);
+				}
+			}}
+			onDragEnd={onDragEnd}
+		>
+			<div className="flex items-center gap-3 bg-zinc-800/40 p-2 rounded border border-zinc-700/50 group hover:bg-zinc-800/80 transition-colors select-none">
+				{/* Drag Handle */}
+				<div
+					className="flex-shrink-0 text-zinc-500 cursor-grab active:cursor-grabbing p-1 touch-none"
+					onPointerDown={(e) => dragControls.start(e)}
+				>
+					<GripVertical className="w-5 h-5" />
+				</div>
+
+				<div className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm bg-zinc-700/50">
+					{index + 1}
+				</div>
+				{item.Movie?.poster && (
+					<img src={item.Movie.poster} alt="" className="w-8 h-12 object-cover rounded shadow pointer-events-none" />
+				)}
+				<div className="flex-grow min-w-0">
+					<p className="text-sm font-bold text-white truncate">{item.Movie?.title}</p>
+					<p className="text-xs text-zinc-400">{item.Movie?.year}</p>
+				</div>
+				<Button
+					variant="ghost"
+					size="icon"
+					className="h-8 w-8 text-zinc-500 hover:text-destructive transition-opacity"
+					onClick={(e) => {
+						e.stopPropagation();
+						onRemove();
+					}}
+				>
+					<Trash2 className="w-4 h-4" />
+				</Button>
+			</div>
+		</Reorder.Item>
+	);
+}
 
 export function YearPageClient() {
 	const router = useRouter();
@@ -75,12 +133,36 @@ export function YearPageClient() {
 		},
 	});
 
+	// Mutation for reordering items
+	const reorderItems = api.rankedList.reorderItems.useMutation({
+		onSuccess: () => {
+			void utils.rankedList.getListById.invalidate({ id: selectedListId! });
+			void utils.rankedList.getMyLists.invalidate();
+		},
+	});
+
+	// Local state for ordered items to support drag and drop
+	const [orderedItems, setOrderedItems] = useState<any[]>([]);
+
+	// Sync local state when selectedList changes
+	useEffect(() => {
+		if (selectedList?.RankedItem) {
+			setOrderedItems(selectedList.RankedItem);
+		}
+	}, [selectedList]);
+
 	// Sort items
 	const sortedItems = items?.slice().sort((a, b) => {
 		if (!a?.date || !b?.date) return 0;
 		const dateA = new Date(a.date).getTime();
 		const dateB = new Date(b.date).getTime();
 		return sortDesc ? dateB - dateA : dateA - dateB;
+	});
+
+	// Filter items if a list is selected (hide items already in the list)
+	const filteredItems = sortedItems?.filter((item) => {
+		if (!selectedListId || !selectedList?.RankedItem) return true;
+		return !selectedList.RankedItem.some((rankedItem) => rankedItem.movieId === item.movie.id);
 	});
 
 	const years = Array.from({ length: 10 }, (_, i) => currentYear - i);
@@ -215,45 +297,42 @@ export function YearPageClient() {
 							)}
 
 							{/* Current Ranked Items Display */}
-							{selectedListId && selectedList && selectedList.RankedItem.length > 0 && (
+							{selectedListId && selectedList && orderedItems.length > 0 && (
 								<div className="bg-zinc-900/40 p-6 rounded-lg border border-zinc-800 space-y-4">
 									<h2 className="text-lg font-bold text-white border-b border-zinc-700 pb-2 flex items-center gap-2">
 										<Check className="w-5 h-5 text-primary" />
 										Current Rankings: {selectedList.title || selectedList.RankedListType.name}
 									</h2>
-									<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-										{selectedList.RankedItem.map((item) => (
-											<div key={item.id} className="flex items-center gap-3 bg-zinc-800/40 p-2 rounded border border-zinc-700/50 group hover:bg-zinc-800/80 transition-colors">
-												<div className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm">
-													{item.rank}
-												</div>
-												{item.Movie?.poster && (
-													<img src={item.Movie.poster} alt="" className="w-8 h-12 object-cover rounded shadow" />
-												)}
-												<div className="flex-grow min-w-0">
-													<p className="text-sm font-bold text-white truncate">{item.Movie?.title}</p>
-													<p className="text-xs text-zinc-400">{item.Movie?.year}</p>
-												</div>
-												<Button
-													variant="ghost"
-													size="icon"
-													className="h-8 w-8 text-zinc-500 hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
-													onClick={() => {
-														if (confirm("Remove this item from the list?")) {
-															removeItem.mutate({ itemId: item.id });
-														}
-													}}
-												>
-													<Trash2 className="w-4 h-4" />
-												</Button>
-											</div>
+									<Reorder.Group
+										axis="y"
+										values={orderedItems}
+										onReorder={setOrderedItems}
+										className="flex flex-col gap-3"
+									>
+										{orderedItems.map((item, index) => (
+											<RankedItemRow
+												key={item.id}
+												item={item}
+												index={index}
+												onRemove={() => {
+													if (confirm("Remove this item from the list?")) {
+														removeItem.mutate({ itemId: item.id });
+													}
+												}}
+												onDragEnd={() => {
+													reorderItems.mutate({
+														rankedListId: selectedListId!,
+														itemIds: orderedItems.map((i) => i.id),
+													});
+												}}
+											/>
 										))}
-									</div>
+									</Reorder.Group>
 								</div>
 							)}
 
 							<div className="flex flex-col gap-4">
-								{sortedItems.map((item) => (
+								{filteredItems?.map((item) => (
 									<div key={item.id} className="flex flex-col md:flex-row gap-4 bg-zinc-900/40 p-4 rounded-lg border border-zinc-800/50 hover:bg-zinc-900/80 transition-colors">
 										<div className="flex-shrink-0 mx-auto md:mx-0">
 											{item.movie.poster ? (
