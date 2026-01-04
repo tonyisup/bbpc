@@ -85,6 +85,7 @@ const BettingCoin: FC<BettingCoinProps> = ({
 							onChange={(e) => setAmount(e.target.value)}
 							className="h-8 bg-gray-800 border-gray-700 text-white"
 							disabled={existingBet?.successful !== null && existingBet?.successful !== undefined}
+							min="0"
 						/>
 						<Button
 							size="sm"
