@@ -15,18 +15,18 @@ export const rankedListRouter = createTRPCRouter({
 				where: {
 					userId: ctx.session.user.id,
 					...(input?.targetType ? {
-						RankedListType: {
+						rankedListType: {
 							targetType: input.targetType,
 						},
 					} : {}),
 				},
 				include: {
-					RankedListType: true,
-					RankedItem: {
+					rankedListType: true,
+					rankedItem: {
 						include: {
-							Movie: true,
-							Show: true,
-							Episode: true,
+							movie: true,
+							show: true,
+							episode: true,
 						},
 					},
 				},
@@ -43,12 +43,12 @@ export const rankedListRouter = createTRPCRouter({
 			const list = await ctx.db.rankedList.findUnique({
 				where: { id: input.id },
 				include: {
-					RankedListType: true,
-					RankedItem: {
+					rankedListType: true,
+					rankedItem: {
 						include: {
-							Movie: true,
-							Show: true,
-							Episode: true,
+							movie: true,
+							show: true,
+							episode: true,
 						},
 						orderBy: {
 							rank: "asc",
@@ -92,8 +92,8 @@ export const rankedListRouter = createTRPCRouter({
 			const list = await ctx.db.rankedList.findUnique({
 				where: { id: input.rankedListId },
 				include: {
-					RankedListType: true,
-					RankedItem: true,
+					rankedListType: true,
+					rankedItem: true,
 				},
 			});
 
@@ -113,15 +113,15 @@ export const rankedListRouter = createTRPCRouter({
 			}
 
 			// Validate rank doesn't exceed max
-			if (input.rank > list.RankedListType.maxItems) {
+			if (input.rank > list.rankedListType.maxItems) {
 				throw new TRPCError({
 					code: "BAD_REQUEST",
-					message: `Rank cannot exceed ${list.RankedListType.maxItems}`,
+					message: `Rank cannot exceed ${list.rankedListType.maxItems}`,
 				});
 			}
 
 			// Check if item already exists at this rank
-			const existingItemAtRank = list.RankedItem.find((i) => i.rank === input.rank);
+			const existingItemAtRank = list.rankedItem.find((i) => i.rank === input.rank);
 
 			if (existingItemAtRank) {
 				// Update existing item at this rank
@@ -157,7 +157,7 @@ export const rankedListRouter = createTRPCRouter({
 		.mutation(async ({ ctx, input }) => {
 			const item = await ctx.db.rankedItem.findUnique({
 				where: { id: input.itemId },
-				include: { RankedList: true },
+				include: { rankedList: true },
 			});
 
 			if (!item) {
@@ -171,7 +171,7 @@ export const rankedListRouter = createTRPCRouter({
 			});
 			const isAdmin = userRoles.some((ur) => ur.role.admin);
 
-			if (item.RankedList.userId !== ctx.session.user.id && !isAdmin) {
+			if (item.rankedList.userId !== ctx.session.user.id && !isAdmin) {
 				throw new TRPCError({ code: "FORBIDDEN" });
 			}
 
@@ -191,7 +191,7 @@ export const rankedListRouter = createTRPCRouter({
 		.mutation(async ({ ctx, input }) => {
 			const list = await ctx.db.rankedList.findUnique({
 				where: { id: input.rankedListId },
-				include: { RankedListType: true },
+				include: { rankedListType: true },
 			});
 
 			if (!list) {

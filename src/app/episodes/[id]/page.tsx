@@ -24,13 +24,13 @@ export default async function EpisodePage({
     include: {
       assignments: {
         include: {
-          Movie: true,
-          User: true,
+          movie: true,
+          user: true,
           assignmentReviews: {
             include: {
-              Review: {
+              review: {
                 include: {
-                  Rating: true,
+                  rating: true,
                 },
               },
             },
@@ -39,11 +39,11 @@ export default async function EpisodePage({
       },
       extras: {
         include: {
-          Review: {
+          review: {
             include: {
-              Movie: true,
-              User: true,
-              Show: true,
+              movie: true,
+              user: true,
+              show: true,
             },
           },
         },

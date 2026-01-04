@@ -2,8 +2,6 @@ import { getServerAuthSession } from "@/server/auth";
 import { redirect } from "next/navigation";
 import { db } from "@/server/db";
 import SyllabusManager from "@/components/SyllabusManager";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
 import { Info } from "lucide-react";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 export default async function SyllabusPage() {
@@ -19,10 +17,10 @@ export default async function SyllabusPage() {
     include: {
       syllabus: {
         include: {
-          Movie: true,
-          Assignment: {
+          movie: true,
+          assignment: {
             include: {
-              Episode: true
+              episode: true
             }
           }
         },

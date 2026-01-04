@@ -27,19 +27,19 @@ export const yearRouter = createTRPCRouter({
 			const reviews = await ctx.db.review.findMany({
 				where: whereClause,
 				include: {
-					Movie: true,
-					User: true,
-					Rating: true,
+					movie: true,
+					user: true,
+					rating: true,
 					extraReviews: {
 						include: {
-							Episode: true,
+							episode: true,
 						},
 					},
 					assignmentReviews: {
 						include: {
-							Assignment: {
+							assignment: {
 								include: {
-									Episode: true,
+									episode: true,
 								},
 							},
 						},
@@ -50,20 +50,20 @@ export const yearRouter = createTRPCRouter({
 			// Normalize data
 			return reviews.map((review) => {
 				// Find the episode
-				let episode = review.extraReviews[0]?.Episode;
+				let episode = review.extraReviews[0]?.episode;
 				if (!episode) {
-					episode = review.assignmentReviews[0]?.Assignment?.Episode;
+					episode = review.assignmentReviews[0]?.assignment?.episode;
 				}
 
-				if (!review.Movie) return null;
+				if (!review.movie) return null;
 
 				return {
 					id: review.id,
-					movie: review.Movie,
-					user: review.User,
-					rating: review.Rating,
+					movie: review.movie,
+					user: review.user,
+					rating: review.rating,
 					episode: episode ?? null,
-					date: review.ReviewdOn,
+					date: review.reviewdOn,
 					reviewId: review.id,
 				};
 			}).filter((item): item is {

@@ -31,7 +31,7 @@ export default async function ProfilePage() {
           assignmentId: null
         },
         include: {
-          Movie: true
+          movie: true
         },
         orderBy: {
           order: 'desc'
@@ -63,62 +63,62 @@ export default async function ProfilePage() {
       reason: true,
       earnedOn: true,
       adjustment: true,
-      GamePointType: {
+      gamePointType: {
         select: {
           title: true,
           points: true,
           description: true,
         }
       },
-      AssignmentPoints: {
+      assignmentPoints: {
         take: 1,
         select: {
-          Assignment: {
+          assignment: {
             select: {
               id: true,
-              Episode: {
+              episode: {
                 select: { id: true, number: true, title: true }
               },
-              Movie: {
+              movie: {
                 select: { title: true }
               }
             }
           }
         }
       },
-      GamblingPoints: {
+      gamblingPoints: {
         take: 1,
         select: {
-          Assignment: {
+          assignment: {
             select: {
               id: true,
-              Episode: {
+              episode: {
                 select: { id: true, number: true, title: true }
               },
-              Movie: {
+              movie: {
                 select: { title: true }
               }
             }
           },
-          GamblingType: {
+          gamblingType: {
             select: {
               title: true
             }
           }
         }
       },
-      Guess: {
+      guess: {
         take: 1,
         select: {
-          AssignmentReview: {
+          assignmentReview: {
             select: {
-              Assignment: {
+              assignment: {
                 select: {
                   id: true,
-                  Episode: {
+                  episode: {
                     select: { id: true, number: true, title: true }
                   },
-                  Movie: {
+                  movie: {
                     select: { title: true }
                   }
                 }
@@ -140,7 +140,7 @@ export default async function ProfilePage() {
       points: true,
       createdAt: true,
       successful: true,
-      GamblingType: {
+      gamblingType: {
         select: {
           id: true,
           title: true,

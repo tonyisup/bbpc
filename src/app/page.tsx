@@ -16,13 +16,13 @@ export default async function HomePage() {
     include: {
       assignments: {
         include: {
-          Movie: true,
-          User: true,
+          movie: true,
+          user: true,
           assignmentReviews: {
             include: {
-              Review: {
+              review: {
                 include: {
-                  Rating: true,
+                  rating: true,
                 },
               },
             },
@@ -31,11 +31,11 @@ export default async function HomePage() {
       },
       extras: {
         include: {
-          Review: {
+          review: {
             include: {
-              Movie: true,
-              User: true,
-              Show: true,
+              movie: true,
+              user: true,
+              show: true,
             },
           },
         },

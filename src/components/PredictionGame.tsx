@@ -17,13 +17,18 @@ import RecordAssignmentAudio from "./common/RecordAssignmentAudio";
 import { useFeatureFlagEnabled } from 'posthog-js/react'
 import UserTag from "./UserTag";
 import AssignmentGamblingBoard from "./AssignmentGamblingBoard";
+import { RouterOutputs } from "@/utils/trpc";
 
+type episodetype = NonNullable<RouterOutputs['episode']['next']>;
+
+// Helper type to extract assignments from the episode
+type EpisodeAssignment = episodetype['assignments'][number];
 /**
  * Props for the PredictionGame component.
  */
 interface PredictionGameProps {
 	/** Array of assignments with their related data (Episode, Movie, etc.). */
-	assignments: AssignmentWithRelations[];
+	assignments: EpisodeAssignment[];
 	/** Optional search query for highlighting text in the game. */
 	searchQuery?: string;
 }
@@ -91,7 +96,7 @@ export const PredictionGame: FC<PredictionGameProps> = ({ assignments, searchQue
  * Internal wrapper to handle data fetching for multiple assignments at once.
  */
 const PredictionGameDataWrapper: FC<{
-	assignments: AssignmentWithRelations[];
+	assignments: EpisodeAssignment[];
 	hosts: User[];
 	ratings: Rating[];
 	userId: string;
@@ -141,7 +146,7 @@ const PredictionGameDataWrapper: FC<{
  */
 interface AssignmentPredictionProps {
 	/** The specific assignment being predicted. */
-	assignment: AssignmentWithRelations;
+	assignment: EpisodeAssignment;
 	/** List of hosts for whom guesses are being made. */
 	hosts: User[];
 	/** List of available ratings that can be chosen. */
@@ -285,7 +290,7 @@ const AssignmentPrediction: FC<AssignmentPredictionProps> = ({
 					onClick={() => setUserExpanded(true)}
 				>
 					<span className="font-bold text-lg sm:text-md text-white flex-grow pr-2">
-						{assignment.Movie ? highlightText(assignment.Movie.title, searchQuery) : "Unknown Movie"}
+						{assignment.movie ? highlightText(assignment.movie.title, searchQuery) : "Unknown Movie"}
 					</span>
 
 					<div className="flex gap-3 items-center">
@@ -322,7 +327,7 @@ const AssignmentPrediction: FC<AssignmentPredictionProps> = ({
 					{/* Expanded Header */}
 					<div className="flex justify-between items-start">
 						<h3 className="font-bold text-xl text-white pl-2 border-l-4 border-red-500">
-							{assignment.Movie ? highlightText(assignment.Movie.title, searchQuery) : "Unknown Movie"}
+							{assignment.movie ? highlightText(assignment.movie.title, searchQuery) : "Unknown Movie"}
 						</h3>
 						{hasAllGuesses && (
 							<button

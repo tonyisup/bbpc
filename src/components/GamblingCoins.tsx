@@ -92,7 +92,7 @@ const GamblingCoins: FC<GamblingSectionProps> = ({ assignmentId, userId }) => {
       <UserPoints points={Number(userPoints)} showSpendButton={false} />
       {hasGambled() && (
         <div className="flex gap-2 items-center">
-          <p className="text-sm text-gray-300">You have bet {assignmentGamblingPoints?.[0]?.points ?? "unknown"} points on {assignmentGamblingPoints?.[0]?.Assignment?.Movie?.title ?? "unknown"}!</p>
+          <p className="text-sm text-gray-300">You have bet {assignmentGamblingPoints?.[0]?.points ?? "unknown"} points on {assignmentGamblingPoints?.[0]?.assignment?.movie?.title ?? "unknown"}!</p>
           <Button
             variant="destructive"
             size="sm"

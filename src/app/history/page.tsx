@@ -1,16 +1,6 @@
 'use client';
 
 import { api } from "@/trpc/react";
-import type {
-  ExtraReview,
-  Movie,
-  Review,
-  User,
-  Episode as EpisodeType,
-  Link as EpisodeLink,
-  Assignment as AssignmentType,
-  Show
-} from "@prisma/client";
 import { Episode } from "@/components/Episode";
 import SearchFilter from "@/components/common/SearchFilter";
 import { useSearchParams, useRouter } from "next/navigation";
@@ -40,20 +30,7 @@ function SearchResults({ query }: { query: string }) {
 
   return (
     <>
-      {episodes.map((episode: EpisodeType & {
-        assignments: (AssignmentType & {
-          User: User;
-          Movie: Movie | null;
-        })[];
-        extras: (ExtraReview & {
-          Review: (Review & {
-            User: User | null;
-            Movie: Movie | null;
-            Show: Show | null;
-          })
-        })[];
-        links: EpisodeLink[];
-      }) => (
+      {episodes.map((episode) => (
         <li className="mb-8" key={episode.id}>
           <Episode episode={episode} showMovieTitles={true} searchQuery={query} />
         </li>

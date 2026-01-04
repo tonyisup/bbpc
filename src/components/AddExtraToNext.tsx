@@ -1,25 +1,12 @@
 'use client';
 
 import { type FC } from "react";
-import type { Assignment as AssignmentType, Episode as EpisodeType, Movie, User, Review, ExtraReview, Link as EpisodeLink, Show } from '@prisma/client';
+import type { CompleteEpisode } from './Episode';
 import { api } from "@/trpc/react";
 import Link from "next/link";
 import { Button } from "./ui/button";
 interface AddExtraToNextProps {
-  episode: null | (EpisodeType & {
-    assignments: (AssignmentType & {
-      User: User;
-      Movie: Movie | null;
-    })[];
-    extras: (ExtraReview & {
-      Review: (Review & {
-        User: User | null;
-        Movie: Movie | null;
-        Show: Show | null;
-      })
-    })[];
-    links: EpisodeLink[];
-  });
+  episode: CompleteEpisode | null;
 }
 
 export const AddExtraToNext: FC<AddExtraToNextProps> = ({ episode }) => {

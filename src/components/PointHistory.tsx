@@ -21,8 +21,8 @@ interface Movie {
  */
 interface Assignment {
 	id: string;
-	Episode: Episode;
-	Movie: Movie;
+	episode: Episode;
+	movie: Movie;
 }
 
 /**
@@ -33,23 +33,23 @@ interface Point {
 	reason: string | null;
 	earnedOn: Date | string;
 	adjustment: number | null;
-	GamePointType: {
+	gamePointType: {
 		title: string;
 		points: number;
 		description: string | null;
 	} | null;
-	AssignmentPoints: {
-		Assignment: Assignment;
+	assignmentPoints: {
+		assignment: Assignment;
 	}[];
-	GamblingPoints: {
-		Assignment: Assignment | null;
-		GamblingType: {
+	gamblingPoints: {
+		assignment: Assignment | null;
+		gamblingType: {
 			title: string;
 		} | null;
 	}[];
-	Guess: {
-		AssignmentReview: {
-			Assignment: Assignment;
+	guess: {
+		assignmentReview: {
+			assignment: Assignment;
 		};
 	}[];
 }
@@ -82,20 +82,20 @@ export default function PointHistory({ points }: PointHistoryProps) {
 		// Try to find associated assignment and episode
 		let assignment: Assignment | null | undefined;
 
-		if (point.AssignmentPoints.length > 0) {
-			assignment = point.AssignmentPoints[0]?.Assignment;
-		} else if (point.GamblingPoints.length > 0) {
-			assignment = point.GamblingPoints[0]?.Assignment;
-		} else if (point.Guess.length > 0) {
-			assignment = point.Guess[0]?.AssignmentReview.Assignment;
+		if (point.assignmentPoints.length > 0) {
+			assignment = point.assignmentPoints[0]?.assignment;
+		} else if (point.gamblingPoints.length > 0) {
+			assignment = point.gamblingPoints[0]?.assignment;
+		} else if (point.guess.length > 0) {
+			assignment = point.guess[0]?.assignmentReview.assignment;
 		}
 
 		if (assignment) {
-			episodeId = assignment.Episode.id;
-			episodeTitle = `Episode ${assignment.Episode.number}: ${assignment.Episode.title}`;
-			episodeNumber = assignment.Episode.number;
+			episodeId = assignment.episode.id;
+			episodeTitle = `Episode ${assignment.episode.number}: ${assignment.episode.title}`;
+			episodeNumber = assignment.episode.number;
 			assignmentId = assignment.id;
-			assignmentTitle = assignment.Movie.title;
+			assignmentTitle = assignment.movie.title;
 		}
 
 		if (!acc[episodeId]) {
@@ -136,16 +136,16 @@ export default function PointHistory({ points }: PointHistoryProps) {
 								<h5 className="text-lg font-semibold mb-3 text-indigo-300">{assignment.title}</h5>
 								<div className="grid gap-3">
 									{assignment.points.map(point => {
-										const totalPoints = (point.GamePointType?.points ?? 0) + (point.adjustment ?? 0);
+										const totalPoints = (point.gamePointType?.points ?? 0) + (point.adjustment ?? 0);
 										return (
 											<div key={point.id} className="flex justify-between items-center bg-gray-800/50 p-4 rounded-lg border border-gray-700/50 hover:border-indigo-500/30 transition-colors">
 												<div className="flex-1">
 													<div className="font-medium text-white text-lg">
-														{point.GamePointType?.title || point.reason || "Point Adjustment"}
+														{point.gamePointType?.title || point.reason || "Point Adjustment"}
 													</div>
-													{point.GamePointType?.description && (
+													{point.gamePointType?.description && (
 														<div className="text-sm text-gray-400 mt-1">
-															{point.GamePointType.description}
+															{point.gamePointType.description}
 														</div>
 													)}
 													<div className="text-xs text-gray-500 mt-2 font-mono">

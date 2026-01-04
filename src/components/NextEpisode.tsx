@@ -1,23 +1,11 @@
 'use client';
 
 import { api } from "@/trpc/react";
-import { Episode } from "./Episode";
-import type { Episode as EpisodeType, Assignment, Link as EpisodeLink, Movie, User, Review, ExtraReview, Show } from '@prisma/client';
+import { Episode, type CompleteEpisode } from "./Episode";
+import { type RouterOutputs } from "@/utils/trpc";
 
-type CompleteEpisode = EpisodeType & {
-  assignments: (Assignment & {
-    User: User;
-    Movie: Movie | null;
-  })[];
-  extras: (ExtraReview & {
-    Review: Review & {
-      User: User;
-      Movie: Movie;
-      Show: Show;
-    };
-  })[];
-  links: EpisodeLink[];
-};
+// Derive the type directly from the router output
+type NextEpisodeOutput = RouterOutputs['episode']['next'];
 
 export function NextEpisode() {
   const { data } = api.episode.next.useQuery(undefined, {
@@ -25,7 +13,8 @@ export function NextEpisode() {
     useErrorBoundary: true
   });
 
-  // Type assertion to match the Episode component's expected type
-  const nextEpisode = data as unknown as CompleteEpisode;
+  // The router returns the episode with lowercase relations (user, movie, review)
+  // which matches CompleteEpisode's expected shape
+  const nextEpisode = data as NonNullable<NextEpisodeOutput> as CompleteEpisode;
   return <Episode episode={nextEpisode} allowGuesses={true} />;
-} 
+}
