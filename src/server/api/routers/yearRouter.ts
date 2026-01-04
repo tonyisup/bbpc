@@ -10,12 +10,16 @@ export const yearRouter = createTRPCRouter({
 			const yearEnd = new Date(input.year + 1, 0, 1);
 			const isAdmin = ctx.session?.user?.isAdmin;
 
-			const whereClause: { userId?: string, ReviewdOn: { gte: Date, lt: Date }, Movie: { year: number } } = {
-				ReviewdOn: {
+			const whereClause: {
+				userId?: string,
+				reviewdOn: { gte: Date, lt: Date },
+				movie: { year: number }
+			} = {
+				reviewdOn: {
 					gte: yearStart,
 					lt: yearEnd,
 				},
-				Movie: {
+				movie: {
 					year: input.year,
 				},
 			};

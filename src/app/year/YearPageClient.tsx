@@ -47,12 +47,12 @@ function RankedItemRow({ item, index, onRemove, onDragEnd }: {
 				<div className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm bg-zinc-700/50">
 					{index + 1}
 				</div>
-				{item.Movie?.poster && (
-					<img src={item.Movie.poster} alt="" className="w-8 h-12 object-cover rounded shadow pointer-events-none" />
+				{item.movie?.poster && (
+					<img src={item.movie.poster} alt="" className="w-8 h-12 object-cover rounded shadow pointer-events-none" />
 				)}
 				<div className="flex-grow min-w-0">
-					<p className="text-sm font-bold text-white truncate">{item.Movie?.title}</p>
-					<p className="text-xs text-zinc-400">{item.Movie?.year}</p>
+					<p className="text-sm font-bold text-white truncate">{item.movie?.title}</p>
+					<p className="text-xs text-zinc-400">{item.movie?.year}</p>
 				</div>
 				<Button
 					variant="ghost"
