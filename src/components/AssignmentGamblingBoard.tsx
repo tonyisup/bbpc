@@ -87,14 +87,15 @@ const AssignmentGamblingBoard: FC<AssignmentGamblingBoardProps> = ({ assignmentI
 					<div className="flex flex-col gap-2">
 						<p className="text-xs text-gray-400 font-medium">Bet on {label} ({type.multiplier}x)</p>
 						<div className="flex gap-2">
-							<Input
-								type="number"
-								placeholder="Pts"
-								value={amount}
-								onChange={(e) => setAmount(e.target.value)}
-								className="h-8 bg-gray-800 border-gray-700 text-white"
-								disabled={existingBet?.successful !== null && existingBet?.successful !== undefined}
-							/>
+<Input
+  type="number"
+  placeholder="Pts"
+  value={amount}
+  onChange={(e) => setAmount(e.target.value)}
+  className="h-8 bg-gray-800 border-gray-700 text-white"
+  disabled={existingBet?.successful !== null && existingBet?.successful !== undefined}
+  min="0"
+/>
 							<Button
 								size="sm"
 								onClick={handleBet}
