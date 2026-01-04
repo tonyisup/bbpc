@@ -61,7 +61,6 @@ const GamblingCoins: FC<GamblingSectionProps> = ({ assignmentId, userId }) => {
     }
 
     submitGamblingPoints({
-      userId: userId,
       assignmentId: assignmentId,
       points: gamblingPoints
     });
@@ -99,9 +98,7 @@ const GamblingCoins: FC<GamblingSectionProps> = ({ assignmentId, userId }) => {
             size="sm"
             className="h-8 w-8 p-1"
             onClick={() => {
-              if (!userId) return;
               submitGamblingPoints({
-                userId: userId,
                 assignmentId: assignmentId,
                 points: 0
               });

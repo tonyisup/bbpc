@@ -689,15 +689,17 @@ export const appRouter = createTRPCRouter({
 
 		submitGamblingPoints: protectedProcedure
 			.input(z.object({
-				userId: z.string(),
 				assignmentId: z.string(),
 				points: z.number(),
 			}))
 			.mutation(async ({ ctx, input }) => {
+				if (!ctx.session.user) {
+					throw new Error("Unauthorized");
+				}
 				// Check if user has already submitted gambling points for this assignment
 				const existingPoints = await ctx.db.gamblingPoints.findFirst({
 					where: {
-						userId: input.userId,
+						userId: ctx.session.user.id,
 						assignmentId: input.assignmentId,
 					},
 				});
@@ -716,7 +718,7 @@ export const appRouter = createTRPCRouter({
 					// Create new gambling points
 					return ctx.db.gamblingPoints.create({
 						data: {
-							userId: input.userId,
+							userId: ctx.session.user.id,
 							assignmentId: input.assignmentId,
 							points: input.points,
 						},
@@ -803,6 +805,7 @@ export const appRouter = createTRPCRouter({
 
 				const result: Record<string, typeof gamblingPoints> = {};
 				for (const gp of gamblingPoints) {
+					if (!gp.assignmentId) continue;
 					if (!result[gp.assignmentId]) result[gp.assignmentId] = [];
 					result[gp.assignmentId]!.push(gp);
 				}
