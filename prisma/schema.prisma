@@ -227,8 +227,6 @@ model User {
   syllabus            Syllabus[]
   tagVotes            TagVote[]
   roles               UserRole[]
-  tagVotes            TagVote[]
-  impersonatedUserId  String?
   gambledOn           GamblingPoints[]      @relation("TargetUser")
 }
 
