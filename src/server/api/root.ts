@@ -5,7 +5,7 @@ import { syllabusRouter } from "./routers/syllabus";
 import { Decimal } from "@prisma/client/runtime/client";
 import { showRouter } from "./routers/showRouter";
 import { uploadInfoRouter } from "./routers/uploadInfo";
-import { calculateUserPoints } from "@/utils/points";
+import { calculateUserPoints, getCurrentSeasonID } from "@/utils/points";
 import { tagRouter } from "./routers/tagRouter";
 import { yearRouter } from "./routers/yearRouter";
 import { rankedListRouter } from "./routers/rankedListRouter";
@@ -849,12 +849,78 @@ export const appRouter = createTRPCRouter({
 				ratingId: z.string()
 			}))
 			.mutation(async ({ ctx, input }) => {
-				return await ctx.db.$executeRaw`
-          EXEC [SubmitGuess]
-            @assignmentId=${input.assignmentId},
-            @hostId=${input.hostId},
-            @guesserId=${input.guesserId},
-            @ratingId=${input.ratingId}`
+				const seasonId = await getCurrentSeasonID(ctx.db);
+				if (!seasonId) {
+					throw new Error("No active season found");
+				}
+
+				const assignment = await ctx.db.assignment.findUnique({
+					where: { id: input.assignmentId }
+				});
+
+				if (!assignment) {
+					throw new Error("Assignment not found");
+				}
+
+				// Find or create the review for the host
+				let review = await ctx.db.review.findFirst({
+					where: {
+						userId: input.hostId,
+						movieId: assignment.movieId
+					}
+				});
+
+				if (!review) {
+					review = await ctx.db.review.create({
+						data: {
+							userId: input.hostId,
+							movieId: assignment.movieId,
+							ReviewdOn: null
+						}
+					});
+				}
+
+				// Find or create the assignment review link
+				let assignmentReview = await ctx.db.assignmentReview.findFirst({
+					where: {
+						assignmentId: input.assignmentId,
+						reviewId: review.id
+					}
+				});
+
+				if (!assignmentReview) {
+					assignmentReview = await ctx.db.assignmentReview.create({
+						data: {
+							assignmentId: input.assignmentId,
+							reviewId: review.id
+						}
+					});
+				}
+
+				// Find or create/update the guess
+				const existingGuess = await ctx.db.guess.findFirst({
+					where: {
+						assignmntReviewId: assignmentReview.id,
+						userId: ctx.session.user.id
+					}
+				});
+
+				if (existingGuess) {
+					return await ctx.db.guess.update({
+						where: { id: existingGuess.id },
+						data: { ratingId: input.ratingId }
+					});
+				} else {
+					return await ctx.db.guess.create({
+						data: {
+							ratingId: input.ratingId,
+							userId: ctx.session.user.id,
+							assignmntReviewId: assignmentReview.id,
+							seasonId: seasonId,
+							created: new Date()
+						}
+					});
+				}
 			}),
 
 		updateAudioMessage: protectedProcedure
