@@ -140,11 +140,8 @@ export const reviewRouter = createTRPCRouter({
 
 			// Group guesses by assignmentId
 			const result: Record<string, typeof guesses> = {};
-			for (const ar of assignmentReviews) {
-				if (!result[ar.assignmentId]) {
-					result[ar.assignmentId] = [];
-				}
-				result[ar.assignmentId]?.push(...guesses.filter(g => g.assignmntReviewId === ar.id));
+			for (const a of input.assignmentIds) {
+				result[a] = guesses.filter(g => g.assignmentReview.assignmentId === a);
 			}
 			return result;
 		}),
