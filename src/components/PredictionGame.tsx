@@ -271,7 +271,7 @@ const AssignmentPrediction: FC<AssignmentPredictionProps> = ({
 	/* These are pre-fetched */
 
 	const hasAllGuesses = hosts.length > 0 && hosts.every(host => !!getGuessForHost(host.id));
-	const isCollapsed = hasAllGuesses && !userExpanded;
+	const isCollapsed = !userExpanded;
 
 	return (
 		<div className="flex flex-col gap-4 relative">
