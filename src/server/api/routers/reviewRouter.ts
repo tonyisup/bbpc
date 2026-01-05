@@ -272,18 +272,18 @@ export const reviewRouter = createTRPCRouter({
 			id: z.number(),
 		}))
 		.mutation(async ({ ctx, input }) => {
-			// Ensure the user owns the message before deleting
-			const message = await ctx.db.audioMessage.findUnique({
-				where: { id: input.id }
+			const result = await ctx.db.audioMessage.deleteMany({
+				where: {
+					id: input.id,
+					userId: ctx.session.user.id,
+				},
 			});
 
-			if (!message || message.userId !== ctx.session.user.id) {
+			if (result.count === 0) {
 				throw new Error("Unauthorized or message not found");
 			}
 
-			return ctx.db.audioMessage.delete({
-				where: { id: input.id },
-			});
+			return result;
 		}),
 
 	getGuessesForAssignmentForUser: protectedProcedure
