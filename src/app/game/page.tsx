@@ -132,29 +132,35 @@ export default function GamePage() {
       <div className="bg-gray-800 rounded-lg p-6 shadow-lg">
         <h2 className="text-2xl font-semibold mb-6 text-center text-blue-400">Gambling</h2>
         <div className="space-y-4 text-lg">
+          <h3 className="text-xl font-semibold text-center text-blue-400">[Sunsetting January 12, 2026]</h3>
+          <p>
+            For each assignment, you can gamble points for a 1x return guessing all three hosts' ratings.
+          </p>
+          <p>
+            <a href="https://www.instagram.com/p/DIFsttBpTaF/" target="_blank" rel="noreferrer">
+              <p className="underline text-xl font-semibold mt-2 text-blue-400">Video: How to gamble on the site</p>
+            </a>
+          </p>
+        </div>
+        <div className="mt-6 space-y-4 text-lg">
+          <h3 className="text-xl font-semibold text-center text-blue-400">[Effective January 12, 2026]</h3>
           <p>
             For each assignment, you can gamble points on specific host outcomes.
           </p>
           <p>
-            <span className="text-yellow-400 font-semibold">1x Multiplier</span>: Bet on a single host&apos;s rating (MCP, Harley, or Fonso).
+            <span className="text-yellow-400 font-semibold">1x Multiplier</span>: Bet on guessing a single host&apos;s rating (MCP, Harley, or Fonso).
           </p>
           <p>
-            <span className="text-orange-400 font-semibold">2x Multiplier</span>: Bet on a pair of hosts giving the same rating (e.g., &quot;MCP & Harley Agree&quot;).
+            <span className="text-orange-400 font-semibold">2x Multiplier</span>: Bet on guessing a pair of hosts' ratings (e.g., &quot;MCP & Harley&quot; or &quot;Harley & Fonso&quot; or &quot;MCP & Fonso&quot;).
           </p>
           <p>
-            <span className="text-red-400 font-semibold">3x Multiplier</span>: Bet on all three hosts giving the same rating (&quot;All Three Agree&quot;).
+            <span className="text-red-400 font-semibold">3x Multiplier</span>: Bet on guessing all three hosts' ratings (&quot;MCP & Harley & Fonso&quot;).
           </p>
           <p>
-            If you win, you will earn your wager multiplied by the bet type. If you lose, you lose the points wagered.
+            If you win, you will earn your wager back + the points wagered multiplied by the bet multiplier. If you lose, you lose the points wagered.
           </p>
           <p>
             <span className="text-amber-500 font-semibold italic">Note: Once a bet is confirmed by the Game Master, it is locked and cannot be changed.</span>
-          </p>
-          <p>
-            <a href="https://www.instagram.com/p/DIFsttBpTaF/" target="_blank" rel="noreferrer">
-              <p>You can now play online!</p>
-              <p className="underline text-xl font-semibold mt-2 text-blue-400">Video: How to gamble on the site</p>
-            </a>
           </p>
           <p className="text-sm border-t border-gray-700 pt-4">
             BONUS HARLEY POINTS: If you call in/leave a voice message and you wager &quot;all your points&quot; and you win, you will earn an extra 4 points BEFORE it&apos;s doubled (or tripled).
