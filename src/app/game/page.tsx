@@ -16,14 +16,15 @@ export default function GamePage() {
       <div className="bg-gray-800 rounded-lg p-6 shadow-lg">
         <h2 className="text-2xl font-semibold mb-6 text-center text-blue-400">Synopsis</h2>
         <div className="space-y-4 text-lg">
-          <p>First player to reach <span className="text-yellow-400 font-semibold">100 points</span> wins.</p>
+          <p>The player with the <span className="text-yellow-400 font-semibold">most points</span> at the end of the season wins.</p>
+          <p>Each season lasts <span className="text-yellow-400 font-semibold">8 weeks</span>.</p>
           <p>
             The winner gets to pick a movie and talk to us about it as a <span className="text-green-400 font-semibold">guest</span> on show!
           </p>
         </div>
       </div>
 
-      <div className="bg-gray-800 rounded-lg p-6 shadow-lg"> 
+      <div className="bg-gray-800 rounded-lg p-6 shadow-lg">
         <h2 className="text-2xl font-semibold mb-6 text-center text-blue-400">Gameplay</h2>
         <div className="space-y-4 text-lg">
           <p>Every week two movies will be assigned for review on the next episode.</p>
@@ -54,7 +55,7 @@ export default function GamePage() {
           <p className="leading-relaxed flex items-center gap-2">
             <p><span className="text-red-400 font-semibold">1</span> out of 4</p>
             <RatingIcon value={1} />
-            <p>Trash: <span className="text-red-400 font-semibold">the worst</span></p>
+            <p>Goldbloom: <span className="text-red-400 font-semibold">the worst</span></p>
           </p>
         </div>
       </div>
@@ -63,28 +64,16 @@ export default function GamePage() {
         <h2 className="text-2xl font-semibold mb-6 text-center text-blue-400">Scoring</h2>
         <div className="space-y-4 text-lg">
           <p>
-            Players who <span className="text-green-400 font-semibold">correctly</span> guess the rating for a host will <span className="text-green-400 font-semibold">earn</span> <span className="text-green-400 font-semibold">1 point</span>.
+            Players who <span className="text-green-400 font-semibold">correctly</span> guess the rating for a host will <span className="text-green-400 font-semibold">earn 1 point</span>.
           </p>
           <p>
-            Players who <span className="text-green-400 font-semibold">correctly</span> guess the rating for all hosts will <span className="text-green-400 font-semibold">earn</span> an extra <span className="text-green-400 font-semibold">1 point</span>.
+            Players who <span className="text-green-400 font-semibold">correctly</span> guess the rating for all hosts will <span className="text-green-400 font-semibold">earn an extra 1 point</span>.
           </p>
           <p>
-            Players who <span className="text-red-400 font-semibold">incorrectly</span> guess the rating for all hosts will <span className="text-red-400 font-semibold">lose</span> <span className="text-red-400 font-semibold">1 point</span>.
+            Players who <span className="text-red-400 font-semibold">incorrectly</span> guess the rating for all hosts will <span className="text-red-400 font-semibold">lose 1 point</span>.
           </p>
           <p>
-            Players may <span className="text-blue-400 font-semibold">Double Down</span> on either <span className="text-green-400 font-semibold">Slater</span> or <span className="text-red-400 font-semibold">Goldbloom</span> guesses.
-          </p>
-        </div>
-      </div>
-
-      <div className="bg-gray-800 rounded-lg p-6 shadow-lg">
-        <h2 className="text-2xl font-semibold mb-6 text-center text-blue-400">Double Down</h2>
-        <div className="space-y-4 text-lg">
-          <p>
-            When you <span className="text-blue-400 font-semibold">Double Down</span>, you will <span className="text-green-400 font-semibold">earn</span> or <span className="text-red-400 font-semibold">lose</span> an extra point.
-          </p>
-          <p>
-            Players may <span className="text-yellow-400 font-semibold">only</span> double down on Slater or Goldbloom guesses.
+            Players who <span className="text-blue-400 font-semibold">vote on movie tags</span> will <span className="text-green-400 font-semibold">earn 1 point</span> per vote.
           </p>
         </div>
       </div>
@@ -126,10 +115,10 @@ export default function GamePage() {
             Each host will have a <span className="text-blue-400 font-semibold">Homework</span> entry and an <span className="text-blue-600 font-semibold">Extra Credit</span> entry.
           </p>
           <p>
-            The last seventh (7th) entry will be for the player who <span className="text-green-400 font-semibold">earned the most points</span> that week.
+            The last entry will be for the player who <span className="text-green-400 font-semibold">earned the most points</span> that week.
           </p>
           <p>
-            If the player entry is landed on, we will choose the next available assignment from that user's  
+            If the player entry is landed on, we will choose the next available assignment from that user&apos;s
             <Link href="/syllabus" className="text-blue-400 font-semibold">
               &nbsp;syllabus
             </Link>.
@@ -143,30 +132,39 @@ export default function GamePage() {
       <div className="bg-gray-800 rounded-lg p-6 shadow-lg">
         <h2 className="text-2xl font-semibold mb-6 text-center text-blue-400">Gambling</h2>
         <div className="space-y-4 text-lg">
+          <h3 className="text-xl font-semibold text-center text-blue-400">[Sunsetting January 12, 2026]</h3>
           <p>
-            For each assignment, if you have over 10 points, you can gamble any amount of points.
-          </p>
-          <p>
-            The gamble is a bet that you will guess ALL the ratings correctly.
-          </p>
-          <p>
-            If you win, you will earn double your points. 
-          </p>
-          <p>
-            If you lose, you will lose your points
-          </p>
-          <p>
-            To gamble, just say your wager on your recording or message
+            For each assignment, you can gamble points for a 1x return guessing all three hosts' ratings.
           </p>
           <p>
             <a href="https://www.instagram.com/p/DIFsttBpTaF/" target="_blank" rel="noreferrer">
-              <p>You can now play online!</p>
-              <p className="underline text-2xl font-semibold mb-6 text-center text-blue-400">Video: How to gamble on  the site</p>
+              <p className="underline text-xl font-semibold mt-2 text-blue-400">Video: How to gamble on the site</p>
             </a>
           </p>
+        </div>
+        <div className="mt-6 space-y-4 text-lg">
+          <h3 className="text-xl font-semibold text-center text-blue-400">[Effective January 12, 2026]</h3>
           <p>
-            BONUS HARLEY POINTS: If you call in/leave a voice message and you wager "all your points" and you win, you will earn an extra 4 points BEFORE it's doubled, so an extra 8 (EIGHT!) points!
-            This only applies to voice submissions. Text or website button submissions do not count.
+            For each assignment, you can gamble points on specific host outcomes.
+          </p>
+          <p>
+            <span className="text-yellow-400 font-semibold">1x Multiplier</span>: Bet on guessing a single host&apos;s rating (MCP, Harley, or Fonso).
+          </p>
+          <p>
+            <span className="text-orange-400 font-semibold">2x Multiplier</span>: Bet on guessing a pair of hosts' ratings (e.g., &quot;MCP & Harley&quot; or &quot;Harley & Fonso&quot; or &quot;MCP & Fonso&quot;).
+          </p>
+          <p>
+            <span className="text-red-400 font-semibold">3x Multiplier</span>: Bet on guessing all three hosts' ratings (&quot;MCP & Harley & Fonso&quot;).
+          </p>
+          <p>
+            If you win, you will earn your wager back + the points wagered multiplied by the bet multiplier. If you lose, you lose the points wagered.
+          </p>
+          <p>
+            <span className="text-amber-500 font-semibold italic">Note: Once a bet is confirmed by the Game Master, it is locked and cannot be changed.</span>
+          </p>
+          <p className="text-sm border-t border-gray-700 pt-4">
+            BONUS HARLEY POINTS: If you call in/leave a voice message and you wager &quot;all your points&quot; and you win, you will earn an extra 4 points BEFORE it&apos;s doubled (or tripled).
+            This only applies to voice submissions.
           </p>
         </div>
       </div>
@@ -176,7 +174,7 @@ export default function GamePage() {
         <div className="space-y-4 text-lg">
           <p>* - All bonus points are subject to the Game Master&apos;s discretion.</p>
           <p >If a player misses 2 episodes in a row, they will start losing 1 point per episode missed.</p>
-          <p>If more than one player reaches 100 points at the same time, the player with the most points at the end of the episode wins.</p>
+          <p>In the event of a tie at the end of the season, the player with the most points earned in the final episode wins.</p>
         </div>
       </div>
     </div>
