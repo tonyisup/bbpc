@@ -1,9 +1,9 @@
 'use client'
 
-import { type FC } from "react";
+import { type FC, useState, useEffect } from "react";
+import { motion, AnimatePresence } from "motion/react";
 import { api } from "@/trpc/react";
 import { Rating, User } from "@prisma/client";
-import UserTag from "./UserTag";
 import BettingCoin from "./BettingCoin";
 import RatingIcon from "./RatingIcon";
 
@@ -17,10 +17,26 @@ interface AssignmentGamblingBoardProps {
 	}[];
 }
 
+
+const gamblingTitle = [
+	"Wanna bet?",
+	"Go ahead and gamble!",
+	"You've got nothing to lose!",
+	"How confident are you?",
+]
 const AssignmentGamblingBoard: FC<AssignmentGamblingBoardProps> = ({ assignmentId, userId, hosts, guesses }) => {
 	const { data: gamblingTypes } = api.gambling.getAllActive.useQuery();
 	const { data: userPoints } = api.user.points.useQuery();
 	const { data: myBets, refetch: refetchBets } = api.gambling.getForAssignment.useQuery({ assignmentId });
+
+	const [titleIndex, setTitleIndex] = useState(0);
+
+	useEffect(() => {
+		const interval = setInterval(() => {
+			setTitleIndex((prev) => (prev + 1) % gamblingTitle.length);
+		}, 3000);
+		return () => clearInterval(interval);
+	}, []);
 
 	const utils = api.useUtils();
 
@@ -43,7 +59,38 @@ const AssignmentGamblingBoard: FC<AssignmentGamblingBoardProps> = ({ assignmentI
 	return (
 		<div className="flex flex-col items-center gap-2 p-6 bg-gray-900/30 rounded-2xl border border-gray-800 shadow-inner max-w-2xl mx-auto w-full">
 			<div className="relative grid grid-cols-7 w-full items-center">
-				<span className="absolute top-0 right-0 text-[10px] text-gray-500 font-bold mb-1 opacity-70">Wanna bet?</span>
+				<motion.div
+					initial={{ opacity: 0, scale: 0.8, rotate: -10 }}
+					animate={{ opacity: 1, scale: 1, rotate: 2 }}
+					whileHover={{ scale: 1.1, rotate: 0 }}
+					className="absolute -top-3 -right-3 flex items-center gap-1.5 px-3 py-1 bg-gradient-to-r from-amber-400 to-amber-600 rounded-full shadow-lg shadow-amber-500/20 cursor-default select-none z-20 group overflow-hidden"
+				>
+					{/* Shine effect */}
+					<motion.div
+						animate={{ x: ["-100%", "200%"] }}
+						transition={{ repeat: Infinity, duration: 3, ease: "linear", repeatDelay: 1 }}
+						className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -skew-x-[20deg]"
+					/>
+
+					<AnimatePresence mode="wait">
+						<motion.span
+							key={titleIndex}
+							initial={{ y: 10, opacity: 0 }}
+							animate={{ y: 0, opacity: 1 }}
+							exit={{ y: -10, opacity: 0 }}
+							className="relative text-[10px] font-black text-amber-950 uppercase tracking-widest drop-shadow-sm inline-block min-w-[120px] text-right"
+						>
+							{gamblingTitle[titleIndex]}
+						</motion.span>
+					</AnimatePresence>
+					<motion.span
+						animate={{ rotate: [0, 15, -15, 0] }}
+						transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+						className="relative text-xs"
+					>
+						🎲
+					</motion.span>
+				</motion.div>
 
 				{/* Row 1: Top Arch Bet (2x) - MCP & Harley */}
 				<div className="col-start-1 col-span-5 row-start-1 relative flex justify-center h-20">
