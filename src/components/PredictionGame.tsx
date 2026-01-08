@@ -188,7 +188,6 @@ const AssignmentPrediction: FC<AssignmentPredictionProps> = ({
 		{ initialData: { [assignment.id]: initialGuesses } }
 	);
 
-
 	const { data: audioMessageCountData } = api.review.getUsersAudioMessagesCountForAssignments.useQuery(
 		{ assignmentIds: [assignment.id] },
 		{ initialData: { [assignment.id]: initialAudioMessageCount } }
@@ -200,6 +199,7 @@ const AssignmentPrediction: FC<AssignmentPredictionProps> = ({
 	);
 
 	const guesses = existingGuesses?.[assignment.id] ?? initialGuesses;
+	const guessesForGambling = guesses.map(g => ({ hostId: g.assignmentReview.review.user.id, ratingId: g.rating.value }));
 	const audioMessageCount = audioMessageCountData?.[assignment.id] ?? initialAudioMessageCount;
 	const gamblePoints = gamblePointsData?.[assignment.id] ?? initialGamblePoints;
 
@@ -229,17 +229,17 @@ const AssignmentPrediction: FC<AssignmentPredictionProps> = ({
 					assignmntReviewId: "temp-id",
 					seasonId: "temp-id",
 					pointsId: null,
-					Rating: rating,
-					AssignmentReview: {
+					rating: rating,
+					assignmentReview: {
 						id: "temp-id",
-						Review: {
+						review: {
 							id: "temp-id",
 							userId: newGuess.hostId,
 							movieId: null,
 							ratingId: null,
 							ReviewdOn: null,
 							showId: null,
-							User: {
+							user: {
 								id: newGuess.hostId,
 								name: "Loading...",
 								email: "",
@@ -269,9 +269,10 @@ const AssignmentPrediction: FC<AssignmentPredictionProps> = ({
 
 	const getGuessForHost = (hostId: string) => {
 		if (!guesses) return null;
+
 		return guesses.find((g: any) => {
-			const reviewUserId = g.AssignmentReview?.Review?.userId;
-			const reviewUserObjId = g.AssignmentReview?.Review?.User?.id;
+			const reviewUserId = g.assignmentReview?.review?.userId;
+			const reviewUserObjId = g.assignmentReview?.review?.user?.id;
 			return (reviewUserId ?? reviewUserObjId) === hostId;
 		});
 	};
@@ -300,7 +301,7 @@ const AssignmentPrediction: FC<AssignmentPredictionProps> = ({
 								if (!guess) return null;
 								return (
 									<div key={host.id} title={host.name ?? "Host"} className="scale-75 sm:scale-90 opacity-90 hover:opacity-100 transition-opacity">
-										<RatingIcon value={guess.Rating.value} />
+										<RatingIcon value={guess.rating.value} />
 									</div>
 								);
 							})}
@@ -351,7 +352,7 @@ const AssignmentPrediction: FC<AssignmentPredictionProps> = ({
 									</div>
 									<div className="flex flex-wrap gap-2">
 										{ratings.map(rating => {
-											const isSelected = guess?.Rating.id === rating.id;
+											const isSelected = guess?.rating.id === rating.id;
 											return (
 												<button
 													type="button"
@@ -385,11 +386,12 @@ const AssignmentPrediction: FC<AssignmentPredictionProps> = ({
 						})}
 					</div>
 
-					<AssignmentGamblingBoard
+					{hasAllGuesses && <AssignmentGamblingBoard
 						assignmentId={assignment.id}
 						userId={userId}
 						hosts={hosts}
-					/>
+						guesses={guessesForGambling}
+					/>}
 					<div className="flex gap-4 flex-wrap items-center justify-between pt-4 border-t border-gray-700/50">
 						<div className="flex w-full justify-center gap-4">
 							<Call />

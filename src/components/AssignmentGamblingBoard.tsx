@@ -2,17 +2,22 @@
 
 import { type FC } from "react";
 import { api } from "@/trpc/react";
-import { User } from "@prisma/client";
+import { Rating, User } from "@prisma/client";
 import UserTag from "./UserTag";
 import BettingCoin from "./BettingCoin";
+import RatingIcon from "./RatingIcon";
 
 interface AssignmentGamblingBoardProps {
 	assignmentId: string;
 	userId: string;
 	hosts: User[];
+	guesses: {
+		hostId: string;
+		ratingId: number;
+	}[];
 }
 
-const AssignmentGamblingBoard: FC<AssignmentGamblingBoardProps> = ({ assignmentId, userId, hosts }) => {
+const AssignmentGamblingBoard: FC<AssignmentGamblingBoardProps> = ({ assignmentId, userId, hosts, guesses }) => {
 	const { data: gamblingTypes } = api.gambling.getAllActive.useQuery();
 	const { data: userPoints } = api.user.points.useQuery();
 	const { data: myBets, refetch: refetchBets } = api.gambling.getForAssignment.useQuery({ assignmentId });
@@ -45,7 +50,7 @@ const AssignmentGamblingBoard: FC<AssignmentGamblingBoardProps> = ({ assignmentI
 					<div className="absolute top-10 w-[85%] h-14 border-t-2 border-x-2 border-gray-700 rounded-t-[120px] pointer-events-none opacity-50" />
 					<div className="z-10 px-4 py-1 rounded-full self-start">
 						<BettingCoin
-							lookupId="rating-guess-2x"
+							lookupId="mcp-harley-rating-guess-2x"
 							label="MCP & Harley"
 							gamblingTypes={gamblingTypes}
 							getBetFor={getBetFor}
@@ -54,28 +59,37 @@ const AssignmentGamblingBoard: FC<AssignmentGamblingBoardProps> = ({ assignmentI
 							assignmentId={assignmentId}
 							userPoints={userPoints}
 						/>
+						<div className="w-full text-center text-[10px] text-gray-500 font-bold mb-1 opacity-70">2x</div>
 					</div>
 				</div>
 
 				{/* Row 2: Host Name Cards + Trio Agree */}
 				<div className="col-start-1 row-start-2 flex justify-center">
-					<div className="w-full flex justify-center py-2 px-1 rounded-xl bg-gray-800/50 shadow-md">
-						<UserTag user={hosts[0]!} />
+					<div className="w-full flex justify-center items-center p-2 gap-2 rounded-xl bg-gray-800/50 shadow-md outline">
+						{hosts[0]?.name && <span className="text-gray-200 rounded-lg leading-loose self-center underline underline-offset-4">{hosts[0].name}</span>}
+						{guesses.find(g => g.hostId == hosts[0]?.id) && <RatingIcon value={guesses.find(g => g.hostId == hosts[0]?.id)?.ratingId} />}
 					</div>
 				</div>
 				<div className="col-start-3 row-start-2 flex justify-center">
-					<div className="w-full flex justify-center py-2 px-1 rounded-xl bg-gray-800/50 shadow-md">
-						<UserTag user={hosts[1]!} />
+					<div className="w-full flex justify-center items-center p-2 gap-2 rounded-xl bg-gray-800/50 shadow-md outline">
+						{hosts[1]?.name && <span className="text-gray-200 rounded-lg leading-loose self-center underline underline-offset-4">{hosts[1].name}</span>}
+						{guesses.find(g => g.hostId === hosts[1]?.id) && <RatingIcon value={guesses.find(g => g.hostId === hosts[1]?.id)?.ratingId} />}
 					</div>
 				</div>
 				<div className="col-start-5 row-start-2 flex justify-center">
-					<div className="w-full flex justify-center py-2 px-1 rounded-xl bg-gray-800/50 shadow-md">
-						<UserTag user={hosts[2]!} />
+					<div className="w-full flex justify-center items-center p-2 gap-2 rounded-xl bg-gray-800/50 shadow-md outline">
+						{hosts[2]?.name && <span className="text-gray-200 rounded-lg leading-loose self-center underline underline-offset-4">{hosts[2].name}</span>}
+						{guesses.find(g => g.hostId === hosts[2]?.id) && <RatingIcon value={guesses.find(g => g.hostId === hosts[2]?.id)?.ratingId} />}
 					</div>
 				</div>
+
+				<div className="col-start-6 row-start-2 flex justify-center">
+					<div className="w-full text-right text-[10px] text-gray-500 font-bold mb-1 opacity-70">3x</div>
+				</div>
+
 				<div className="col-start-7 row-start-2 flex flex-col items-center pl-4 py-2">
 					<BettingCoin
-						lookupId="rating-guess-3x"
+						lookupId="all-rating-guess-3x"
 						label="All Three"
 						gamblingTypes={gamblingTypes}
 						getBetFor={getBetFor}
@@ -90,7 +104,7 @@ const AssignmentGamblingBoard: FC<AssignmentGamblingBoardProps> = ({ assignmentI
 				<div className="col-start-1 row-start-3 flex flex-col items-center">
 					<span className="text-[10px] text-gray-500 font-bold mb-1 opacity-70">1x</span>
 					<BettingCoin
-						lookupId="rating-guess-1x"
+						lookupId="mcp-rating-guess-1x"
 						targetHostId={hosts[0]?.id}
 						label={hosts[0]?.name?.split(' ')[0] ?? ""}
 						gamblingTypes={gamblingTypes}
@@ -104,7 +118,7 @@ const AssignmentGamblingBoard: FC<AssignmentGamblingBoardProps> = ({ assignmentI
 				<div className="col-start-3 row-start-3 flex flex-col items-center">
 					<span className="text-[10px] text-gray-500 font-bold mb-1 opacity-70">1x</span>
 					<BettingCoin
-						lookupId="rating-guess-1x"
+						lookupId="fonso-rating-guess-1x"
 						targetHostId={hosts[1]?.id}
 						label={hosts[1]?.name?.split(' ')[0] ?? ""}
 						gamblingTypes={gamblingTypes}
@@ -118,7 +132,7 @@ const AssignmentGamblingBoard: FC<AssignmentGamblingBoardProps> = ({ assignmentI
 				<div className="col-start-5 row-start-3 flex flex-col items-center">
 					<span className="text-[10px] text-gray-500 font-bold mb-1 opacity-70">1x</span>
 					<BettingCoin
-						lookupId="rating-guess-1x"
+						lookupId="harley-rating-guess-1x"
 						targetHostId={hosts[2]?.id}
 						label={hosts[2]?.name?.split(' ')[0] ?? ""}
 						gamblingTypes={gamblingTypes}
@@ -132,10 +146,13 @@ const AssignmentGamblingBoard: FC<AssignmentGamblingBoardProps> = ({ assignmentI
 
 				{/* Row 4: Pair Agree Bets (positioned between hosts) */}
 				<div className="col-start-2 row-start-4 flex flex-col items-center">
+					<div className="w-full text-center text-[10px] text-gray-500 font-bold mb-1 opacity-70">2x</div>
+
 					<div className="w-12 h-4 border-b-2 border-x-2 border-gray-700 rounded-b-xl opacity-50 mb-1" />
 					<div className="whitespace-nowrap flex justify-center">
+
 						<BettingCoin
-							lookupId="rating-guess-2x"
+							lookupId="mcp-fonso-rating-guess-2x"
 							label="MCP & Fonso"
 							gamblingTypes={gamblingTypes}
 							getBetFor={getBetFor}
@@ -147,10 +164,12 @@ const AssignmentGamblingBoard: FC<AssignmentGamblingBoardProps> = ({ assignmentI
 					</div>
 				</div>
 				<div className="col-start-4 row-start-4 flex flex-col items-center">
+					<div className="w-full text-center text-[10px] text-gray-500 font-bold mb-1 opacity-70">2x</div>
+
 					<div className="w-12 h-4 border-b-2 border-x-2 border-gray-700 rounded-b-xl opacity-50 mb-1" />
 					<div className="whitespace-nowrap flex justify-center">
 						<BettingCoin
-							lookupId="rating-guess-2x"
+							lookupId="fonso-harley-rating-guess-2x"
 							label="Fonso & Harley"
 							gamblingTypes={gamblingTypes}
 							getBetFor={getBetFor}
