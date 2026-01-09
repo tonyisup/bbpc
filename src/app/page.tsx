@@ -1,3 +1,4 @@
+import { LatestEpisode } from "@/components/LatestEpisode";
 import { Episode } from "@/components/Episode";
 import { NextEpisode } from "@/components/NextEpisode";
 import { EpisodeSkeleton } from "@/components/EpisodeSkeleton";
@@ -51,7 +52,7 @@ export default async function HomePage() {
       <div className="container flex flex-col items-center justify-center gap-12 px-4">
         <div className="flex flex-wrap items-start justify-center gap-12">
           <Suspense fallback={<EpisodeSkeleton />}>
-            {latestEpisode && <Episode episode={latestEpisode} />}
+            {latestEpisode && <LatestEpisode episode={latestEpisode} />}
           </Suspense>
           <Suspense fallback={<EpisodeSkeleton />}>
             <NextEpisode />
