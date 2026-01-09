@@ -93,7 +93,7 @@ const AssignmentGamblingBoard: FC<AssignmentGamblingBoardProps> = ({ assignmentI
 				</motion.div>
 
 				{/* Row 1: Top Arch Bet (2x) - MCP & Harley */}
-				<div className="col-start-1 col-span-5 row-start-1 relative flex justify-center h-20">
+				<div className="col-start-1 col-span-5 row-start-1 relative flex justify-center h-20 mt-5 sm:mt-0">
 					<div className="absolute top-10 w-[85%] h-14 border-t-2 border-x-2 border-gray-700 rounded-t-[120px] pointer-events-none opacity-50" />
 					<div className="z-10 px-4 py-1 rounded-full self-start">
 						<BettingCoin
@@ -112,19 +112,19 @@ const AssignmentGamblingBoard: FC<AssignmentGamblingBoardProps> = ({ assignmentI
 
 				{/* Row 2: Host Name Cards + Trio Agree */}
 				<div className="col-start-1 row-start-2 flex justify-center">
-					<div className="w-full flex justify-center items-center p-2 gap-2 rounded-xl bg-gray-800/50 shadow-md outline">
+					<div className="w-full flex flex-col sm:flex-row justify-center items-center p-2 gap-2">
 						{hosts[0]?.name && <span className="text-gray-200 rounded-lg leading-loose self-center underline underline-offset-4">{hosts[0].name}</span>}
 						{guesses.find(g => g.hostId == hosts[0]?.id) && <RatingIcon value={guesses.find(g => g.hostId == hosts[0]?.id)?.ratingId} />}
 					</div>
 				</div>
 				<div className="col-start-3 row-start-2 flex justify-center">
-					<div className="w-full flex justify-center items-center p-2 gap-2 rounded-xl bg-gray-800/50 shadow-md outline">
+					<div className="w-full flex flex-col sm:flex-row justify-center items-center p-2 gap-2">
 						{hosts[1]?.name && <span className="text-gray-200 rounded-lg leading-loose self-center underline underline-offset-4">{hosts[1].name}</span>}
 						{guesses.find(g => g.hostId === hosts[1]?.id) && <RatingIcon value={guesses.find(g => g.hostId === hosts[1]?.id)?.ratingId} />}
 					</div>
 				</div>
 				<div className="col-start-5 row-start-2 flex justify-center">
-					<div className="w-full flex justify-center items-center p-2 gap-2 rounded-xl bg-gray-800/50 shadow-md outline">
+					<div className="w-full flex flex-col sm:flex-row justify-center items-center p-2 gap-2">
 						{hosts[2]?.name && <span className="text-gray-200 rounded-lg leading-loose self-center underline underline-offset-4">{hosts[2].name}</span>}
 						{guesses.find(g => g.hostId === hosts[2]?.id) && <RatingIcon value={guesses.find(g => g.hostId === hosts[2]?.id)?.ratingId} />}
 					</div>
