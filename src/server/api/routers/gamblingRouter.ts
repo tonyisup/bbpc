@@ -33,6 +33,9 @@ export const gamblingRouter = createTRPCRouter({
 			});
 
 			if (existingPoints) {
+				if (existingPoints.status !== "pending") {
+					throw new Error("Cannot update a bet that is already locked or resolved");
+				}
 				return ctx.db.gamblingPoints.update({
 					where: { id: existingPoints.id },
 					data: { points: input.points },

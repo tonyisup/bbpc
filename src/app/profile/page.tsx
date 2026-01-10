@@ -139,7 +139,7 @@ export default async function ProfilePage() {
       gamblingTypeId: true,
       points: true,
       createdAt: true,
-      successful: true,
+      status: true,
       gamblingType: {
         select: {
           id: true,

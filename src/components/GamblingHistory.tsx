@@ -17,8 +17,8 @@ export const GamblingHistory: FC<GamblingHistoryProps> = ({ history }) => {
     );
   }
 
-  const pendingBets = history.filter(h => h.successful == null);
-  const completedBets = history.filter(h => h.successful != null);
+  const pendingBets = history.filter(h => h.status === "pending" || h.status === "locked");
+  const completedBets = history.filter(h => h.status === "won" || h.status === "lost");
 
   return (
     <div className="w-full max-w-4xl space-y-6">
@@ -73,8 +73,8 @@ export const GamblingHistory: FC<GamblingHistoryProps> = ({ history }) => {
                         {new Date(gamble.createdAt).toLocaleDateString(undefined, { dateStyle: 'long' })}
                       </div>
                     </div>
-                    <div className={`text-2xl font-bold ml-4 ${gamble.successful ? "text-emerald-400" : "text-red-400"}`}>
-                      {gamble.successful ? "+" : "-"}{gamble.points}
+                    <div className={`text-2xl font-bold ml-4 ${gamble.status === "won" ? "text-emerald-400" : "text-red-400"}`}>
+                      {gamble.status === "won" ? "+" : "-"}{gamble.points}
                     </div>
                   </div>
                 ))}

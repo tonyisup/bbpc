@@ -18,6 +18,7 @@ export interface BettingCoinProps {
 	userId: string;
 	assignmentId: string;
 	userPoints: number | undefined;
+	episodeStatus: string;
 }
 
 const BettingCoin: FC<BettingCoinProps> = ({
@@ -29,11 +30,13 @@ const BettingCoin: FC<BettingCoinProps> = ({
 	submitBet,
 	userId,
 	assignmentId,
-	userPoints
+	userPoints,
+	episodeStatus
 }) => {
 	const [amount, setAmount] = useState<string>("");
 	const type = gamblingTypes?.find(t => t.lookupId === lookupId);
 	const existingBet = getBetFor(lookupId, targetHostId);
+	const isLocked = episodeStatus === "recording" || episodeStatus === "published" || (existingBet && existingBet.status !== "pending");
 
 	const handleBet = () => {
 		if (!type) return;
@@ -84,24 +87,24 @@ const BettingCoin: FC<BettingCoinProps> = ({
 							value={amount}
 							onChange={(e) => setAmount(e.target.value)}
 							className="h-8 bg-gray-800 border-gray-700 text-white"
-							disabled={existingBet?.successful !== null && existingBet?.successful !== undefined}
+							disabled={isLocked}
 							min="0"
 						/>
 						<Button
 							size="sm"
 							onClick={handleBet}
-							disabled={submitBet.isLoading || (existingBet?.successful !== null && existingBet?.successful !== undefined)}
+							disabled={submitBet.isLoading || isLocked}
 							className="h-8"
 						>
 							{submitBet.isLoading ? <Loader2 className="animate-spin w-3 h-3" /> : "Bet"}
 						</Button>
 					</div>
-					{existingBet?.successful !== null && existingBet?.successful !== undefined && (
-						<p className="text-[10px] text-amber-500 font-medium italic">
+					{isLocked && (
+						<p className="text-xs text-amber-500 font-medium italic">
 							Bet confirmed and locked.
 						</p>
 					)}
-					{existingBet && (existingBet.successful === null || existingBet.successful === undefined) && (
+					{!isLocked && existingBet?.status === "pending" && (
 						<Button variant="ghost" size="sm" onClick={() => {
 							setAmount("0");
 							submitBet.mutate({ userId, gamblingTypeId: type.id, points: 0, assignmentId, targetUserId: targetHostId });

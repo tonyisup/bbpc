@@ -15,6 +15,7 @@ interface AssignmentGamblingBoardProps {
 		hostId: string;
 		ratingId: number;
 	}[];
+	episodeStatus: string;
 }
 
 
@@ -24,7 +25,7 @@ const gamblingTitle = [
 	"You've got nothing to lose!",
 	"How confident are you?",
 ]
-const AssignmentGamblingBoard: FC<AssignmentGamblingBoardProps> = ({ assignmentId, userId, hosts, guesses }) => {
+const AssignmentGamblingBoard: FC<AssignmentGamblingBoardProps> = ({ assignmentId, userId, hosts, guesses, episodeStatus }) => {
 	const { data: gamblingTypes } = api.gambling.getAllActive.useQuery();
 	const { data: userPoints } = api.user.points.useQuery();
 	const { data: myBets, refetch: refetchBets } = api.gambling.getForAssignment.useQuery({ assignmentId });
@@ -105,6 +106,7 @@ const AssignmentGamblingBoard: FC<AssignmentGamblingBoardProps> = ({ assignmentI
 							userId={userId}
 							assignmentId={assignmentId}
 							userPoints={userPoints}
+							episodeStatus={episodeStatus}
 						/>
 						<div className="w-full text-center text-[10px] text-gray-500 font-bold mb-1 opacity-70">2x</div>
 					</div>
@@ -144,6 +146,7 @@ const AssignmentGamblingBoard: FC<AssignmentGamblingBoardProps> = ({ assignmentI
 						userId={userId}
 						assignmentId={assignmentId}
 						userPoints={userPoints}
+						episodeStatus={episodeStatus}
 					/>
 				</div>
 
@@ -160,6 +163,7 @@ const AssignmentGamblingBoard: FC<AssignmentGamblingBoardProps> = ({ assignmentI
 						userId={userId}
 						assignmentId={assignmentId}
 						userPoints={userPoints}
+						episodeStatus={episodeStatus}
 					/>
 				</div>
 				<div className="col-start-3 row-start-3 flex flex-col items-center">
@@ -174,6 +178,7 @@ const AssignmentGamblingBoard: FC<AssignmentGamblingBoardProps> = ({ assignmentI
 						userId={userId}
 						assignmentId={assignmentId}
 						userPoints={userPoints}
+						episodeStatus={episodeStatus}
 					/>
 				</div>
 				<div className="col-start-5 row-start-3 flex flex-col items-center">
@@ -188,6 +193,7 @@ const AssignmentGamblingBoard: FC<AssignmentGamblingBoardProps> = ({ assignmentI
 						userId={userId}
 						assignmentId={assignmentId}
 						userPoints={userPoints}
+						episodeStatus={episodeStatus}
 					/>
 				</div>
 
@@ -207,6 +213,7 @@ const AssignmentGamblingBoard: FC<AssignmentGamblingBoardProps> = ({ assignmentI
 							userId={userId}
 							assignmentId={assignmentId}
 							userPoints={userPoints}
+							episodeStatus={episodeStatus}
 						/>
 					</div>
 				</div>
@@ -224,6 +231,7 @@ const AssignmentGamblingBoard: FC<AssignmentGamblingBoardProps> = ({ assignmentI
 							userId={userId}
 							assignmentId={assignmentId}
 							userPoints={userPoints}
+							episodeStatus={episodeStatus}
 						/>
 					</div>
 				</div>

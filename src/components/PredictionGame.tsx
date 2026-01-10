@@ -31,6 +31,7 @@ interface PredictionGameProps {
 	assignments: EpisodeAssignment[];
 	/** Optional search query for highlighting text in the game. */
 	searchQuery?: string;
+	episodeStatus: string;
 }
 
 /**
@@ -41,7 +42,7 @@ interface PredictionGameProps {
  * @param searchQuery - Text to be highlighted (e.g., from a search bar).
  */
 
-export const PredictionGame: FC<PredictionGameProps> = ({ assignments, searchQuery = "" }) => {
+export const PredictionGame: FC<PredictionGameProps> = ({ assignments, searchQuery = "", episodeStatus }) => {
 	const { data: session } = api.auth.getSession.useQuery();
 	const { data: hosts } = api.user.hosts.useQuery();
 	const { data: ratings } = api.movie.ratings.useQuery();
@@ -85,6 +86,7 @@ export const PredictionGame: FC<PredictionGameProps> = ({ assignments, searchQue
 						ratings={ratings}
 						userId={session.user?.id ?? ""}
 						searchQuery={searchQuery}
+						episodeStatus={episodeStatus}
 					/>
 				</div>
 			)}
@@ -101,7 +103,8 @@ const PredictionGameDataWrapper: FC<{
 	ratings: Rating[];
 	userId: string;
 	searchQuery: string;
-}> = ({ assignments, hosts, ratings, userId, searchQuery }) => {
+	episodeStatus: string;
+}> = ({ assignments, hosts, ratings, userId, searchQuery, episodeStatus }) => {
 	const assignmentIds = assignments.map(a => a.id);
 
 	const { data: allGuesses, isLoading: isLoadingGuesses } = api.review.getUsersGuessesForAssignments.useQuery({
@@ -135,6 +138,7 @@ const PredictionGameDataWrapper: FC<{
 					initialGuesses={allGuesses?.[assignment.id] ?? []}
 					initialAudioMessageCount={allAudioMessageCounts?.[assignment.id] ?? 0}
 					initialGamblePoints={allGamblePoints?.[assignment.id] ?? []}
+					episodeStatus={episodeStatus}
 				/>
 			))}
 		</>
@@ -161,6 +165,7 @@ interface AssignmentPredictionProps {
 	initialAudioMessageCount: number;
 	/** Pre-fetched gambling points for this assignment. */
 	initialGamblePoints: any[];
+	episodeStatus: string;
 }
 
 /**
@@ -176,7 +181,8 @@ const AssignmentPrediction: FC<AssignmentPredictionProps> = ({
 	searchQuery,
 	initialGuesses,
 	initialAudioMessageCount,
-	initialGamblePoints
+	initialGamblePoints,
+	episodeStatus
 }) => {
 	const utils = api.useUtils();
 	const [userExpanded, setUserExpanded] = useState(false);
@@ -391,6 +397,7 @@ const AssignmentPrediction: FC<AssignmentPredictionProps> = ({
 						userId={userId}
 						hosts={hosts}
 						guesses={guessesForGambling}
+						episodeStatus={episodeStatus}
 					/>}
 					<div className="flex gap-4 flex-wrap items-center justify-between pt-4 border-t border-gray-700/50">
 						<div className="flex w-full justify-center gap-4">
