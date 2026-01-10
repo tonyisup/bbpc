@@ -15,9 +15,9 @@ import MovieInlinePreview from "./MovieInlinePreview";
 interface SyllabusManagerProps {
   /** The initial list of syllabus items with their related Movie and Assignment/Episode data. */
   initialSyllabus: (Syllabus & {
-    Movie: Movie;
-    Assignment: (Assignment & {
-      Episode: Episode;
+    movie: Movie;
+    assignment: (Assignment & {
+      episode: Episode;
     }) | null;
   })[];
   /** The ID of the user managing the syllabus. */
@@ -250,12 +250,12 @@ const SyllabusManager: FC<SyllabusManagerProps> = ({ initialSyllabus, userId }) 
             </div>
             <div className="flex-1">
               <div className="flex items-center gap-4 mb-2">
-                {item.Movie.poster && (
-                  <MovieInlinePreview movie={item.Movie} />
+                {item.movie.poster && (
+                  <MovieInlinePreview movie={item.movie} />
                 )}
                 <div className="flex-1">
-                  <h3 className="text-lg font-semibold break-words">{item.Movie.title}</h3>
-                  <p className="text-gray-400">{item.Movie.year}</p>
+                  <h3 className="text-lg font-semibold break-words">{item.movie.title}</h3>
+                  <p className="text-gray-400">{item.movie.year}</p>
                 </div>
               </div>
 
@@ -328,14 +328,14 @@ const SyllabusManager: FC<SyllabusManagerProps> = ({ initialSyllabus, userId }) 
         {assignedSyllabus.map((item) => (
           <div key={item.id} className="flex-1 p-4 rounded-lg border">
             <div className="flex items-center gap-4 mb-2">
-              {item.Movie.poster && (
-                <MovieInlinePreview movie={item.Movie} />
+              {item.movie.poster && (
+                <MovieInlinePreview movie={item.movie} />
               )}
               <div className="flex-1">
-                <h3 className="text-lg font-semibold break-words">{item.Movie.title}</h3>
-                <p className="text-gray-400">{item.Movie.year}</p>
+                <h3 className="text-lg font-semibold break-words">{item.movie.title}</h3>
+                <p className="text-gray-400">{item.movie.year}</p>
               </div>
-              <p>Reviewed in Episode {item.Assignment?.Episode.number} - {item.Assignment?.Episode.title}</p>
+              <p>Reviewed in Episode {item.assignment?.episode.number} - {item.assignment?.episode.title}</p>
             </div>
 
             {/* Notes Section for Assigned Items */}

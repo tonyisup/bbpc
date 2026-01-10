@@ -1,31 +1,21 @@
 import { type FC } from "react";
-import { type AssignmentWithRelations } from "@/types/assignment";
 import Assignment from "./Assignment";
 import MovieInlinePreview from "./MovieInlinePreview";
-import type { Assignment as AssignmentType, Episode as EpisodeType, Link as EpisodeLink, Movie, User, Review, ExtraReview, Show } from '@prisma/client';
+import type { Episode as EpisodeType, Link as EpisodeLink, Movie, User, Review, ExtraReview, Show } from '@prisma/client';
 import Link from "next/link";
 import { AddExtraToNext } from "./AddExtraToNext";
 import { highlightText } from "@/utils/text";
 import ShowInlinePreview from "./ShowInlinePreview";
 import { PredictionGame } from "./PredictionGame";
+import { RouterOutputs } from "@/utils/trpc";
 
 /**
  * Represents an episode with all its related assignments, extras, and links.
  */
-export type CompleteEpisode = EpisodeType & {
-	assignments: (AssignmentType & {
-		User: User;
-		Movie: Movie | null;
-	})[];
-	extras: (ExtraReview & {
-		Review: Review & {
-			User: User | null;
-			Movie: Movie | null;
-			Show: Show | null;
-		};
-	})[];
-	links: EpisodeLink[];
-};
+export type CompleteEpisode = NonNullable<RouterOutputs['episode']['next']>;
+
+// Helper type to extract assignments from the episode
+type EpisodeAssignment = CompleteEpisode['assignments'][number];
 
 /**
  * Props for the Episode component.
@@ -51,27 +41,33 @@ export const Episode: FC<EpisodeProps> = ({ episode, allowGuesses: isNextEpisode
 
 	return <section className="px-2 bg-transparent outline-2 outline-gray-500 outline rounded-2xl flex flex-col gap-2 justify-between">
 		<div className="">
-			<div className="flex justify-around items-baseline gap-2 font-bold">
-				<div className="text-md p-2">
+			<div className="flex justify-between items-center gap-2 font-bold px-1 sm:justify-around sm:items-baseline">
+				<div className="text-sm sm:text-md p-1 sm:p-2 whitespace-nowrap">
 					<Link href={`/episodes/${episode.id}`}>
 						{episode?.number}
 					</Link>
 				</div>
-				<div className="text-2xl p-2 flex-grow flex justify-center items-center gap-2">
+				<div className="text-lg sm:text-xl md:text-2xl p-2 flex-grow flex justify-center items-center text-center gap-2 leading-tight">
 					{!episode?.recording && highlightText(episode?.title ?? "", searchQuery)}
 					{episode?.recording && <a className="underline" title={episode?.title} href={episode.recording ?? ""} target="_blank" rel="noreferrer">
 						{highlightText(episode?.title ?? "", searchQuery)}
 					</a>}
 				</div>
-				<div className="text-md p-2">
+				<div className="text-sm sm:text-md p-1 sm:p-2 whitespace-nowrap">
 					{episode?.date && <p>{new Date(episode.date).toLocaleDateString("en-us", { month: "2-digit", day: "2-digit", year: "2-digit" })}</p>}
 				</div>
 			</div>
 			<div className="w-full text-center">
 				<p>{highlightText(episode?.description ?? "", searchQuery)}</p>
 			</div>
-			<EpisodeAssignments assignments={episode.assignments as AssignmentWithRelations[]} showMovieTitles={showMovieTitles} searchQuery={searchQuery} />
-			{isNextEpisode && episode.assignments.filter(a => a.playable).length > 0 && <PredictionGame assignments={episode.assignments.filter(a => a.playable) as AssignmentWithRelations[]} searchQuery={searchQuery} />}
+			<EpisodeAssignments assignments={episode.assignments} showMovieTitles={showMovieTitles} searchQuery={searchQuery} />
+			{isNextEpisode && episode.assignments.filter(a => a.playable).length > 0 && (
+				<PredictionGame
+					assignments={episode.assignments.filter(a => a.playable)}
+					searchQuery={searchQuery}
+					episodeStatus={episode.status}
+				/>
+			)}
 		</div>
 		<div>
 			{episode.extras.length > 0 && (
@@ -92,7 +88,7 @@ export const Episode: FC<EpisodeProps> = ({ episode, allowGuesses: isNextEpisode
  */
 interface EpisodeAssignments {
 	showMovieTitles?: boolean,
-	assignments: AssignmentWithRelations[];
+	assignments: EpisodeAssignment[];
 	searchQuery?: string;
 }
 
@@ -121,10 +117,10 @@ interface EpisodeExtras {
 	showMovieTitles?: boolean,
 	searchQuery?: string,
 	extras: (ExtraReview & {
-		Review: (Review & {
-			User: User | null;
-			Movie: Movie | null;
-			Show: Show | null;
+		review: (Review & {
+			user: User | null;
+			movie: Movie | null;
+			show: Show | null;
 		})
 	})[];
 }
@@ -135,16 +131,16 @@ interface EpisodeExtras {
 
 const EpisodeExtras: FC<EpisodeExtras> = ({ extras, showMovieTitles = false, searchQuery = "" }) => {
 	if (!extras || extras.length == 0) return null;
-	return <div className="py-2 w-full">
-		<div className="flex justify-center gap-2 flex-wrap">
+	return <div className="py-2t">
+		<div className="flex justify-center gap-2 flex-wrap pb-2">
 			{extras.map((extra) => {
-				return <div key={extra.id} className="flex items-center gap-2 w-20">
+				return <div key={extra.id} className="flex items-center gap-2 w-12 sm:w-36">
 					<div className="flex flex-col items-center gap-2">
-						{extra.Review.Movie && <MovieInlinePreview movie={extra.Review.Movie} searchQuery={searchQuery} />}
-						{extra.Review.Show && <ShowInlinePreview show={extra.Review.Show} searchQuery={searchQuery} />}
+						{extra.review.movie && <MovieInlinePreview movie={extra.review.movie} searchQuery={searchQuery} responsive />}
+						{extra.review.show && <ShowInlinePreview show={extra.review.show} searchQuery={searchQuery} responsive />}
 						{showMovieTitles && (
 							<div className="text-sm text-gray-500">
-								{highlightText(`${extra.Review.Movie?.title} (${extra.Review.Movie?.year})`, searchQuery)}
+								{highlightText(`${extra.review.movie?.title} (${extra.review.movie?.year})`, searchQuery)}
 							</div>
 						)}
 					</div>

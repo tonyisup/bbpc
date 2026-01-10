@@ -11,8 +11,8 @@ export const uploadInfoRouter = createTRPCRouter({
       const assignment = await ctx.db.assignment.findUnique({
         where: { id: input.assignmentId },
         include: {
-          Episode: true,
-          Movie: true,
+          episode: true,
+          movie: true,
         },
       });
 
@@ -36,8 +36,8 @@ export const uploadInfoRouter = createTRPCRouter({
       });
 
       return {
-        episodeNumber: assignment.Episode.number,
-        movieName: assignment.Movie.title,
+        episodeNumber: assignment.episode.number,
+        movieName: assignment.movie.title,
         userName: user.name,
         messageCount: messageCount,
       };

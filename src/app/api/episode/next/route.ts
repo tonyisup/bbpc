@@ -63,7 +63,7 @@ export async function GET() {
   try {
     // Create a tRPC context
     const ctx = await createTRPCContext();
-    
+
     // Get the next episode data
     const episode = await ctx.db.episode.findFirst({
       orderBy: {
@@ -72,14 +72,14 @@ export async function GET() {
       include: {
         assignments: {
           include: {
-            Movie: true,
-            User: true,
+            movie: true,
+            user: true,
             assignmentReviews: {
               include: {
-                Review: {
+                review: {
                   include: {
-                    Rating: true,
-                    User: true,
+                    rating: true,
+                    user: true,
                   },
                 },
               },
@@ -88,10 +88,10 @@ export async function GET() {
         },
         extras: {
           include: {
-            Review: {
+            review: {
               include: {
-                Movie: true,
-                User: true,
+                movie: true,
+                user: true,
               },
             },
           },
@@ -109,17 +109,17 @@ export async function GET() {
       "@context": "https://schema.org",
       "@type": "ItemList",
       itemListElement: episode.assignments.map((assignment, index) => {
-        const movie = assignment.Movie;
-        const user = assignment.User;
-        
+        const movie = assignment.movie;
+        const user = assignment.user;
+
         // Get the user's review for this movie if it exists
-        const userReview = assignment.assignmentReviews[0]?.Review;
-        
+        const userReview = assignment.assignmentReviews[0]?.review;
+
         // Calculate aggregate rating from all reviews
-        const allReviews = assignment.assignmentReviews.map(ar => ar.Review);
-        const totalRating = allReviews.reduce((sum, review) => sum + (review.Rating?.value || 0), 0);
+        const allReviews = assignment.assignmentReviews.map(ar => ar.review);
+        const totalRating = allReviews.reduce((sum, review) => sum + (review.rating?.value || 0), 0);
         const averageRating = allReviews.length > 0 ? totalRating / allReviews.length : 0;
-        
+
         const structuredMovie: StructuredMovie = {
           "@type": "Movie",
           name: movie.title,
@@ -134,11 +134,11 @@ export async function GET() {
             "@type": "Review",
             reviewRating: {
               "@type": "Rating",
-              ratingValue: userReview.Rating?.value || 0
+              ratingValue: userReview.rating?.value || 0
             },
             author: {
               "@type": "Person",
-              name: userReview.User?.name || "Anonymous"
+              name: userReview.user?.name || "Anonymous"
             }
           } : undefined,
           aggregateRating: allReviews.length > 0 ? {
@@ -168,10 +168,10 @@ export async function POST(req: NextRequest) {
   try {
     // Parse the webhook request
     const webhookRequest: WebhookRequest = await req.json();
-    
+
     // Create a tRPC context
     const ctx = await createTRPCContext();
-    
+
     // Get the next episode data
     const episode = await ctx.db.episode.findFirst({
       orderBy: {
@@ -180,16 +180,16 @@ export async function POST(req: NextRequest) {
       include: {
         assignments: {
           include: {
-            Movie: true,
-            User: true,
+            movie: true,
+            user: true,
           },
         },
         extras: {
           include: {
-            Review: {
+            review: {
               include: {
-                Movie: true,
-                User: true,
+                movie: true,
+                user: true,
               },
             },
           },
@@ -208,17 +208,17 @@ export async function POST(req: NextRequest) {
       };
       return NextResponse.json(response);
     }
-    
+
     const response: WebhookResponse = {
       fulfillmentMessages: [{
         text: {
           text: [
-            `Movies assigned: ${episode.assignments.map(a => a.Movie.title).join(" and ")}`
+            `Movies assigned: ${episode.assignments.map(a => a.movie.title).join(" and ")}`
           ]
         }
       }]
     };
-    
+
     return NextResponse.json(response);
   } catch (error) {
     console.error("Error processing webhook:", error);

@@ -6,7 +6,7 @@ import Link from "next/link";
 interface SyllabusPreviewProps {
   count: number;
   syllabus: {
-    Movie: Movie;
+    movie: Movie;
   }[];
 }
 
@@ -22,18 +22,18 @@ const SyllabusPreview: FC<SyllabusPreviewProps> = ({ count, syllabus }) => {
         <div className="flex gap-4">
           {syllabus.map((item) => (
             <Link
-              key={item.Movie.id}
-              href={item.Movie.url}
+              key={item.movie.id}
+              href={item.movie.url}
               target="_blank"
               rel="noopener noreferrer"
               className="hover:opacity-80"
             >
-              {item.Movie.poster && (
+              {item.movie.poster && (
                 <Image
                   unoptimized
                   className="rounded-lg"
-                  src={item.Movie.poster}
-                  alt={item.Movie.title}
+                  src={item.movie.poster}
+                  alt={item.movie.title}
                   width={100}
                   height={150}
                 />

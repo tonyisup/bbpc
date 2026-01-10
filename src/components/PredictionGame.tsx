@@ -8,22 +8,30 @@ import { type User, type Rating } from "@prisma/client";
 import { highlightText } from "@/utils/text";
 import { cn } from "@/lib/utils";
 import RatingIcon from "./RatingIcon";
-import GamblingSection from "./GamblingSection";
 import { SignInButton } from "./Auth";
-import { ChevronDown, ChevronUp, Phone, Voicemail, X } from "lucide-react";
+import { ChevronDown, ChevronUp, Coins, Phone, Voicemail, X } from "lucide-react";
 import { Button } from "./ui/button";
 import { Popover, PopoverContent, PopoverTrigger, PopoverClose } from "./ui/popover";
 import PhoneNumber from "./common/PhoneNumber";
 import RecordAssignmentAudio from "./common/RecordAssignmentAudio";
+import { useFeatureFlagEnabled } from 'posthog-js/react'
+import UserTag from "./UserTag";
+import AssignmentGamblingBoard from "./AssignmentGamblingBoard";
+import { RouterOutputs } from "@/utils/trpc";
 
+type episodetype = NonNullable<RouterOutputs['episode']['next']>;
+
+// Helper type to extract assignments from the episode
+type EpisodeAssignment = episodetype['assignments'][number];
 /**
  * Props for the PredictionGame component.
  */
 interface PredictionGameProps {
 	/** Array of assignments with their related data (Episode, Movie, etc.). */
-	assignments: AssignmentWithRelations[];
+	assignments: EpisodeAssignment[];
 	/** Optional search query for highlighting text in the game. */
 	searchQuery?: string;
+	episodeStatus: string;
 }
 
 /**
@@ -34,11 +42,12 @@ interface PredictionGameProps {
  * @param searchQuery - Text to be highlighted (e.g., from a search bar).
  */
 
-export const PredictionGame: FC<PredictionGameProps> = ({ assignments, searchQuery = "" }) => {
+export const PredictionGame: FC<PredictionGameProps> = ({ assignments, searchQuery = "", episodeStatus }) => {
 	const { data: session } = api.auth.getSession.useQuery();
 	const { data: hosts } = api.user.hosts.useQuery();
 	const { data: ratings } = api.movie.ratings.useQuery();
 	const [isAdminCollapsed, setIsAdminCollapsed] = useState(true);
+	const flagEnabled = useFeatureFlagEnabled('new-season-format')
 
 	if (!session?.user) return <div className="p-4 text-center text-gray-400">Please <SignInButton /> to play the game.</div>;
 	if (!hosts || !ratings) return <div className="p-4 text-center text-gray-400">Loading prediction game...</div>;
@@ -77,27 +86,25 @@ export const PredictionGame: FC<PredictionGameProps> = ({ assignments, searchQue
 						ratings={ratings}
 						userId={session.user?.id ?? ""}
 						searchQuery={searchQuery}
+						episodeStatus={episodeStatus}
 					/>
 				</div>
 			)}
-
-			{/* Ability to gamble per assignment here */}
 		</div>
 	);
-
 };
-
 
 /**
  * Internal wrapper to handle data fetching for multiple assignments at once.
  */
 const PredictionGameDataWrapper: FC<{
-	assignments: AssignmentWithRelations[];
+	assignments: EpisodeAssignment[];
 	hosts: User[];
 	ratings: Rating[];
 	userId: string;
 	searchQuery: string;
-}> = ({ assignments, hosts, ratings, userId, searchQuery }) => {
+	episodeStatus: string;
+}> = ({ assignments, hosts, ratings, userId, searchQuery, episodeStatus }) => {
 	const assignmentIds = assignments.map(a => a.id);
 
 	const { data: allGuesses, isLoading: isLoadingGuesses } = api.review.getUsersGuessesForAssignments.useQuery({
@@ -105,15 +112,16 @@ const PredictionGameDataWrapper: FC<{
 		userId
 	});
 
-	const { data: allGamblingPoints, isLoading: isLoadingGambling } = api.review.getUsersGamblingPointsForAssignments.useQuery({
-		assignmentIds
-	});
 
 	const { data: allAudioMessageCounts, isLoading: isLoadingAudio } = api.review.getUsersAudioMessagesCountForAssignments.useQuery({
 		assignmentIds
 	});
 
-	if (isLoadingGuesses || isLoadingGambling || isLoadingAudio) {
+	const { data: allGamblePoints, isLoading: isLoadingGambling } = api.gambling.getUsersGamblingPointsForAssignments.useQuery({
+		assignmentIds
+	});
+
+	if (isLoadingGuesses || isLoadingAudio || isLoadingGambling) {
 		return <div className="animate-pulse h-64 bg-gray-800/50 rounded-lg"></div>;
 	}
 
@@ -128,8 +136,9 @@ const PredictionGameDataWrapper: FC<{
 					userId={userId}
 					searchQuery={searchQuery}
 					initialGuesses={allGuesses?.[assignment.id] ?? []}
-					initialGamblingPoints={allGamblingPoints?.[assignment.id] ?? []}
 					initialAudioMessageCount={allAudioMessageCounts?.[assignment.id] ?? 0}
+					initialGamblePoints={allGamblePoints?.[assignment.id] ?? []}
+					episodeStatus={episodeStatus}
 				/>
 			))}
 		</>
@@ -141,7 +150,7 @@ const PredictionGameDataWrapper: FC<{
  */
 interface AssignmentPredictionProps {
 	/** The specific assignment being predicted. */
-	assignment: AssignmentWithRelations;
+	assignment: EpisodeAssignment;
 	/** List of hosts for whom guesses are being made. */
 	hosts: User[];
 	/** List of available ratings that can be chosen. */
@@ -152,10 +161,11 @@ interface AssignmentPredictionProps {
 	searchQuery: string;
 	/** Pre-fetched guesses for this assignment. */
 	initialGuesses: any[];
-	/** Pre-fetched gambling points for this assignment. */
-	initialGamblingPoints: any[];
 	/** Pre-fetched audio message count for this assignment. */
 	initialAudioMessageCount: number;
+	/** Pre-fetched gambling points for this assignment. */
+	initialGamblePoints: any[];
+	episodeStatus: string;
 }
 
 /**
@@ -170,8 +180,9 @@ const AssignmentPrediction: FC<AssignmentPredictionProps> = ({
 	userId,
 	searchQuery,
 	initialGuesses,
-	initialGamblingPoints,
-	initialAudioMessageCount
+	initialAudioMessageCount,
+	initialGamblePoints,
+	episodeStatus
 }) => {
 	const utils = api.useUtils();
 	const [userExpanded, setUserExpanded] = useState(false);
@@ -183,19 +194,22 @@ const AssignmentPrediction: FC<AssignmentPredictionProps> = ({
 		{ initialData: { [assignment.id]: initialGuesses } }
 	);
 
-	const { data: gamblingPointsData } = api.review.getUsersGamblingPointsForAssignments.useQuery(
-		{ assignmentIds: [assignment.id] },
-		{ initialData: { [assignment.id]: initialGamblingPoints } }
-	);
-
 	const { data: audioMessageCountData } = api.review.getUsersAudioMessagesCountForAssignments.useQuery(
 		{ assignmentIds: [assignment.id] },
 		{ initialData: { [assignment.id]: initialAudioMessageCount } }
 	);
 
+	const { data: gamblePointsData } = api.gambling.getUsersGamblingPointsForAssignments.useQuery(
+		{ assignmentIds: [assignment.id] },
+		{ initialData: { [assignment.id]: initialGamblePoints } }
+	);
+
 	const guesses = existingGuesses?.[assignment.id] ?? initialGuesses;
-	const gamblingPoints = gamblingPointsData?.[assignment.id] ?? initialGamblingPoints;
+	const guessesForGambling = guesses.map(g => ({ hostId: g.assignmentReview.review.user.id, ratingId: g.rating.value }));
 	const audioMessageCount = audioMessageCountData?.[assignment.id] ?? initialAudioMessageCount;
+	const gamblePoints = gamblePointsData?.[assignment.id] ?? initialGamblePoints;
+
+	const gambleAmountForAssignment = gamblePoints.reduce((acc: number, p: any) => acc + p.points, 0);
 
 	const submitGuess = api.review.submitGuess.useMutation({
 		onMutate: async (newGuess) => {
@@ -221,17 +235,17 @@ const AssignmentPrediction: FC<AssignmentPredictionProps> = ({
 					assignmntReviewId: "temp-id",
 					seasonId: "temp-id",
 					pointsId: null,
-					Rating: rating,
-					AssignmentReview: {
+					rating: rating,
+					assignmentReview: {
 						id: "temp-id",
-						Review: {
+						review: {
 							id: "temp-id",
 							userId: newGuess.hostId,
 							movieId: null,
 							ratingId: null,
 							ReviewdOn: null,
 							showId: null,
-							User: {
+							user: {
 								id: newGuess.hostId,
 								name: "Loading...",
 								email: "",
@@ -261,9 +275,10 @@ const AssignmentPrediction: FC<AssignmentPredictionProps> = ({
 
 	const getGuessForHost = (hostId: string) => {
 		if (!guesses) return null;
+
 		return guesses.find((g: any) => {
-			const reviewUserId = g.AssignmentReview?.Review?.userId;
-			const reviewUserObjId = g.AssignmentReview?.Review?.User?.id;
+			const reviewUserId = g.assignmentReview?.review?.userId;
+			const reviewUserObjId = g.assignmentReview?.review?.user?.id;
 			return (reviewUserId ?? reviewUserObjId) === hostId;
 		});
 	};
@@ -282,7 +297,7 @@ const AssignmentPrediction: FC<AssignmentPredictionProps> = ({
 					onClick={() => setUserExpanded(true)}
 				>
 					<span className="font-bold text-lg sm:text-md text-white flex-grow pr-2">
-						{assignment.Movie ? highlightText(assignment.Movie.title, searchQuery) : "Unknown Movie"}
+						{assignment.movie ? highlightText(assignment.movie.title, searchQuery) : "Unknown Movie"}
 					</span>
 
 					<div className="flex gap-3 items-center">
@@ -292,21 +307,18 @@ const AssignmentPrediction: FC<AssignmentPredictionProps> = ({
 								if (!guess) return null;
 								return (
 									<div key={host.id} title={host.name ?? "Host"} className="scale-75 sm:scale-90 opacity-90 hover:opacity-100 transition-opacity">
-										<RatingIcon value={guess.Rating.value} />
+										<RatingIcon value={guess.rating.value} />
 									</div>
 								);
 							})}
 						</div>
-
-						{gamblingPoints && gamblingPoints.length > 0 && gamblingPoints[0] && gamblingPoints[0].points > 0 ? (
+						{gambleAmountForAssignment > 0 && (
 							<div className="flex items-center bg-purple-900/50 px-1.5 py-0.5 sm:px-2 sm:py-1 rounded text-purple-200 font-bold text-[10px] sm:text-sm border border-purple-500/30 whitespace-nowrap">
-								{gamblingPoints[0].points} pts
-							</div>
-						) : (
-							<div className="flex items-center bg-purple-900/50 px-1.5 py-0.5 sm:px-2 sm:py-1 rounded text-purple-200 font-bold text-[10px] sm:text-sm border border-purple-500/30 whitespace-nowrap">
-								No Bet
+								{gambleAmountForAssignment} <Coins className="pl-0.5 sm:pl-1 w-3 h-3 sm:w-5 h-5" />
 							</div>
 						)}
+
+
 
 						<Message assignmentId={assignment.id} userId={userId}>
 							<div className="flex items-center bg-green-900/50 px-1.5 py-0.5 sm:px-2 sm:py-1 rounded text-green-200 font-bold text-[10px] sm:text-sm border border-green-500/30 whitespace-nowrap">
@@ -322,7 +334,7 @@ const AssignmentPrediction: FC<AssignmentPredictionProps> = ({
 					{/* Expanded Header */}
 					<div className="flex justify-between items-start">
 						<h3 className="font-bold text-xl text-white pl-2 border-l-4 border-red-500">
-							{assignment.Movie ? highlightText(assignment.Movie.title, searchQuery) : "Unknown Movie"}
+							{assignment.movie ? highlightText(assignment.movie.title, searchQuery) : "Unknown Movie"}
 						</h3>
 						{hasAllGuesses && (
 							<button
@@ -346,7 +358,7 @@ const AssignmentPrediction: FC<AssignmentPredictionProps> = ({
 									</div>
 									<div className="flex flex-wrap gap-2">
 										{ratings.map(rating => {
-											const isSelected = guess?.Rating.id === rating.id;
+											const isSelected = guess?.rating.id === rating.id;
 											return (
 												<button
 													type="button"
@@ -380,8 +392,14 @@ const AssignmentPrediction: FC<AssignmentPredictionProps> = ({
 						})}
 					</div>
 
+					{hasAllGuesses && <AssignmentGamblingBoard
+						assignmentId={assignment.id}
+						userId={userId}
+						hosts={hosts}
+						guesses={guessesForGambling}
+						episodeStatus={episodeStatus}
+					/>}
 					<div className="flex gap-4 flex-wrap items-center justify-between pt-4 border-t border-gray-700/50">
-						<GamblingSection assignmentId={assignment.id} userId={userId} />
 						<div className="flex w-full justify-center gap-4">
 							<Call />
 							<Message assignmentId={assignment.id} userId={userId} count={audioMessageCount} />
