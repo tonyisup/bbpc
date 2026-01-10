@@ -5,6 +5,8 @@ import ShowInlinePreview from "./ShowInlinePreview";
 import { highlightText } from "@/utils/text";
 import { RouterOutputs } from "@/utils/trpc";
 import Link from "next/link";
+import { cn } from "@/lib/utils";
+import { Trophy } from "lucide-react";
 
 /**
  * Represents an episode with all its related assignments, extras, and links.
@@ -17,6 +19,8 @@ export type CompleteEpisode = NonNullable<RouterOutputs['episode']['next']>;
 interface EpisodeProps {
 	/** The complete episode data. */
 	episode: CompleteEpisode;
+	/** Whether the current user won any gambles in this episode. */
+	hasWon?: boolean;
 }
 
 /**
@@ -25,7 +29,7 @@ interface EpisodeProps {
  * - Content Row: Assignments (Left, Large) + Extras (Right, Small, Scrollable)
  * - Audio Player
  */
-export const LatestEpisode: FC<EpisodeProps> = ({ episode }) => {
+export const LatestEpisode: FC<EpisodeProps> = ({ episode, hasWon }) => {
 	if (!episode) return null;
 
 	const sortedAssignments = [...episode.assignments].sort((a, b) => {
@@ -34,9 +38,21 @@ export const LatestEpisode: FC<EpisodeProps> = ({ episode }) => {
 	});
 
 	return (
-		<section className="w-full max-w-4xl mx-auto px-4 py-4 bg-transparent outline-2 outline-gray-500 outline rounded-2xl flex flex-col gap-4">
+		<section className="w-full max-w-4xl mx-auto px-4 py-4 bg-transparent outline-2 outline-gray-500 outline rounded-2xl flex flex-col gap-4 relative overflow-hidden">
+			{hasWon && (
+				<Link
+					href={`/episodes/${episode.id}`}
+					className="absolute top-0 left-0 right-0 bg-gradient-to-r from-yellow-600/20 via-yellow-500/40 to-yellow-600/20 backdrop-blur-md border-b border-yellow-500/30 py-1.5 flex justify-center items-center gap-2 z-20 group hover:via-yellow-500/60 transition-all cursor-pointer"
+				>
+					<Trophy className="w-4 h-4 text-yellow-400 animate-bounce group-hover:scale-110 transition-transform" />
+					<span className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-yellow-200 drop-shadow-md">
+						🏆 You won a gamble on this episode! Click for results 🏆
+					</span>
+					<Trophy className="w-4 h-4 text-yellow-400 animate-bounce group-hover:scale-110 transition-transform" />
+				</Link>
+			)}
 			{/* Header */}
-			<div className="flex justify-between items-center gap-2 font-bold px-1 sm:justify-around sm:items-baseline">
+			<div className={cn("flex justify-between items-center gap-2 font-bold px-1 sm:justify-around sm:items-baseline", hasWon && "mt-6")}>
 				<div className="text-sm sm:text-md p-1 sm:p-2 whitespace-nowrap">
 					<Link href={`/episodes/${episode.id}`}>
 						{episode?.number}

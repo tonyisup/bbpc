@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { Episode } from "@/components/Episode";
+import EpisodeResults from "@/components/EpisodeResults";
 
 export const revalidate = 3600;
 
@@ -31,8 +32,21 @@ export default async function EpisodePage({
               review: {
                 include: {
                   rating: true,
+                  user: true,
                 },
               },
+              guesses: {
+                include: {
+                  user: true,
+                  rating: true,
+                },
+              },
+            },
+          },
+          gamblingPoints: {
+            include: {
+              user: true,
+              gamblingType: true,
             },
           },
         },
@@ -75,6 +89,7 @@ export default async function EpisodePage({
         </Button>
       </div>
       {episode && <Episode episode={episode} />}
+      {episode && <EpisodeResults assignments={episode.assignments} />}
     </div>
   );
 } 
