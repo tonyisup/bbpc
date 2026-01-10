@@ -161,7 +161,7 @@ export default async function ProfilePage() {
 
   return (
     <div className="container flex flex-col items-start justify-center gap-12 px-4 py-16">
-      <h1 className="text-3xl font-extrabold tracking-tight">{session.user.email}</h1>
+      <h1 className="md:text-3xl text-2xl font-extrabold tracking-tight">{session.user.email}</h1>
 
       <ProfileForm
         initialName={session.user.name ?? ""}
