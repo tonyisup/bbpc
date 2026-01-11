@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure, publicProcedure } from "@/server/api/trpc";
+import { getCurrentSeasonID } from "@/utils/points";
 
 export const gamblingRouter = createTRPCRouter({
 	getAllActive: publicProcedure.query(({ ctx }) => {
@@ -16,6 +17,7 @@ export const gamblingRouter = createTRPCRouter({
 			targetUserId: z.string().optional(),
 		}))
 		.mutation(async ({ ctx, input }) => {
+			const seasonId = await getCurrentSeasonID(ctx.db);
 			if (!input.gamblingTypeId) {
 				const defaultType = await ctx.db.gamblingType.findFirst({
 					where: { lookupId: "default" },
@@ -43,6 +45,7 @@ export const gamblingRouter = createTRPCRouter({
 			} else {
 				return ctx.db.gamblingPoints.create({
 					data: {
+						seasonId,
 						userId: input.userId,
 						gamblingTypeId: input.gamblingTypeId,
 						points: input.points,
