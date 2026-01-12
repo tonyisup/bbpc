@@ -8,7 +8,7 @@ import { GamblingHistory } from "@/components/GamblingHistory";
 import SyllabusPreview from "@/components/SyllabusPreview";
 import Link from "next/link";
 import { Pencil } from "lucide-react";
-import { calculateUserPoints } from "@/utils/points";
+import { calculateUserPoints, getCurrentSeasonID } from "@/utils/points";
 import PointHistory from "@/components/PointHistory";
 
 export default async function ProfilePage() {
@@ -63,6 +63,14 @@ export default async function ProfilePage() {
       reason: true,
       earnedOn: true,
       adjustment: true,
+      season: {
+        select: {
+          id: true,
+          title: true,
+          startedOn: true,
+          endedOn: true,
+        }
+      },
       gamePointType: {
         select: {
           title: true,
@@ -158,6 +166,7 @@ export default async function ProfilePage() {
   });
 
   const points = await calculateUserPoints(db, user.email ?? "", undefined);
+  const currentSeasonId = await getCurrentSeasonID(db);
 
   return (
     <div className="container flex flex-col items-start justify-center gap-12 px-4 py-16">
@@ -177,10 +186,18 @@ export default async function ProfilePage() {
       <div className="flex flex-col gap-4 w-full justify-center items-center">
         <h2 className="text-xl font-bold tracking-tight self-start">Game Stuff</h2>
         <UserPoints points={points} />
-        <PointHistory points={pointsData.map(p => ({
-          ...p,
-          earnedOn: p.earnedOn.toISOString()
-        })) ?? []} />
+        <PointHistory
+          currentSeasonId={currentSeasonId}
+          points={pointsData.map(p => ({
+            ...p,
+            season: p.season ? {
+              ...p.season,
+              startedOn: p.season.startedOn?.toISOString() ?? null,
+              endedOn: p.season.endedOn?.toISOString() ?? null,
+            } : null,
+            earnedOn: p.earnedOn.toISOString()
+          })) ?? []}
+        />
       </div>
       <SignOutButton />
     </div>
