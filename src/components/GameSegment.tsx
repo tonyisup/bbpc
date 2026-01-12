@@ -56,7 +56,6 @@ const GameSegment: FC<GameSegmentProps> = ({ assignment }) => {
 	);
 
 	return <div className="flex flex-col gap-4 items-center py-4">
-		<GamblingSection assignmentId={assignment.id} userId={userData.id} />
 		<h3 className="text-2xl">Submit your guesses!</h3>
 		<div className="flex flex-col md:flex-row gap-4 items-center">
 			<Button
@@ -115,10 +114,10 @@ const GamePanel: FC<GamePanelProps> = ({ session, assignment }) => {
 }
 interface ShowAssignmentGuessesProps {
 	guesses: (Guess & {
-		Rating: Rating;
-		AssignmentReview: AssignmentReview & {
-			Review: Review & {
-				User: User | null;
+		rating: Rating;
+		assignmentReview: AssignmentReview & {
+			review: Review & {
+				user: User | null;
 			} | null;
 		};
 	})[] | null | undefined,
@@ -129,7 +128,7 @@ const ShowAssignmentGuesses: FC<ShowAssignmentGuessesProps> = ({ guesses, resetG
 		<div className="flex flex-col gap-4 items-center py-4">
 			<h2 className="text-2xl">Saved Guesses</h2>
 			{guesses && guesses.map((guess) => {
-				return <SelectedGuess key={guess.id} host={guess?.AssignmentReview?.Review?.User} rating={guess?.Rating} />
+				return <SelectedGuess key={guess.id} host={guess?.assignmentReview?.review?.user} rating={guess?.rating} />
 			})}
 			<Button
 				variant="outline"

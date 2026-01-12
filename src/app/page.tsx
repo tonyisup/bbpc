@@ -1,7 +1,9 @@
+import { LatestEpisode } from "@/components/LatestEpisode";
 import { Episode } from "@/components/Episode";
 import { NextEpisode } from "@/components/NextEpisode";
 import { EpisodeSkeleton } from "@/components/EpisodeSkeleton";
 import { db } from "@/server/db";
+import { getServerAuthSession } from "@/server/auth";
 import { Suspense } from "react";
 
 
@@ -16,13 +18,13 @@ export default async function HomePage() {
     include: {
       assignments: {
         include: {
-          Movie: true,
-          User: true,
+          movie: true,
+          user: true,
           assignmentReviews: {
             include: {
-              Review: {
+              review: {
                 include: {
-                  Rating: true,
+                  rating: true,
                 },
               },
             },
@@ -31,11 +33,11 @@ export default async function HomePage() {
       },
       extras: {
         include: {
-          Review: {
+          review: {
             include: {
-              Movie: true,
-              User: true,
-              Show: true,
+              movie: true,
+              user: true,
+              show: true,
             },
           },
         },
@@ -46,12 +48,29 @@ export default async function HomePage() {
       date: 'desc',
     },
   });
+
+  const session = await getServerAuthSession();
+  let hasWon = false;
+
+  if (session?.user && latestEpisode) {
+    const win = await db.gamblingPoints.findFirst({
+      where: {
+        userId: session.user.id,
+        status: 'won',
+        assignment: {
+          episodeId: latestEpisode.id
+        }
+      }
+    });
+    hasWon = !!win;
+  }
+
   return (
     <main className="flex min-h-screen flex-col items-center justify-center text-white">
       <div className="container flex flex-col items-center justify-center gap-12 px-4">
         <div className="flex flex-wrap items-start justify-center gap-12">
           <Suspense fallback={<EpisodeSkeleton />}>
-            {latestEpisode && <Episode episode={latestEpisode} />}
+            {latestEpisode && <LatestEpisode episode={latestEpisode} hasWon={hasWon} />}
           </Suspense>
           <Suspense fallback={<EpisodeSkeleton />}>
             <NextEpisode />

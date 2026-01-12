@@ -31,7 +31,7 @@ export default async function ProfilePage() {
           assignmentId: null
         },
         include: {
-          Movie: true
+          movie: true
         },
         orderBy: {
           order: 'desc'
@@ -63,57 +63,62 @@ export default async function ProfilePage() {
       reason: true,
       earnedOn: true,
       adjustment: true,
-      GamePointType: {
+      gamePointType: {
         select: {
           title: true,
           points: true,
           description: true,
         }
       },
-      AssignmentPoints: {
+      assignmentPoints: {
         take: 1,
         select: {
-          Assignment: {
+          assignment: {
             select: {
               id: true,
-              Episode: {
+              episode: {
                 select: { id: true, number: true, title: true }
               },
-              Movie: {
+              movie: {
                 select: { title: true }
               }
             }
           }
         }
       },
-      GamblingPoints: {
+      gamblingPoints: {
         take: 1,
         select: {
-          Assignment: {
+          assignment: {
             select: {
               id: true,
-              Episode: {
+              episode: {
                 select: { id: true, number: true, title: true }
               },
-              Movie: {
+              movie: {
                 select: { title: true }
               }
+            }
+          },
+          gamblingType: {
+            select: {
+              title: true
             }
           }
         }
       },
-      Guess: {
+      guess: {
         take: 1,
         select: {
-          AssignmentReview: {
+          assignmentReview: {
             select: {
-              Assignment: {
+              assignment: {
                 select: {
                   id: true,
-                  Episode: {
+                  episode: {
                     select: { id: true, number: true, title: true }
                   },
-                  Movie: {
+                  movie: {
                     select: { title: true }
                   }
                 }
@@ -131,19 +136,15 @@ export default async function ProfilePage() {
     orderBy: { createdAt: 'desc' },
     select: {
       id: true,
-      assignmentId: true,
+      gamblingTypeId: true,
       points: true,
       createdAt: true,
-      successful: true,
-      Assignment: {
+      status: true,
+      gamblingType: {
         select: {
           id: true,
-          Movie: {
-            select: {
-              title: true,
-              year: true
-            }
-          }
+          title: true,
+          lookupId: true,
         }
       }
     }
@@ -160,7 +161,7 @@ export default async function ProfilePage() {
 
   return (
     <div className="container flex flex-col items-start justify-center gap-12 px-4 py-16">
-      <h1 className="text-3xl font-extrabold tracking-tight">{session.user.email}</h1>
+      <h1 className="md:text-3xl text-2xl font-extrabold tracking-tight">{session.user.email}</h1>
 
       <ProfileForm
         initialName={session.user.name ?? ""}
@@ -180,8 +181,6 @@ export default async function ProfilePage() {
           ...p,
           earnedOn: p.earnedOn.toISOString()
         })) ?? []} />
-        <GamblingHistory history={gamblingHistory as any} />
-
       </div>
       <SignOutButton />
     </div>

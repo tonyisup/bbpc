@@ -16,10 +16,10 @@ export const syllabusRouter = createTRPCRouter({
           order: input.order
         },
         include: {
-          Movie: true,
-          Assignment: {
+          movie: true,
+          assignment: {
             include: {
-              Episode: true
+              episode: true
             }
           }
         }
@@ -46,14 +46,14 @@ export const syllabusRouter = createTRPCRouter({
       }))
     }))
     .mutation(async ({ ctx, input }) => {
-      const updates = input.syllabus.map(item => 
+      const updates = input.syllabus.map(item =>
         ctx.db.syllabus.update({
           where: { id: item.id },
           data: { order: item.order },
-          include: { Movie: true, Assignment: { include: { Episode: true } } }
+          include: { movie: true, assignment: { include: { episode: true } } }
         })
       );
-      
+
       const results = await ctx.db.$transaction(updates);
       return results;
     }),
@@ -68,10 +68,10 @@ export const syllabusRouter = createTRPCRouter({
         where: { id: input.id },
         data: { notes: input.notes },
         include: {
-          Movie: true,
-          Assignment: {
+          movie: true,
+          assignment: {
             include: {
-              Episode: true
+              episode: true
             }
           }
         }

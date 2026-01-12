@@ -1,20 +1,19 @@
-import { prisma } from "./client";
-
+import { db } from "../db";
 export const ssr = {
 
 	getAssignment: async function (id: string) {
-		return await prisma.assignment.findUnique({
+		return await db.assignment.findUnique({
 			where: {
 				id: id
 			},
 			include: {
-				User: true,
-				Movie: true,
+				user: true,
+				movie: true,
 				assignmentReviews: {
 					include: {
-						Review: {
+						review: {
 							include: {
-								User: true
+								user: true
 							}
 						}
 					}
@@ -23,7 +22,7 @@ export const ssr = {
 		});
 	},
 	getLatestEpisode: async function () {
-		return await prisma.episode.findMany({
+		return await db.episode.findMany({
 			take: 2,
 			skip: 1,
 			orderBy: {
@@ -33,16 +32,16 @@ export const ssr = {
 				links: true,
 				assignments: {
 					include: {
-						User: true,
-						Movie: true
+						user: true,
+						movie: true
 					}
 				},
 				extras: {
 					include: {
-						Review: {
+						review: {
 							include: {
-								User: true,
-								Movie: true
+								user: true,
+								movie: true
 							}
 						}
 					}
@@ -51,7 +50,7 @@ export const ssr = {
 		});
 	},
 	getNextEpisode: async function () {
-		return await prisma.episode.findFirst({
+		return await db.episode.findFirst({
 			orderBy: {
 				number: "desc"
 			},
@@ -59,16 +58,16 @@ export const ssr = {
 				links: true,
 				assignments: {
 					include: {
-						User: true,
-						Movie: true
+						user: true,
+						movie: true
 					}
 				},
 				extras: {
 					include: {
-						Review: {
+						review: {
 							include: {
-								User: true,
-								Movie: true
+								user: true,
+								movie: true
 							}
 						}
 					}
@@ -77,7 +76,7 @@ export const ssr = {
 		});
 	},
 	getEpisodeHistory: async function () {
-		return await prisma.episode.findMany({
+		return await db.episode.findMany({
 			orderBy: {
 				date: 'desc',
 			},
@@ -85,16 +84,16 @@ export const ssr = {
 				links: true,
 				assignments: {
 					include: {
-						User: true,
-						Movie: true
+						user: true,
+						movie: true
 					}
 				},
 				extras: {
 					include: {
-						Review: {
+						review: {
 							include: {
-								User: true,
-								Movie: true
+								user: true,
+								movie: true
 							}
 						}
 					}

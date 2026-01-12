@@ -47,12 +47,12 @@ function RankedItemRow({ item, index, onRemove, onDragEnd }: {
 				<div className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm bg-zinc-700/50">
 					{index + 1}
 				</div>
-				{item.Movie?.poster && (
-					<img src={item.Movie.poster} alt="" className="w-8 h-12 object-cover rounded shadow pointer-events-none" />
+				{item.movie?.poster && (
+					<img src={item.movie.poster} alt="" className="w-8 h-12 object-cover rounded shadow pointer-events-none" />
 				)}
 				<div className="flex-grow min-w-0">
-					<p className="text-sm font-bold text-white truncate">{item.Movie?.title}</p>
-					<p className="text-xs text-zinc-400">{item.Movie?.year}</p>
+					<p className="text-sm font-bold text-white truncate">{item.movie?.title}</p>
+					<p className="text-xs text-zinc-400">{item.movie?.year}</p>
 				</div>
 				<Button
 					variant="ghost"
@@ -146,8 +146,8 @@ export function YearPageClient() {
 
 	// Sync local state when selectedList changes
 	useEffect(() => {
-		if (selectedList?.RankedItem) {
-			setOrderedItems(selectedList.RankedItem);
+		if (selectedList?.rankedItem) {
+			setOrderedItems(selectedList.rankedItem);
 		}
 	}, [selectedList]);
 
@@ -161,8 +161,8 @@ export function YearPageClient() {
 
 	// Filter items if a list is selected (hide items already in the list)
 	const filteredItems = sortedItems?.filter((item) => {
-		if (!selectedListId || !selectedList?.RankedItem) return true;
-		return !selectedList.RankedItem.some((rankedItem) => rankedItem.movieId === item.movie.id);
+		if (!selectedListId || !selectedList?.rankedItem) return true;
+		return !selectedList.rankedItem.some((rankedItem) => rankedItem.movieId === item.movie.id);
 	});
 
 	const years = Array.from({ length: 10 }, (_, i) => currentYear - i);
@@ -289,7 +289,7 @@ export function YearPageClient() {
 										<option value="">None Selected</option>
 										{rankedLists.map((list) => (
 											<option key={list.id} value={list.id}>
-												{list.title || list.RankedListType.name} ({list.RankedItem.length}/{list.RankedListType.maxItems})
+												{list.title || list.rankedListType.name} ({list.rankedItem.length}/{list.rankedListType.maxItems})
 											</option>
 										))}
 									</select>
@@ -301,7 +301,7 @@ export function YearPageClient() {
 								<div className="bg-zinc-900/40 p-6 rounded-lg border border-zinc-800 space-y-4">
 									<h2 className="text-lg font-bold text-white border-b border-zinc-700 pb-2 flex items-center gap-2">
 										<Check className="w-5 h-5 text-primary" />
-										Current Rankings: {selectedList.title || selectedList.RankedListType.name}
+										Current Rankings: {selectedList.title || selectedList.rankedListType.name}
 									</h2>
 									<Reorder.Group
 										axis="y"
@@ -376,7 +376,7 @@ export function YearPageClient() {
 
 										{/* Rank Input (only show when list is selected) */}
 										{selectedListId && selectedList && (() => {
-											const existingItem = selectedList.RankedItem.find(
+											const existingItem = selectedList.rankedItem.find(
 												(rankedItem) => rankedItem.movieId === item.movie.id
 											);
 											const currentRank = existingItem?.rank;
@@ -385,7 +385,7 @@ export function YearPageClient() {
 												<div className="flex-shrink-0 flex items-center justify-center md:justify-end">
 													<div className="flex flex-col gap-2 bg-zinc-800/50 p-3 rounded border border-zinc-700 min-w-[200px]">
 														<label className="text-xs font-medium text-zinc-400">
-															Rank in {selectedList.title || selectedList.RankedListType.name}:
+															Rank in {selectedList.title || selectedList.rankedListType.name}:
 														</label>
 														<div className="flex items-center gap-2">
 															<select
@@ -403,7 +403,7 @@ export function YearPageClient() {
 																}}
 															>
 																<option value="" disabled>#</option>
-																{Array.from({ length: selectedList.RankedListType.maxItems }, (_, i) => i + 1).map((r) => (
+																{Array.from({ length: selectedList.rankedListType.maxItems }, (_, i) => i + 1).map((r) => (
 																	<option key={r} value={r}>
 																		Rank #{r}
 																	</option>
@@ -414,7 +414,7 @@ export function YearPageClient() {
 																onClick={(e) => {
 																	const select = e.currentTarget.previousElementSibling as HTMLSelectElement;
 																	const rank = parseInt(select.value);
-																	if (rank >= 1 && rank <= selectedList.RankedListType.maxItems) {
+																	if (rank >= 1 && rank <= selectedList.rankedListType.maxItems) {
 																		upsertItem.mutate({
 																			rankedListId: selectedListId,
 																			movieId: item.movie.id,

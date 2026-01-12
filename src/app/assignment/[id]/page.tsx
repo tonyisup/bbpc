@@ -1,6 +1,5 @@
 import { db } from "@/server/db";
 import { notFound } from "next/navigation";
-import type { Movie } from "@prisma/client";
 import Assignment from "@/components/Assignment";
 import GameSegment from "@/components/GameSegment";
 
@@ -14,9 +13,9 @@ export default async function AssignmentPage({ params }: AssignmentPageProps) {
   const assignment = await db.assignment.findUnique({
     where: { id: params.id },
     include: {
-      Movie: true,
-      Episode: true,
-      User: true,
+      movie: true,
+      episode: true,
+      user: true,
     },
   });
 
@@ -25,7 +24,7 @@ export default async function AssignmentPage({ params }: AssignmentPageProps) {
   }
 
   return (
-    <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16">      
+    <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16">
       {assignment && <Assignment assignment={assignment} />}
       <GameSegment assignment={assignment} />
     </div>

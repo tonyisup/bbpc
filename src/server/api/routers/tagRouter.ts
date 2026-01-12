@@ -278,65 +278,37 @@ export const tagRouter = createTRPCRouter({
         return existingVote;
       }
 
-      const vote = await ctx.db.tagVote.create({
-        data: {
-          tag: input.tag,
-          tmdbId: input.tmdbId,
-          isTag: input.isTag,
-          userId: userId,
-        },
-      });
+      return await ctx.db.$transaction(async (tx) => {
+        const vote = await tx.tagVote.create({
+          data: {
+            tag: input.tag,
+            tmdbId: input.tmdbId,
+            isTag: input.isTag,
+            userId: userId,
+          },
+        });
 
-      // Award a point of type 'tag-vote'
-      try {
-        const seasonId = await getCurrentSeasonID(ctx.db);
-        if (seasonId) {
-          const gamePointType = await ctx.db.gamePointType.findUnique({
-            where: { lookupID: "tag-vote" },
+        const gamePointType = await tx.gamePointType.findFirst({
+          where: { lookupID: "tag-vote" },
+        });
+
+        const seasonId = await getCurrentSeasonID(tx);
+
+        if (gamePointType && seasonId) {
+          await tx.point.create({
+            data: {
+              userId: userId,
+              seasonId: seasonId,
+              gamePointTypeId: gamePointType.id,
+              adjustment: 0,
+              reason: `Voted on tag: ${input.tag}`,
+              earnedOn: new Date(),
+            },
           });
-
-          if (gamePointType) {
-            // Try to get movie title from TMDB for a better reason string
-            let movieTitle = `Movie #${input.tmdbId}`;
-            try {
-              const movieData = await tmdb.getMovie(input.tmdbId);
-              if (movieData) {
-                movieTitle = movieData.title;
-              }
-            } catch (e) {
-              console.warn(`Could not fetch title for TMDB ID ${input.tmdbId}`);
-            }
-
-            // Check if we have this movie in our local database
-            const localMovie = await ctx.db.movie.findFirst({
-              where: { tmdbId: input.tmdbId },
-              select: { id: true },
-            });
-
-            const reason = localMovie
-              ? `Vote on tag: ${input.tag} for ${movieTitle} [movieId:${localMovie.id}]`
-              : `Vote on tag: ${input.tag} for ${movieTitle} [tmdbId:${input.tmdbId}]`;
-
-            await ctx.db.point.create({
-              data: {
-                userId: userId,
-                seasonId: seasonId,
-                gamePointTypeId: gamePointType.id,
-                earnedOn: new Date(),
-                reason: reason,
-              },
-            });
-          } else {
-            console.warn("GamePointType 'tag-vote' not found. Skipping point award.");
-          }
-        } else {
-          console.warn("No active season found. Skipping point award.");
         }
-      } catch (e) {
-        console.error("Failed to award point for tag vote", e);
-      }
 
-      return vote;
+        return vote;
+      });
     }),
 
   getUserVotes: protectedProcedure

@@ -1,5 +1,8 @@
 'use client'
 
+import Link from "next/link";
+import { Trophy } from "lucide-react";
+
 /**
  * Represents an episode of the show.
  */
@@ -21,8 +24,8 @@ interface Movie {
  */
 interface Assignment {
 	id: string;
-	Episode: Episode;
-	Movie: Movie;
+	episode: Episode;
+	movie: Movie;
 }
 
 /**
@@ -33,20 +36,23 @@ interface Point {
 	reason: string | null;
 	earnedOn: Date | string;
 	adjustment: number | null;
-	GamePointType: {
+	gamePointType: {
 		title: string;
 		points: number;
 		description: string | null;
 	} | null;
-	AssignmentPoints: {
-		Assignment: Assignment;
+	assignmentPoints: {
+		assignment: Assignment;
 	}[];
-	GamblingPoints: {
-		Assignment: Assignment;
+	gamblingPoints: {
+		assignment: Assignment | null;
+		gamblingType: {
+			title: string;
+		} | null;
 	}[];
-	Guess: {
-		AssignmentReview: {
-			Assignment: Assignment;
+	guess: {
+		assignmentReview: {
+			assignment: Assignment;
 		};
 	}[];
 }
@@ -77,22 +83,22 @@ export default function PointHistory({ points }: PointHistoryProps) {
 		let assignmentTitle = "General";
 
 		// Try to find associated assignment and episode
-		let assignment: Assignment | undefined;
+		let assignment: Assignment | null | undefined;
 
-		if (point.AssignmentPoints.length > 0) {
-			assignment = point.AssignmentPoints[0]?.Assignment;
-		} else if (point.GamblingPoints.length > 0) {
-			assignment = point.GamblingPoints[0]?.Assignment;
-		} else if (point.Guess.length > 0) {
-			assignment = point.Guess[0]?.AssignmentReview.Assignment;
+		if (point.assignmentPoints.length > 0) {
+			assignment = point.assignmentPoints[0]?.assignment;
+		} else if (point.gamblingPoints.length > 0) {
+			assignment = point.gamblingPoints[0]?.assignment;
+		} else if (point.guess.length > 0) {
+			assignment = point.guess[0]?.assignmentReview.assignment;
 		}
 
 		if (assignment) {
-			episodeId = assignment.Episode.id;
-			episodeTitle = `Episode ${assignment.Episode.number}: ${assignment.Episode.title}`;
-			episodeNumber = assignment.Episode.number;
+			episodeId = assignment.episode.id;
+			episodeTitle = `Episode ${assignment.episode.number}: ${assignment.episode.title}`;
+			episodeNumber = assignment.episode.number;
 			assignmentId = assignment.id;
-			assignmentTitle = assignment.Movie.title;
+			assignmentTitle = assignment.movie.title;
 		}
 
 		if (!acc[episodeId]) {
@@ -122,49 +128,61 @@ export default function PointHistory({ points }: PointHistoryProps) {
 	return (
 		<div className="w-full max-w-4xl space-y-6">
 			<h3 className="text-2xl font-bold text-white mb-6">Point History</h3>
-			{sortedEpisodes.map(([episodeId, episode]) => (
-				<div key={episodeId} className="border border-gray-700 rounded-xl overflow-hidden bg-gray-900/40 backdrop-blur-sm shadow-lg transition-all hover:shadow-xl hover:bg-gray-900/60">
-					<div className="p-4 bg-gradient-to-r from-gray-800 to-gray-900 border-b border-gray-700">
-						<h4 className="text-xl font-bold text-white">{episode.title}</h4>
-					</div>
-					<div className="p-4 space-y-6">
-						{Object.entries(episode.assignments).map(([assignmentId, assignment]) => (
-							<div key={assignmentId} className="relative pl-6 border-l-2 border-indigo-500/50">
-								<h5 className="text-lg font-semibold mb-3 text-indigo-300">{assignment.title}</h5>
-								<div className="grid gap-3">
-									{assignment.points.map(point => {
-										const totalPoints = (point.GamePointType?.points ?? 0) + (point.adjustment ?? 0);
-										return (
-											<div key={point.id} className="flex justify-between items-center bg-gray-800/50 p-4 rounded-lg border border-gray-700/50 hover:border-indigo-500/30 transition-colors">
-												<div className="flex-1">
-													<div className="font-medium text-white text-lg">
-														{point.GamePointType?.title || point.reason || "Point Adjustment"}
-													</div>
-													{point.GamePointType?.description && (
-														<div className="text-sm text-gray-400 mt-1">
-															{point.GamePointType.description}
+			{sortedEpisodes.map(([episodeId, episode]) => {
+				const hasWonGamble = Object.values(episode.assignments).some(a => a.points.some(p => p.gamblingPoints.length > 0));
+
+				return (
+					<div key={episodeId} className="border border-gray-700 rounded-xl overflow-hidden bg-gray-900/40 backdrop-blur-sm shadow-lg transition-all hover:shadow-xl hover:bg-gray-900/60">
+						<div className="p-4 bg-gradient-to-r from-gray-800 to-gray-900 border-b border-gray-700 flex justify-between items-center group">
+							<Link href={`/episodes/${episodeId}`} className="hover:text-indigo-400 transition-colors">
+								<h4 className="text-xl font-bold text-white">{episode.title}</h4>
+							</Link>
+							{hasWonGamble && (
+								<Link href={`/episodes/${episodeId}`} className="flex items-center gap-2 px-3 py-1 bg-yellow-500/10 border border-yellow-500/20 rounded-full text-yellow-500 text-xs font-black uppercase tracking-widest animate-pulse hover:bg-yellow-500/20 transition-all shadow-[0_0_15px_rgba(234,179,8,0.2)]">
+									<Trophy className="w-3.5 h-3.5" />
+									<span>Winning Episode</span>
+								</Link>
+							)}
+						</div>
+						<div className="p-4 space-y-6">
+							{Object.entries(episode.assignments).map(([assignmentId, assignment]) => (
+								<div key={assignmentId} className="relative pl-6 border-l-2 border-indigo-500/50">
+									<h5 className="text-lg font-semibold mb-3 text-indigo-300">{assignment.title}</h5>
+									<div className="grid gap-3">
+										{assignment.points.map(point => {
+											const totalPoints = (point.gamePointType?.points ?? 0) + (point.adjustment ?? 0);
+											return (
+												<div key={point.id} className="flex justify-between items-center bg-gray-800/50 p-4 rounded-lg border border-gray-700/50 hover:border-indigo-500/30 transition-colors">
+													<div className="flex-1">
+														<div className="font-medium text-white text-lg">
+															{point.gamePointType?.title || point.reason || "Point Adjustment"}
 														</div>
-													)}
-													<div className="text-xs text-gray-500 mt-2 font-mono">
-														{new Date(point.earnedOn).toLocaleDateString(undefined, { dateStyle: 'long' })}
+														{point.gamePointType?.description && (
+															<div className="text-sm text-gray-400 mt-1">
+																{point.gamePointType.description}
+															</div>
+														)}
+														<div className="text-xs text-gray-500 mt-2 font-mono">
+															{new Date(point.earnedOn).toLocaleDateString(undefined, { dateStyle: 'long' })}
+														</div>
+													</div>
+													<div className={`text-2xl font-bold ml-4 ${totalPoints > 0
+														? 'text-emerald-400'
+														: 'text-red-400'
+														}`}>
+														{totalPoints > 0 ? '+' : ''}
+														{totalPoints}
 													</div>
 												</div>
-												<div className={`text-2xl font-bold ml-4 ${totalPoints > 0
-													? 'text-emerald-400'
-													: 'text-red-400'
-													}`}>
-													{totalPoints > 0 ? '+' : ''}
-													{totalPoints}
-												</div>
-											</div>
-										);
-									})}
+											);
+										})}
+									</div>
 								</div>
-							</div>
-						))}
+							))}
+						</div>
 					</div>
-				</div>
-			))}
+				);
+			})}
 		</div>
 	);
 }

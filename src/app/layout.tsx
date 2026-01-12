@@ -69,7 +69,7 @@ export default async function RootLayout({
               </div>
             </header>
             <section>
-              <p className="pb-2 text-center text-xs sm:text-lg text-red-900">Random rants on all things movie</p>
+              <p className="pb-2 text-center text-sm sm:text-lg text-red-900">Random rants on all things movie</p>
             </section>
             <main className="flex-grow">
               <div className="flex flex-col text-white main-mask">

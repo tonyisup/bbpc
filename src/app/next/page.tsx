@@ -48,42 +48,42 @@ export const metadata: Metadata = {
 };
 
 export default async function NextPage() {
-	const nextEpisode = await db.episode.findFirst({
-		orderBy: {
-			number: 'desc',
-		},
-		include: {
-			assignments: {
-				include: {
-					Movie: true,
-					User: true,
-					assignmentReviews: {
-						include: {
-							Review: {
-								include: {
-									Rating: true,
-									User: true,
-								},
-							},
-						},
-					},
-				},
-			},
-			extras: {
-				include: {
-					Review: {
-						include: {
-							Movie: true,
-							User: true,
-							Show: true,
-						},
-					},
-				},
-			},
-			links: true,
-		},
-	});
-	
+  const nextEpisode = await db.episode.findFirst({
+    orderBy: {
+      number: 'desc',
+    },
+    include: {
+      assignments: {
+        include: {
+          movie: true,
+          user: true,
+          assignmentReviews: {
+            include: {
+              review: {
+                include: {
+                  rating: true,
+                  user: true,
+                },
+              },
+            },
+          },
+        },
+      },
+      extras: {
+        include: {
+          review: {
+            include: {
+              movie: true,
+              user: true,
+              show: true,
+            },
+          },
+        },
+      },
+      links: true,
+    },
+  });
+
 
   let movieList: StructuredData | undefined;
 
@@ -93,8 +93,8 @@ export default async function NextPage() {
       "@context": "https://schema.org",
       "@type": "ItemList",
       itemListElement: nextEpisode.assignments.map((assignment, index) => {
-        const movie = assignment.Movie;
-        
+        const movie = assignment.movie;
+
         const structuredMovie: StructuredMovie = {
           "@type": "Movie",
           name: movie.title,
@@ -114,16 +114,16 @@ export default async function NextPage() {
   return (
     <div>
       <h1>Movie Assignments for Next Episode</h1>
-			
-			{movieList && (
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(movieList)
-        }}
-      />
-    )}
-			{nextEpisode && <Episode episode={nextEpisode} allowGuesses={true} />}
+
+      {movieList && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(movieList)
+          }}
+        />
+      )}
+      {nextEpisode && <Episode episode={nextEpisode} allowGuesses={true} />}
     </div>
   );
 }
