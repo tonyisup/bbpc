@@ -1,8 +1,7 @@
 'use client'
 
 import Link from "next/link";
-import { Trophy, Settings } from "lucide-react";
-import { useSession } from "next-auth/react";
+import { Trophy } from "lucide-react";
 import {
   Accordion,
   AccordionContent,
@@ -99,8 +98,6 @@ interface SeasonGroup {
 }
 
 const EpisodeList = ({ episodes }: { episodes: Record<string, EpisodeGroup> }) => {
-  const { data: session } = useSession();
-  const isAdmin = session?.user?.isAdmin;
 
   // Sort episodes by number (descending)
   const sortedEpisodes = Object.entries(episodes).sort(([, a], [, b]) => b.number - a.number);

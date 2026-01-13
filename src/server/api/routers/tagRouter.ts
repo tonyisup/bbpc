@@ -278,6 +278,11 @@ export const tagRouter = createTRPCRouter({
         return existingVote;
       }
 
+      const tmdbMovie = await tmdb.getMovie(input.tmdbId);
+      if (!tmdbMovie) {
+        throw new Error("Movie not found");
+      }
+
       return await ctx.db.$transaction(async (tx) => {
         const gamePointType = await tx.gamePointType.findFirst({
           where: { lookupID: "tag-vote" },
@@ -287,11 +292,6 @@ export const tagRouter = createTRPCRouter({
         let pointId: string | undefined;
 
         if (gamePointType && seasonId) {
-
-          const tmdbMovie = await tmdb.getMovie(input.tmdbId);
-          if (!tmdbMovie) {
-            throw new Error("Movie not found");
-          }
           const point = await tx.point.create({
             data: {
               userId: userId,
