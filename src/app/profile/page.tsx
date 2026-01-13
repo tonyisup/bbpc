@@ -115,7 +115,7 @@ export default async function ProfilePage() {
           }
         }
       },
-      guess: {
+      guesses: {
         take: 1,
         select: {
           assignmentReview: {
