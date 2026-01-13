@@ -279,33 +279,41 @@ export const tagRouter = createTRPCRouter({
       }
 
       return await ctx.db.$transaction(async (tx) => {
+        const gamePointType = await tx.gamePointType.findFirst({
+          where: { lookupID: "tag-vote" },
+        });
+
+        const seasonId = await getCurrentSeasonID(tx);
+        let pointId: string | undefined;
+
+        if (gamePointType && seasonId) {
+
+          const tmdbMovie = await tmdb.getMovie(input.tmdbId);
+          if (!tmdbMovie) {
+            throw new Error("Movie not found");
+          }
+          const point = await tx.point.create({
+            data: {
+              userId: userId,
+              seasonId: seasonId,
+              gamePointTypeId: gamePointType.id,
+              adjustment: 0,
+              reason: `Voted on tag: ${input.tag} for movie: ${tmdbMovie.title}`,
+              earnedOn: new Date(),
+            },
+          });
+          pointId = point.id;
+        }
+
         const vote = await tx.tagVote.create({
           data: {
             tag: input.tag,
             tmdbId: input.tmdbId,
             isTag: input.isTag,
             userId: userId,
+            pointId: pointId,
           },
         });
-
-        const gamePointType = await tx.gamePointType.findFirst({
-          where: { lookupID: "tag-vote" },
-        });
-
-        const seasonId = await getCurrentSeasonID(tx);
-
-        if (gamePointType && seasonId) {
-          await tx.point.create({
-            data: {
-              userId: userId,
-              seasonId: seasonId,
-              gamePointTypeId: gamePointType.id,
-              adjustment: 0,
-              reason: `Voted on tag: ${input.tag}`,
-              earnedOn: new Date(),
-            },
-          });
-        }
 
         return vote;
       });

@@ -1,7 +1,8 @@
 'use client'
 
 import Link from "next/link";
-import { Trophy } from "lucide-react";
+import { Trophy, Settings } from "lucide-react";
+import { useSession } from "next-auth/react";
 import {
   Accordion,
   AccordionContent,
@@ -67,7 +68,7 @@ interface Point {
       title: string;
     } | null;
   }[];
-  guess: {
+  guesses: {
     assignmentReview: {
       assignment: Assignment;
     };
@@ -98,6 +99,9 @@ interface SeasonGroup {
 }
 
 const EpisodeList = ({ episodes }: { episodes: Record<string, EpisodeGroup> }) => {
+  const { data: session } = useSession();
+  const isAdmin = session?.user?.isAdmin;
+
   // Sort episodes by number (descending)
   const sortedEpisodes = Object.entries(episodes).sort(([, a], [, b]) => b.number - a.number);
 
@@ -133,8 +137,8 @@ const EpisodeList = ({ episodes }: { episodes: Record<string, EpisodeGroup> }) =
                       return (
                         <div key={point.id} className="flex justify-between items-center bg-gray-800/50 p-4 rounded-lg border border-gray-700/50 hover:border-indigo-500/30 transition-colors">
                           <div className="flex-1">
-                            <div className="font-medium text-white text-lg">
-                              {point.gamePointType?.title || point.reason || "Point Adjustment"}
+                            <div className="font-medium text-white text-lg flex items-center gap-2">
+                              {point.reason ?? point.gamePointType?.title}
                             </div>
                             {point.gamePointType?.description && (
                               <div className="text-sm text-gray-400 mt-1">
@@ -194,8 +198,8 @@ export default function PointHistory({ points, currentSeasonId }: PointHistoryPr
       assignment = point.assignmentPoints[0]?.assignment;
     } else if (point.gamblingPoints.length > 0) {
       assignment = point.gamblingPoints[0]?.assignment;
-    } else if (point.guess.length > 0) {
-      assignment = point.guess[0]?.assignmentReview.assignment;
+    } else if (point.guesses.length > 0) {
+      assignment = point.guesses[0]?.assignmentReview.assignment;
     }
 
     let episodeId = "misc";

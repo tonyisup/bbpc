@@ -83,7 +83,10 @@ and [a].[seasonid] = ${seasonIdToUse}
   // Calculate points currently gambled
   const allGamblingRows = await prisma.gamblingPoints.findMany({
     where: {
-      userId: user.id
+      userId: user.id,
+      status: {
+        in: ["pending", "locked"]
+      }
     },
     select: { points: true }
   });

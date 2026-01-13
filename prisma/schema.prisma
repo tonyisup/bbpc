@@ -285,7 +285,8 @@ model Point {
   gamePointTypeId  Int?               @db.TinyInt
   assignmentPoints AssignmentPoints[]
   gamblingPoints   GamblingPoints[]
-  guess            Guess[]
+  guesses          Guess[]
+  tagVotes         TagVote[]
   gamePointType    GamePointType?     @relation(fields: [gamePointTypeId], references: [id], onDelete: Cascade)
   season           Season             @relation(fields: [seasonId], references: [id], onUpdate: NoAction)
   user             User               @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
@@ -421,9 +422,12 @@ model TagVote {
   createdAt DateTime @default(now())
   sessionId String?
   userId    String?
+  pointId   String?  @unique @db.UniqueIdentifier
+  point     Point?   @relation(fields: [pointId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+  @@index([pointId])
   @@index([tag, userId])
 }
 
