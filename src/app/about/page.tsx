@@ -43,6 +43,17 @@ const AboutPage = () => {
         <p>He hasn't left</p>
         <p>A decade later, they're still yelling at each other over movies</p>      
       </div>
+
+      <div className="flex justify-center mt-8">
+        <Link
+          href="https://ko-fi.com/tonyisup"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-muted-foreground hover:text-foreground transition-colors"
+        >
+          Buy me <span className="line-through">coffee</span> Reese's
+        </Link>
+      </div>
     </div>    
   );
 };
