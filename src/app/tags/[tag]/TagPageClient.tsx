@@ -42,6 +42,30 @@ export function TagPageClient({ tag, initialMovieId }: { tag: string; initialMov
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [showAlternateShareIcon, setShowAlternateShareIcon] = useState(false);
 
+  // Cooldown state
+  const [lastVoteTime, setLastVoteTime] = useState<number>(0);
+  const [secondsRemaining, setSecondsRemaining] = useState(0);
+
+  useEffect(() => {
+    if (lastVoteTime === 0) {
+      setSecondsRemaining(0);
+      return;
+    }
+
+    const checkTimer = () => {
+      const remaining = Math.max(0, 10000 - (Date.now() - lastVoteTime));
+      setSecondsRemaining(Math.ceil(remaining / 1000));
+      if (remaining <= 0) {
+        setLastVoteTime(0); // Clear cooldown
+      }
+    };
+
+    checkTimer(); // Initial check
+    const interval = setInterval(checkTimer, 100); // Check frequently for smooth UI
+
+    return () => clearInterval(interval);
+  }, [lastVoteTime]);
+
   // Confirmation state
   const [confirmConfig, setConfirmConfig] = useState<{
     isOpen: boolean;
@@ -463,6 +487,15 @@ export function TagPageClient({ tag, initialMovieId }: { tag: string; initialMov
     // direction is 'left', 'right', 'up', 'down'
     if (direction !== 'left' && direction !== 'right') return;
 
+    // Check cooldown
+    const now = Date.now();
+    if (lastVoteTime > 0 && now - lastVoteTime < 10000) {
+      toast.error(`Please wait ${Math.ceil((10000 - (now - lastVoteTime)) / 1000)}s before voting again.`);
+      // If we are in cooldown, we effectively skip this movie locally, but don't submit to server
+      // The card will still fly away because react-tinder-card triggered this callback after the swipe
+      return;
+    }
+
     const isTag = direction === 'right';
 
     if (!currentMovie) return;
@@ -486,11 +519,19 @@ export function TagPageClient({ tag, initialMovieId }: { tag: string; initialMov
       router.replace(`/tags/${tag}`, { scroll: false });
     }
 
+    // Start cooldown
+    setLastVoteTime(Date.now());
+
     // Save to DB (authenticated via protectedProcedure)
     submitVote.mutate({
       tag: tag,
       tmdbId: currentMovie.id,
       isTag,
+    }, {
+      onError: (error) => {
+        // If server rejects due to rate limit (or other reason), show error
+        toast.error(error.message);
+      }
     });
 
     // Update local state for immediate UI feedback
@@ -686,11 +727,16 @@ export function TagPageClient({ tag, initialMovieId }: { tag: string; initialMov
                     <button
                       type="button"
                       onClick={() => handleButtonVote(false)}
-                      className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 aspect-square shrink-0 rounded-full bg-red-500 hover:bg-red-600 flex items-center justify-center shadow-lg transition-transform hover:scale-110 active:scale-95"
+                      disabled={secondsRemaining > 0}
+                      className={`w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 aspect-square shrink-0 rounded-full flex items-center justify-center shadow-lg transition-transform ${secondsRemaining > 0 ? "bg-gray-500 cursor-not-allowed" : "bg-red-500 hover:bg-red-600 hover:scale-110 active:scale-95"}`}
                       aria-label={`Is NOT ${tag}`}
                       title={`Is NOT ${tag}`}
                     >
-                      <X className="w-6 h-6 sm:w-8 sm:h-8 font-bold" />
+                      {secondsRemaining > 0 ? (
+                        <span className="text-xs font-bold">{secondsRemaining}</span>
+                      ) : (
+                        <X className="w-6 h-6 sm:w-8 sm:h-8 font-bold" />
+                      )}
                     </button>
 
                     <button
@@ -706,11 +752,16 @@ export function TagPageClient({ tag, initialMovieId }: { tag: string; initialMov
                     <button
                       type="button"
                       onClick={() => handleButtonVote(true)}
-                      className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 aspect-square shrink-0 rounded-full bg-green-500 hover:bg-green-600 flex items-center justify-center shadow-lg transition-transform hover:scale-110 active:scale-95"
+                      disabled={secondsRemaining > 0}
+                      className={`w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 aspect-square shrink-0 rounded-full flex items-center justify-center shadow-lg transition-transform ${secondsRemaining > 0 ? "bg-gray-500 cursor-not-allowed" : "bg-green-500 hover:bg-green-600 hover:scale-110 active:scale-95"}`}
                       aria-label={`It IS ${tag}`}
                       title={`It IS ${tag}`}
                     >
-                      <Check className="w-6 h-6 sm:w-8 sm:h-8 font-bold" />
+                      {secondsRemaining > 0 ? (
+                        <span className="text-xs font-bold">{secondsRemaining}</span>
+                      ) : (
+                        <Check className="w-6 h-6 sm:w-8 sm:h-8 font-bold" />
+                      )}
                     </button>
                   </>
                 )}
