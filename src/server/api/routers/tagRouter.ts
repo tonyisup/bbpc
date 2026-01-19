@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { TRPCError } from "@trpc/server";
 import { createTRPCRouter, publicProcedure, protectedProcedure } from "@/server/api/trpc";
 import { tmdb } from "@/server/tmdb/client";
 import { getCurrentSeasonID } from "@/utils/points";
@@ -261,6 +262,19 @@ export const tagRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       const userId = ctx.session.user.id;
+
+      // Check for rate limiting
+      const lastVote = await ctx.db.tagVote.findFirst({
+        where: { userId },
+        orderBy: { createdAt: "desc" },
+      });
+
+      if (lastVote && Date.now() - lastVote.createdAt.getTime() < 10000) {
+        throw new TRPCError({
+          code: "TOO_MANY_REQUESTS",
+          message: "You are voting too fast. Please wait 10 seconds between votes.",
+        });
+      }
 
       // Check for existing vote from this user to prevent duplicates
       const existingVote = await ctx.db.tagVote.findFirst({
