@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure, publicProcedure } from "@/server/api/trpc";
-import { getCurrentSeasonID } from "@/utils/points";
+import { calculateUserPoints, getCurrentSeasonID } from "@/utils/points";
+import { TRPCError } from "@trpc/server";
 
 export const gamblingRouter = createTRPCRouter({
 	getAllActive: publicProcedure.query(({ ctx }) => {
@@ -17,26 +18,58 @@ export const gamblingRouter = createTRPCRouter({
 			targetUserId: z.string().optional(),
 		}))
 		.mutation(async ({ ctx, input }) => {
+			const userEmail = ctx.session.user.email;
+			if (!userEmail) {
+				throw new TRPCError({
+					code: "UNAUTHORIZED",
+					message: "User email not found in session",
+				});
+			}
+
 			const seasonId = await getCurrentSeasonID(ctx.db);
 			if (!input.gamblingTypeId) {
 				const defaultType = await ctx.db.gamblingType.findFirst({
 					where: { lookupId: "default" },
 				});
-				if (!defaultType) throw new Error("No active gambling type found");
+				if (!defaultType) {
+					throw new TRPCError({
+						code: "NOT_FOUND",
+						message: "No active gambling type found",
+					});
+				}
 				input.gamblingTypeId = defaultType.id;
 			}
+
+			// Security: Always use the session user ID, don't trust the input userId
+			const userId = ctx.session.user.id;
+
 			const existingPoints = await ctx.db.gamblingPoints.findFirst({
 				where: {
-					userId: input.userId,
+					userId: userId,
 					gamblingTypeId: input.gamblingTypeId,
 					assignmentId: input.assignmentId,
 					targetUserId: input.targetUserId,
 				},
 			});
 
+			// Check point affordability
+			const availablePoints = await calculateUserPoints(ctx.db, userEmail);
+			const currentBetPoints = existingPoints?.points ?? 0;
+			const pointsDiff = input.points - currentBetPoints;
+
+			if (pointsDiff > availablePoints) {
+				throw new TRPCError({
+					code: "BAD_REQUEST",
+					message: `Insufficient points. You are trying to bet ${input.points} points (an increase of ${pointsDiff}), but you only have ${availablePoints} available.`,
+				});
+			}
+
 			if (existingPoints) {
 				if (existingPoints.status !== "pending") {
-					throw new Error("Cannot update a bet that is already locked or resolved");
+					throw new TRPCError({
+						code: "FORBIDDEN",
+						message: "Cannot update a bet that is already locked or resolved",
+					});
 				}
 				return ctx.db.gamblingPoints.update({
 					where: { id: existingPoints.id },
@@ -46,7 +79,7 @@ export const gamblingRouter = createTRPCRouter({
 				return ctx.db.gamblingPoints.create({
 					data: {
 						seasonId,
-						userId: input.userId,
+						userId: userId,
 						gamblingTypeId: input.gamblingTypeId,
 						points: input.points,
 						assignmentId: input.assignmentId,

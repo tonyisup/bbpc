@@ -62,6 +62,11 @@ const GamblingSection: FC<GamblingSectionProps> = ({ gamblingTypeId, userId, tit
       return;
     }
 
+    if (!canSubmitGamblingPoints) {
+      alert(`Insufficient points. You are trying to bet ${gamblingPoints} points, but you only have ${userPoints} available.`);
+      return;
+    }
+
     submitGamblingPoints({
       userId: userId,
       gamblingTypeId: gamblingTypeId,
@@ -85,7 +90,7 @@ const GamblingSection: FC<GamblingSectionProps> = ({ gamblingTypeId, userId, tit
     setGamblingPoints(amount);
   }
 
-  if (userPoints === null || userPoints === undefined || Number(userPoints) < 0) return null;
+  if (userPoints === null || userPoints === undefined) return null;
 
   const hasGambled = () => {
     return eventGamblingPoints && eventGamblingPoints.length > 0 && eventGamblingPoints[0] && eventGamblingPoints[0].points > 0;

@@ -38,10 +38,18 @@ const BettingCoin: FC<BettingCoinProps> = ({
 	const existingBet = getBetFor(lookupId, targetHostId);
 	const isLocked = episodeStatus === "recording" || episodeStatus === "published" || (existingBet && existingBet.status !== "pending");
 
+	const pts = parseInt(amount);
+	const isAffordable = isNaN(pts) || pts <= (userPoints ?? 0) + (existingBet?.points ?? 0);
+
 	const handleBet = () => {
 		if (!type) return;
-		const pts = parseInt(amount);
 		if (isNaN(pts)) return;
+
+		if (!isAffordable) {
+			alert(`Insufficient points. You are trying to bet ${pts} points, but you only have ${(userPoints ?? 0) + (existingBet?.points ?? 0)} available.`);
+			return;
+		}
+
 		submitBet.mutate({
 			userId,
 			gamblingTypeId: type.id,
@@ -93,8 +101,8 @@ const BettingCoin: FC<BettingCoinProps> = ({
 						<Button
 							size="sm"
 							onClick={handleBet}
-							disabled={submitBet.isLoading || isLocked}
-							className="h-8"
+							disabled={submitBet.isLoading || isLocked || !isAffordable}
+							className={cn("h-8", !isAffordable && "bg-red-900 hover:bg-red-900 cursor-not-allowed")}
 						>
 							{submitBet.isLoading ? <Loader2 className="animate-spin w-3 h-3" /> : "Bet"}
 						</Button>
