@@ -5,16 +5,43 @@ import { Episode } from "@/components/Episode";
 import SearchFilter from "@/components/common/SearchFilter";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import { useMemo } from "react";
+import Fuse from "fuse.js";
 
 function SearchResults({ query }: { query: string }) {
-  const { data: episodes, isLoading } = api.episode.search.useQuery(
-    { query },
-    {
-      enabled: query.length > 0,
-      initialData: [],
+  const { data: episodes, isLoading } = api.episode.history.useQuery();
 
-    }
-  );
+  const processedEpisodes = useMemo(() => {
+    if (!episodes) return [];
+    return episodes.map(ep => ({
+      ...ep,
+      assignments: [...ep.assignments].sort((a, b) => {
+        const typeOrder = { "HOMEWORK": 0, "EXTRA_CREDIT": 1, "BONUS": 2 };
+        return (typeOrder[a.type as keyof typeof typeOrder] ?? 0) - (typeOrder[b.type as keyof typeof typeOrder] ?? 0);
+      })
+    }));
+  }, [episodes]);
+
+  const fuse = useMemo(() => {
+    if (!processedEpisodes.length) return null;
+    return new Fuse(processedEpisodes, {
+      keys: [
+        { name: 'title', weight: 2 },
+        { name: 'description', weight: 1 },
+        { name: 'assignments.movie.title', weight: 1.5 },
+        { name: 'extras.review.movie.title', weight: 1.5 },
+        { name: 'extras.review.show.title', weight: 1.5 },
+      ],
+      includeMatches: true,
+      threshold: 0.3,
+      ignoreLocation: true,
+    });
+  }, [episodes]);
+
+  const searchResults = useMemo(() => {
+    if (!query || !fuse) return [];
+    return fuse.search(query);
+  }, [fuse, query]);
 
   if (!query) {
     return <p className="text-center text-gray-400">Enter a search term to find episodes.</p>;
@@ -24,15 +51,24 @@ function SearchResults({ query }: { query: string }) {
     return <p className="text-center">Loading...</p>;
   }
 
-  if (episodes.length === 0) {
+  if (!episodes || episodes.length === 0) {
+    return <p className="text-center">No episodes available.</p>;
+  }
+
+  if (searchResults.length === 0) {
     return <p className="text-gray-400">No episodes found matching your search.</p>;
   }
 
   return (
     <>
-      {episodes.map((episode) => (
-        <li className="mb-8" key={episode.id}>
-          <Episode episode={episode} showMovieTitles={true} searchQuery={query} />
+      {searchResults.map((result) => (
+        <li className="mb-8" key={result.item.id}>
+          <Episode
+            episode={result.item as any}
+            showMovieTitles={true}
+            searchQuery={query}
+            fuseMatches={result.matches}
+          />
         </li>
       ))}
     </>
@@ -74,4 +110,4 @@ export default function HistoryPage() {
       </ul>
     </div>
   );
-} 
+}

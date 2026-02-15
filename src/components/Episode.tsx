@@ -4,7 +4,7 @@ import MovieInlinePreview from "./MovieInlinePreview";
 import type { Episode as EpisodeType, Link as EpisodeLink, Movie, User, Review, ExtraReview, Show } from '@prisma/client';
 import Link from "next/link";
 import { AddExtraToNext } from "./AddExtraToNext";
-import { highlightText } from "@/utils/text";
+import { highlightText, getMatchesForKey } from "@/utils/text";
 import ShowInlinePreview from "./ShowInlinePreview";
 import { PredictionGame } from "./PredictionGame";
 import { RouterOutputs } from "@/utils/trpc";
@@ -29,13 +29,15 @@ interface EpisodeProps {
 	searchQuery?: string,
 	/** The complete episode data. */
 	episode: CompleteEpisode;
+	/** Optional matches from Fuse.js for highlighting. */
+	fuseMatches?: readonly any[];
 }
 
 /**
  * Renders a full episode section, including the header (title, date, number), assignments, extras, and links.
  */
 
-export const Episode: FC<EpisodeProps> = ({ episode, allowGuesses: isNextEpisode, showMovieTitles = false, searchQuery = "" }) => {
+export const Episode: FC<EpisodeProps> = ({ episode, allowGuesses: isNextEpisode, showMovieTitles = false, searchQuery = "", fuseMatches }) => {
 	if (!episode) return null;
 	if (isNextEpisode == null) isNextEpisode = false;
 
@@ -48,9 +50,9 @@ export const Episode: FC<EpisodeProps> = ({ episode, allowGuesses: isNextEpisode
 					</Link>
 				</div>
 				<div className="text-lg sm:text-xl md:text-2xl p-2 flex-grow flex justify-center items-center text-center gap-2 leading-tight">
-					{!episode?.recording && highlightText(episode?.title ?? "", searchQuery)}
+					{!episode?.recording && highlightText(episode?.title ?? "", searchQuery, getMatchesForKey(fuseMatches, 'title'))}
 					{episode?.recording && <a className="underline" title={episode?.title} href={episode.recording ?? ""} target="_blank" rel="noreferrer">
-						{highlightText(episode?.title ?? "", searchQuery)}
+						{highlightText(episode?.title ?? "", searchQuery, getMatchesForKey(fuseMatches, 'title'))}
 					</a>}
 				</div>
 				<div className="text-sm sm:text-md p-1 sm:p-2 whitespace-nowrap">
@@ -58,9 +60,9 @@ export const Episode: FC<EpisodeProps> = ({ episode, allowGuesses: isNextEpisode
 				</div>
 			</div>
 			<div className="w-full text-center">
-				<p>{highlightText(episode?.description ?? "", searchQuery)}</p>
+				<p>{highlightText(episode?.description ?? "", searchQuery, getMatchesForKey(fuseMatches, 'description'))}</p>
 			</div>
-			<EpisodeAssignments assignments={episode.assignments} showMovieTitles={showMovieTitles} searchQuery={searchQuery} />
+			<EpisodeAssignments assignments={episode.assignments} showMovieTitles={showMovieTitles} searchQuery={searchQuery} fuseMatches={fuseMatches} />
 			{isNextEpisode && episode.assignments.filter(a => a.playable).length > 0 && (
 				<PredictionGame
 					assignments={episode.assignments.filter(a => a.playable)}
@@ -74,7 +76,7 @@ export const Episode: FC<EpisodeProps> = ({ episode, allowGuesses: isNextEpisode
 				<>
 					<hr className="my-2 border-gray-500" />
 					<span className="text-xs">Extras</span>
-					<EpisodeExtras extras={episode.extras} showMovieTitles={showMovieTitles} searchQuery={searchQuery} />
+					<EpisodeExtras extras={episode.extras} showMovieTitles={showMovieTitles} searchQuery={searchQuery} fuseMatches={fuseMatches} />
 				</>
 			)}
 			{isNextEpisode && <AddExtraToNext episode={episode} />}
@@ -90,21 +92,29 @@ interface EpisodeAssignments {
 	showMovieTitles?: boolean,
 	assignments: EpisodeAssignment[];
 	searchQuery?: string;
+	fuseMatches?: readonly any[];
 }
 
 /**
  * Renders a list of assignments for an episode, sorted by type (Homework -> Extra Credit -> Bonus).
  */
 
-const EpisodeAssignments: FC<EpisodeAssignments> = ({ assignments, showMovieTitles = false, searchQuery = "" }) => {
+const EpisodeAssignments: FC<EpisodeAssignments> = ({ assignments, showMovieTitles = false, searchQuery = "", fuseMatches }) => {
 	if (!assignments || assignments.length == 0) return null;
 	return <div className="flex gap-2 justify-around">
-		{assignments.sort((a, b) => {
+		{[...assignments].sort((a, b) => {
 			const typeOrder = { "HOMEWORK": 0, "EXTRA_CREDIT": 1, "BONUS": 2 };
 			return typeOrder[a.type as keyof typeof typeOrder] - typeOrder[b.type as keyof typeof typeOrder];
-		}).map((assignment) => {
+		}).map((assignment, index) => {
 			return <div key={assignment.id} className="flex flex-col items-center justify-between gap-2">
-				<Assignment assignment={assignment} key={assignment.id} showMovieTitles={showMovieTitles} searchQuery={searchQuery} />
+				<Assignment
+					assignment={assignment}
+					key={assignment.id}
+					showMovieTitles={showMovieTitles}
+					searchQuery={searchQuery}
+					fuseMatches={fuseMatches}
+					index={index}
+				/>
 			</div>
 		})}
 	</div>
@@ -116,6 +126,7 @@ const EpisodeAssignments: FC<EpisodeAssignments> = ({ assignments, showMovieTitl
 interface EpisodeExtras {
 	showMovieTitles?: boolean,
 	searchQuery?: string,
+	fuseMatches?: readonly any[];
 	extras: (ExtraReview & {
 		review: (Review & {
 			user: User | null;
@@ -129,18 +140,38 @@ interface EpisodeExtras {
  * Renders the "Extras" section for an episode, showing previews of additional movies or shows discussed.
  */
 
-const EpisodeExtras: FC<EpisodeExtras> = ({ extras, showMovieTitles = false, searchQuery = "" }) => {
+const EpisodeExtras: FC<EpisodeExtras> = ({ extras, showMovieTitles = false, searchQuery = "", fuseMatches }) => {
 	if (!extras || extras.length == 0) return null;
 	return <div className="py-2t">
 		<div className="flex justify-center gap-2 flex-wrap pb-2">
-			{extras.map((extra) => {
+			{extras.map((extra, index) => {
 				return <div key={extra.id} className="flex items-center gap-2 w-12 sm:w-36">
 					<div className="flex flex-col items-center gap-2">
-						{extra.review.movie && <MovieInlinePreview movie={extra.review.movie} searchQuery={searchQuery} responsive />}
-						{extra.review.show && <ShowInlinePreview show={extra.review.show} searchQuery={searchQuery} responsive />}
+						{extra.review.movie && (
+							<MovieInlinePreview
+								movie={extra.review.movie}
+								searchQuery={searchQuery}
+								fuseMatches={fuseMatches}
+								fuseKey={`extras.${index}.review.movie.title`}
+								responsive
+							/>
+						)}
+						{extra.review.show && (
+							<ShowInlinePreview
+								show={extra.review.show}
+								searchQuery={searchQuery}
+								fuseMatches={fuseMatches}
+								fuseKey={`extras.${index}.review.show.title`}
+								responsive
+							/>
+						)}
 						{showMovieTitles && (
 							<div className="text-sm text-gray-500">
-								{highlightText(`${extra.review.movie?.title} (${extra.review.movie?.year})`, searchQuery)}
+								{highlightText(
+									`${extra.review.movie?.title} (${extra.review.movie?.year})`,
+									searchQuery,
+									getMatchesForKey(fuseMatches, `extras.${index}.review.movie.title`)
+								)}
 							</div>
 						)}
 					</div>

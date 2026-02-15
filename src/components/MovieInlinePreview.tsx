@@ -4,7 +4,7 @@ import { type Movie } from "@prisma/client";
 import Image from "next/image";
 import Link from "next/link";
 import type { FC } from "react";
-import { highlightText } from "@/utils/text";
+import { highlightText, getMatchesForKey } from "@/utils/text";
 import { cn } from "@/lib/utils";
 
 interface MovieInlinePreviewProps {
@@ -13,9 +13,11 @@ interface MovieInlinePreviewProps {
   className?: string; // Applied to container (Link)
   imageClassName?: string; // Applied to Image
   responsive?: boolean;
+  fuseMatches?: readonly any[];
+  fuseKey?: string;
 }
 
-const MovieInlinePreview: FC<MovieInlinePreviewProps> = ({ movie, searchQuery = "", className = "", imageClassName = "", responsive = false }) => {
+const MovieInlinePreview: FC<MovieInlinePreviewProps> = ({ movie, searchQuery = "", className = "", imageClassName = "", responsive = false, fuseMatches, fuseKey }) => {
   return (
     <Link
       href={movie.url}
@@ -38,9 +40,6 @@ const MovieInlinePreview: FC<MovieInlinePreviewProps> = ({ movie, searchQuery = 
           sizes="(max-width: 640px) 48px, 144px"
         />
       )}
-      {searchQuery && <div className="text-sm">
-        {highlightText(movie.title, searchQuery)}
-      </div>}
     </Link>
   );
 }

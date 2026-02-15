@@ -4,7 +4,7 @@ import { type Show } from "@prisma/client";
 import Image from "next/image";
 import Link from "next/link";
 import type { FC } from "react";
-import { highlightText } from "@/utils/text";
+import { highlightText, getMatchesForKey } from "@/utils/text";
 import { cn } from "@/lib/utils";
 
 interface ShowInlinePreviewProps {
@@ -13,9 +13,11 @@ interface ShowInlinePreviewProps {
   className?: string; // Applied to container (Link)
   imageClassName?: string; // Applied to Image
   responsive?: boolean;
+  fuseMatches?: readonly any[];
+  fuseKey?: string;
 }
 
-const ShowInlinePreview: FC<ShowInlinePreviewProps> = ({ show, searchQuery = "", className = "", imageClassName = "", responsive = false }) => {
+const ShowInlinePreview: FC<ShowInlinePreviewProps> = ({ show, searchQuery = "", className = "", imageClassName = "", responsive = false, fuseMatches, fuseKey }) => {
   return (
     <Link
       href={show.url}
@@ -38,9 +40,6 @@ const ShowInlinePreview: FC<ShowInlinePreviewProps> = ({ show, searchQuery = "",
           sizes="(max-width: 640px) 48px, 144px"
         />
       )}
-      {searchQuery && <div className="text-sm">
-        {highlightText(show.title, searchQuery)}
-      </div>}
     </Link>
   );
 }

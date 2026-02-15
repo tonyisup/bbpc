@@ -121,6 +121,7 @@ export const episodeRouter = createTRPCRouter({
 							include: {
 								user: true,
 								movie: true,
+								show: true,
 							},
 						},
 					},
