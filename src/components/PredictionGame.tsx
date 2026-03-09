@@ -46,9 +46,12 @@ export const PredictionGame: FC<PredictionGameProps> = ({ assignments, searchQue
 	const { data: session } = api.auth.getSession.useQuery();
 	const { data: hosts } = api.user.hosts.useQuery();
 	const { data: ratings } = api.movie.ratings.useQuery();
+	const { data: hasActiveSeason } = api.season.hasActiveSeason.useQuery();
 	const [isAdminCollapsed, setIsAdminCollapsed] = useState(true);
 	const flagEnabled = useFeatureFlagEnabled('new-season-format')
 
+	if (hasActiveSeason === false) return null;
+	if (hasActiveSeason === undefined) return <div className="p-4 text-center text-gray-400">Checking season status...</div>;
 	if (!session?.user) return <div className="p-4 text-center text-gray-400">Please <SignInButton /> to play the game.</div>;
 	if (!hosts || !ratings) return <div className="p-4 text-center text-gray-400">Loading prediction game...</div>;
 	const isAdmin = session.user.isAdmin;

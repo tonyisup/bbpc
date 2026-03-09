@@ -14,6 +14,7 @@ import { reviewRouter } from "./routers/reviewRouter";
 import { adminRouter } from "./routers/adminRouter";
 import { videoRouter } from "./routers/videoRouter";
 import { featureRouter } from "./routers/featureRouter";
+import { seasonRouter } from "./routers/seasonRouter";
 
 export const appRouter = createTRPCRouter({
 	year: yearRouter,
@@ -31,6 +32,7 @@ export const appRouter = createTRPCRouter({
 	feature: featureRouter,
 	syllabus: syllabusRouter,
 	show: showRouter,
+	season: seasonRouter,
 });
 
 export type AppRouter = typeof appRouter;
