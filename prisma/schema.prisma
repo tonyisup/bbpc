@@ -8,6 +8,7 @@ datasource db {
 
 model Episode {
   id                  String                @id @default(dbgenerated("newid()")) @db.UniqueIdentifier
+  slug                String?
   number              Int                   @db.SmallInt
   title               String
   recording           String?
@@ -26,6 +27,7 @@ model Episode {
   rankedItem          RankedItem[]
 
   @@index([number])
+  @@unique([slug])
 }
 
 model Link {
@@ -119,6 +121,7 @@ model AssignmentReview {
 
 model Assignment {
   id                String             @id @default(dbgenerated("newid()")) @db.UniqueIdentifier
+  slug              String?
   userId            String
   episodeId         String             @db.UniqueIdentifier
   movieId           String             @db.UniqueIdentifier
@@ -136,6 +139,7 @@ model Assignment {
   @@index([episodeId])
   @@index([movieId])
   @@index([userId])
+  @@unique([slug])
 }
 
 model Banger {

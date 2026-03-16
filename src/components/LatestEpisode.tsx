@@ -6,6 +6,7 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Trophy } from "lucide-react";
 import { formatPlainDate } from "@/lib/dates";
+import { getEpisodePath } from "@/lib/routes";
 
 /**
  * Represents an episode with all its related assignments, extras, and links.
@@ -40,7 +41,7 @@ export const LatestEpisode: FC<EpisodeProps> = ({ episode, hasWon }) => {
 		<section className="w-full max-w-4xl mx-auto px-4 py-4 bg-transparent outline-2 outline-gray-500 outline rounded-2xl flex flex-col gap-4 relative overflow-hidden">
 			{hasWon && (
 				<Link
-					href={`/episodes/${episode.id}`}
+					href={getEpisodePath(episode.slug ?? episode.id)}
 					className="absolute top-0 left-0 right-0 bg-gradient-to-r from-yellow-600/20 via-yellow-500/40 to-yellow-600/20 backdrop-blur-md border-b border-yellow-500/30 py-1.5 flex justify-center items-center gap-2 z-20 group hover:via-yellow-500/60 transition-all cursor-pointer"
 				>
 					<Trophy className="w-4 h-4 text-yellow-400 animate-bounce group-hover:scale-110 transition-transform" />
@@ -53,13 +54,13 @@ export const LatestEpisode: FC<EpisodeProps> = ({ episode, hasWon }) => {
 			{/* Header */}
 			<div className={cn("flex justify-between items-center gap-2 font-bold px-1 sm:justify-around sm:items-baseline", hasWon && "mt-6")}>
 				<div className="text-sm sm:text-md p-1 sm:p-2 whitespace-nowrap">
-					<Link href={`/episodes/${episode.id}`}>
+					<Link href={getEpisodePath(episode.slug ?? episode.id)}>
 						{episode?.number}
 					</Link>
 				</div>
 				<div className="text-lg sm:text-xl md:text-2xl p-2 flex-grow flex justify-center items-center text-center gap-2 leading-tight">
 					{!episode?.recording && episode?.title}
-					{episode?.recording && <Link className="underline hover:text-gray-300" title={episode?.title} href={`/episodes/${episode.id}`}>
+					{episode?.recording && <Link className="underline hover:text-gray-300" title={episode?.title} href={getEpisodePath(episode.slug ?? episode.id)}>
 						{episode?.title}
 					</Link>}
 				</div>

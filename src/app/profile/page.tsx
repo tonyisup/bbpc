@@ -85,7 +85,7 @@ export default async function ProfilePage() {
             select: {
               id: true,
               episode: {
-                select: { id: true, number: true, title: true }
+                select: { id: true, slug: true, number: true, title: true }
               },
               movie: {
                 select: { title: true }
@@ -101,7 +101,7 @@ export default async function ProfilePage() {
             select: {
               id: true,
               episode: {
-                select: { id: true, number: true, title: true }
+                select: { id: true, slug: true, number: true, title: true }
               },
               movie: {
                 select: { title: true }
@@ -124,7 +124,7 @@ export default async function ProfilePage() {
                 select: {
                   id: true,
                   episode: {
-                    select: { id: true, number: true, title: true }
+                    select: { id: true, slug: true, number: true, title: true }
                   },
                   movie: {
                     select: { title: true }

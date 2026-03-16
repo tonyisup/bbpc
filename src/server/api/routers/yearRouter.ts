@@ -67,7 +67,7 @@ export const yearRouter = createTRPCRouter({
 					user: review.user,
 					rating: review.rating,
 					episode: episode ?? null,
-					date: review.reviewdOn,
+					date: review.ReviewdOn,
 					reviewId: review.id,
 				};
 			}).filter((item): item is {

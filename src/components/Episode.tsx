@@ -1,22 +1,40 @@
 import { type FC } from "react";
 import Assignment from "./Assignment";
 import MovieInlinePreview from "./MovieInlinePreview";
-import type { Link as EpisodeLink, Movie, User, Review, ExtraReview, Show } from '@prisma/client';
+import type { Assignment as PrismaAssignment, Link as EpisodeLink, Movie, User, Show } from '@prisma/client';
 import Link from "next/link";
 import { AddExtraToNext } from "./AddExtraToNext";
 import { highlightText } from "@/utils/text";
 import ShowInlinePreview from "./ShowInlinePreview";
 import { PredictionGame } from "./PredictionGame";
 import { RouterOutputs } from "@/utils/trpc";
+import { getEpisodePath } from "@/lib/routes";
 import { formatPlainDate } from "@/lib/dates";
 
 /**
  * Represents an episode with all its related assignments, extras, and links.
  */
-export type CompleteEpisode = NonNullable<RouterOutputs['episode']['next']>;
+type PredictionAssignment = NonNullable<RouterOutputs['episode']['next']>['assignments'][number];
+type EpisodeAssignment = PrismaAssignment & {
+	movie: Movie | null;
+	user: User;
+	assignmentReviews?: any[];
+	gamblingPoints?: any[];
+};
 
-// Helper type to extract assignments from the episode
-type EpisodeAssignment = CompleteEpisode['assignments'][number];
+export type CompleteEpisode = {
+	id: string;
+	slug?: string | null;
+	number: number;
+	title: string;
+	recording: string | null;
+	date: Date | null;
+	description: string | null;
+	status: string | null;
+	assignments: EpisodeAssignment[];
+	extras: any[];
+	links: EpisodeLink[];
+};
 
 /**
  * Props for the Episode component.
@@ -44,7 +62,7 @@ export const Episode: FC<EpisodeProps> = ({ episode, allowGuesses: isNextEpisode
 		<div className="">
 			<div className="flex justify-between items-center gap-2 font-bold px-1 sm:justify-around sm:items-baseline">
 				<div className="text-sm sm:text-md p-1 sm:p-2 whitespace-nowrap">
-					<Link href={`/episodes/${episode.id}`}>
+					<Link href={getEpisodePath(episode.slug ?? episode.id)}>
 						{episode?.number}
 					</Link>
 				</div>
@@ -64,9 +82,9 @@ export const Episode: FC<EpisodeProps> = ({ episode, allowGuesses: isNextEpisode
 			<EpisodeAssignments assignments={episode.assignments} showMovieTitles={showMovieTitles} searchQuery={searchQuery} />
 			{isNextEpisode && episode.assignments.filter(a => a.playable).length > 0 && (
 				<PredictionGame
-					assignments={episode.assignments.filter(a => a.playable)}
+					assignments={episode.assignments.filter(a => a.playable) as PredictionAssignment[]}
 					searchQuery={searchQuery}
-					episodeStatus={episode.status}
+					episodeStatus={episode.status ?? ""}
 				/>
 			)}
 		</div>
@@ -117,13 +135,7 @@ const EpisodeAssignments: FC<EpisodeAssignments> = ({ assignments, showMovieTitl
 interface EpisodeExtras {
 	showMovieTitles?: boolean,
 	searchQuery?: string,
-	extras: (ExtraReview & {
-		review: (Review & {
-			user: User | null;
-			movie: Movie | null;
-			show: Show | null;
-		})
-	})[];
+	extras: any[];
 }
 
 /**

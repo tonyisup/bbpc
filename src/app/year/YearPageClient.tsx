@@ -10,6 +10,7 @@ import Link from "next/link";
 import RatingIcon from "@/components/RatingIcon";
 import UserTag from "@/components/UserTag";
 import { Reorder, useDragControls } from "motion/react";
+import { getEpisodePath } from "@/lib/routes";
 import { formatPlainDate, getPacificTodayPlainDate, getPlainDateYear, parsePlainDate } from "@/lib/dates";
 
 type ViewMode = "grid" | "table" | "list";
@@ -155,8 +156,8 @@ export function YearPageClient() {
 	// Sort items
 	const sortedItems = items?.slice().sort((a, b) => {
 		if (!a?.date || !b?.date) return 0;
-		const dateA = parsePlainDate(a.date).getTime();
-		const dateB = parsePlainDate(b.date).getTime();
+		const dateA = new Date(a.date).getTime();
+		const dateB = new Date(b.date).getTime();
 		return sortDesc ? dateB - dateA : dateA - dateB;
 	});
 
@@ -243,7 +244,7 @@ export function YearPageClient() {
 									{/* Grid Overlay with Links */}
 									<div className="absolute inset-0 bg-black/80 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center p-2 rounded-lg gap-2">
 										{item.episode && (
-											<Link href={`/episodes/${item.episode.id}`} className="text-white hover:text-primary font-semibold text-sm flex items-center gap-1 bg-white/10 px-3 py-1.5 rounded-full backdrop-blur-sm hover:bg-white/20 transition-colors">
+											<Link href={getEpisodePath(item.episode.slug ?? item.episode.id)} className="text-white hover:text-primary font-semibold text-sm flex items-center gap-1 bg-white/10 px-3 py-1.5 rounded-full backdrop-blur-sm hover:bg-white/20 transition-colors">
 												Episode {item.episode.number}
 											</Link>
 										)}
@@ -360,7 +361,7 @@ export function YearPageClient() {
 											<div className="flex flex-wrap items-center justify-center md:justify-start gap-4 mt-2">
 												{item.episode && (
 													<div className="text-sm text-zinc-300">
-														Reviewed on <Link href={`/episodes/${item.episode.id}`} className="text-primary hover:underline font-semibold">Episode {item.episode.number}</Link>
+														Reviewed on <Link href={getEpisodePath(item.episode.slug ?? item.episode.id)} className="text-primary hover:underline font-semibold">Episode {item.episode.number}</Link>
 														<span className="text-zinc-500 ml-2">({item.date ? formatPlainDate(item.date) : ''})</span>
 													</div>
 												)}
