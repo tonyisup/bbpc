@@ -15,6 +15,9 @@ model Episode {
   description         String?
   status              String?               @default("published")
   notes               String?
+  seoDescription      String?
+  seoKeywords         String?
+  seoTitle            String?
   assignments         Assignment[]
   audioEpisodeMessage AudioEpisodeMessage[]
   bangers             Banger[]
@@ -76,7 +79,7 @@ model Review {
   userId            String?
   movieId           String?            @db.UniqueIdentifier
   ratingId          String?            @db.UniqueIdentifier
-  reviewdOn         DateTime?          @default(now(), map: "DF__Review__ReviewdO__0C1BC9F9") @db.DateTime
+  ReviewdOn         DateTime?          @default(now(), map: "DF__Review__ReviewdO__0C1BC9F9") @db.DateTime
   showId            String?            @db.UniqueIdentifier
   assignmentReviews AssignmentReview[]
   extraReviews      ExtraReview[]
@@ -127,8 +130,8 @@ model Assignment {
   assignmentPoints  AssignmentPoints[]
   assignmentReviews AssignmentReview[]
   audioMessages     AudioMessage[]
-  syllabus          Syllabus[]
   gamblingPoints    GamblingPoints[]
+  syllabus          Syllabus[]
 
   @@index([episodeId])
   @@index([movieId])
@@ -218,6 +221,7 @@ model User {
   audioEpisodeMessage AudioEpisodeMessage[]
   audioMessages       AudioMessage[]
   bangers             Banger[]
+  gambledOn           GamblingPoints[]      @relation("TargetUser")
   gamblingPoints      GamblingPoints[]
   guesses             Guess[]
   point               Point[]
@@ -227,7 +231,6 @@ model User {
   syllabus            Syllabus[]
   tagVotes            TagVote[]
   roles               UserRole[]
-  gambledOn           GamblingPoints[]      @relation("TargetUser")
 }
 
 model Guess {
@@ -286,7 +289,6 @@ model Point {
   assignmentPoints AssignmentPoints[]
   gamblingPoints   GamblingPoints[]
   guesses          Guess[]
-  tagVotes         TagVote[]
   gamePointType    GamePointType?     @relation(fields: [gamePointTypeId], references: [id], onDelete: Cascade)
   season           Season             @relation(fields: [seasonId], references: [id], onUpdate: NoAction)
   user             User               @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
@@ -325,31 +327,24 @@ model AudioEpisodeMessage {
   @@index([userId])
 }
 
-// enum GamblingPointsStatus {
-//   pending
-//   locked
-//   won
-//   lost
-// }
-
 model GamblingPoints {
   id             String       @id @default(dbgenerated("newid()")) @db.UniqueIdentifier
   userId         String
-  gamblingTypeId String       @db.UniqueIdentifier
   assignmentId   String?      @db.UniqueIdentifier
-  targetUserId   String?
   points         Int
-  notes          String?
   createdAt      DateTime     @default(now()) @db.DateTime
-  status         String       @default("pending") @db.VarChar(20)
-  seasonId       String?      @db.UniqueIdentifier
   pointsId       String?      @db.UniqueIdentifier
+  seasonId       String?      @db.UniqueIdentifier
+  notes          String?
+  gamblingTypeId String       @db.UniqueIdentifier
+  targetUserId   String?
+  status         String       @default("pending") @db.VarChar(20)
   assignment     Assignment?  @relation(fields: [assignmentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   gamblingType   GamblingType @relation(fields: [gamblingTypeId], references: [id], onUpdate: NoAction)
   point          Point?       @relation(fields: [pointsId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   season         Season?      @relation(fields: [seasonId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
   targetUser     User?        @relation("TargetUser", fields: [targetUserId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@index([gamblingTypeId])
   @@index([assignmentId])
@@ -422,12 +417,10 @@ model TagVote {
   createdAt DateTime @default(now())
   sessionId String?
   userId    String?
-  pointId   String?  @unique @db.UniqueIdentifier
-  point     Point?   @relation(fields: [pointId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  pointId   String?  @db.UniqueIdentifier
   user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
-  @@index([pointId])
   @@index([tag, userId])
 }
 

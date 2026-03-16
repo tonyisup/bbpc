@@ -5,12 +5,40 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { Episode } from "@/components/Episode";
 import EpisodeResults from "@/components/EpisodeResults";
+import type { Metadata, ResolvingMetadata } from 'next';
 
 export const revalidate = 3600;
 
 export async function generateStaticParams() {
   const episodes = await db.episode.findMany();
   return episodes.map((episode) => ({ id: episode.id }));
+}
+
+export async function generateMetadata(
+  { params }: { params: Promise<{ id: string }> },
+  parent: ResolvingMetadata
+): Promise<Metadata> {
+  const { id } = await params;
+  
+  const episode = await db.episode.findUnique({
+    where: { id: id },
+  });
+
+  if (!episode) {
+    return { title: 'Episode Not Found | BBPC' };
+  }
+  
+  const title = episode.title || `Episode ${episode.number || episode.id}`;
+  const description = episode.description || `Discussion and analysis for episode ${episode.number || episode.id}.`;
+
+  return {
+    title: `${title} | BBPC`,
+    description: description,
+    openGraph: {
+        title: `${title} | BBPC`,
+        description: description,
+    }
+  };
 }
 
 export default async function EpisodePage({
