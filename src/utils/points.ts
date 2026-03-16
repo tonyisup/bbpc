@@ -1,4 +1,5 @@
-import { PrismaClient } from "@prisma/client";
+import type { PrismaClient } from "@prisma/client";
+import { getPacificTodayPlainDate, parsePlainDate } from "@/lib/dates";
 
 type PrismaTransactionClient = Omit<
   PrismaClient,
@@ -6,15 +7,15 @@ type PrismaTransactionClient = Omit<
 >;
 
 export const getCurrentSeasonID = async (prisma: PrismaTransactionClient): Promise<string | null> => {
-  const now = new Date();
+  const today = parsePlainDate(getPacificTodayPlainDate());
   const season = await prisma.season.findFirst({
     orderBy: {
       startedOn: 'desc',
     },
     where: {
-      startedOn: { lte: now },
+      startedOn: { lte: today },
       OR: [
-        { endedOn: { gte: now } },
+        { endedOn: { gte: today } },
         { endedOn: null },
       ],
     },

@@ -1,5 +1,6 @@
 import { type FC } from "react";
 import type { GamblingPoints, GamblingType } from "@prisma/client";
+import { formatInstantLocal } from "@/lib/dates";
 
 interface GamblingHistoryProps {
   history: (GamblingPoints & {
@@ -43,7 +44,7 @@ export const GamblingHistory: FC<GamblingHistoryProps> = ({ history }) => {
                         {gamble.GamblingType.description}
                       </div>
                       <div className="text-xs text-gray-500 mt-2 font-mono">
-                        {new Date(gamble.createdAt).toLocaleDateString(undefined, { dateStyle: 'long' })}
+                        {formatInstantLocal(gamble.createdAt, { dateStyle: "long" })}
                       </div>
                     </div>
                     <div className="text-2xl font-bold ml-4 text-gray-400">
@@ -70,7 +71,7 @@ export const GamblingHistory: FC<GamblingHistoryProps> = ({ history }) => {
                         {gamble.GamblingType.description}
                       </div>
                       <div className="text-xs text-gray-500 mt-2 font-mono">
-                        {new Date(gamble.createdAt).toLocaleDateString(undefined, { dateStyle: 'long' })}
+                        {formatInstantLocal(gamble.createdAt, { dateStyle: "long" })}
                       </div>
                     </div>
                     <div className={`text-2xl font-bold ml-4 ${gamble.status === "won" ? "text-emerald-400" : "text-red-400"}`}>

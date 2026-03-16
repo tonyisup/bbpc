@@ -1,12 +1,11 @@
 import { type FC } from "react";
-import Assignment from "./Assignment";
 import MovieInlinePreview from "./MovieInlinePreview";
 import ShowInlinePreview from "./ShowInlinePreview";
-import { highlightText } from "@/utils/text";
 import { RouterOutputs } from "@/utils/trpc";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Trophy } from "lucide-react";
+import { formatPlainDate } from "@/lib/dates";
 
 /**
  * Represents an episode with all its related assignments, extras, and links.
@@ -65,7 +64,7 @@ export const LatestEpisode: FC<EpisodeProps> = ({ episode, hasWon }) => {
 					</Link>}
 				</div>
 				<div className="text-sm sm:text-md p-1 sm:p-2 whitespace-nowrap">
-					{episode?.date && <p>{new Date(episode.date).toLocaleDateString("en-us", { month: "2-digit", day: "2-digit", year: "2-digit" })}</p>}
+					{episode?.date && <p>{formatPlainDate(episode.date, { month: "2-digit", day: "2-digit", year: "2-digit" }, "en-US")}</p>}
 				</div>
 			</div>
 

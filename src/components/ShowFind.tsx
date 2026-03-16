@@ -7,6 +7,7 @@ import { debounce } from "lodash";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { getPlainDateYear } from "@/lib/dates";
 
 interface ShowFindProps {
   selectShow: Dispatch<Show>;
@@ -22,7 +23,7 @@ const ShowFind: FC<ShowFindProps> = ({ selectShow }) => {
     term: searchQuery,
   });
 
-  const { data: temp_title } = api.show.getTitle.useQuery({
+  api.show.getTitle.useQuery({
     id: title?.id ?? 0
   }, {
     onSuccess: (result) => {
@@ -31,7 +32,7 @@ const ShowFind: FC<ShowFindProps> = ({ selectShow }) => {
       if (!title.poster_path) return;
       if (!result.imdb_path) return;
 
-      const year = (new Date(result.release_date)).getFullYear();
+      const year = getPlainDateYear(result.release_date) ?? 0;
 
       addShow({
         title: result.title,

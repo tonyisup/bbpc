@@ -2,6 +2,7 @@ import { type Dispatch, type FC, useState } from "react";
 import { type Title } from "../server/tmdb/client";
 import { motion, AnimatePresence } from "motion/react";
 import { Check, X } from "lucide-react";
+import { getPlainDateYear } from "@/lib/dates";
 interface TitleCardProps {
   title: Title,
   titleSelected?: Dispatch<Title>
@@ -60,7 +61,7 @@ const TitleCard: FC<TitleCardProps> = ({ title, titleSelected }) => {
               <Check className="h-6 w-6" />
             </motion.button>
 
-            <span className="bg-black/50 p-2 rounded-md text-white text-xl">{(new Date(title?.release_date)).getFullYear()}</span>
+            <span className="bg-black/50 p-2 rounded-md text-white text-xl">{getPlainDateYear(title?.release_date) ?? ""}</span>
 
             {/* Close button */}
             <motion.button

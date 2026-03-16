@@ -9,6 +9,7 @@ import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { debounce } from 'lodash';
+import { getPlainDateYear } from "@/lib/dates";
 
 interface MovieFindProps {
   selectMovie: Dispatch<Movie>;
@@ -25,7 +26,7 @@ const MovieFind: FC<MovieFindProps> = ({ selectMovie }) => {
     term: searchQuery,
   });
 
-  const { data: temp_title } = api.movie.getTitle.useQuery({
+  api.movie.getTitle.useQuery({
     id: title?.id ?? 0
   }, {
     onSuccess: (result) => {
@@ -34,7 +35,7 @@ const MovieFind: FC<MovieFindProps> = ({ selectMovie }) => {
       if (!title.poster_path) return;
       if (!result.imdb_path) return;
 
-      const year = (new Date(result.release_date)).getFullYear();
+      const year = getPlainDateYear(result.release_date) ?? 0;
 
       addMovie({
         title: result.title,

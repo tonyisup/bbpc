@@ -10,6 +10,7 @@ import Link from "next/link";
 import RatingIcon from "@/components/RatingIcon";
 import UserTag from "@/components/UserTag";
 import { Reorder, useDragControls } from "motion/react";
+import { formatPlainDate, getPacificTodayPlainDate, getPlainDateYear, parsePlainDate } from "@/lib/dates";
 
 type ViewMode = "grid" | "table" | "list";
 
@@ -74,7 +75,7 @@ export function YearPageClient() {
 	const router = useRouter();
 	const searchParams = useSearchParams();
 
-	const currentYear = new Date().getFullYear();
+	const currentYear = getPlainDateYear(getPacificTodayPlainDate()) ?? new Date().getFullYear();
 	const [selectedYear, setSelectedYear] = useState<number>(
 		Number(searchParams.get("y")) || currentYear
 	);
@@ -154,8 +155,8 @@ export function YearPageClient() {
 	// Sort items
 	const sortedItems = items?.slice().sort((a, b) => {
 		if (!a?.date || !b?.date) return 0;
-		const dateA = new Date(a.date).getTime();
-		const dateB = new Date(b.date).getTime();
+		const dateA = parsePlainDate(a.date).getTime();
+		const dateB = parsePlainDate(b.date).getTime();
 		return sortDesc ? dateB - dateA : dateA - dateB;
 	});
 
@@ -360,7 +361,7 @@ export function YearPageClient() {
 												{item.episode && (
 													<div className="text-sm text-zinc-300">
 														Reviewed on <Link href={`/episodes/${item.episode.id}`} className="text-primary hover:underline font-semibold">Episode {item.episode.number}</Link>
-														<span className="text-zinc-500 ml-2">({item.date ? new Date(item.date).toLocaleDateString() : ''})</span>
+														<span className="text-zinc-500 ml-2">({item.date ? formatPlainDate(item.date) : ''})</span>
 													</div>
 												)}
 

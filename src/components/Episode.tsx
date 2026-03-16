@@ -1,13 +1,14 @@
 import { type FC } from "react";
 import Assignment from "./Assignment";
 import MovieInlinePreview from "./MovieInlinePreview";
-import type { Episode as EpisodeType, Link as EpisodeLink, Movie, User, Review, ExtraReview, Show } from '@prisma/client';
+import type { Link as EpisodeLink, Movie, User, Review, ExtraReview, Show } from '@prisma/client';
 import Link from "next/link";
 import { AddExtraToNext } from "./AddExtraToNext";
 import { highlightText } from "@/utils/text";
 import ShowInlinePreview from "./ShowInlinePreview";
 import { PredictionGame } from "./PredictionGame";
 import { RouterOutputs } from "@/utils/trpc";
+import { formatPlainDate } from "@/lib/dates";
 
 /**
  * Represents an episode with all its related assignments, extras, and links.
@@ -54,7 +55,7 @@ export const Episode: FC<EpisodeProps> = ({ episode, allowGuesses: isNextEpisode
 					</a>}
 				</div>
 				<div className="text-sm sm:text-md p-1 sm:p-2 whitespace-nowrap">
-					{episode?.date && <p>{new Date(episode.date).toLocaleDateString("en-us", { month: "2-digit", day: "2-digit", year: "2-digit" })}</p>}
+					{episode?.date && <p>{formatPlainDate(episode.date, { month: "2-digit", day: "2-digit", year: "2-digit" }, "en-US")}</p>}
 				</div>
 			</div>
 			<div className="w-full text-center">

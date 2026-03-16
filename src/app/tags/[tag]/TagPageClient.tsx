@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import TinderCard from "react-tinder-card";
 import { ConfirmationDialog } from "@/components/ConfirmationDialog";
+import { getPlainDateYear } from "@/lib/dates";
 
 interface Movie {
   id: number;
@@ -305,7 +306,7 @@ export function TagPageClient({ tag, initialMovieId }: { tag: string; initialMov
 
         setIsAddingToSyllabus(true);
         try {
-          const year = new Date(currentMovie.release_date).getFullYear();
+          const year = getPlainDateYear(currentMovie.release_date) ?? 0;
 
           // Determine URL - prefer IMDB, fallback to TMDB
           let url = `https://www.themoviedb.org/movie/${currentMovie.id}`;
@@ -391,7 +392,7 @@ export function TagPageClient({ tag, initialMovieId }: { tag: string; initialMov
             // and removes any "duplicate" of it that might have loaded naturally.
             setMovies(prev => [pendingMovie, ...prev.filter(m => m.id !== pendingMovie.id)]);
 
-            const year = new Date(pendingMovie.release_date).getFullYear();
+            const year = getPlainDateYear(pendingMovie.release_date) ?? 0;
             let url = `https://www.themoviedb.org/movie/${pendingMovie.id}`;
             if (pendingMovie.imdb_id) {
               url = `https://www.imdb.com/title/${pendingMovie.imdb_id}`;
@@ -971,10 +972,10 @@ function SwipeCard({
             }}
             className="absolute bottom-2 z-20 pointer-events-auto"
           >
-            <span className="bg-black/50 p-2 rounded-md text-white text-xl">{(new Date(movie?.release_date)).getFullYear()}</span>
+            <span className="bg-black/50 p-2 rounded-md text-white text-xl">{getPlainDateYear(movie?.release_date) ?? ""}</span>
           </motion.button>
         ) : (
-          <span className="absolute bottom-2 bg-black/50 p-2 rounded-md text-white text-xl z-20">{(new Date(movie?.release_date)).getFullYear()}</span>
+          <span className="absolute bottom-2 bg-black/50 p-2 rounded-md text-white text-xl z-20">{getPlainDateYear(movie?.release_date) ?? ""}</span>
         )}
       </div>
     </TinderCard>

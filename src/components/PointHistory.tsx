@@ -8,6 +8,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion"
+import { formatInstantLocal, parsePlainDate, toPlainDateString } from "@/lib/dates";
 
 /**
  * Represents an episode of the show.
@@ -143,7 +144,7 @@ const EpisodeList = ({ episodes }: { episodes: Record<string, EpisodeGroup> }) =
                               </div>
                             )}
                             <div className="text-xs text-gray-500 mt-2 font-mono">
-                              {new Date(point.earnedOn).toLocaleDateString(undefined, { dateStyle: 'long' })}
+                              {formatInstantLocal(point.earnedOn, { dateStyle: "long" })}
                             </div>
                           </div>
                           <div className={`text-2xl font-bold ml-4 ${totalPoints > 0
@@ -176,7 +177,8 @@ export default function PointHistory({ points, currentSeasonId }: PointHistoryPr
     const seasonId = point.season?.id ?? "legacy";
     const seasonTitle = point.season?.title ?? "Legacy";
     // For legacy, use a very old date for sorting if needed, but we'll handle legacy explicitly
-    const seasonStartedOn = point.season?.startedOn ? new Date(point.season.startedOn) : null;
+    const seasonStartedOnPlain = toPlainDateString(point.season?.startedOn);
+    const seasonStartedOn = seasonStartedOnPlain ? parsePlainDate(seasonStartedOnPlain) : null;
 
     if (!acc[seasonId]) {
       acc[seasonId] = {
