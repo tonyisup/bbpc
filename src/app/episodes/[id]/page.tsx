@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { db } from "@/server/db";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -5,67 +6,104 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { Episode } from "@/components/Episode";
 import EpisodeResults from "@/components/EpisodeResults";
+import type { Metadata } from "next";
 
 export const revalidate = 3600;
+
+const episodeInclude = {
+  assignments: {
+    include: {
+      movie: true,
+      user: true,
+      assignmentReviews: {
+        include: {
+          review: {
+            include: {
+              rating: true,
+              user: true,
+            },
+          },
+          guesses: {
+            include: {
+              user: true,
+              rating: true,
+            },
+          },
+        },
+      },
+      gamblingPoints: {
+        include: {
+          user: true,
+          gamblingType: true,
+        },
+      },
+    },
+  },
+  extras: {
+    include: {
+      review: {
+        include: {
+          movie: true,
+          user: true,
+          show: true,
+        },
+      },
+    },
+  },
+  links: true,
+} as const;
+
+export const getEpisode = cache(async (id: string) => {
+  return db.episode.findUnique({
+    where: { id },
+    include: episodeInclude,
+  });
+});
 
 export async function generateStaticParams() {
   const episodes = await db.episode.findMany();
   return episodes.map((episode) => ({ id: episode.id }));
 }
 
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const episode = await getEpisode(id);
+
+  if (!episode) {
+    return { title: "Episode Not Found | BBPC" };
+  }
+
+  const title =
+    episode.seoTitle ??
+    episode.title ??
+    `Episode ${episode.number ?? episode.id}`;
+  const description =
+    episode.seoDescription ??
+    episode.description ??
+    `Discussion and analysis for episode ${episode.number ?? episode.id}.`;
+
+  return {
+    title: `${title} | BBPC`,
+    description,
+    keywords: episode.seoKeywords ?? undefined,
+    openGraph: {
+      title: `${title} | BBPC`,
+      description,
+    },
+  };
+}
+
 export default async function EpisodePage({
-  params
+  params,
 }: {
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-
-  const episode = await db.episode.findUnique({
-    where: { id: id },
-    include: {
-      assignments: {
-        include: {
-          movie: true,
-          user: true,
-          assignmentReviews: {
-            include: {
-              review: {
-                include: {
-                  rating: true,
-                  user: true,
-                },
-              },
-              guesses: {
-                include: {
-                  user: true,
-                  rating: true,
-                },
-              },
-            },
-          },
-          gamblingPoints: {
-            include: {
-              user: true,
-              gamblingType: true,
-            },
-          },
-        },
-      },
-      extras: {
-        include: {
-          review: {
-            include: {
-              movie: true,
-              user: true,
-              show: true,
-            },
-          },
-        },
-      },
-      links: true,
-    },
-  });
-
+  const episode = await getEpisode(id);
   if (!episode) {
     return (
       <div className="container mx-auto p-4">
@@ -88,8 +126,8 @@ export default async function EpisodePage({
           </Link>
         </Button>
       </div>
-      {episode && <Episode episode={episode} />}
-      {episode && <EpisodeResults assignments={episode.assignments} />}
+      <Episode episode={episode} />
+      <EpisodeResults assignments={episode.assignments} />
     </div>
   );
 } 

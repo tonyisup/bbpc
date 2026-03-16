@@ -246,7 +246,7 @@ const AssignmentPrediction: FC<AssignmentPredictionProps> = ({
 							userId: newGuess.hostId,
 							movieId: null,
 							ratingId: null,
-							ReviewdOn: null,
+							reviewdOn: null,
 							showId: null,
 							user: {
 								id: newGuess.hostId,

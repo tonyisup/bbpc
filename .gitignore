@@ -39,6 +39,12 @@ yarn-error.log*
 # vercel
 .vercel
 
+# next-pwa / Workbox build artifacts (generated at build time)
+/public/sw.js
+/public/workbox-*.js
+/public/worker-*.js
+/public/fallback-*.js
+
 # typescript
 *.tsbuildinfo
 *.log
