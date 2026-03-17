@@ -3,7 +3,15 @@ IF EXISTS (
   FROM INFORMATION_SCHEMA.COLUMNS
   WHERE TABLE_SCHEMA = 'dbo'
     AND TABLE_NAME = 'Season'
-    AND COLUMN_NAME IN ('startedOn', 'endedOn')
+    AND COLUMN_NAME = 'startedOn'
+    AND DATA_TYPE <> 'date'
+)
+OR EXISTS (
+  SELECT 1
+  FROM INFORMATION_SCHEMA.COLUMNS
+  WHERE TABLE_SCHEMA = 'dbo'
+    AND TABLE_NAME = 'Season'
+    AND COLUMN_NAME = 'endedOn'
     AND DATA_TYPE <> 'date'
 )
 BEGIN
@@ -17,19 +25,43 @@ BEGIN
       FROM dbo.Season;
     END;
 
-    ALTER TABLE dbo.Season
-      ADD startedOn_date DATE NULL,
-          endedOn_date DATE NULL;
+    IF EXISTS (
+      SELECT 1
+      FROM INFORMATION_SCHEMA.COLUMNS
+      WHERE TABLE_SCHEMA = 'dbo'
+        AND TABLE_NAME = 'Season'
+        AND COLUMN_NAME = 'startedOn'
+        AND DATA_TYPE <> 'date'
+    )
+    BEGIN
+      ALTER TABLE dbo.Season ADD startedOn_date DATE NULL;
 
-    UPDATE dbo.Season
-    SET startedOn_date = CAST(startedOn AS DATE),
-        endedOn_date = CAST(endedOn AS DATE);
+      UPDATE dbo.Season
+      SET startedOn_date = CAST(startedOn AS DATE);
 
-    ALTER TABLE dbo.Season DROP COLUMN startedOn;
-    ALTER TABLE dbo.Season DROP COLUMN endedOn;
+      ALTER TABLE dbo.Season DROP COLUMN startedOn;
 
-    EXEC sp_rename 'dbo.Season.startedOn_date', 'startedOn', 'COLUMN';
-    EXEC sp_rename 'dbo.Season.endedOn_date', 'endedOn', 'COLUMN';
+      EXEC sp_rename 'dbo.Season.startedOn_date', 'startedOn', 'COLUMN';
+    END;
+
+    IF EXISTS (
+      SELECT 1
+      FROM INFORMATION_SCHEMA.COLUMNS
+      WHERE TABLE_SCHEMA = 'dbo'
+        AND TABLE_NAME = 'Season'
+        AND COLUMN_NAME = 'endedOn'
+        AND DATA_TYPE <> 'date'
+    )
+    BEGIN
+      ALTER TABLE dbo.Season ADD endedOn_date DATE NULL;
+
+      UPDATE dbo.Season
+      SET endedOn_date = CAST(endedOn AS DATE);
+
+      ALTER TABLE dbo.Season DROP COLUMN endedOn;
+
+      EXEC sp_rename 'dbo.Season.endedOn_date', 'endedOn', 'COLUMN';
+    END;
 
     COMMIT TRANSACTION;
   END TRY

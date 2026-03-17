@@ -2,7 +2,9 @@ import { type FC } from "react";
 import Assignment from "./Assignment";
 import MovieInlinePreview from "./MovieInlinePreview";
 import type {
+  AssignmentReview,
   Assignment as PrismaAssignment,
+  GamblingPoints,
   Link as EpisodeLink,
   Movie,
   Show,
@@ -25,8 +27,8 @@ import { formatPlainDate } from "@/lib/dates";
 type EpisodeAssignment = PrismaAssignment & {
   movie: Movie | null;
   user: User;
-  assignmentReviews?: any[];
-  gamblingPoints?: any[];
+  assignmentReviews?: AssignmentReview[];
+  gamblingPoints?: GamblingPoints[];
 };
 export type EpisodeExtra = {
   id: string;
@@ -88,7 +90,7 @@ export const Episode: FC<EpisodeProps> = ({
   searchQuery = "",
 }) => {
   if (!episode) return null;
-  if (isNextEpisode == null) isNextEpisode = false;
+  const showPredictionGame = isNextEpisode ?? false;
   const predictionAssignments = episode.assignments
     .map(mapEpisodeToPredictionAssignment)
     .filter(
@@ -140,7 +142,7 @@ export const Episode: FC<EpisodeProps> = ({
           showMovieTitles={showMovieTitles}
           searchQuery={searchQuery}
         />
-        {isNextEpisode && predictionAssignments.length > 0 && (
+        {showPredictionGame && predictionAssignments.length > 0 && (
           <PredictionGame
             assignments={predictionAssignments}
             searchQuery={searchQuery}
@@ -160,7 +162,7 @@ export const Episode: FC<EpisodeProps> = ({
             />
           </>
         )}
-        {isNextEpisode && <AddExtraToNext episode={episode} />}
+        {showPredictionGame && <AddExtraToNext episode={episode} />}
         <EpisodeLinks links={episode.links} />
       </div>
     </section>
@@ -204,7 +206,6 @@ const EpisodeAssignments: FC<EpisodeAssignments> = ({
             >
               <Assignment
                 assignment={assignment}
-                key={assignment.id}
                 showMovieTitles={showMovieTitles}
                 searchQuery={searchQuery}
               />
@@ -235,7 +236,7 @@ const EpisodeExtras: FC<EpisodeExtras> = ({
 }) => {
   if (!extras || extras.length == 0) return null;
   return (
-    <div className="py-2t">
+    <div className="py-2">
       <div className="flex flex-wrap justify-center gap-2 pb-2">
         {extras.map((extra) => {
           const extraTitle = extra.review.movie

@@ -6,8 +6,8 @@ export const yearRouter = createTRPCRouter({
   getMyYearData: publicProcedure
     .input(z.object({ year: z.number() }))
     .query(async ({ ctx, input }) => {
-      const yearStart = new Date(input.year, 0, 1);
-      const yearEnd = new Date(input.year + 1, 0, 1);
+      const yearStart = new Date(Date.UTC(input.year, 0, 1));
+      const yearEnd = new Date(Date.UTC(input.year + 1, 0, 1));
       const isAdmin = ctx.session?.user?.isAdmin;
 
       const whereClause: {
@@ -24,7 +24,7 @@ export const yearRouter = createTRPCRouter({
         },
       };
 
-      if (isAdmin) {
+      if (!isAdmin) {
         whereClause.userId = ctx.session?.user?.id;
       }
 
