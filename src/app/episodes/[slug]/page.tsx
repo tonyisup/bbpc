@@ -3,7 +3,7 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { Episode } from "@/components/Episode";
 import EpisodeResults from "@/components/EpisodeResults";
-import type { Metadata, ResolvingMetadata } from 'next';
+import type { Metadata } from "next";
 import { notFound, permanentRedirect } from "next/navigation";
 import { db } from "@/server/db";
 import { getEpisodePath } from "@/lib/routes";
@@ -22,35 +22,40 @@ export async function generateStaticParams() {
     .map((episode) => ({ slug: episode.slug }));
 }
 
-export async function generateMetadata(
-  { params }: { params: Promise<{ slug: string }> },
-  parent: ResolvingMetadata
-): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
   const { slug } = await params;
   const { episode } = await resolveEpisodeRouteParam(slug);
 
   if (!episode) {
-    return { title: 'Episode Not Found | BBPC' };
+    return { title: "Episode Not Found | BBPC" };
   }
-  
+
   const title = episode.title || `Episode ${episode.number || episode.id}`;
-  const description = episode.description || `Discussion and analysis for episode ${episode.number || episode.id}.`;
+  const description =
+    episode.description ||
+    `Discussion and analysis for episode ${episode.number || episode.id}.`;
 
   return {
     title: `${title} | BBPC`,
     description: description,
-    alternates: episode.slug ? {
-      canonical: getEpisodePath(episode.slug),
-    } : undefined,
+    alternates: episode.slug
+      ? {
+          canonical: getEpisodePath(episode.slug),
+        }
+      : undefined,
     openGraph: {
-        title: `${title} | BBPC`,
-        description: description,
-    }
+      title: `${title} | BBPC`,
+      description: description,
+    },
   };
 }
 
 export default async function EpisodePage({
-  params
+  params,
 }: {
   params: Promise<{ slug: string }>;
 }) {
@@ -66,7 +71,7 @@ export default async function EpisodePage({
   }
 
   return (
-    <div className="container mx-auto p-4 max-w-4xl">
+    <div className="container mx-auto max-w-4xl p-4">
       <div className="mb-4">
         <Button variant="ghost" asChild>
           <Link href="/">
@@ -75,8 +80,8 @@ export default async function EpisodePage({
           </Link>
         </Button>
       </div>
-      {episode && <Episode episode={episode} />}
-      {episode && <EpisodeResults assignments={episode.assignments} />}
+      <Episode episode={episode} />
+      <EpisodeResults assignments={episode.assignments} />
     </div>
   );
-} 
+}

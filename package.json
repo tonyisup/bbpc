@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "build": "next build",
-    "backfill:slugs": "node --env-file=.env scripts/backfill_slugs.mjs",
+    "backfill:slugs": "node scripts/backfill_slugs.mjs",
     "dev": "next dev --port 3000",
     "postinstall": "prisma generate",
     "lint": "next lint",

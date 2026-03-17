@@ -19,7 +19,9 @@ const pad = (value: number) => value.toString().padStart(2, "0");
 
 const isValidDate = (value: Date) => !Number.isNaN(value.getTime());
 
-export const toPlainDateString = (value: Date | string | null | undefined): string | null => {
+export const toPlainDateString = (
+  value: Date | string | null | undefined
+): string | null => {
   if (!value) return null;
 
   if (typeof value === "string" && PLAIN_DATE_PATTERN.test(value)) {
@@ -29,7 +31,9 @@ export const toPlainDateString = (value: Date | string | null | undefined): stri
   const date = value instanceof Date ? value : new Date(value);
   if (!isValidDate(date)) return null;
 
-  return `${date.getUTCFullYear()}-${pad(date.getUTCMonth() + 1)}-${pad(date.getUTCDate())}`;
+  return `${date.getUTCFullYear()}-${pad(date.getUTCMonth() + 1)}-${pad(
+    date.getUTCDate()
+  )}`;
 };
 
 export const parsePlainDate = (value: string): Date => {
@@ -37,13 +41,32 @@ export const parsePlainDate = (value: string): Date => {
     throw new Error(`Invalid plain date: ${value}`);
   }
 
-  return new Date(`${value}T00:00:00.000Z`);
+  const [yearPart, monthPart, dayPart] = value.split("-");
+  if (!yearPart || !monthPart || !dayPart) {
+    throw new Error(`Invalid plain date: ${value}`);
+  }
+
+  const year = Number.parseInt(yearPart, 10);
+  const month = Number.parseInt(monthPart, 10);
+  const day = Number.parseInt(dayPart, 10);
+  const date = new Date(Date.UTC(year, month - 1, day));
+
+  if (
+    !isValidDate(date) ||
+    date.getUTCFullYear() !== year ||
+    date.getUTCMonth() + 1 !== month ||
+    date.getUTCDate() !== day
+  ) {
+    throw new Error(`Invalid plain date: ${value}`);
+  }
+
+  return date;
 };
 
 export const formatPlainDate = (
   value: Date | string | null | undefined,
   options: FormatterOptions = DEFAULT_PLAIN_DATE_OPTIONS,
-  locale?: string,
+  locale?: string
 ): string => {
   const plainDate = toPlainDateString(value);
   if (!plainDate) return "";
@@ -73,7 +96,9 @@ export const getPacificTodayPlainDate = (): string => {
   return `${year}-${month}-${day}`;
 };
 
-export const getPlainDateYear = (value: Date | string | null | undefined): number | null => {
+export const getPlainDateYear = (
+  value: Date | string | null | undefined
+): number | null => {
   const plainDate = toPlainDateString(value);
   if (!plainDate) return null;
 
@@ -83,7 +108,7 @@ export const getPlainDateYear = (value: Date | string | null | undefined): numbe
 export const formatInstantLocal = (
   value: Date | string | null | undefined,
   options: FormatterOptions = DEFAULT_INSTANT_DATE_OPTIONS,
-  locale?: string,
+  locale?: string
 ): string => {
   if (!value) return "";
 

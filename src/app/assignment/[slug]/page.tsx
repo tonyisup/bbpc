@@ -11,7 +11,9 @@ interface AssignmentPageProps {
 }
 
 export default async function AssignmentPage({ params }: AssignmentPageProps) {
-  const { assignment, shouldRedirect } = await resolveAssignmentRouteParam(params.slug);
+  const { assignment, shouldRedirect } = await resolveAssignmentRouteParam(
+    params.slug
+  );
 
   if (shouldRedirect && assignment?.slug) {
     permanentRedirect(getAssignmentPath(assignment.slug));
@@ -23,7 +25,7 @@ export default async function AssignmentPage({ params }: AssignmentPageProps) {
 
   return (
     <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16">
-      {assignment && <Assignment assignment={assignment} />}
+      <Assignment assignment={assignment} />
       <GameSegment assignment={assignment} />
     </div>
   );

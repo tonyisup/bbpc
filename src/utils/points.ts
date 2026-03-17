@@ -6,18 +6,17 @@ type PrismaTransactionClient = Omit<
   "$connect" | "$disconnect" | "$on" | "$transaction" | "$extends"
 >;
 
-export const getCurrentSeasonID = async (prisma: PrismaTransactionClient): Promise<string | null> => {
+export const getCurrentSeasonID = async (
+  prisma: PrismaTransactionClient
+): Promise<string | null> => {
   const today = parsePlainDate(getPacificTodayPlainDate());
   const season = await prisma.season.findFirst({
     orderBy: {
-      startedOn: 'desc',
+      startedOn: "desc",
     },
     where: {
       startedOn: { lte: today },
-      OR: [
-        { endedOn: { gte: today } },
-        { endedOn: null },
-      ],
+      OR: [{ endedOn: { gte: today } }, { endedOn: null }],
     },
   });
   return season?.id ?? null;
@@ -64,8 +63,9 @@ export const calculateUserPoints = async (
   });
 
   // Calculate points from game results
-  const pointsResult = await prisma.$queryRaw<{ sum: number }[]>
-    `select [sum] = sum([b].[points])
+  const pointsResult = await prisma.$queryRaw<
+    { sum: number }[]
+  >`select [sum] = sum([b].[points])
 from [dbo].[point] [a]
 join [dbo].[gamepointtype] [b]
 	on [a].[gamepointtypeid] = [b].[id]
@@ -73,7 +73,8 @@ where [a].[userid] = ${user.id}
 and [a].[seasonid] = ${seasonIdToUse}
 `;
 
-  const basePoints = (pointsResult[0]?.sum ?? 0) + (adjustmentResult._sum.adjustment ?? 0);
+  const basePoints =
+    (pointsResult[0]?.sum ?? 0) + (adjustmentResult._sum.adjustment ?? 0);
 
   // Calculate points currently gambled (deduct these)
   // We assume gambled points are relevant for the current season's assignments.
@@ -85,14 +86,18 @@ and [a].[seasonid] = ${seasonIdToUse}
   const allGamblingRows = await prisma.gamblingPoints.findMany({
     where: {
       userId: user.id,
+      seasonId: seasonIdToUse,
       status: {
-        in: ["pending", "locked"]
-      }
+        in: ["pending", "locked"],
+      },
     },
-    select: { points: true }
+    select: { points: true },
   });
 
-  const gambledPoints = allGamblingRows.reduce((sum, row) => sum + row.points, 0);
+  const gambledPoints = allGamblingRows.reduce(
+    (sum, row) => sum + row.points,
+    0
+  );
 
   return basePoints - gambledPoints;
 };

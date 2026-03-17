@@ -27,7 +27,9 @@ function slugify(value) {
     .replace(/-{2,}/g, "-")
     .replace(/^-+|-+$/g, "");
 
-  return normalized.slice(0, MAX_SLUG_LENGTH - SUFFIX_RESERVE).replace(/-+$/g, "");
+  return normalized
+    .slice(0, MAX_SLUG_LENGTH - SUFFIX_RESERVE)
+    .replace(/-+$/g, "");
 }
 
 function buildEpisodeSlugBase(episode) {
@@ -35,11 +37,14 @@ function buildEpisodeSlugBase(episode) {
 }
 
 function buildAssignmentSlugBase(assignment) {
-  const userLabel = assignment.user.name?.trim() || `user-${assignment.userId.slice(0, 8)}`;
+  const userLabel =
+    assignment.user.name?.trim() || `user-${assignment.userId.slice(0, 8)}`;
   const movieLabel = assignment.movie.title?.trim() || "assignment";
 
   return slugify(
-    `episode-${assignment.episode.number}-${userLabel}-${movieLabel}-${assignmentTypeLabels[assignment.type]}`,
+    `episode-${assignment.episode.number}-${userLabel}-${movieLabel}-${
+      assignmentTypeLabels[assignment.type]
+    }`
   );
 }
 
@@ -51,7 +56,10 @@ function allocateSlug(usedSlugs, baseSlug, fallbackLabel) {
   }
 
   for (let suffix = 2; suffix < 10000; suffix += 1) {
-    const candidate = `${safeBase.slice(0, MAX_SLUG_LENGTH - `-${suffix}`.length)}-${suffix}`;
+    const candidate = `${safeBase.slice(
+      0,
+      MAX_SLUG_LENGTH - `-${suffix}`.length
+    )}-${suffix}`;
     if (!usedSlugs.has(candidate)) {
       usedSlugs.add(candidate);
       return candidate;
@@ -64,8 +72,14 @@ function allocateSlug(usedSlugs, baseSlug, fallbackLabel) {
 async function loadExistingSlugs(model) {
   const rows =
     model === "episode"
-      ? await prisma.episode.findMany({ where: { slug: { not: null } }, select: { id: true, slug: true } })
-      : await prisma.assignment.findMany({ where: { slug: { not: null } }, select: { id: true, slug: true } });
+      ? await prisma.episode.findMany({
+          where: { slug: { not: null } },
+          select: { id: true, slug: true },
+        })
+      : await prisma.assignment.findMany({
+          where: { slug: { not: null } },
+          select: { id: true, slug: true },
+        });
 
   return new Map(rows.map((row) => [row.id, row.slug]));
 }
@@ -85,17 +99,23 @@ async function backfillEpisodes() {
       continue;
     }
 
-    const slug = allocateSlug(usedSlugs, buildEpisodeSlugBase(episode), "episode");
+    const slug = allocateSlug(
+      usedSlugs,
+      buildEpisodeSlugBase(episode),
+      "episode"
+    );
     updates.push({ id: episode.id, slug });
   }
 
   if (!CHECK_ONLY) {
-    for (const update of updates) {
-      await prisma.episode.update({
-        where: { id: update.id },
-        data: { slug: update.slug },
-      });
-    }
+    await prisma.$transaction(
+      updates.map((update) =>
+        prisma.episode.update({
+          where: { id: update.id },
+          data: { slug: update.slug },
+        })
+      )
+    );
   }
 
   return { total: episodes.length, updated: updates.length };
@@ -124,24 +144,35 @@ async function backfillAssignments() {
       continue;
     }
 
-    const slug = allocateSlug(usedSlugs, buildAssignmentSlugBase(assignment), "assignment");
+    const slug = allocateSlug(
+      usedSlugs,
+      buildAssignmentSlugBase(assignment),
+      "assignment"
+    );
     updates.push({ id: assignment.id, slug });
   }
 
   if (!CHECK_ONLY) {
-    for (const update of updates) {
-      await prisma.assignment.update({
-        where: { id: update.id },
-        data: { slug: update.slug },
-      });
-    }
+    await prisma.$transaction(
+      updates.map((update) =>
+        prisma.assignment.update({
+          where: { id: update.id },
+          data: { slug: update.slug },
+        })
+      )
+    );
   }
 
   return { total: assignments.length, updated: updates.length };
 }
 
 async function verify() {
-  const [nullEpisodeSlugs, nullAssignmentSlugs, duplicateEpisodes, duplicateAssignments] = await Promise.all([
+  const [
+    nullEpisodeSlugs,
+    nullAssignmentSlugs,
+    duplicateEpisodes,
+    duplicateAssignments,
+  ] = await Promise.all([
     prisma.episode.count({ where: { slug: { equals: null } } }),
     prisma.assignment.count({ where: { slug: { equals: null } } }),
     prisma.$queryRaw`
@@ -169,15 +200,23 @@ async function verify() {
   const duplicateEpisodeCount = Number(duplicateEpisodes[0]?.count ?? 0);
   const duplicateAssignmentCount = Number(duplicateAssignments[0]?.count ?? 0);
 
-  if (nullEpisodeSlugs || nullAssignmentSlugs || duplicateEpisodeCount || duplicateAssignmentCount) {
+  if (
+    nullEpisodeSlugs ||
+    nullAssignmentSlugs ||
+    duplicateEpisodeCount ||
+    duplicateAssignmentCount
+  ) {
     throw new Error(
-      `Slug verification failed: episode nulls=${nullEpisodeSlugs}, assignment nulls=${nullAssignmentSlugs}, episode dupes=${duplicateEpisodeCount}, assignment dupes=${duplicateAssignmentCount}`,
+      `Slug verification failed: episode nulls=${nullEpisodeSlugs}, assignment nulls=${nullAssignmentSlugs}, episode dupes=${duplicateEpisodeCount}, assignment dupes=${duplicateAssignmentCount}`
     );
   }
 }
 
 async function main() {
-  const [episodes, assignments] = await Promise.all([backfillEpisodes(), backfillAssignments()]);
+  const [episodes, assignments] = await Promise.all([
+    backfillEpisodes(),
+    backfillAssignments(),
+  ]);
 
   await verify();
 
@@ -189,8 +228,8 @@ async function main() {
         assignments,
       },
       null,
-      2,
-    ),
+      2
+    )
   );
 }
 
