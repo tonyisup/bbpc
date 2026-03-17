@@ -34,6 +34,13 @@ export type PredictionGameAssignment = {
     title: string;
   } | null;
 };
+
+const getGuessReviewUserId = (guess: any) =>
+  guess.assignmentReview?.review?.userId ??
+  guess.assignmentReview?.review?.user?.id ??
+  guess.AssignmentReview?.Review?.userId ??
+  guess.AssignmentReview?.Review?.User?.id ??
+  null;
 /**
  * Props for the PredictionGame component.
  */
@@ -85,6 +92,10 @@ export const PredictionGame: FC<PredictionGameProps> = ({
       </div>
     );
   const isAdmin = session.user.isAdmin;
+  const toggleAdminCollapse = () => {
+    if (!isAdmin) return;
+    setIsAdminCollapsed((value) => !value);
+  };
 
   return (
     <div className="mt-6 flex flex-col gap-6 rounded-xl border border-gray-700 bg-gray-900/50 p-4 shadow-xl backdrop-blur-sm sm:gap-8 sm:p-6">
@@ -93,7 +104,16 @@ export const PredictionGame: FC<PredictionGameProps> = ({
           "flex flex-col gap-2 pb-4",
           isAdmin ? "cursor-pointer select-none" : "border-b border-gray-700"
         )}
-        onClick={() => isAdmin && setIsAdminCollapsed(!isAdminCollapsed)}
+        role="button"
+        tabIndex={isAdmin ? 0 : -1}
+        onClick={toggleAdminCollapse}
+        onKeyDown={(event) => {
+          if (!isAdmin) return;
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            toggleAdminCollapse();
+          }
+        }}
       >
         <div className="flex items-center justify-between">
           <div className="flex flex-col gap-1">
@@ -265,6 +285,7 @@ const AssignmentPrediction: FC<AssignmentPredictionProps> = ({
     (acc: number, p: any) => acc + p.points,
     0
   );
+  const expandAssignment = () => setUserExpanded(true);
 
   const submitGuess = api.review.submitGuess.useMutation({
     onMutate: async (newGuess) => {
@@ -281,11 +302,9 @@ const AssignmentPrediction: FC<AssignmentPredictionProps> = ({
         { assignmentIds: [assignment.id], userId },
         (old) => {
           const oldGuesses = old?.[assignment.id] ?? [];
-          const filtered = oldGuesses.filter((g: any) => {
-            const reviewUserId = g.AssignmentReview?.Review?.userId;
-            const reviewUserObjId = g.AssignmentReview?.Review?.User?.id;
-            return (reviewUserId ?? reviewUserObjId) !== newGuess.hostId;
-          });
+          const filtered = oldGuesses.filter(
+            (guess: any) => getGuessReviewUserId(guess) !== newGuess.hostId
+          );
 
           const rating = ratings.find((r) => r.id === newGuess.ratingId);
           if (!rating) return old;
@@ -346,11 +365,7 @@ const AssignmentPrediction: FC<AssignmentPredictionProps> = ({
   const getGuessForHost = (hostId: string) => {
     if (!guesses) return null;
 
-    return guesses.find((g: any) => {
-      const reviewUserId = g.assignmentReview?.review?.userId;
-      const reviewUserObjId = g.assignmentReview?.review?.user?.id;
-      return (reviewUserId ?? reviewUserObjId) === hostId;
-    });
+    return guesses.find((guess: any) => getGuessReviewUserId(guess) === hostId);
   };
 
   /* These are pre-fetched */
@@ -365,7 +380,19 @@ const AssignmentPrediction: FC<AssignmentPredictionProps> = ({
       {isCollapsed ? (
         <div
           className="flex cursor-pointer items-center gap-2 rounded-lg border border-gray-700/50 bg-gray-800/40 p-2 transition-colors hover:bg-gray-800/60 sm:gap-4 sm:p-3"
-          onClick={() => setUserExpanded(true)}
+          role="button"
+          tabIndex={0}
+          aria-expanded={!isCollapsed}
+          aria-label={`Expand predictions for ${
+            assignment.movie?.title ?? "this assignment"
+          }`}
+          onClick={expandAssignment}
+          onKeyDown={(event) => {
+            if (event.key === "Enter" || event.key === " ") {
+              event.preventDefault();
+              expandAssignment();
+            }
+          }}
         >
           <span className="sm:text-md flex-grow pr-2 text-lg font-bold text-white">
             {assignment.movie
@@ -392,14 +419,14 @@ const AssignmentPrediction: FC<AssignmentPredictionProps> = ({
             {gambleAmountForAssignment > 0 && (
               <div className="flex items-center whitespace-nowrap rounded border border-purple-500/30 bg-purple-900/50 px-1.5 py-0.5 text-[10px] font-bold text-purple-200 sm:px-2 sm:py-1 sm:text-sm">
                 {gambleAmountForAssignment}{" "}
-                <Coins className="h-3 h-5 w-3 pl-0.5 sm:w-5 sm:pl-1" />
+                <Coins className="h-3 w-3 pl-0.5 sm:h-5 sm:w-5 sm:pl-1" />
               </div>
             )}
 
             <Message assignmentId={assignment.id} userId={userId}>
               <div className="flex items-center whitespace-nowrap rounded border border-green-500/30 bg-green-900/50 px-1.5 py-0.5 text-[10px] font-bold text-green-200 sm:px-2 sm:py-1 sm:text-sm">
                 {audioMessageCount ?? 0}{" "}
-                <Voicemail className="h-3 h-5 w-3 pl-0.5 sm:w-5 sm:pl-1" />
+                <Voicemail className="h-3 w-3 pl-0.5 sm:h-5 sm:w-5 sm:pl-1" />
               </div>
             </Message>
 
@@ -417,6 +444,7 @@ const AssignmentPrediction: FC<AssignmentPredictionProps> = ({
             </h3>
             {hasAllGuesses && (
               <button
+                type="button"
                 onClick={() => setUserExpanded(false)}
                 className="rounded p-1 text-gray-400 transition-colors hover:bg-gray-800 hover:text-white"
               >

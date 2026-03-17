@@ -37,12 +37,13 @@ function buildEpisodeSlugBase(episode) {
 }
 
 function buildAssignmentSlugBase(assignment) {
+  const episodeLabel = assignment.episode?.number ?? "episode";
   const userLabel =
     assignment.user.name?.trim() || `user-${assignment.userId.slice(0, 8)}`;
   const movieLabel = assignment.movie.title?.trim() || "assignment";
 
   return slugify(
-    `episode-${assignment.episode.number}-${userLabel}-${movieLabel}-${
+    `episode-${episodeLabel}-${userLabel}-${movieLabel}-${
       assignmentTypeLabels[assignment.type]
     }`
   );
