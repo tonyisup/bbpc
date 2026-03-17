@@ -18,6 +18,7 @@ model Episode {
   seoDescription      String?
   seoKeywords         String?
   seoTitle            String?
+  slug                String?               @unique
   assignments         Assignment[]
   audioEpisodeMessage AudioEpisodeMessage[]
   bangers             Banger[]
@@ -81,6 +82,7 @@ model Review {
   ratingId          String?            @db.UniqueIdentifier
   reviewdOn         DateTime?          @default(now(), map: "DF__Review__ReviewdO__0C1BC9F9") @map("ReviewdOn") @db.DateTime
   showId            String?            @db.UniqueIdentifier
+  reviewedOn        DateTime?          @db.DateTime
   assignmentReviews AssignmentReview[]
   extraReviews      ExtraReview[]
   movie             Movie?             @relation(fields: [movieId], references: [id], onDelete: NoAction, onUpdate: NoAction)
@@ -124,6 +126,7 @@ model Assignment {
   movieId           String             @db.UniqueIdentifier
   type              String             @default("HOMEWORK")
   playable          Boolean            @default(true)
+  slug              String?            @unique
   episode           Episode            @relation(fields: [episodeId], references: [id])
   movie             Movie              @relation(fields: [movieId], references: [id])
   user              User               @relation(fields: [userId], references: [id], onUpdate: NoAction)
@@ -259,8 +262,8 @@ model Season {
   title          String
   description    String?
   gameTypeId     Int              @db.TinyInt
-  endedOn        DateTime?        @db.DateTime
-  startedOn      DateTime?        @db.DateTime
+  endedOn        DateTime?        @db.Date
+  startedOn      DateTime?        @db.Date
   gamblingPoints GamblingPoints[]
   guess          Guess[]
   point          Point[]
@@ -373,8 +376,8 @@ model Syllabus {
   createdAt    DateTime    @default(now()) @db.DateTime
   assignmentId String?     @db.UniqueIdentifier
   notes        String?
-  assignment   Assignment? @relation(fields: [assignmentId], references: [id], onDelete: SetNull, onUpdate: NoAction)
-  movie        Movie       @relation(fields: [movieId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  assignment   Assignment? @relation(fields: [assignmentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  movie        Movie       @relation(fields: [movieId], references: [id], onDelete: Cascade, onUpdate: NoAction)
   user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([assignmentId])

@@ -8,12 +8,15 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion"
+import { formatInstantLocal, parsePlainDate, toPlainDateString } from "@/lib/dates";
+import { getEpisodePath } from "@/lib/routes";
 
 /**
  * Represents an episode of the show.
  */
 interface Episode {
   id: string;
+  slug?: string | null;
   title: string;
   number: number;
 }
@@ -85,6 +88,7 @@ interface PointHistoryProps {
 }
 
 interface EpisodeGroup {
+  slug?: string | null;
   title: string;
   number: number;
   assignments: Record<string, { title: string; points: Point[] }>;
@@ -106,19 +110,20 @@ const EpisodeList = ({ episodes }: { episodes: Record<string, EpisodeGroup> }) =
     <div className="space-y-6">
       {sortedEpisodes.map(([episodeId, episode]) => {
         const hasWonGamble = Object.values(episode.assignments).some(a => a.points.some(p => p.gamblingPoints.length > 0));
+        const episodePath = episode.slug ? getEpisodePath(episode.slug) : null;
 
         return (
           <div key={episodeId} className="border border-gray-700 rounded-xl overflow-hidden bg-gray-900/40 backdrop-blur-sm shadow-lg transition-all hover:shadow-xl hover:bg-gray-900/60">
             <div className="p-4 bg-gradient-to-r from-gray-800 to-gray-900 border-b border-gray-700 flex justify-between items-center group">
-              {episodeId !== 'misc' ? (
-                <Link href={`/episodes/${episodeId}`} className="hover:text-indigo-400 transition-colors">
+              {episodeId !== 'misc' && episodePath ? (
+                <Link href={episodePath} className="hover:text-indigo-400 transition-colors">
                   <h4 className="text-xl font-bold text-white">{episode.title}</h4>
                 </Link>
               ) : (
                 <h4 className="text-xl font-bold text-white">{episode.title}</h4>
               )}
-              {hasWonGamble && (
-                <Link href={`/episodes/${episodeId}`} className="flex items-center gap-2 px-3 py-1 bg-yellow-500/10 border border-yellow-500/20 rounded-full text-yellow-500 text-xs font-black uppercase tracking-widest animate-pulse hover:bg-yellow-500/20 transition-all shadow-[0_0_15px_rgba(234,179,8,0.2)]">
+              {hasWonGamble && episodePath && (
+                <Link href={episodePath} className="flex items-center gap-2 px-3 py-1 bg-yellow-500/10 border border-yellow-500/20 rounded-full text-yellow-500 text-xs font-black uppercase tracking-widest animate-pulse hover:bg-yellow-500/20 transition-all shadow-[0_0_15px_rgba(234,179,8,0.2)]">
                   <Trophy className="w-3.5 h-3.5" />
                   <span>Winning Episode</span>
                 </Link>
@@ -143,7 +148,7 @@ const EpisodeList = ({ episodes }: { episodes: Record<string, EpisodeGroup> }) =
                               </div>
                             )}
                             <div className="text-xs text-gray-500 mt-2 font-mono">
-                              {new Date(point.earnedOn).toLocaleDateString(undefined, { dateStyle: 'long' })}
+                              {formatInstantLocal(point.earnedOn, { dateStyle: "long" })}
                             </div>
                           </div>
                           <div className={`text-2xl font-bold ml-4 ${totalPoints > 0
@@ -176,7 +181,8 @@ export default function PointHistory({ points, currentSeasonId }: PointHistoryPr
     const seasonId = point.season?.id ?? "legacy";
     const seasonTitle = point.season?.title ?? "Legacy";
     // For legacy, use a very old date for sorting if needed, but we'll handle legacy explicitly
-    const seasonStartedOn = point.season?.startedOn ? new Date(point.season.startedOn) : null;
+    const seasonStartedOnPlain = toPlainDateString(point.season?.startedOn);
+    const seasonStartedOn = seasonStartedOnPlain ? parsePlainDate(seasonStartedOnPlain) : null;
 
     if (!acc[seasonId]) {
       acc[seasonId] = {
@@ -215,6 +221,7 @@ export default function PointHistory({ points, currentSeasonId }: PointHistoryPr
 
     if (!seasonGroup.episodes[episodeId]) {
       seasonGroup.episodes[episodeId] = {
+        slug: assignment?.episode.slug ?? null,
         title: episodeTitle,
         number: episodeNumber,
         assignments: {}

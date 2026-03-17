@@ -5,6 +5,7 @@ import type { CompleteEpisode } from './Episode';
 import { api } from "@/trpc/react";
 import Link from "next/link";
 import { Button } from "./ui/button";
+import { getEpisodeExtrasAddPath } from "@/lib/routes";
 interface AddExtraToNextProps {
   episode: CompleteEpisode | null;
 }
@@ -18,7 +19,7 @@ export const AddExtraToNext: FC<AddExtraToNextProps> = ({ episode }) => {
         <div className="flex justify-center items-center gap-2 w-full p-2">
           <Button variant="outline" asChild>
             <Link
-              href={`/episodes/${episode.id}/extras/add`}
+              href={getEpisodeExtrasAddPath(episode.slug ?? episode.id)}
               replace={false}
             >
               Add Extra
