@@ -40,7 +40,10 @@ const BettingCoin: FC<BettingCoinProps> = ({
 		if (!type) return;
 		if (userPoints === undefined) return;
 		const pts = parseInt(amount);
-		if (isNaN(pts)) return;
+		if (isNaN(pts) || pts <= 0) {
+			alert("Please enter a valid amount greater than zero.");
+			return;
+		}
 
 		const currentBetAmount = existingBet ? existingBet.points : 0;
 		if (pts > userPoints + currentBetAmount) {

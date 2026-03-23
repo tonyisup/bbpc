@@ -55,8 +55,14 @@ const GamblingSection: FC<GamblingSectionProps> = ({ gamblingTypeId, title }) =>
     if (userPoints === undefined) return;
     if (gamblingPoints === undefined || gamblingPoints === null) return;
 
-    if (isNaN(gamblingPoints) || gamblingPoints < 0) {
-      alert("Please enter a valid number of points");
+    if (isNaN(gamblingPoints) || gamblingPoints <= 0) {
+      alert("Please enter a valid number of points greater than zero.");
+      return;
+    }
+
+    const currentBetAmount = eventGamblingPoints?.[0]?.points ?? 0;
+    if (gamblingPoints > Number(userPoints) + currentBetAmount) {
+      alert("Not enough points available to place this bet");
       return;
     }
 

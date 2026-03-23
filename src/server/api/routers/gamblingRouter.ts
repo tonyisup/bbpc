@@ -36,6 +36,7 @@ export const gamblingRouter = createTRPCRouter({
 				const existingPoints = await tx.gamblingPoints.findFirst({
 					where: {
 						userId: callerId,
+						seasonId: seasonId,
 						gamblingTypeId: input.gamblingTypeId,
 						assignmentId: input.assignmentId,
 						targetUserId: input.targetUserId,
