@@ -42,6 +42,13 @@ const BettingCoin: FC<BettingCoinProps> = ({
 		if (!type) return;
 		const pts = parseInt(amount);
 		if (isNaN(pts)) return;
+		if (userPoints !== undefined) {
+			const currentBetAmount = existingBet ? existingBet.points : 0;
+			if (pts > userPoints + currentBetAmount) {
+				alert("Not enough points available to place this bet");
+				return;
+			}
+		}
 		submitBet.mutate({
 			userId,
 			gamblingTypeId: type.id,

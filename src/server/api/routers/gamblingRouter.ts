@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure, publicProcedure } from "@/server/api/trpc";
-import { getCurrentSeasonID } from "@/utils/points";
+import { getCurrentSeasonID, calculateUserPoints } from "@/utils/points";
 
 export const gamblingRouter = createTRPCRouter({
 	getAllActive: publicProcedure.query(({ ctx }) => {
@@ -33,6 +33,12 @@ export const gamblingRouter = createTRPCRouter({
 					targetUserId: input.targetUserId,
 				},
 			});
+
+			const availablePoints = await calculateUserPoints(ctx.db, ctx.session.user.email, seasonId);
+			const currentBetAmount = existingPoints ? existingPoints.points : 0;
+			if (input.points > availablePoints + currentBetAmount) {
+				throw new Error("Not enough points available to place this bet");
+			}
 
 			if (existingPoints) {
 				if (existingPoints.status !== "pending") {
