@@ -10,13 +10,17 @@ export const gamblingRouter = createTRPCRouter({
 	}),
 	submitPoints: protectedProcedure
 		.input(z.object({
-			userId: z.string(),
 			gamblingTypeId: z.string().optional(),
 			points: z.number(),
 			assignmentId: z.string().optional(),
 			targetUserId: z.string().optional(),
 		}))
 		.mutation(async ({ ctx, input }) => {
+			if (input.points < 0) {
+				throw new Error("Bet amount must be non-negative");
+			}
+
+			const callerId = ctx.session.user.id;
 			const seasonId = await getCurrentSeasonID(ctx.db);
 			if (!input.gamblingTypeId) {
 				const defaultType = await ctx.db.gamblingType.findFirst({
@@ -25,41 +29,45 @@ export const gamblingRouter = createTRPCRouter({
 				if (!defaultType) throw new Error("No active gambling type found");
 				input.gamblingTypeId = defaultType.id;
 			}
-			const existingPoints = await ctx.db.gamblingPoints.findFirst({
-				where: {
-					userId: input.userId,
-					gamblingTypeId: input.gamblingTypeId,
-					assignmentId: input.assignmentId,
-					targetUserId: input.targetUserId,
-				},
-			});
 
-			const availablePoints = await calculateUserPoints(ctx.db, ctx.session.user.email, seasonId);
-			const currentBetAmount = existingPoints ? existingPoints.points : 0;
-			if (input.points > availablePoints + currentBetAmount) {
-				throw new Error("Not enough points available to place this bet");
-			}
-
-			if (existingPoints) {
-				if (existingPoints.status !== "pending") {
-					throw new Error("Cannot update a bet that is already locked or resolved");
-				}
-				return ctx.db.gamblingPoints.update({
-					where: { id: existingPoints.id },
-					data: { points: input.points },
-				});
-			} else {
-				return ctx.db.gamblingPoints.create({
-					data: {
-						seasonId,
-						userId: input.userId,
+			// Perform everything inside a transaction to prevent race conditions on balance verification
+			return await ctx.db.$transaction(async (tx) => {
+				const existingPoints = await tx.gamblingPoints.findFirst({
+					where: {
+						userId: callerId,
 						gamblingTypeId: input.gamblingTypeId,
-						points: input.points,
 						assignmentId: input.assignmentId,
 						targetUserId: input.targetUserId,
 					},
 				});
-			}
+
+				const availablePoints = await calculateUserPoints(tx, ctx.session.user.email, seasonId);
+				const currentBetAmount = existingPoints ? existingPoints.points : 0;
+				if (input.points > availablePoints + currentBetAmount) {
+					throw new Error("Not enough points available to place this bet");
+				}
+
+				if (existingPoints) {
+					if (existingPoints.status !== "pending") {
+						throw new Error("Cannot update a bet that is already locked or resolved");
+					}
+					return tx.gamblingPoints.update({
+						where: { id: existingPoints.id },
+						data: { points: input.points },
+					});
+				} else {
+					return tx.gamblingPoints.create({
+						data: {
+							seasonId,
+							userId: callerId,
+							gamblingTypeId: input.gamblingTypeId,
+							points: input.points,
+							assignmentId: input.assignmentId,
+							targetUserId: input.targetUserId,
+						},
+					});
+				}
+			});
 		}),
 	getForAssignment: protectedProcedure
 		.input(z.object({ assignmentId: z.string() }))

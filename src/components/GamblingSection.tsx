@@ -55,6 +55,7 @@ const GamblingSection: FC<GamblingSectionProps> = ({ gamblingTypeId, userId, tit
 
   const handleGamblingPointsSubmit = () => {
     if (!userId) return;
+    if (userPoints === undefined) return;
     if (gamblingPoints === undefined || gamblingPoints === null) return;
 
     if (isNaN(gamblingPoints) || gamblingPoints < 0) {
@@ -63,7 +64,6 @@ const GamblingSection: FC<GamblingSectionProps> = ({ gamblingTypeId, userId, tit
     }
 
     submitGamblingPoints({
-      userId: userId,
       gamblingTypeId: gamblingTypeId,
       points: gamblingPoints
     });
@@ -103,7 +103,6 @@ const GamblingSection: FC<GamblingSectionProps> = ({ gamblingTypeId, userId, tit
             onClick={() => {
               if (!userId) return;
               submitGamblingPoints({
-                userId: userId,
                 gamblingTypeId: gamblingTypeId,
                 points: 0
               });
@@ -135,7 +134,7 @@ const GamblingSection: FC<GamblingSectionProps> = ({ gamblingTypeId, userId, tit
                 className="bg-gray-800 border-gray-700 text-white max-w-[100px]"
               />
               <Button
-                disabled={!canSubmitGamblingPoints}
+                disabled={!canSubmitGamblingPoints || userPoints === undefined}
                 className="text-gray-300 rounded-md bg-transparent hover:bg-red-800 border-[3px] border-red-800 hover:border-red-400 relative overflow-hidden group"
                 onClick={handleGamblingPointsSubmit}
               >
