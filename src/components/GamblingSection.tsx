@@ -16,8 +16,6 @@ import { cn } from "@/lib/utils";
 interface GamblingSectionProps {
   /** The unique identifier for the gambling type. */
   gamblingTypeId: string;
-  /** The unique identifier for the user placing the bet. */
-  userId: string;
   /** The title of the gambling event. */
   title: string;
 }
@@ -27,7 +25,7 @@ interface GamblingSectionProps {
  * It handles balance checks, auto-betting options, and displaying existing bets.
  */
 
-const GamblingSection: FC<GamblingSectionProps> = ({ gamblingTypeId, userId, title }) => {
+const GamblingSection: FC<GamblingSectionProps> = ({ gamblingTypeId, title }) => {
   const [gamblingPoints, setGamblingPoints] = useState<number>(0);
   const [canSubmitGamblingPoints, setCanSubmitGamblingPoints] = useState<boolean>(false);
 
@@ -54,7 +52,6 @@ const GamblingSection: FC<GamblingSectionProps> = ({ gamblingTypeId, userId, tit
   });
 
   const handleGamblingPointsSubmit = () => {
-    if (!userId) return;
     if (userPoints === undefined) return;
     if (gamblingPoints === undefined || gamblingPoints === null) return;
 
@@ -101,7 +98,6 @@ const GamblingSection: FC<GamblingSectionProps> = ({ gamblingTypeId, userId, tit
             size="sm"
             className="h-8 w-8 p-1"
             onClick={() => {
-              if (!userId) return;
               submitGamblingPoints({
                 gamblingTypeId: gamblingTypeId,
                 points: 0

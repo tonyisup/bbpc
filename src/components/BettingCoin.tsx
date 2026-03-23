@@ -15,7 +15,6 @@ export interface BettingCoinProps {
 	gamblingTypes: GamblingType[] | undefined;
 	getBetFor: (lookupId: string, targetHostId?: string) => GamblingPoints | undefined;
 	submitBet: any;
-	userId: string;
 	assignmentId: string;
 	userPoints: number | undefined;
 	episodeStatus: string;
@@ -28,7 +27,6 @@ const BettingCoin: FC<BettingCoinProps> = ({
 	gamblingTypes,
 	getBetFor,
 	submitBet,
-	userId,
 	assignmentId,
 	userPoints,
 	episodeStatus

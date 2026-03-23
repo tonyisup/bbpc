@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { Prisma } from "@prisma/client";
 import { createTRPCRouter, protectedProcedure, publicProcedure } from "@/server/api/trpc";
 import { getCurrentSeasonID, calculateUserPoints } from "@/utils/points";
 
@@ -67,7 +68,7 @@ export const gamblingRouter = createTRPCRouter({
 						},
 					});
 				}
-			});
+			}, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
 		}),
 	getForAssignment: protectedProcedure
 		.input(z.object({ assignmentId: z.string() }))

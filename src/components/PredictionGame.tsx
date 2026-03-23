@@ -510,7 +510,6 @@ const AssignmentPrediction: FC<AssignmentPredictionProps> = ({
           {hasAllGuesses && (
             <AssignmentGamblingBoard
               assignmentId={assignment.id}
-              userId={userId}
               hosts={hosts}
               guesses={guessesForGambling}
               episodeStatus={episodeStatus}

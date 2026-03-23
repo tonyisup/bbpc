@@ -9,7 +9,6 @@ import RatingIcon from "./RatingIcon";
 
 interface AssignmentGamblingBoardProps {
 	assignmentId: string;
-	userId: string;
 	hosts: User[];
 	guesses: {
 		hostId: string;
@@ -25,7 +24,7 @@ const gamblingTitle = [
 	"You've got nothing to lose!",
 	"How confident are you?",
 ]
-const AssignmentGamblingBoard: FC<AssignmentGamblingBoardProps> = ({ assignmentId, userId, hosts, guesses, episodeStatus }) => {
+const AssignmentGamblingBoard: FC<AssignmentGamblingBoardProps> = ({ assignmentId, hosts, guesses, episodeStatus }) => {
 	const { data: gamblingTypes } = api.gambling.getAllActive.useQuery();
 	const { data: userPoints } = api.user.points.useQuery();
 	const { data: myBets, refetch: refetchBets } = api.gambling.getForAssignment.useQuery({ assignmentId });
@@ -103,7 +102,7 @@ const AssignmentGamblingBoard: FC<AssignmentGamblingBoardProps> = ({ assignmentI
 							gamblingTypes={gamblingTypes}
 							getBetFor={getBetFor}
 							submitBet={submitBet}
-							userId={userId}
+
 							assignmentId={assignmentId}
 							userPoints={userPoints}
 							episodeStatus={episodeStatus}
@@ -143,7 +142,7 @@ const AssignmentGamblingBoard: FC<AssignmentGamblingBoardProps> = ({ assignmentI
 						gamblingTypes={gamblingTypes}
 						getBetFor={getBetFor}
 						submitBet={submitBet}
-						userId={userId}
+
 						assignmentId={assignmentId}
 						userPoints={userPoints}
 						episodeStatus={episodeStatus}
@@ -160,7 +159,7 @@ const AssignmentGamblingBoard: FC<AssignmentGamblingBoardProps> = ({ assignmentI
 						gamblingTypes={gamblingTypes}
 						getBetFor={getBetFor}
 						submitBet={submitBet}
-						userId={userId}
+
 						assignmentId={assignmentId}
 						userPoints={userPoints}
 						episodeStatus={episodeStatus}
@@ -175,7 +174,7 @@ const AssignmentGamblingBoard: FC<AssignmentGamblingBoardProps> = ({ assignmentI
 						gamblingTypes={gamblingTypes}
 						getBetFor={getBetFor}
 						submitBet={submitBet}
-						userId={userId}
+
 						assignmentId={assignmentId}
 						userPoints={userPoints}
 						episodeStatus={episodeStatus}
@@ -190,7 +189,7 @@ const AssignmentGamblingBoard: FC<AssignmentGamblingBoardProps> = ({ assignmentI
 						gamblingTypes={gamblingTypes}
 						getBetFor={getBetFor}
 						submitBet={submitBet}
-						userId={userId}
+
 						assignmentId={assignmentId}
 						userPoints={userPoints}
 						episodeStatus={episodeStatus}
@@ -210,7 +209,7 @@ const AssignmentGamblingBoard: FC<AssignmentGamblingBoardProps> = ({ assignmentI
 							gamblingTypes={gamblingTypes}
 							getBetFor={getBetFor}
 							submitBet={submitBet}
-							userId={userId}
+
 							assignmentId={assignmentId}
 							userPoints={userPoints}
 							episodeStatus={episodeStatus}
@@ -228,7 +227,7 @@ const AssignmentGamblingBoard: FC<AssignmentGamblingBoardProps> = ({ assignmentI
 							gamblingTypes={gamblingTypes}
 							getBetFor={getBetFor}
 							submitBet={submitBet}
-							userId={userId}
+
 							assignmentId={assignmentId}
 							userPoints={userPoints}
 							episodeStatus={episodeStatus}
