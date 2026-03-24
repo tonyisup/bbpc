@@ -36,6 +36,16 @@ const GamblingSection: FC<GamblingSectionProps> = ({ gamblingTypeId, title }) =>
     { gamblingTypeId: gamblingTypeId }
   );
 
+  const currentEventBet = (eventGamblingPoints ?? [])
+    .filter((bet) => bet.status === "pending")
+    .sort((a, b) => {
+      const createdAtDiff = new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      if (createdAtDiff !== 0) return createdAtDiff;
+      return b.id.localeCompare(a.id);
+    })[0];
+
+  const currentBetAmount = Number(currentEventBet?.points ?? 0);
+
   const utils = api.useUtils();
 
   const { mutate: submitGamblingPoints } = api.gambling.submitPoints.useMutation({
@@ -60,7 +70,6 @@ const GamblingSection: FC<GamblingSectionProps> = ({ gamblingTypeId, title }) =>
       return;
     }
 
-    const currentBetAmount = eventGamblingPoints?.[0]?.points ?? 0;
     if (gamblingPoints > Number(userPoints) + currentBetAmount) {
       alert("Not enough points available to place this bet");
       return;
@@ -74,15 +83,15 @@ const GamblingSection: FC<GamblingSectionProps> = ({ gamblingTypeId, title }) =>
 
   useEffect(() => {
     const evalCanSubmitGamblingPoints = () => {
-      if (!userPoints) return false;
+      if (userPoints === undefined || userPoints === null) return false;
       if (Number(userPoints) <= 0) return false;
       if (isNaN(gamblingPoints) || gamblingPoints <= 0) return false;
-      if (gamblingPoints > Number(userPoints)) return false;
+      if (gamblingPoints > Number(userPoints) + currentBetAmount) return false;
       return true;
     }
 
     setCanSubmitGamblingPoints(evalCanSubmitGamblingPoints());
-  }, [userPoints, gamblingPoints]);
+  }, [userPoints, gamblingPoints, currentBetAmount]);
 
   const handleAutoBet = (amount: number) => {
     setGamblingPoints(amount);
@@ -91,14 +100,14 @@ const GamblingSection: FC<GamblingSectionProps> = ({ gamblingTypeId, title }) =>
   if (userPoints === null || userPoints === undefined || Number(userPoints) < 0) return null;
 
   const hasGambled = () => {
-    return eventGamblingPoints && eventGamblingPoints.length > 0 && eventGamblingPoints[0] && eventGamblingPoints[0].points > 0;
+    return currentBetAmount > 0;
   }
   return (
     <div className="flex gap-2 items-center">
       <UserPoints points={Number(userPoints)} showSpendButton={false} />
       {hasGambled() && (
         <div className="flex gap-2 items-center">
-          <p className="text-sm text-gray-300">You have bet {eventGamblingPoints?.[0]?.points ?? "unknown"} points on {title}!</p>
+          <p className="text-sm text-gray-300">You have bet {currentBetAmount} points on {title}!</p>
           <Button
             variant="destructive"
             size="sm"

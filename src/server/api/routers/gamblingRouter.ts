@@ -22,13 +22,21 @@ export const gamblingRouter = createTRPCRouter({
 			}
 
 			const callerId = ctx.session.user.id;
+			const callerEmail = ctx.session.user.email;
+			if (!callerEmail) {
+				throw new Error("User email is required");
+			}
 			const seasonId = await getCurrentSeasonID(ctx.db);
-			if (!input.gamblingTypeId) {
+			if (!seasonId) {
+				throw new Error("No active season");
+			}
+			let gamblingTypeId = input.gamblingTypeId;
+			if (!gamblingTypeId) {
 				const defaultType = await ctx.db.gamblingType.findFirst({
 					where: { lookupId: "default" },
 				});
 				if (!defaultType) throw new Error("No active gambling type found");
-				input.gamblingTypeId = defaultType.id;
+				gamblingTypeId = defaultType.id;
 			}
 
 			// Perform everything inside a transaction to prevent race conditions on balance verification
@@ -37,13 +45,13 @@ export const gamblingRouter = createTRPCRouter({
 					where: {
 						userId: callerId,
 						seasonId: seasonId,
-						gamblingTypeId: input.gamblingTypeId,
+						gamblingTypeId,
 						assignmentId: input.assignmentId,
 						targetUserId: input.targetUserId,
 					},
 				});
 
-				const availablePoints = await calculateUserPoints(tx, ctx.session.user.email, seasonId);
+				const availablePoints = await calculateUserPoints(tx, callerEmail, seasonId);
 				const currentBetAmount = existingPoints ? existingPoints.points : 0;
 				if (input.points > availablePoints + currentBetAmount) {
 					throw new Error("Not enough points available to place this bet");
@@ -62,7 +70,7 @@ export const gamblingRouter = createTRPCRouter({
 						data: {
 							seasonId,
 							userId: callerId,
-							gamblingTypeId: input.gamblingTypeId,
+							gamblingTypeId,
 							points: input.points,
 							assignmentId: input.assignmentId,
 							targetUserId: input.targetUserId,
