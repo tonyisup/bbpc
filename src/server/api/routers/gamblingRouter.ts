@@ -38,6 +38,8 @@ export const gamblingRouter = createTRPCRouter({
 				if (!defaultType) throw new Error("No active gambling type found");
 				gamblingTypeId = defaultType.id;
 			}
+			const assignmentId = input.assignmentId ?? null;
+			const targetUserId = input.targetUserId ?? null;
 
 			// Perform everything inside a transaction to prevent race conditions on balance verification
 			return await ctx.db.$transaction(async (tx) => {
@@ -46,8 +48,8 @@ export const gamblingRouter = createTRPCRouter({
 						userId: callerId,
 						seasonId: seasonId,
 						gamblingTypeId,
-						assignmentId: input.assignmentId,
-						targetUserId: input.targetUserId,
+						assignmentId,
+						targetUserId,
 					},
 				});
 
@@ -72,8 +74,8 @@ export const gamblingRouter = createTRPCRouter({
 							userId: callerId,
 							gamblingTypeId,
 							points: input.points,
-							assignmentId: input.assignmentId,
-							targetUserId: input.targetUserId,
+							assignmentId,
+							targetUserId,
 						},
 					});
 				}
