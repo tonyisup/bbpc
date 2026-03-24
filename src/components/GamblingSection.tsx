@@ -16,8 +16,6 @@ import { cn } from "@/lib/utils";
 interface GamblingSectionProps {
   /** The unique identifier for the gambling type. */
   gamblingTypeId: string;
-  /** The unique identifier for the user placing the bet. */
-  userId: string;
   /** The title of the gambling event. */
   title: string;
 }
@@ -27,7 +25,7 @@ interface GamblingSectionProps {
  * It handles balance checks, auto-betting options, and displaying existing bets.
  */
 
-const GamblingSection: FC<GamblingSectionProps> = ({ gamblingTypeId, userId, title }) => {
+const GamblingSection: FC<GamblingSectionProps> = ({ gamblingTypeId, title }) => {
   const [gamblingPoints, setGamblingPoints] = useState<number>(0);
   const [canSubmitGamblingPoints, setCanSubmitGamblingPoints] = useState<boolean>(false);
 
@@ -37,6 +35,16 @@ const GamblingSection: FC<GamblingSectionProps> = ({ gamblingTypeId, userId, tit
   const { data: eventGamblingPoints, refetch: refetchEventGamblingPoints } = api.gambling.getGamblingPointsForType.useQuery(
     { gamblingTypeId: gamblingTypeId }
   );
+
+  const currentEventBet = (eventGamblingPoints ?? [])
+    .filter((bet) => bet.status === "pending")
+    .sort((a, b) => {
+      const createdAtDiff = new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      if (createdAtDiff !== 0) return createdAtDiff;
+      return b.id.localeCompare(a.id);
+    })[0];
+
+  const currentBetAmount = Number(currentEventBet?.points ?? 0);
 
   const utils = api.useUtils();
 
@@ -54,16 +62,20 @@ const GamblingSection: FC<GamblingSectionProps> = ({ gamblingTypeId, userId, tit
   });
 
   const handleGamblingPointsSubmit = () => {
-    if (!userId) return;
+    if (userPoints === undefined) return;
     if (gamblingPoints === undefined || gamblingPoints === null) return;
 
-    if (isNaN(gamblingPoints) || gamblingPoints < 0) {
-      alert("Please enter a valid number of points");
+    if (isNaN(gamblingPoints) || gamblingPoints <= 0) {
+      alert("Please enter a valid number of points greater than zero.");
+      return;
+    }
+
+    if (gamblingPoints > Number(userPoints) + currentBetAmount) {
+      alert("Not enough points available to place this bet");
       return;
     }
 
     submitGamblingPoints({
-      userId: userId,
       gamblingTypeId: gamblingTypeId,
       points: gamblingPoints
     });
@@ -71,15 +83,15 @@ const GamblingSection: FC<GamblingSectionProps> = ({ gamblingTypeId, userId, tit
 
   useEffect(() => {
     const evalCanSubmitGamblingPoints = () => {
-      if (!userPoints) return false;
+      if (userPoints === undefined || userPoints === null) return false;
       if (Number(userPoints) <= 0) return false;
       if (isNaN(gamblingPoints) || gamblingPoints <= 0) return false;
-      if (gamblingPoints > Number(userPoints)) return false;
+      if (gamblingPoints > Number(userPoints) + currentBetAmount) return false;
       return true;
     }
 
     setCanSubmitGamblingPoints(evalCanSubmitGamblingPoints());
-  }, [userPoints, gamblingPoints]);
+  }, [userPoints, gamblingPoints, currentBetAmount]);
 
   const handleAutoBet = (amount: number) => {
     setGamblingPoints(amount);
@@ -88,22 +100,20 @@ const GamblingSection: FC<GamblingSectionProps> = ({ gamblingTypeId, userId, tit
   if (userPoints === null || userPoints === undefined || Number(userPoints) < 0) return null;
 
   const hasGambled = () => {
-    return eventGamblingPoints && eventGamblingPoints.length > 0 && eventGamblingPoints[0] && eventGamblingPoints[0].points > 0;
+    return currentBetAmount > 0;
   }
   return (
     <div className="flex gap-2 items-center">
       <UserPoints points={Number(userPoints)} showSpendButton={false} />
       {hasGambled() && (
         <div className="flex gap-2 items-center">
-          <p className="text-sm text-gray-300">You have bet {eventGamblingPoints?.[0]?.points ?? "unknown"} points on {title}!</p>
+          <p className="text-sm text-gray-300">You have bet {currentBetAmount} points on {title}!</p>
           <Button
             variant="destructive"
             size="sm"
             className="h-8 w-8 p-1"
             onClick={() => {
-              if (!userId) return;
               submitGamblingPoints({
-                userId: userId,
                 gamblingTypeId: gamblingTypeId,
                 points: 0
               });
@@ -135,7 +145,7 @@ const GamblingSection: FC<GamblingSectionProps> = ({ gamblingTypeId, userId, tit
                 className="bg-gray-800 border-gray-700 text-white max-w-[100px]"
               />
               <Button
-                disabled={!canSubmitGamblingPoints}
+                disabled={!canSubmitGamblingPoints || userPoints === undefined}
                 className="text-gray-300 rounded-md bg-transparent hover:bg-red-800 border-[3px] border-red-800 hover:border-red-400 relative overflow-hidden group"
                 onClick={handleGamblingPointsSubmit}
               >

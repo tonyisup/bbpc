@@ -15,7 +15,6 @@ export interface BettingCoinProps {
 	gamblingTypes: GamblingType[] | undefined;
 	getBetFor: (lookupId: string, targetHostId?: string) => GamblingPoints | undefined;
 	submitBet: any;
-	userId: string;
 	assignmentId: string;
 	userPoints: number | undefined;
 	episodeStatus: string;
@@ -28,7 +27,6 @@ const BettingCoin: FC<BettingCoinProps> = ({
 	gamblingTypes,
 	getBetFor,
 	submitBet,
-	userId,
 	assignmentId,
 	userPoints,
 	episodeStatus
@@ -40,10 +38,20 @@ const BettingCoin: FC<BettingCoinProps> = ({
 
 	const handleBet = () => {
 		if (!type) return;
+		if (userPoints === undefined) return;
 		const pts = parseInt(amount);
-		if (isNaN(pts)) return;
+		if (isNaN(pts) || pts <= 0) {
+			alert("Please enter a valid amount greater than zero.");
+			return;
+		}
+
+		const currentBetAmount = existingBet ? existingBet.points : 0;
+		if (pts > userPoints + currentBetAmount) {
+			alert("Not enough points available to place this bet");
+			return;
+		}
+
 		submitBet.mutate({
-			userId,
 			gamblingTypeId: type.id,
 			points: pts,
 			assignmentId,
@@ -93,7 +101,7 @@ const BettingCoin: FC<BettingCoinProps> = ({
 						<Button
 							size="sm"
 							onClick={handleBet}
-							disabled={submitBet.isLoading || isLocked}
+							disabled={submitBet.isLoading || isLocked || userPoints === undefined}
 							className="h-8"
 						>
 							{submitBet.isLoading ? <Loader2 className="animate-spin w-3 h-3" /> : "Bet"}
@@ -105,9 +113,10 @@ const BettingCoin: FC<BettingCoinProps> = ({
 						</p>
 					)}
 					{!isLocked && existingBet?.status === "pending" && (
-						<Button variant="ghost" size="sm" onClick={() => {
+						<Button variant="ghost" size="sm" disabled={userPoints === undefined} onClick={() => {
+							if (userPoints === undefined) return;
 							setAmount("0");
-							submitBet.mutate({ userId, gamblingTypeId: type.id, points: 0, assignmentId, targetUserId: targetHostId });
+							submitBet.mutate({ gamblingTypeId: type.id, points: 0, assignmentId, targetUserId: targetHostId });
 						}} className="h-6 text-[10px] text-red-400 hover:text-red-300">
 							Clear Bet
 						</Button>
