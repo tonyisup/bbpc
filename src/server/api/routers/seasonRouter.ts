@@ -32,23 +32,38 @@ export const seasonRouter = createTRPCRouter({
                 gamePointType: {
                     select: { points: true },
                 },
-                user: {
-                    select: { id: true, name: true },
-                },
             },
         });
 
         const userTotals = new Map<string, { id: string; name: string | null; total: number }>();
+        const flattenedPoints = points.map((point) => ({
+            userId: point.userId,
+            earnedOn: point.earnedOn,
+            pointValue: Number(point.adjustment ?? 0) + Number(point.gamePointType?.points ?? 0),
+        }));
 
-        for (const point of points) {
-            const pointValue = Number(point.adjustment ?? 0) + Number(point.gamePointType?.points ?? 0);
+        const users = await ctx.db.user.findMany({
+            where: {
+                id: {
+                    in: Array.from(new Set(flattenedPoints.map((point) => point.userId))),
+                },
+            },
+            select: {
+                id: true,
+                name: true,
+            },
+        });
+
+        const userNameById = new Map(users.map((user) => [user.id, user.name] as const));
+
+        for (const point of flattenedPoints) {
             const current = userTotals.get(point.userId) ?? {
-                id: point.user.id,
-                name: point.user.name,
+                id: point.userId,
+                name: userNameById.get(point.userId) ?? null,
                 total: 0,
             };
 
-            current.total += pointValue;
+            current.total += point.pointValue;
             userTotals.set(point.userId, current);
         }
 
@@ -57,7 +72,7 @@ export const seasonRouter = createTRPCRouter({
         return {
             season,
             userSummary,
-            points,
+            points: flattenedPoints,
         };
     }),
 });
