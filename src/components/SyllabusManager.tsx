@@ -6,7 +6,7 @@ import type { Movie, Syllabus, Assignment, Episode } from "@prisma/client";
 import { api } from "@/trpc/react";
 import { Button } from "./ui/button";
 import { Textarea } from "./ui/textarea";
-import { X, ArrowUp, ArrowDown, Edit3, Save, X as XIcon, ChevronsUp } from "lucide-react";
+import { X, ArrowUp, ArrowDown, Edit3, Save, ChevronsUp } from "lucide-react";
 import MovieFind from "./MovieFind";
 import MovieInlinePreview from "./MovieInlinePreview";
 import { cn } from "@/lib/utils";
@@ -316,7 +316,7 @@ const SyllabusManager: FC<SyllabusManagerProps> = ({ initialSyllabus, userId }) 
                           onClick={handleCancelEditNotes}
                           aria-label="Cancel notes"
                         >
-                          <XIcon className="mr-1 h-3 w-3" />
+                          <X className="mr-1 h-3 w-3" />
                           Cancel
                         </Button>
                       </div>
