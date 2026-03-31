@@ -1,29 +1,76 @@
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
+import {
+  buildDenseDescendingOrder,
+  insertIntoCanonicalSyllabus,
+  syllabusInsertPositions,
+} from "@/lib/syllabus";
 
 export const syllabusRouter = createTRPCRouter({
   add: protectedProcedure
     .input(z.object({
-      userId: z.string(),
       movieId: z.string(),
-      order: z.number()
+      position: z.enum(syllabusInsertPositions).optional()
     }))
     .mutation(async ({ ctx, input }) => {
-      return ctx.db.syllabus.create({
-        data: {
-          userId: input.userId,
-          movieId: input.movieId,
-          order: input.order
+      const userId = ctx.session.user.id;
+      const position = input.position ?? "END";
+
+      const createdItemId = await ctx.db.$transaction(async (tx) => {
+        // Acquire per-user lock with FOR UPDATE to serialize modifications
+        await tx.$queryRaw`SELECT id FROM "User" WHERE id = ${userId} FOR UPDATE`;
+
+        const existingItems = await tx.syllabus.findMany({
+          where: {
+            userId: userId,
+          },
+          orderBy: {
+            order: "desc",
+          },
+        });
+
+        const createdItem = await tx.syllabus.create({
+          data: {
+            userId: userId,
+            movieId: input.movieId,
+            order: 0,
+          },
+        });
+
+        const orderedItems = insertIntoCanonicalSyllabus(existingItems, createdItem, position);
+        const orderUpdates = buildDenseDescendingOrder(orderedItems);
+
+        await Promise.all(
+          orderUpdates.map((item) =>
+            tx.syllabus.update({
+              where: { id: item.id },
+              data: { order: item.order },
+            })
+          )
+        );
+
+        return createdItem.id;
+      });
+
+      const insertedItem = await ctx.db.syllabus.findUnique({
+        where: {
+          id: createdItemId,
         },
         include: {
           movie: true,
           assignment: {
             include: {
-              episode: true
-            }
-          }
-        }
+              episode: true,
+            },
+          },
+        },
       });
+
+      if (!insertedItem) {
+        throw new Error("Failed to fetch inserted syllabus item");
+      }
+
+      return insertedItem;
     }),
 
   remove: protectedProcedure
@@ -39,23 +86,49 @@ export const syllabusRouter = createTRPCRouter({
 
   reorder: protectedProcedure
     .input(z.object({
-      userId: z.string(),
       syllabus: z.array(z.object({
         id: z.string(),
         order: z.number()
       }))
     }))
     .mutation(async ({ ctx, input }) => {
-      const updates = input.syllabus.map(item =>
-        ctx.db.syllabus.update({
-          where: { id: item.id },
+      const userId = ctx.session.user.id;
+
+      if (input.syllabus.length === 0) {
+        return { success: true };
+      }
+
+      const currentOrders = await ctx.db.syllabus.findMany({
+        where: {
+          userId: userId,
+          id: {
+            in: input.syllabus.map((item) => item.id),
+          },
+        },
+        select: {
+          id: true,
+          order: true,
+        },
+      });
+      const currentOrderById = new Map(currentOrders.map((item) => [item.id, item.order]));
+      const changedItems = input.syllabus.filter((item) => currentOrderById.get(item.id) !== item.order);
+
+      if (changedItems.length === 0) {
+        return { success: true };
+      }
+
+      const updates = changedItems.map((item) =>
+        ctx.db.syllabus.updateMany({
+          where: {
+            id: item.id,
+            userId: userId,
+          },
           data: { order: item.order },
-          include: { movie: true, assignment: { include: { episode: true } } }
-        })
+        }),
       );
 
-      const results = await ctx.db.$transaction(updates);
-      return results;
+      await ctx.db.$transaction(updates);
+      return { success: true };
     }),
 
   updateNotes: protectedProcedure
