@@ -9,17 +9,20 @@ import {
 export const syllabusRouter = createTRPCRouter({
   add: protectedProcedure
     .input(z.object({
-      userId: z.string(),
       movieId: z.string(),
       position: z.enum(syllabusInsertPositions).optional()
     }))
     .mutation(async ({ ctx, input }) => {
+      const userId = ctx.session.user.id;
       const position = input.position ?? "END";
 
       const createdItemId = await ctx.db.$transaction(async (tx) => {
+        // Acquire per-user lock with FOR UPDATE to serialize modifications
+        await tx.$queryRaw`SELECT id FROM "User" WHERE id = ${userId} FOR UPDATE`;
+
         const existingItems = await tx.syllabus.findMany({
           where: {
-            userId: input.userId,
+            userId: userId,
           },
           orderBy: {
             order: "desc",
@@ -28,7 +31,7 @@ export const syllabusRouter = createTRPCRouter({
 
         const createdItem = await tx.syllabus.create({
           data: {
-            userId: input.userId,
+            userId: userId,
             movieId: input.movieId,
             order: 0,
           },
@@ -37,14 +40,14 @@ export const syllabusRouter = createTRPCRouter({
         const orderedItems = insertIntoCanonicalSyllabus(existingItems, createdItem, position);
         const orderUpdates = buildDenseDescendingOrder(orderedItems);
 
-        for (const item of orderUpdates) {
-          await tx.syllabus.update({
-            where: { id: item.id },
-            data: {
-              order: item.order,
-            },
-          });
-        }
+        await Promise.all(
+          orderUpdates.map((item) =>
+            tx.syllabus.update({
+              where: { id: item.id },
+              data: { order: item.order },
+            })
+          )
+        );
 
         return createdItem.id;
       });
@@ -83,20 +86,21 @@ export const syllabusRouter = createTRPCRouter({
 
   reorder: protectedProcedure
     .input(z.object({
-      userId: z.string(),
       syllabus: z.array(z.object({
         id: z.string(),
         order: z.number()
       }))
     }))
     .mutation(async ({ ctx, input }) => {
+      const userId = ctx.session.user.id;
+
       if (input.syllabus.length === 0) {
         return { success: true };
       }
 
       const currentOrders = await ctx.db.syllabus.findMany({
         where: {
-          userId: input.userId,
+          userId: userId,
           id: {
             in: input.syllabus.map((item) => item.id),
           },
@@ -117,7 +121,7 @@ export const syllabusRouter = createTRPCRouter({
         ctx.db.syllabus.updateMany({
           where: {
             id: item.id,
-            userId: input.userId,
+            userId: userId,
           },
           data: { order: item.order },
         }),

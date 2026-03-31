@@ -337,7 +337,6 @@ export function TagPageClient({ tag, initialMovieId }: { tag: string; initialMov
 
           // 2. Add to Syllabus
           const syllabusEntry = await addToSyllabus.mutateAsync({
-            userId: user.id,
             movieId: savedMovie.id,
             position,
           });
@@ -400,7 +399,10 @@ export function TagPageClient({ tag, initialMovieId }: { tag: string; initialMov
           if (pendingTag === tag) {
             // Remove early to prevent double-processing if effect re-runs
             localStorage.removeItem("pending_syllabus_add");
-            setSyllabusInsertPosition(pendingPosition);
+            // Validate pendingPosition is one of the allowed values
+            const validPositions: SyllabusInsertPosition[] = ["TOP", "AFTER_NEXT", "END"];
+            const sanitizedPosition = validPositions.includes(pendingPosition) ? pendingPosition : "END";
+            setSyllabusInsertPosition(sanitizedPosition);
 
             // Check if this movie is already in our local voted list to avoid duplicates
             if (votedMovieIds.includes(pendingMovie.id)) {
@@ -430,9 +432,8 @@ export function TagPageClient({ tag, initialMovieId }: { tag: string; initialMov
                 });
 
                 const syllabusEntry = await addToSyllabus.mutateAsync({
-                  userId: user.id,
                   movieId: savedMovie.id,
-                  position: pendingPosition,
+                  position: sanitizedPosition,
                 });
 
                 setAddedToSyllabus(true);

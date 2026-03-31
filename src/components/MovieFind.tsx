@@ -41,17 +41,19 @@ const MovieFind: FC<MovieFindProps> = ({
     id: title?.id ?? 0,
   }, {
     onSuccess: (result) => {
-      if (!title || !result || !title.poster_path || !result.imdb_path) {
+      if (!title || !result || !title.poster_path) {
         return;
       }
 
       const year = getPlainDateYear(result.release_date) ?? 0;
+      const fallbackTmdbUrl = `https://www.themoviedb.org/movie/${result.id}`;
+      const url = result.imdb_path ?? fallbackTmdbUrl;
 
       addMovie({
         title: result.title,
         year,
         poster: result.poster_path,
-        url: result.imdb_path,
+        url,
         tmdbId: result.id,
       });
     },

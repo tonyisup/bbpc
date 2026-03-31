@@ -1,6 +1,6 @@
 'use client';
 
-import { type FC, useState } from "react";
+import { type FC, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import type { Movie, Syllabus, Assignment, Episode } from "@prisma/client";
 import { api } from "@/trpc/react";
@@ -27,10 +27,9 @@ type SyllabusItem = Syllabus & {
 
 interface SyllabusManagerProps {
   initialSyllabus: SyllabusItem[];
-  userId: string;
 }
 
-const SyllabusManager: FC<SyllabusManagerProps> = ({ initialSyllabus, userId }) => {
+const SyllabusManager: FC<SyllabusManagerProps> = ({ initialSyllabus }) => {
   const router = useRouter();
   const [syllabus, setSyllabus] = useState(() => normalizeSyllabusOrder(initialSyllabus));
   const [showMovieSearch, setShowMovieSearch] = useState(false);
@@ -38,12 +37,26 @@ const SyllabusManager: FC<SyllabusManagerProps> = ({ initialSyllabus, userId }) 
   const [notesText, setNotesText] = useState<string>("");
   const [insertPosition, setInsertPosition] = useState<SyllabusInsertPosition>("END");
 
+  // Resync syllabus when initialSyllabus prop changes
+  useEffect(() => {
+    setSyllabus(normalizeSyllabusOrder(initialSyllabus));
+  }, [initialSyllabus]);
+
   const { mutate: reorderSyllabus, isPending: isReordering } = api.syllabus.reorder.useMutation({
+    onMutate: () => {
+      // Capture current syllabus state for rollback
+      const previousSyllabus = syllabus;
+      return { previousSyllabus };
+    },
     onSuccess: () => {
       router.refresh();
     },
-    onError: (error) => {
+    onError: (error, variables, context) => {
       toast.error(`Failed to reorder syllabus: ${error.message}`);
+      // Rollback to previous syllabus state if provided in context
+      if (context?.previousSyllabus) {
+        setSyllabus(context.previousSyllabus);
+      }
       router.refresh();
     },
   });
@@ -64,7 +77,6 @@ const SyllabusManager: FC<SyllabusManagerProps> = ({ initialSyllabus, userId }) 
     }
 
     reorderSyllabus({
-      userId,
       syllabus: changedOrder,
     });
   };
@@ -106,7 +118,6 @@ const SyllabusManager: FC<SyllabusManagerProps> = ({ initialSyllabus, userId }) 
 
   const handleAddMovie = (movie: Movie, position: SyllabusInsertPosition) => {
     addToSyllabus({
-      userId,
       movieId: movie.id,
       position,
     });
@@ -118,67 +129,90 @@ const SyllabusManager: FC<SyllabusManagerProps> = ({ initialSyllabus, userId }) 
 
   type MoveDirection = "up" | "down";
 
+  // Helper function to compute reordered syllabus (pure, no side effects)
+  const computeReorderedSyllabus = (
+    currentSyllabus: SyllabusItem[],
+    syllabusId: string,
+    direction: MoveDirection,
+  ): SyllabusItem[] | null => {
+    const normalized = normalizeSyllabusOrder(currentSyllabus);
+    const pending = normalized.filter((item) => item.assignmentId === null);
+    const assigned = normalized.filter((item) => item.assignmentId !== null);
+    const currentIndex = pending.findIndex((item) => item.id === syllabusId);
+
+    if (currentIndex === -1) {
+      return null;
+    }
+
+    const targetIndex = direction === "up" ? currentIndex - 1 : currentIndex + 1;
+    if (targetIndex < 0 || targetIndex >= pending.length) {
+      return null;
+    }
+
+    const updatedPending = [...pending];
+    const targetItem = updatedPending[targetIndex];
+    const currentItem = updatedPending[currentIndex];
+
+    if (!targetItem || !currentItem) {
+      return null;
+    }
+
+    [updatedPending[currentIndex], updatedPending[targetIndex]] = [targetItem, currentItem];
+
+    return [...updatedPending, ...assigned];
+  };
+
+  // Helper function to compute syllabus with item sent to top (pure, no side effects)
+  const computeSendToTop = (
+    currentSyllabus: SyllabusItem[],
+    syllabusId: string,
+  ): SyllabusItem[] | null => {
+    const normalized = normalizeSyllabusOrder(currentSyllabus);
+    const pending = normalized.filter((item) => item.assignmentId === null);
+    const assigned = normalized.filter((item) => item.assignmentId !== null);
+    const currentIndex = pending.findIndex((item) => item.id === syllabusId);
+
+    if (currentIndex <= 0) {
+      return null;
+    }
+
+    const itemToMove = pending[currentIndex];
+    if (!itemToMove) {
+      return null;
+    }
+
+    const updatedPending = [...pending];
+    updatedPending.splice(currentIndex, 1);
+    updatedPending.unshift(itemToMove);
+
+    return [...updatedPending, ...assigned];
+  };
+
   const moveSyllabusItem = (syllabusId: string, direction: MoveDirection) => {
-    setSyllabus((prev) => {
-      const normalized = normalizeSyllabusOrder(prev);
-      const pending = normalized.filter((item) => item.assignmentId === null);
-      const assigned = normalized.filter((item) => item.assignmentId !== null);
-      const currentIndex = pending.findIndex((item) => item.id === syllabusId);
+    const previousSyllabus = syllabus;
+    const updated = computeReorderedSyllabus(syllabus, syllabusId, direction);
 
-      if (currentIndex === -1) {
-        return prev;
-      }
+    if (!updated) {
+      return;
+    }
 
-      const targetIndex = direction === "up" ? currentIndex - 1 : currentIndex + 1;
-      if (targetIndex < 0 || targetIndex >= pending.length) {
-        return prev;
-      }
-
-      const updatedPending = [...pending];
-      const targetItem = updatedPending[targetIndex];
-      const currentItem = updatedPending[currentIndex];
-
-      if (!targetItem || !currentItem) {
-        return prev;
-      }
-
-      [updatedPending[currentIndex], updatedPending[targetIndex]] = [targetItem, currentItem];
-
-      const updated = [...updatedPending, ...assigned];
-      persistSyllabusOrder(updated, normalized);
-
-      return updated;
-    });
+    setSyllabus(updated);
+    persistSyllabusOrder(updated, previousSyllabus);
   };
 
   const handleMoveUp = (syllabusId: string) => moveSyllabusItem(syllabusId, "up");
   const handleMoveDown = (syllabusId: string) => moveSyllabusItem(syllabusId, "down");
 
   const handleSendToTop = (syllabusId: string) => {
-    setSyllabus((prev) => {
-      const normalized = normalizeSyllabusOrder(prev);
-      const pending = normalized.filter((item) => item.assignmentId === null);
-      const assigned = normalized.filter((item) => item.assignmentId !== null);
-      const currentIndex = pending.findIndex((item) => item.id === syllabusId);
+    const previousSyllabus = syllabus;
+    const updated = computeSendToTop(syllabus, syllabusId);
 
-      if (currentIndex <= 0) {
-        return prev;
-      }
+    if (!updated) {
+      return;
+    }
 
-      const itemToMove = pending[currentIndex];
-      if (!itemToMove) {
-        return prev;
-      }
-
-      const updatedPending = [...pending];
-      updatedPending.splice(currentIndex, 1);
-      updatedPending.unshift(itemToMove);
-
-      const updated = [...updatedPending, ...assigned];
-      persistSyllabusOrder(updated, normalized);
-
-      return updated;
-    });
+    setSyllabus(updated);
+    persistSyllabusOrder(updated, previousSyllabus);
   };
 
   const handleStartEditNotes = (syllabusId: string, currentNotes: string | null) => {
@@ -251,7 +285,7 @@ const SyllabusManager: FC<SyllabusManagerProps> = ({ initialSyllabus, userId }) 
                   size="icon"
                   onClick={() => handleSendToTop(item.id)}
                   disabled={isNextMovie || isReordering}
-                  aria-label="Send to top"
+                  aria-label={`Send to top ${item.movie.title}`}
                 >
                   <ChevronsUp className="h-4 w-4" />
                 </Button>
@@ -260,7 +294,7 @@ const SyllabusManager: FC<SyllabusManagerProps> = ({ initialSyllabus, userId }) 
                   size="icon"
                   onClick={() => handleMoveUp(item.id)}
                   disabled={index === 0 || isReordering}
-                  aria-label="Move up"
+                  aria-label={`Move up ${item.movie.title}`}
                 >
                   <ArrowUp className="h-4 w-4" />
                 </Button>
@@ -269,7 +303,7 @@ const SyllabusManager: FC<SyllabusManagerProps> = ({ initialSyllabus, userId }) 
                   size="icon"
                   onClick={() => handleMoveDown(item.id)}
                   disabled={index === unassignedSyllabus.length - 1 || isReordering}
-                  aria-label="Move down"
+                  aria-label={`Move down ${item.movie.title}`}
                 >
                   <ArrowDown className="h-4 w-4" />
                 </Button>
@@ -334,7 +368,7 @@ const SyllabusManager: FC<SyllabusManagerProps> = ({ initialSyllabus, userId }) 
                         variant="ghost"
                         size="sm"
                         onClick={() => handleStartEditNotes(item.id, item.notes)}
-                        aria-label="Edit notes"
+                        aria-label={`Edit notes ${item.movie.title}`}
                       >
                         <Edit3 className="h-3 w-3" />
                       </Button>
@@ -346,7 +380,7 @@ const SyllabusManager: FC<SyllabusManagerProps> = ({ initialSyllabus, userId }) 
                 variant="ghost"
                 size="icon"
                 onClick={() => handleRemoveMovie(item.id)}
-                aria-label="Remove movie"
+                aria-label={`Remove movie ${item.movie.title}`}
               >
                 <X className="h-4 w-4 text-red-500" />
               </Button>
