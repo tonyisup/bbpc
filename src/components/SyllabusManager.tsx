@@ -1,6 +1,6 @@
 'use client';
 
-import { type FC, useState } from "react";
+import { type FC, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import type { Movie, Syllabus, Assignment, Episode } from "@prisma/client";
 import { api } from "@/trpc/react";
@@ -38,12 +38,21 @@ const SyllabusManager: FC<SyllabusManagerProps> = ({ initialSyllabus, userId }) 
   const [notesText, setNotesText] = useState<string>("");
   const [insertPosition, setInsertPosition] = useState<SyllabusInsertPosition>("END");
 
+  // Resync syllabus when initialSyllabus prop changes
+  useEffect(() => {
+    setSyllabus(normalizeSyllabusOrder(initialSyllabus));
+  }, [initialSyllabus]);
+
   const { mutate: reorderSyllabus, isPending: isReordering } = api.syllabus.reorder.useMutation({
     onSuccess: () => {
       router.refresh();
     },
-    onError: (error) => {
+    onError: (error, variables, context) => {
       toast.error(`Failed to reorder syllabus: ${error.message}`);
+      // Rollback to previous syllabus state if provided in context
+      if (context?.previousSyllabus) {
+        setSyllabus(context.previousSyllabus);
+      }
       router.refresh();
     },
   });
@@ -63,10 +72,17 @@ const SyllabusManager: FC<SyllabusManagerProps> = ({ initialSyllabus, userId }) 
       return;
     }
 
-    reorderSyllabus({
-      userId,
-      syllabus: changedOrder,
-    });
+    reorderSyllabus(
+      {
+        syllabus: changedOrder,
+      },
+      {
+        onError: (error) => {
+          // Rollback handled by mutation onError with context
+          setSyllabus(previousSyllabus);
+        },
+      }
+    );
   };
 
   const { mutate: addToSyllabus } = api.syllabus.add.useMutation({
@@ -106,7 +122,6 @@ const SyllabusManager: FC<SyllabusManagerProps> = ({ initialSyllabus, userId }) 
 
   const handleAddMovie = (movie: Movie, position: SyllabusInsertPosition) => {
     addToSyllabus({
-      userId,
       movieId: movie.id,
       position,
     });
@@ -120,6 +135,7 @@ const SyllabusManager: FC<SyllabusManagerProps> = ({ initialSyllabus, userId }) 
 
   const moveSyllabusItem = (syllabusId: string, direction: MoveDirection) => {
     setSyllabus((prev) => {
+      const previousSyllabus = prev;
       const normalized = normalizeSyllabusOrder(prev);
       const pending = normalized.filter((item) => item.assignmentId === null);
       const assigned = normalized.filter((item) => item.assignmentId !== null);
@@ -145,7 +161,7 @@ const SyllabusManager: FC<SyllabusManagerProps> = ({ initialSyllabus, userId }) 
       [updatedPending[currentIndex], updatedPending[targetIndex]] = [targetItem, currentItem];
 
       const updated = [...updatedPending, ...assigned];
-      persistSyllabusOrder(updated, normalized);
+      persistSyllabusOrder(updated, previousSyllabus);
 
       return updated;
     });
@@ -156,6 +172,7 @@ const SyllabusManager: FC<SyllabusManagerProps> = ({ initialSyllabus, userId }) 
 
   const handleSendToTop = (syllabusId: string) => {
     setSyllabus((prev) => {
+      const previousSyllabus = prev;
       const normalized = normalizeSyllabusOrder(prev);
       const pending = normalized.filter((item) => item.assignmentId === null);
       const assigned = normalized.filter((item) => item.assignmentId !== null);
@@ -175,7 +192,7 @@ const SyllabusManager: FC<SyllabusManagerProps> = ({ initialSyllabus, userId }) 
       updatedPending.unshift(itemToMove);
 
       const updated = [...updatedPending, ...assigned];
-      persistSyllabusOrder(updated, normalized);
+      persistSyllabusOrder(updated, previousSyllabus);
 
       return updated;
     });
