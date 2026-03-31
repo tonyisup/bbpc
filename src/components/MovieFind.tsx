@@ -1,25 +1,36 @@
 'use client';
 
 import type { Movie } from "@prisma/client";
-import { type Dispatch, type FC, useMemo, useState, useEffect } from "react";
+import { type FC, useEffect, useMemo, useState } from "react";
 import type { Title } from "../server/tmdb/client";
 import TitleCard from "./TitleCard";
 import { api } from "@/trpc/react";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { debounce } from 'lodash';
+import { debounce } from "lodash";
 import { getPlainDateYear } from "@/lib/dates";
+import type { SyllabusInsertPosition } from "@/lib/syllabus";
 
 interface MovieFindProps {
-  selectMovie: Dispatch<Movie>;
-
+  selectMovie: (movie: Movie, position: SyllabusInsertPosition) => void;
+  selectedPosition?: SyllabusInsertPosition;
+  onSelectedPositionChange?: (position: SyllabusInsertPosition) => void;
 }
 
-const MovieFind: FC<MovieFindProps> = ({ selectMovie }) => {
+const MovieFind: FC<MovieFindProps> = ({
+  selectMovie,
+  selectedPosition = "END",
+  onSelectedPositionChange,
+}) => {
   const [title, setTitle] = useState<Title | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [inputValue, setInputValue] = useState("");
+  const [internalSelectedPosition, setInternalSelectedPosition] = useState<SyllabusInsertPosition>(selectedPosition);
+  const [pendingInsertPosition, setPendingInsertPosition] = useState<SyllabusInsertPosition>(selectedPosition);
+
+  const activePosition = onSelectedPositionChange ? selectedPosition : internalSelectedPosition;
+  const setActivePosition = onSelectedPositionChange ?? setInternalSelectedPosition;
 
   const { data: resp, isLoading } = api.movie.searchByPage.useQuery({
     page: 1,
@@ -27,42 +38,46 @@ const MovieFind: FC<MovieFindProps> = ({ selectMovie }) => {
   });
 
   api.movie.getTitle.useQuery({
-    id: title?.id ?? 0
+    id: title?.id ?? 0,
   }, {
     onSuccess: (result) => {
-      if (!title) return;
-      if (!result) return;
-      if (!title.poster_path) return;
-      if (!result.imdb_path) return;
+      if (!title || !result || !title.poster_path || !result.imdb_path) {
+        return;
+      }
 
       const year = getPlainDateYear(result.release_date) ?? 0;
 
       addMovie({
         title: result.title,
-        year: year,
+        year,
         poster: result.poster_path,
         url: result.imdb_path,
-        tmdbId: result.id
+        tmdbId: result.id,
       });
-    }
+    },
   });
 
   const { mutate: addMovie } = api.movie.add.useMutation({
     onSuccess: (result) => {
-      if (!result) return;
-      selectMovie(result);
-    }
+      if (!result) {
+        return;
+      }
+
+      selectMovie(result, pendingInsertPosition);
+    },
   });
 
-  const selectTitle = function (title: Title) {
-    setTitle(title);
+  const selectTitle = (nextTitle: Title, position: SyllabusInsertPosition) => {
+    setPendingInsertPosition(position);
+    setActivePosition(position);
+    setTitle(nextTitle);
     setSearchQuery("");
     setInputValue("");
-  }
+  };
 
   const debouncedSearch = useMemo(
     () => debounce((value: string) => setSearchQuery(value), 300),
-    []
+    [],
   );
 
   useEffect(() => {
@@ -72,7 +87,7 @@ const MovieFind: FC<MovieFindProps> = ({ selectMovie }) => {
   }, [debouncedSearch]);
 
   return (
-    <div className="w-full flex flex-col items-center justify-center gap-4">
+    <div className="flex w-full flex-col items-center justify-center gap-4">
       <div className="relative">
         <Label htmlFor="search" className="sr-only">
           Search
@@ -91,13 +106,19 @@ const MovieFind: FC<MovieFindProps> = ({ selectMovie }) => {
       </div>
       {isLoading ? (
         <div className="flex justify-center p-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-primary"></div>
         </div>
       ) : (
-        <div className="flex flex-wrap gap-4 justify-center">
-          {resp?.results.map((title) => (
-            title?.poster_path && (
-              <TitleCard key={title.id} title={title} titleSelected={selectTitle} />
+        <div className="flex flex-wrap justify-center gap-4">
+          {resp?.results.map((result) => (
+            result?.poster_path && (
+              <TitleCard
+                key={result.id}
+                title={result}
+                titleSelected={selectTitle}
+                syllabusInsertPosition={activePosition}
+                onSyllabusInsertPositionChange={setActivePosition}
+              />
             )
           ))}
         </div>

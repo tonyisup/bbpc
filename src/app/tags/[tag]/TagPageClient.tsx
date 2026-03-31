@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef, useCallback, useImperativeHandle, forwardRef } from "react";
 import { api } from "@/trpc/react";
 import { motion, AnimatePresence } from "motion/react";
-import { X, Check, LinkIcon, RefreshCwIcon, PlusCircle, CheckCircle, Info, Share, Share2 } from "lucide-react";
+import { X, Check, ChevronDown, LinkIcon, RefreshCwIcon, PlusCircle, CheckCircle, Info, Share, Share2 } from "lucide-react";
 import ChristmasSnow from "@/components/AnimatedChristmas";
 import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,11 @@ import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import TinderCard from "react-tinder-card";
 import { ConfirmationDialog } from "@/components/ConfirmationDialog";
 import { getPlainDateYear } from "@/lib/dates";
+import SyllabusInsertPositionMenu from "@/components/SyllabusInsertPositionMenu";
+import {
+  type SyllabusInsertPosition,
+  syllabusInsertPositionLabels,
+} from "@/lib/syllabus";
 
 interface Movie {
   id: number;
@@ -23,6 +28,12 @@ interface Movie {
   overview: string;
   release_date: string;
   imdb_id?: string | null;
+}
+
+interface PendingSyllabusAdd {
+  tag: string;
+  movie: Movie;
+  position: SyllabusInsertPosition;
 }
 
 export function TagPageClient({ tag, initialMovieId }: { tag: string; initialMovieId?: number }) {
@@ -169,6 +180,7 @@ export function TagPageClient({ tag, initialMovieId }: { tag: string; initialMov
   const { data: session } = useSession();
   const [isAddingToSyllabus, setIsAddingToSyllabus] = useState(false);
   const [addedToSyllabus, setAddedToSyllabus] = useState(false);
+  const [syllabusInsertPosition, setSyllabusInsertPosition] = useState<SyllabusInsertPosition>("END");
 
   const submitVote = api.tag.submitVote.useMutation();
   const addMovie = api.movie.add.useMutation();
@@ -295,11 +307,11 @@ export function TagPageClient({ tag, initialMovieId }: { tag: string; initialMov
     );
   };
 
-  const handleAddToSyllabus = () => {
+  const handleAddToSyllabus = (position: SyllabusInsertPosition = syllabusInsertPosition) => {
     requestConfirmation(
       "add_to_syllabus",
       "Add to Syllabus?",
-      `Are you sure you want to add "${currentMovie?.title}" to your syllabus?`,
+      `Are you sure you want to add "${currentMovie?.title}" to your syllabus? Position: ${syllabusInsertPositionLabels[position]}.`,
       async () => {
         const user = session?.user;
         if (!user || !currentMovie || isAddingToSyllabus || addedToSyllabus) return;
@@ -327,7 +339,7 @@ export function TagPageClient({ tag, initialMovieId }: { tag: string; initialMov
           const syllabusEntry = await addToSyllabus.mutateAsync({
             userId: user.id,
             movieId: savedMovie.id,
-            order: 9999, // Append to end
+            position,
           });
 
           setAddedToSyllabus(true);
@@ -360,13 +372,14 @@ export function TagPageClient({ tag, initialMovieId }: { tag: string; initialMov
     requestConfirmation(
       "sign_in_to_add",
       "Sign In to Add?",
-      "You need to sign in to add this movie to your syllabus. Continue?",
+      `You need to sign in to add this movie to your syllabus. Position: ${syllabusInsertPositionLabels[syllabusInsertPosition]}. Continue?`,
       () => {
         if (!currentMovie) return;
         localStorage.setItem("pending_syllabus_add", JSON.stringify({
           tag,
-          movie: currentMovie
-        }));
+          movie: currentMovie,
+          position: syllabusInsertPosition,
+        } satisfies PendingSyllabusAdd));
         void signIn();
       }
     );
@@ -379,10 +392,15 @@ export function TagPageClient({ tag, initialMovieId }: { tag: string; initialMov
       const pending = localStorage.getItem("pending_syllabus_add");
       if (pending) {
         try {
-          const { tag: pendingTag, movie: pendingMovie } = JSON.parse(pending) as { tag: string, movie: Movie };
+          const {
+            tag: pendingTag,
+            movie: pendingMovie,
+            position: pendingPosition = "END",
+          } = JSON.parse(pending) as PendingSyllabusAdd;
           if (pendingTag === tag) {
             // Remove early to prevent double-processing if effect re-runs
             localStorage.removeItem("pending_syllabus_add");
+            setSyllabusInsertPosition(pendingPosition);
 
             // Check if this movie is already in our local voted list to avoid duplicates
             if (votedMovieIds.includes(pendingMovie.id)) {
@@ -414,7 +432,7 @@ export function TagPageClient({ tag, initialMovieId }: { tag: string; initialMov
                 const syllabusEntry = await addToSyllabus.mutateAsync({
                   userId: user.id,
                   movieId: savedMovie.id,
-                  order: 9999,
+                  position: pendingPosition,
                 });
 
                 setAddedToSyllabus(true);
@@ -675,43 +693,66 @@ export function TagPageClient({ tag, initialMovieId }: { tag: string; initialMov
             ) : (
               <div className="flex justify-center gap-2 sm:gap-4 md:gap-6">
                 {/* Add to Syllabus / Sign in Toggle */}
-                {!session?.user ? (
-                  <button
-                    type="button"
-                    onClick={handleSignInToAdd}
-                    className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 aspect-square shrink-0 rounded-full bg-gray-800/80 hover:bg-gray-700/80 flex items-center justify-center shadow-lg transition-transform hover:scale-110 active:scale-95 text-red-500/80"
-                    aria-label="Sign in to add to syllabus"
-                    title="Sign in to add to syllabus"
-                  >
-                    <PlusCircle className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8" />
-                  </button>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={handleAddToSyllabus}
-                    disabled={isAddingToSyllabus || addedToSyllabus}
-                    className={`
-                      w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 aspect-square shrink-0 rounded-full flex items-center justify-center shadow-lg transition-all hover:scale-110 active:scale-95
-                      ${addedToSyllabus
-                        ? "bg-green-600/30 text-green-400 border border-green-500/50"
-                        : "bg-gray-800/80 hover:bg-gray-700/80 text-blue-400"
-                      }
-                      ${isAddingToSyllabus ? "opacity-50 cursor-not-allowed" : ""}
-                    `}
-                    aria-label={addedToSyllabus ? "Added to Syllabus" : "Add to Syllabus"}
-                    title={addedToSyllabus ? "Added to Syllabus" : "Add to Syllabus"}
-                  >
-                    {addedToSyllabus ? (
-                      <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8" />
+                <div className="flex flex-col items-center gap-2">
+                  <div className="flex items-center gap-2">
+                    {!session?.user ? (
+                      <button
+                        type="button"
+                        onClick={handleSignInToAdd}
+                        className="flex h-10 w-10 aspect-square shrink-0 items-center justify-center rounded-full bg-gray-800/80 text-red-500/80 shadow-lg transition-transform hover:scale-110 hover:bg-gray-700/80 active:scale-95 sm:h-12 sm:w-12 md:h-14 md:w-14"
+                        aria-label="Sign in to add to syllabus"
+                        title={`Sign in to add to syllabus (${syllabusInsertPositionLabels[syllabusInsertPosition]})`}
+                      >
+                        <PlusCircle className="h-5 w-5 sm:h-6 sm:w-6 md:h-8 md:w-8" />
+                      </button>
                     ) : (
-                      isAddingToSyllabus ? (
-                        <RefreshCwIcon className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 animate-spin" />
-                      ) : (
-                        <PlusCircle className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8" />
-                      )
+                      <button
+                        type="button"
+                        onClick={() => handleAddToSyllabus(syllabusInsertPosition)}
+                        disabled={isAddingToSyllabus || addedToSyllabus}
+                        className={`
+                          flex h-10 w-10 aspect-square shrink-0 items-center justify-center rounded-full shadow-lg transition-all hover:scale-110 active:scale-95 sm:h-12 sm:w-12 md:h-14 md:w-14
+                          ${addedToSyllabus
+                            ? "border border-green-500/50 bg-green-600/30 text-green-400"
+                            : "bg-gray-800/80 text-blue-400 hover:bg-gray-700/80"
+                          }
+                          ${isAddingToSyllabus ? "cursor-not-allowed opacity-50" : ""}
+                        `}
+                        aria-label={addedToSyllabus ? "Added to Syllabus" : `Add to syllabus using ${syllabusInsertPositionLabels[syllabusInsertPosition]}`}
+                        title={addedToSyllabus ? "Added to Syllabus" : syllabusInsertPositionLabels[syllabusInsertPosition]}
+                      >
+                        {addedToSyllabus ? (
+                          <CheckCircle className="h-5 w-5 sm:h-6 sm:w-6 md:h-8 md:w-8" />
+                        ) : (
+                          isAddingToSyllabus ? (
+                            <RefreshCwIcon className="h-5 w-5 animate-spin sm:h-6 sm:w-6 md:h-8 md:w-8" />
+                          ) : (
+                            <PlusCircle className="h-5 w-5 sm:h-6 sm:w-6 md:h-8 md:w-8" />
+                          )
+                        )}
+                      </button>
                     )}
-                  </button>
-                )}
+                    <SyllabusInsertPositionMenu
+                      selectedPosition={syllabusInsertPosition}
+                      onSelect={setSyllabusInsertPosition}
+                      trigger={(
+                        <button
+                          type="button"
+                          onClick={(e) => e.stopPropagation()}
+                          disabled={isAddingToSyllabus || addedToSyllabus}
+                          className="flex h-10 w-10 aspect-square shrink-0 items-center justify-center rounded-full bg-gray-800/80 text-white shadow-lg transition-transform hover:scale-110 hover:bg-gray-700/80 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 sm:h-12 sm:w-12 md:h-14 md:w-14"
+                          aria-label={`Choose syllabus add position. Current: ${syllabusInsertPositionLabels[syllabusInsertPosition]}`}
+                          title={syllabusInsertPositionLabels[syllabusInsertPosition]}
+                        >
+                          <ChevronDown className="h-5 w-5 sm:h-6 sm:w-6 md:h-8 md:w-8" />
+                        </button>
+                      )}
+                    />
+                  </div>
+                  <span className="rounded-full bg-black/55 px-3 py-1 text-[10px] uppercase tracking-[0.2em] text-white/80">
+                    {syllabusInsertPositionLabels[syllabusInsertPosition]}
+                  </span>
+                </div>
 
                 {!session?.user ? (
                   <button
