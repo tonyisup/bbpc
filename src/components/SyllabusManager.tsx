@@ -44,6 +44,11 @@ const SyllabusManager: FC<SyllabusManagerProps> = ({ initialSyllabus, userId }) 
   }, [initialSyllabus]);
 
   const { mutate: reorderSyllabus, isPending: isReordering } = api.syllabus.reorder.useMutation({
+    onMutate: () => {
+      // Capture current syllabus state for rollback
+      const previousSyllabus = syllabus;
+      return { previousSyllabus };
+    },
     onSuccess: () => {
       router.refresh();
     },
@@ -72,17 +77,9 @@ const SyllabusManager: FC<SyllabusManagerProps> = ({ initialSyllabus, userId }) 
       return;
     }
 
-    reorderSyllabus(
-      {
-        syllabus: changedOrder,
-      },
-      {
-        onError: (error) => {
-          // Rollback handled by mutation onError with context
-          setSyllabus(previousSyllabus);
-        },
-      }
-    );
+    reorderSyllabus({
+      syllabus: changedOrder,
+    });
   };
 
   const { mutate: addToSyllabus } = api.syllabus.add.useMutation({

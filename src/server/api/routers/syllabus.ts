@@ -17,11 +17,8 @@ export const syllabusRouter = createTRPCRouter({
       const position = input.position ?? "END";
 
       const createdItemId = await ctx.db.$transaction(async (tx) => {
-        // Acquire per-user lock by updating the user row with FOR UPDATE
-        await tx.user.findUnique({
-          where: { id: userId },
-          select: { id: true },
-        });
+        // Acquire per-user lock with FOR UPDATE to serialize modifications
+        await tx.$queryRaw`SELECT id FROM "User" WHERE id = ${userId} FOR UPDATE`;
 
         const existingItems = await tx.syllabus.findMany({
           where: {
@@ -43,14 +40,14 @@ export const syllabusRouter = createTRPCRouter({
         const orderedItems = insertIntoCanonicalSyllabus(existingItems, createdItem, position);
         const orderUpdates = buildDenseDescendingOrder(orderedItems);
 
-        for (const item of orderUpdates) {
-          await tx.syllabus.update({
-            where: { id: item.id },
-            data: {
-              order: item.order,
-            },
-          });
-        }
+        await Promise.all(
+          orderUpdates.map((item) =>
+            tx.syllabus.update({
+              where: { id: item.id },
+              data: { order: item.order },
+            })
+          )
+        );
 
         return createdItem.id;
       });
