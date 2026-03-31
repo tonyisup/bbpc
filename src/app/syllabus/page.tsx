@@ -46,7 +46,6 @@ export default async function SyllabusPage() {
       </h1>
       <SyllabusManager
         initialSyllabus={user?.syllabus ?? []}
-        userId={session.user.id}
       />
     </div>
   );

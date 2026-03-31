@@ -27,10 +27,9 @@ type SyllabusItem = Syllabus & {
 
 interface SyllabusManagerProps {
   initialSyllabus: SyllabusItem[];
-  userId: string;
 }
 
-const SyllabusManager: FC<SyllabusManagerProps> = ({ initialSyllabus, userId }) => {
+const SyllabusManager: FC<SyllabusManagerProps> = ({ initialSyllabus }) => {
   const router = useRouter();
   const [syllabus, setSyllabus] = useState(() => normalizeSyllabusOrder(initialSyllabus));
   const [showMovieSearch, setShowMovieSearch] = useState(false);
