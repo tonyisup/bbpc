@@ -17,8 +17,8 @@ export const syllabusRouter = createTRPCRouter({
       const position = input.position ?? "END";
 
       const createdItemId = await ctx.db.$transaction(async (tx) => {
-        // Acquire per-user lock with FOR UPDATE to serialize modifications
-        await tx.$queryRaw`SELECT id FROM "User" WHERE id = ${userId} FOR UPDATE`;
+        // Serialize per-user syllabus changes (SQL Server: UPDLOCK; Postgres would use FOR UPDATE)
+        await tx.$queryRaw`SELECT id FROM [User] WITH (UPDLOCK, ROWLOCK) WHERE id = ${userId}`;
 
         const existingItems = await tx.syllabus.findMany({
           where: {
