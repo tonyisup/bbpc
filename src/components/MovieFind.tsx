@@ -116,7 +116,6 @@ const MovieFind: FC<MovieFindProps> = ({
           id="search"
           placeholder="Search for a movie..."
           value={inputValue}
-          disabled={isAddPipelineBusy}
           onChange={(e) => {
             setInputValue(e.target.value);
             debouncedSearch(e.target.value);
