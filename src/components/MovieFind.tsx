@@ -5,7 +5,7 @@ import { type FC, useEffect, useMemo, useState } from "react";
 import type { Title } from "../server/tmdb/client";
 import TitleCard from "./TitleCard";
 import { api } from "@/trpc/react";
-import { Search } from "lucide-react";
+import { Loader2, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { debounce } from "lodash";
@@ -16,12 +16,15 @@ interface MovieFindProps {
   selectMovie: (movie: Movie, position: SyllabusInsertPosition) => void;
   selectedPosition?: SyllabusInsertPosition;
   onSelectedPositionChange?: (position: SyllabusInsertPosition) => void;
+  /** True while `syllabus.add` is running (parent mutation). */
+  isAddingToSyllabus?: boolean;
 }
 
 const MovieFind: FC<MovieFindProps> = ({
   selectMovie,
   selectedPosition = "END",
   onSelectedPositionChange,
+  isAddingToSyllabus = false,
 }) => {
   const [title, setTitle] = useState<Title | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -37,9 +40,10 @@ const MovieFind: FC<MovieFindProps> = ({
     term: searchQuery,
   });
 
-  api.movie.getTitle.useQuery({
+  const { isFetching: isFetchingTitle } = api.movie.getTitle.useQuery({
     id: title?.id ?? 0,
   }, {
+    enabled: Boolean(title?.id),
     onSuccess: (result) => {
       if (!title || !result || !title.poster_path) {
         return;
@@ -59,7 +63,7 @@ const MovieFind: FC<MovieFindProps> = ({
     },
   });
 
-  const { mutate: addMovie } = api.movie.add.useMutation({
+  const { mutate: addMovie, isPending: isSavingMovie } = api.movie.add.useMutation({
     onSuccess: (result) => {
       if (!result) {
         return;
@@ -88,9 +92,23 @@ const MovieFind: FC<MovieFindProps> = ({
     };
   }, [debouncedSearch]);
 
+  const isAddPipelineBusy = 
+    isFetchingTitle || isSavingMovie || isAddingToSyllabus;
+
   return (
-    <div className="flex w-full flex-col items-center justify-center gap-4">
-      <div className="relative">
+    <div className="relative flex w-full flex-col items-center justify-center gap-2">
+      {isAddPipelineBusy && (
+        <div
+          className="z-30 flex flex-col items-center justify-center gap-2 rounded-lg bg-background/75 px-4 py-4 text-center backdrop-blur-[1px]"
+          role="status"
+          aria-live="polite"
+          aria-busy="true"
+        >
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <p className="text-sm text-muted-foreground">Adding to syllabus…</p>
+        </div>
+      )}
+      {!isAddPipelineBusy && <div className="relative w-full">
         <Label htmlFor="search" className="sr-only">
           Search
         </Label>
@@ -98,6 +116,7 @@ const MovieFind: FC<MovieFindProps> = ({
           id="search"
           placeholder="Search for a movie..."
           value={inputValue}
+          disabled={isAddPipelineBusy}
           onChange={(e) => {
             setInputValue(e.target.value);
             debouncedSearch(e.target.value);
@@ -105,7 +124,7 @@ const MovieFind: FC<MovieFindProps> = ({
           className="h-8 pl-7"
         />
         <Search className="pointer-events-none absolute left-2 top-1/2 size-4 -translate-y-1/2 select-none opacity-50" />
-      </div>
+      </div>}
       {isLoading ? (
         <div className="flex justify-center p-8">
           <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-primary"></div>
