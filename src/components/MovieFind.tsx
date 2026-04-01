@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { debounce } from "lodash";
 import { getPlainDateYear } from "@/lib/dates";
+import { cn } from "@/lib/utils";
 import type { SyllabusInsertPosition } from "@/lib/syllabus";
 
 interface MovieFindProps {
@@ -92,55 +93,68 @@ const MovieFind: FC<MovieFindProps> = ({
     };
   }, [debouncedSearch]);
 
-  const isAddPipelineBusy = 
+  const isAddPipelineBusy =
     isFetchingTitle || isSavingMovie || isAddingToSyllabus;
 
   return (
-    <div className="relative flex w-full flex-col items-center justify-center gap-2">
+    <div className="relative flex w-full flex-col items-center justify-center gap-4">
+      <div
+        className={cn(
+          "flex w-full flex-col items-center justify-center gap-4",
+          isAddPipelineBusy && "pointer-events-none",
+        )}
+      >
+        <div className="relative w-full">
+          <Label htmlFor="search" className="sr-only">
+            Search
+          </Label>
+          <Input
+            id="search"
+            placeholder="Search for a movie..."
+            value={inputValue}
+            disabled={isAddPipelineBusy}
+            onChange={(e) => {
+              setInputValue(e.target.value);
+              debouncedSearch(e.target.value);
+            }}
+            className="h-8 pl-7"
+          />
+          <Search className="pointer-events-none absolute left-2 top-1/2 size-4 -translate-y-1/2 select-none opacity-50" />
+        </div>
+        {isLoading ? (
+          <div className="flex justify-center p-8">
+            <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-primary"></div>
+          </div>
+        ) : (
+          <div className="flex flex-wrap justify-center gap-4">
+            {resp?.results.map((result) => (
+              result?.poster_path && (
+                <TitleCard
+                  key={result.id}
+                  title={result}
+                  titleSelected={selectTitle}
+                  syllabusInsertPosition={activePosition}
+                  onSyllabusInsertPositionChange={setActivePosition}
+                />
+              )
+            ))}
+          </div>
+        )}
+      </div>
       {isAddPipelineBusy && (
         <div
-          className="z-30 flex flex-col items-center justify-center gap-2 rounded-lg bg-background/75 px-4 py-4 text-center backdrop-blur-[1px]"
-          role="status"
-          aria-live="polite"
-          aria-busy="true"
+          className="pointer-events-auto absolute inset-0 z-30 flex items-center justify-center p-3 sm:p-4"
+          role="presentation"
         >
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <p className="text-sm text-muted-foreground">Adding to syllabus…</p>
-        </div>
-      )}
-      {!isAddPipelineBusy && <div className="relative w-full">
-        <Label htmlFor="search" className="sr-only">
-          Search
-        </Label>
-        <Input
-          id="search"
-          placeholder="Search for a movie..."
-          value={inputValue}
-          onChange={(e) => {
-            setInputValue(e.target.value);
-            debouncedSearch(e.target.value);
-          }}
-          className="h-8 pl-7"
-        />
-        <Search className="pointer-events-none absolute left-2 top-1/2 size-4 -translate-y-1/2 select-none opacity-50" />
-      </div>}
-      {isLoading ? (
-        <div className="flex justify-center p-8">
-          <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-primary"></div>
-        </div>
-      ) : (
-        <div className="flex flex-wrap justify-center gap-4">
-          {resp?.results.map((result) => (
-            result?.poster_path && (
-              <TitleCard
-                key={result.id}
-                title={result}
-                titleSelected={selectTitle}
-                syllabusInsertPosition={activePosition}
-                onSyllabusInsertPositionChange={setActivePosition}
-              />
-            )
-          ))}
+          <div
+            className="flex w-full max-w-md flex-col items-center justify-center gap-2 rounded-xl border border-border/40 bg-background/90 px-6 py-6 text-center shadow-lg backdrop-blur-sm"
+            role="status"
+            aria-live="polite"
+            aria-busy="true"
+          >
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <p className="text-sm text-muted-foreground">Adding to syllabus…</p>
+          </div>
         </div>
       )}
     </div>
