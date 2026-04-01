@@ -1,3 +1,4 @@
+import { Prisma, type PrismaClient } from "@prisma/client";
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 import {
@@ -5,6 +6,29 @@ import {
   insertIntoCanonicalSyllabus,
   syllabusInsertPositions,
 } from "@/lib/syllabus";
+
+/** One round-trip instead of N Prisma updates (critical for large syllabi on SQL Server). */
+async function applySyllabusOrderUpdates(
+  db: Pick<PrismaClient, "$executeRaw">,
+  userId: string,
+  orderUpdates: readonly { id: string; order: number }[],
+) {
+  if (orderUpdates.length === 0) {
+    return;
+  }
+
+  const caseBranches = Prisma.join(
+    orderUpdates.map((item) => Prisma.sql`WHEN ${item.id} THEN ${item.order}`),
+    " ",
+  );
+  const idList = Prisma.join(orderUpdates.map((item) => item.id));
+
+  await db.$executeRaw`
+    UPDATE [dbo].[Syllabus]
+    SET [order] = CASE [id] ${caseBranches} END
+    WHERE [userId] = ${userId} AND [id] IN (${idList})
+  `;
+}
 
 export const syllabusRouter = createTRPCRouter({
   add: protectedProcedure
@@ -40,14 +64,7 @@ export const syllabusRouter = createTRPCRouter({
         const orderedItems = insertIntoCanonicalSyllabus(existingItems, createdItem, position);
         const orderUpdates = buildDenseDescendingOrder(orderedItems);
 
-        await Promise.all(
-          orderUpdates.map((item) =>
-            tx.syllabus.update({
-              where: { id: item.id },
-              data: { order: item.order },
-            })
-          )
-        );
+        await applySyllabusOrderUpdates(tx, userId, orderUpdates);
 
         return createdItem.id;
       });
@@ -117,17 +134,7 @@ export const syllabusRouter = createTRPCRouter({
         return { success: true };
       }
 
-      const updates = changedItems.map((item) =>
-        ctx.db.syllabus.updateMany({
-          where: {
-            id: item.id,
-            userId: userId,
-          },
-          data: { order: item.order },
-        }),
-      );
-
-      await ctx.db.$transaction(updates);
+      await applySyllabusOrderUpdates(ctx.db, userId, changedItems);
       return { success: true };
     }),
 

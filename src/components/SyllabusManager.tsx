@@ -6,7 +6,7 @@ import type { Movie, Syllabus, Assignment, Episode } from "@prisma/client";
 import { api } from "@/trpc/react";
 import { Button } from "./ui/button";
 import { Textarea } from "./ui/textarea";
-import { X, ArrowUp, ArrowDown, Edit3, Save, ChevronsUp } from "lucide-react";
+import { X, ArrowUp, ArrowDown, Edit3, Save, ChevronsUp, Loader2 } from "lucide-react";
 import MovieFind from "./MovieFind";
 import MovieInlinePreview from "./MovieInlinePreview";
 import { cn } from "@/lib/utils";
@@ -81,7 +81,7 @@ const SyllabusManager: FC<SyllabusManagerProps> = ({ initialSyllabus }) => {
     });
   };
 
-  const { mutate: addToSyllabus } = api.syllabus.add.useMutation({
+  const { mutate: addToSyllabus, isPending: isAddingToSyllabus } = api.syllabus.add.useMutation({
     onSuccess: (newSyllabus, variables) => {
       setSyllabus((prev) => insertIntoCanonicalSyllabus(prev, newSyllabus, variables.position ?? "END"));
       setShowMovieSearch(false);
@@ -264,7 +264,19 @@ const SyllabusManager: FC<SyllabusManagerProps> = ({ initialSyllabus }) => {
           selectMovie={handleAddMovie}
           selectedPosition={insertPosition}
           onSelectedPositionChange={setInsertPosition}
+          isAddingToSyllabus={isAddingToSyllabus}
         />
+      )}
+
+      {isReordering && (
+        <div
+          className="flex items-center justify-center gap-2 rounded-md border border-dashed py-2 text-sm text-muted-foreground"
+          role="status"
+          aria-live="polite"
+        >
+          <Loader2 className="h-4 w-4 animate-spin shrink-0" />
+          Saving order…
+        </div>
       )}
 
       <div className="flex w-full flex-col gap-4">
