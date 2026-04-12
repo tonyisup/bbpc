@@ -20,7 +20,7 @@ const SearchFilter = ({
   };
 
   return (
-    <div className="mb-6">
+    <div>
       <form onSubmit={handleSearch} className="flex items-center">
         <input
           type="text"
