@@ -6,13 +6,18 @@ import { Episode } from "@/components/Episode";
 import SearchFilter from "@/components/common/SearchFilter";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import Fuse from 'fuse.js';
+import Fuse, { type FuseResultMatch } from "fuse.js";
 import { debounce } from 'lodash';
 import { type RouterOutputs } from "@/utils/trpc";
 
 const FUZZY_SEARCH_STORAGE_KEY = "bbpc-history-fuzzy-search";
 
 type HistoryEpisode = RouterOutputs["episode"]["history"][number];
+
+type HistorySearchRow = {
+  episode: HistoryEpisode;
+  fuseMatches?: ReadonlyArray<FuseResultMatch>;
+};
 
 function episodeMatchesSubstring(episode: HistoryEpisode, needleLower: string): boolean {
   if (episode.title.toLowerCase().includes(needleLower)) {
@@ -46,13 +51,13 @@ function episodeMatchesSubstring(episode: HistoryEpisode, needleLower: string): 
 }
 
 function SearchResults({
-  episodes,
+  rows,
   query,
-  isLoading
+  isLoading,
 }: {
-  episodes: RouterOutputs['episode']['history'],
-  query: string,
-  isLoading: boolean
+  rows: HistorySearchRow[];
+  query: string;
+  isLoading: boolean;
 }) {
   if (isLoading) {
     return <p className="text-center">Loading...</p>;
@@ -62,15 +67,20 @@ function SearchResults({
     return <p className="text-center text-gray-400">Enter a search term to find episodes.</p>;
   }
 
-  if (episodes.length === 0) {
+  if (rows.length === 0) {
     return <p className="text-gray-400">No episodes found matching your search.</p>;
   }
 
   return (
     <>
-      {episodes.map((episode) => (
+      {rows.map(({ episode, fuseMatches }) => (
         <li className="mb-8" key={episode.id}>
-          <Episode episode={episode} showMovieTitles={true} searchQuery={query} />
+          <Episode
+            episode={episode}
+            showMovieTitles={true}
+            searchQuery={query}
+            fuseMatches={fuseMatches}
+          />
         </li>
       ))}
     </>
@@ -122,22 +132,28 @@ export default function HistoryPage() {
       ],
       threshold: 0.4,
       ignoreLocation: true,
+      includeMatches: true,
     });
   }, [allEpisodes]);
 
   // Compute filtered episodes based on local query
-  const filteredEpisodes = useMemo(() => {
+  const filteredRows = useMemo((): HistorySearchRow[] => {
     if (!allEpisodes) return [];
     const trimmed = query.trim();
     if (!trimmed) return [];
 
     if (fuzzySearch) {
       if (!fuse) return [];
-      return fuse.search(trimmed).map((result) => result.item);
+      return fuse.search(trimmed).map((result) => ({
+        episode: result.item,
+        fuseMatches: result.matches,
+      }));
     }
 
     const needle = trimmed.toLowerCase();
-    return allEpisodes.filter((ep) => episodeMatchesSubstring(ep, needle));
+    return allEpisodes
+      .filter((ep) => episodeMatchesSubstring(ep, needle))
+      .map((episode) => ({ episode }));
   }, [allEpisodes, query, fuse, fuzzySearch]);
 
   // Debounced URL updater to prevent browser history spam
@@ -196,14 +212,14 @@ export default function HistoryPage() {
             <p className="text-sm text-gray-600" aria-live="polite">
               {isLoading
                 ? "Searching…"
-                : `${filteredEpisodes.length} ${filteredEpisodes.length === 1 ? "result" : "results"}`}
+                : `${filteredRows.length} ${filteredRows.length === 1 ? "result" : "results"}`}
             </p>
           ) : null}
         </div>
       </div>
       <ul className="w-full max-w-4xl">
         <SearchResults
-          episodes={filteredEpisodes}
+          rows={filteredRows}
           query={trimmedQuery}
           isLoading={isLoading}
         />

@@ -4,18 +4,29 @@ import { type Show } from "@prisma/client";
 import Image from "next/image";
 import Link from "next/link";
 import type { FC } from "react";
-import { highlightText } from "@/utils/text";
+import { highlightText, highlightTextByIndices } from "@/utils/text";
 import { cn } from "@/lib/utils";
 
 interface ShowInlinePreviewProps {
   show: Show;
   searchQuery?: string;
+  titleHighlightIndices?: ReadonlyArray<readonly [number, number]>;
   className?: string; // Applied to container (Link)
   imageClassName?: string; // Applied to Image
   responsive?: boolean;
 }
 
-const ShowInlinePreview: FC<ShowInlinePreviewProps> = ({ show, searchQuery = "", className = "", imageClassName = "", responsive = false }) => {
+const ShowInlinePreview: FC<ShowInlinePreviewProps> = ({
+  show,
+  searchQuery = "",
+  titleHighlightIndices,
+  className = "",
+  imageClassName = "",
+  responsive = false,
+}) => {
+  const showTitle =
+    Boolean(searchQuery) ||
+    (titleHighlightIndices !== undefined && titleHighlightIndices.length > 0);
   return (
     <Link
       href={show.url}
@@ -38,9 +49,13 @@ const ShowInlinePreview: FC<ShowInlinePreviewProps> = ({ show, searchQuery = "",
           sizes="(max-width: 640px) 48px, 144px"
         />
       )}
-      {searchQuery && <div className="text-sm">
-        {highlightText(show.title, searchQuery)}
-      </div>}
+      {showTitle && (
+        <div className="text-sm">
+          {titleHighlightIndices && titleHighlightIndices.length > 0
+            ? highlightTextByIndices(show.title, titleHighlightIndices)
+            : highlightText(show.title, searchQuery)}
+        </div>
+      )}
     </Link>
   );
 }

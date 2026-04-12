@@ -4,18 +4,30 @@ import { type Movie } from "@prisma/client";
 import Image from "next/image";
 import Link from "next/link";
 import type { FC } from "react";
-import { highlightText } from "@/utils/text";
+import { highlightText, highlightTextByIndices } from "@/utils/text";
 import { cn } from "@/lib/utils";
 
 interface MovieInlinePreviewProps {
   movie: Movie;
   searchQuery?: string;
+  /** When set (e.g. fuzzy search), highlights Fuse match ranges on the title. */
+  titleHighlightIndices?: ReadonlyArray<readonly [number, number]>;
   className?: string; // Applied to container (Link)
   imageClassName?: string; // Applied to Image
   responsive?: boolean;
 }
 
-const MovieInlinePreview: FC<MovieInlinePreviewProps> = ({ movie, searchQuery = "", className = "", imageClassName = "", responsive = false }) => {
+const MovieInlinePreview: FC<MovieInlinePreviewProps> = ({
+  movie,
+  searchQuery = "",
+  titleHighlightIndices,
+  className = "",
+  imageClassName = "",
+  responsive = false,
+}) => {
+  const showTitle =
+    Boolean(searchQuery) ||
+    (titleHighlightIndices !== undefined && titleHighlightIndices.length > 0);
   return (
     <Link
       href={movie.url}
@@ -38,9 +50,13 @@ const MovieInlinePreview: FC<MovieInlinePreviewProps> = ({ movie, searchQuery = 
           sizes="(max-width: 640px) 48px, 144px"
         />
       )}
-      {searchQuery && <div className="text-sm">
-        {highlightText(movie.title, searchQuery)}
-      </div>}
+      {showTitle && (
+        <div className="text-sm">
+          {titleHighlightIndices && titleHighlightIndices.length > 0
+            ? highlightTextByIndices(movie.title, titleHighlightIndices)
+            : highlightText(movie.title, searchQuery)}
+        </div>
+      )}
     </Link>
   );
 }

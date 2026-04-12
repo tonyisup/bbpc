@@ -1,4 +1,5 @@
 import { type FC } from "react";
+import type { FuseResultMatch } from "fuse.js";
 import Assignment from "./Assignment";
 import MovieInlinePreview from "./MovieInlinePreview";
 import type {
@@ -12,7 +13,12 @@ import type {
 } from "@prisma/client";
 import Link from "next/link";
 import { AddExtraToNext } from "./AddExtraToNext";
-import { highlightText } from "@/utils/text";
+import {
+  fuseIndicesForField,
+  highlightText,
+  highlightTextByIndices,
+  highlightWithFuseOrQuery,
+} from "@/utils/text";
 import ShowInlinePreview from "./ShowInlinePreview";
 import {
   PredictionGame,
@@ -75,6 +81,8 @@ interface EpisodeProps {
   showMovieTitles?: boolean;
   /** Search query for highlighting relevant text within the episode details. */
   searchQuery?: string;
+  /** When set (e.g. fuzzy search), highlights matched character ranges from Fuse `includeMatches`. */
+  fuseMatches?: ReadonlyArray<FuseResultMatch>;
   /** The complete episode data. */
   episode: CompleteEpisode;
 }
@@ -88,6 +96,7 @@ export const Episode: FC<EpisodeProps> = ({
   allowGuesses: isNextEpisode,
   showMovieTitles = false,
   searchQuery = "",
+  fuseMatches,
 }) => {
   if (!episode) return null;
   const showPredictionGame = isNextEpisode ?? false;
@@ -109,7 +118,12 @@ export const Episode: FC<EpisodeProps> = ({
           </div>
           <div className="flex flex-grow items-center justify-center gap-2 p-2 text-center text-lg leading-tight sm:text-xl md:text-2xl">
             {!episode?.recording &&
-              highlightText(episode?.title ?? "", searchQuery)}
+              highlightWithFuseOrQuery(
+                episode?.title ?? "",
+                searchQuery,
+                fuseMatches,
+                "title"
+              )}
             {episode?.recording && (
               <a
                 className="underline"
@@ -118,7 +132,12 @@ export const Episode: FC<EpisodeProps> = ({
                 target="_blank"
                 rel="noreferrer"
               >
-                {highlightText(episode?.title ?? "", searchQuery)}
+                {highlightWithFuseOrQuery(
+                  episode?.title ?? "",
+                  searchQuery,
+                  fuseMatches,
+                  "title"
+                )}
               </a>
             )}
           </div>
@@ -141,6 +160,7 @@ export const Episode: FC<EpisodeProps> = ({
           assignments={episode.assignments}
           showMovieTitles={showMovieTitles}
           searchQuery={searchQuery}
+          fuseMatches={fuseMatches}
         />
         {showPredictionGame && predictionAssignments.length > 0 && (
           <PredictionGame
@@ -159,6 +179,7 @@ export const Episode: FC<EpisodeProps> = ({
               extras={episode.extras}
               showMovieTitles={showMovieTitles}
               searchQuery={searchQuery}
+              fuseMatches={fuseMatches}
             />
           </>
         )}
@@ -176,6 +197,7 @@ interface EpisodeAssignments {
   showMovieTitles?: boolean;
   assignments: EpisodeAssignment[];
   searchQuery?: string;
+  fuseMatches?: ReadonlyArray<FuseResultMatch>;
 }
 
 /**
@@ -186,6 +208,7 @@ const EpisodeAssignments: FC<EpisodeAssignments> = ({
   assignments,
   showMovieTitles = false,
   searchQuery = "",
+  fuseMatches,
 }) => {
   if (!assignments || assignments.length == 0) return null;
   return (
@@ -199,6 +222,9 @@ const EpisodeAssignments: FC<EpisodeAssignments> = ({
           );
         })
         .map((assignment) => {
+          const assignmentRefIndex = assignments.findIndex(
+            (a) => a.id === assignment.id
+          );
           return (
             <div
               key={assignment.id}
@@ -208,6 +234,8 @@ const EpisodeAssignments: FC<EpisodeAssignments> = ({
                 assignment={assignment}
                 showMovieTitles={showMovieTitles}
                 searchQuery={searchQuery}
+                fuseMatches={fuseMatches}
+                assignmentRefIndex={assignmentRefIndex}
               />
             </div>
           );
@@ -223,6 +251,7 @@ interface EpisodeExtras {
   showMovieTitles?: boolean;
   searchQuery?: string;
   extras: EpisodeExtra[];
+  fuseMatches?: ReadonlyArray<FuseResultMatch>;
 }
 
 /**
@@ -233,17 +262,23 @@ const EpisodeExtras: FC<EpisodeExtras> = ({
   extras,
   showMovieTitles = false,
   searchQuery = "",
+  fuseMatches,
 }) => {
   if (!extras || extras.length == 0) return null;
   return (
     <div className="py-2">
       <div className="flex flex-wrap justify-center gap-2 pb-2">
-        {extras.map((extra) => {
-          const extraTitle = extra.review.movie
-            ? `${extra.review.movie.title} (${extra.review.movie.year})`
-            : extra.review.show
-            ? `${extra.review.show.title} (${extra.review.show.year})`
-            : "";
+        {extras.map((extra, extraIndex) => {
+          const movieTitleIdx = fuseIndicesForField(
+            fuseMatches,
+            "extras.review.movie.title",
+            extraIndex
+          );
+          const showTitleIdx = fuseIndicesForField(
+            fuseMatches,
+            "extras.review.show.title",
+            extraIndex
+          );
 
           return (
             <div
@@ -255,6 +290,7 @@ const EpisodeExtras: FC<EpisodeExtras> = ({
                   <MovieInlinePreview
                     movie={extra.review.movie}
                     searchQuery={searchQuery}
+                    titleHighlightIndices={movieTitleIdx}
                     responsive
                   />
                 )}
@@ -262,12 +298,33 @@ const EpisodeExtras: FC<EpisodeExtras> = ({
                   <ShowInlinePreview
                     show={extra.review.show}
                     searchQuery={searchQuery}
+                    titleHighlightIndices={showTitleIdx}
                     responsive
                   />
                 )}
-                {showMovieTitles && extraTitle && (
+                {showMovieTitles && extra.review.movie && (
                   <div className="text-sm text-gray-500">
-                    {highlightText(extraTitle, searchQuery)}
+                    {movieTitleIdx.length > 0
+                      ? highlightTextByIndices(
+                          extra.review.movie.title,
+                          movieTitleIdx
+                        )
+                      : highlightText(
+                          extra.review.movie.title,
+                          searchQuery
+                        )}{" "}
+                    ({extra.review.movie.year})
+                  </div>
+                )}
+                {showMovieTitles && extra.review.show && !extra.review.movie && (
+                  <div className="text-sm text-gray-500">
+                    {showTitleIdx.length > 0
+                      ? highlightTextByIndices(
+                          extra.review.show.title,
+                          showTitleIdx
+                        )
+                      : highlightText(extra.review.show.title, searchQuery)}{" "}
+                    ({extra.review.show.year})
                   </div>
                 )}
               </div>
