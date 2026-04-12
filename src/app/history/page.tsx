@@ -10,6 +10,29 @@ import Fuse from 'fuse.js';
 import { debounce } from 'lodash';
 import { type RouterOutputs } from "@/utils/trpc";
 
+const FUZZY_SEARCH_STORAGE_KEY = "bbpc-history-fuzzy-search";
+
+type HistoryEpisode = RouterOutputs["episode"]["history"][number];
+
+function episodeMatchesSubstring(episode: HistoryEpisode, needleLower: string): boolean {
+  if (episode.title.toLowerCase().includes(needleLower)) {
+    return true;
+  }
+  for (const a of episode.assignments) {
+    const t = a.movie?.title;
+    if (t !== undefined && t !== null && t.toLowerCase().includes(needleLower)) {
+      return true;
+    }
+  }
+  for (const e of episode.extras) {
+    const t = e.review.movie?.title;
+    if (t !== undefined && t !== null && t.toLowerCase().includes(needleLower)) {
+      return true;
+    }
+  }
+  return false;
+}
+
 function SearchResults({
   episodes,
   query,
@@ -48,6 +71,26 @@ export default function HistoryPage() {
 
   // Initialize local query state from URL to allow immediate UI updates
   const [query, setQuery] = useState(searchParams.get('q') ?? '');
+  const [fuzzySearch, setFuzzySearch] = useState(true);
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(FUZZY_SEARCH_STORAGE_KEY);
+      if (stored === "true") setFuzzySearch(true);
+      else if (stored === "false") setFuzzySearch(false);
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  const handleFuzzySearchChange = (enabled: boolean) => {
+    setFuzzySearch(enabled);
+    try {
+      localStorage.setItem(FUZZY_SEARCH_STORAGE_KEY, enabled ? "true" : "false");
+    } catch {
+      // ignore
+    }
+  };
 
   // Fetch all episodes for client-side fuzzy search
   const { data: allEpisodes, isLoading } = api.episode.history.useQuery(undefined, {
@@ -59,7 +102,7 @@ export default function HistoryPage() {
   const fuse = useMemo(() => {
     if (!allEpisodes) return null;
     return new Fuse(allEpisodes, {
-      keys: ['title', 'assignments.movie.title'],
+      keys: ["title", "assignments.movie.title", "extras.review.movie.title"],
       threshold: 0.4,
       ignoreLocation: true,
     });
@@ -71,10 +114,14 @@ export default function HistoryPage() {
     const trimmed = query.trim();
     if (!trimmed) return [];
 
-    if (!fuse) return [];
+    if (fuzzySearch) {
+      if (!fuse) return [];
+      return fuse.search(trimmed).map((result) => result.item);
+    }
 
-    return fuse.search(trimmed).map(result => result.item);
-  }, [allEpisodes, query, fuse]);
+    const needle = trimmed.toLowerCase();
+    return allEpisodes.filter((ep) => episodeMatchesSubstring(ep, needle));
+  }, [allEpisodes, query, fuse, fuzzySearch]);
 
   // Debounced URL updater to prevent browser history spam
   const debouncedUpdateUrl = useMemo(
@@ -115,6 +162,15 @@ export default function HistoryPage() {
         </Link>
       </div>
       <div className="w-full max-w-4xl">
+        <label className="mb-3 flex cursor-pointer items-center gap-2 text-sm text-gray-700">
+          <input
+            type="checkbox"
+            checked={fuzzySearch}
+            onChange={(e) => handleFuzzySearchChange(e.target.checked)}
+            className="h-4 w-4 rounded border-gray-300 text-red-600 focus:ring-red-500"
+          />
+          <span>Fuzzy search</span>
+        </label>
         <SearchFilter onSearch={handleSearch} initialValue={query} />
       </div>
       <ul className="w-full max-w-4xl">
