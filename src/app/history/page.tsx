@@ -25,8 +25,20 @@ function episodeMatchesSubstring(episode: HistoryEpisode, needleLower: string): 
     }
   }
   for (const e of episode.extras) {
-    const t = e.review.movie?.title;
-    if (t !== undefined && t !== null && t.toLowerCase().includes(needleLower)) {
+    const movieTitle = e.review.movie?.title;
+    if (
+      movieTitle !== undefined &&
+      movieTitle !== null &&
+      movieTitle.toLowerCase().includes(needleLower)
+    ) {
+      return true;
+    }
+    const showTitle = e.review.show?.title;
+    if (
+      showTitle !== undefined &&
+      showTitle !== null &&
+      showTitle.toLowerCase().includes(needleLower)
+    ) {
       return true;
     }
   }
@@ -102,7 +114,12 @@ export default function HistoryPage() {
   const fuse = useMemo(() => {
     if (!allEpisodes) return null;
     return new Fuse(allEpisodes, {
-      keys: ["title", "assignments.movie.title", "extras.review.movie.title"],
+      keys: [
+        "title",
+        "assignments.movie.title",
+        "extras.review.movie.title",
+        "extras.review.show.title",
+      ],
       threshold: 0.4,
       ignoreLocation: true,
     });
