@@ -1,6 +1,11 @@
 import React, { type ReactElement } from "react";
 import type { FuseResultMatch } from "fuse.js";
 
+/** Escape a string for safe use as a literal segment inside a RegExp. */
+function escapeRegExp(s: string): string {
+  return s.replace(/[\\^$.*+?()[\]{}|]/g, "\\$&");
+}
+
 function mergeInclusiveRanges(
   ranges: readonly (readonly [number, number])[]
 ): [number, number][] {
@@ -71,8 +76,10 @@ export function fuseIndicesForField(
 export function highlightText(text: string | undefined, query: string): ReactElement {
   if (!text) return <></>;
   if (!query) return <>{text}</>;
-  
-  const parts = text.split(new RegExp(`(${query})`, 'gi'));
+
+  const parts = text.split(
+    new RegExp(`(${escapeRegExp(query)})`, "gi")
+  );
   
   return (
     <>
