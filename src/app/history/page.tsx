@@ -150,6 +150,8 @@ export default function HistoryPage() {
     debouncedUpdateUrl(newQuery, searchParams.toString());
   };
 
+  const trimmedQuery = query.trim();
+
   return (
     <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16">
       <div className="flex justify-between items-center w-full max-w-4xl">
@@ -171,12 +173,21 @@ export default function HistoryPage() {
           />
           <span>Fuzzy search</span>
         </label>
-        <SearchFilter onSearch={handleSearch} initialValue={query} />
+        <div className="mb-6 space-y-2">
+          <SearchFilter onSearch={handleSearch} initialValue={query} />
+          {trimmedQuery ? (
+            <p className="text-sm text-gray-600" aria-live="polite">
+              {isLoading
+                ? "Searching…"
+                : `${filteredEpisodes.length} ${filteredEpisodes.length === 1 ? "result" : "results"}`}
+            </p>
+          ) : null}
+        </div>
       </div>
       <ul className="w-full max-w-4xl">
         <SearchResults
           episodes={filteredEpisodes}
-          query={query.trim()}
+          query={trimmedQuery}
           isLoading={isLoading}
         />
       </ul>
