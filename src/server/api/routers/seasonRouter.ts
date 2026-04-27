@@ -15,7 +15,11 @@ export const seasonRouter = createTRPCRouter({
 
         const season = await ctx.db.season.findUnique({
             where: { id: seasonId },
-            select: { id: true, title: true },
+            select: { 
+                id: true, 
+                title: true,
+                endedOn: true,
+            },
         });
 
         if (!season) {
