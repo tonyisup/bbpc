@@ -108,7 +108,7 @@ export default function GamePerformanceTracking() {
         </CardTitle>
         <CardDescription className="text-base text-zinc-400">
           Cumulative point progression throughout {data.season.title}.
-          {data.season.endedOn && <p>Game ends on {dateLabelFormatter.format(new Date(data.season.endedOn))}.</p>}
+          {data.season.endedOn && <p>This season ends on {dateLabelFormatter.format(new Date(data.season.endedOn))}.</p>}
         </CardDescription>
       </CardHeader>
       <CardContent className="pt-4">

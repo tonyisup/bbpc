@@ -77,6 +77,8 @@ const mapEpisodeToPredictionAssignment = (
 interface EpisodeProps {
   /** Whether to allow the prediction game (guesses) for this episode. */
   allowGuesses?: boolean;
+  /** When false, hides extras list and add-extra affordances (e.g. compact embeds). */
+  showExtras?: boolean;
   /** Whether to explicitly show movie titles under the movie/show previews. */
   showMovieTitles?: boolean;
   /** Search query for highlighting relevant text within the episode details. */
@@ -94,6 +96,7 @@ interface EpisodeProps {
 export const Episode: FC<EpisodeProps> = ({
   episode,
   allowGuesses: isNextEpisode,
+  showExtras = true,
   showMovieTitles = false,
   searchQuery = "",
   fuseMatches,
@@ -171,7 +174,7 @@ export const Episode: FC<EpisodeProps> = ({
         )}
       </div>
       <div>
-        {episode.extras.length > 0 && (
+        {showExtras && episode.extras.length > 0 && (
           <>
             <hr className="my-2 border-gray-500" />
             <span className="text-xs">Extras</span>
@@ -183,7 +186,7 @@ export const Episode: FC<EpisodeProps> = ({
             />
           </>
         )}
-        {showPredictionGame && <AddExtraToNext episode={episode} />}
+        {showPredictionGame && showExtras && <AddExtraToNext episode={episode} />}
         <EpisodeLinks links={episode.links} />
       </div>
     </section>

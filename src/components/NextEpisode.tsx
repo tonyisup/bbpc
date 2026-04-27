@@ -7,7 +7,11 @@ import { type RouterOutputs } from "@/utils/trpc";
 // Derive the type directly from the router output
 type NextEpisodeOutput = RouterOutputs['episode']['next'];
 
-export function NextEpisode() {
+interface NextEpisodeProps {
+  showExtras?: boolean;
+}
+
+export function NextEpisode({ showExtras = true }: NextEpisodeProps) {
   const { data } = api.episode.next.useQuery(undefined, {
     suspense: true,
     useErrorBoundary: true
@@ -16,5 +20,11 @@ export function NextEpisode() {
   // The router returns the episode with lowercase relations (user, movie, review)
   // which matches CompleteEpisode's expected shape
   const nextEpisode = data as NonNullable<NextEpisodeOutput> as CompleteEpisode;
-  return <Episode episode={nextEpisode} allowGuesses={true} />;
+  return (
+    <Episode
+      episode={nextEpisode}
+      allowGuesses={true}
+      showExtras={showExtras}
+    />
+  );
 }

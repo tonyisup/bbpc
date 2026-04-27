@@ -13,7 +13,7 @@ export default function GamePage() {
       <GamePerformanceTracking />
 
       <div className="mx-auto flex w-full max-w-2xl flex-col gap-4">
-        <NextEpisode />
+        <NextEpisode showExtras={false} />
 
         <h2 className="text-center text-4xl font-bold text-red-600">Rules</h2>
         <div className="rounded-lg bg-gray-800 p-6 shadow-lg">
