@@ -13,6 +13,12 @@ const inter = Inter({
   variable: "--font-sans",
 });
 
+function getSiteUrl() {
+  if (process.env.NEXTAUTH_URL) return process.env.NEXTAUTH_URL;
+  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
+  return `http://localhost:${process.env.PORT ?? 3000}`;
+}
+
 export const viewport: Viewport = {
   themeColor: "black",
   width: "device-width",
@@ -21,6 +27,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
+  metadataBase: new URL(getSiteUrl()),
   title: "Bad Boys Podcast",
   description: "Random rants on all things movie",
   manifest: "/manifest.json",
@@ -90,5 +97,4 @@ export default async function RootLayout({
     </html>
   );
 }
-
 
