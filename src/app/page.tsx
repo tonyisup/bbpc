@@ -2,6 +2,7 @@ import { LatestEpisode } from "@/components/LatestEpisode";
 import { Episode } from "@/components/Episode";
 import { NextEpisode } from "@/components/NextEpisode";
 import { EpisodeSkeleton } from "@/components/EpisodeSkeleton";
+import { GameTeaser } from "@/components/GameTeaser";
 import { db } from "@/server/db";
 import { getServerAuthSession } from "@/server/auth";
 import { Suspense } from "react";
@@ -71,6 +72,9 @@ export default async function HomePage() {
         <div className="flex flex-wrap items-start justify-center gap-8">
           <Suspense fallback={<EpisodeSkeleton />}>
             {latestEpisode && <LatestEpisode episode={latestEpisode} hasWon={hasWon} />}
+          </Suspense>
+          <Suspense fallback={null}>
+            <GameTeaser />
           </Suspense>
           <Suspense fallback={<EpisodeSkeleton />}>
             <NextEpisode compact />
