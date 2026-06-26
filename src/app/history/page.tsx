@@ -186,7 +186,7 @@ export default function HistoryPage() {
   const trimmedQuery = query.trim();
 
   return (
-    <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16">
+    <div className="container flex flex-col items-center justify-center gap-12 px-4 py-8">
       <div className="flex justify-between items-center w-full max-w-4xl">
         <h1 className="text-2xl font-bold">Search Episodes</h1>
         <Link
@@ -208,13 +208,13 @@ export default function HistoryPage() {
         </label>
         <div className="mb-6 space-y-2">
           <SearchFilter onSearch={handleSearch} initialValue={query} />
-          {trimmedQuery ? (
-            <p className="text-sm text-gray-600" aria-live="polite">
-              {isLoading
+          <p className="text-sm text-gray-500" aria-live="polite">
+            {trimmedQuery
+              ? isLoading
                 ? "Searching…"
-                : `${filteredRows.length} ${filteredRows.length === 1 ? "result" : "results"}`}
-            </p>
-          ) : null}
+                : `${filteredRows.length} ${filteredRows.length === 1 ? "result" : "results"}`
+              : "Search by episode title, movie name, or number."}
+          </p>
         </div>
       </div>
       <ul className="w-full max-w-4xl">

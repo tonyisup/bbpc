@@ -15,7 +15,7 @@ export default function GamePage() {
       <div className="mx-auto flex w-full max-w-2xl flex-col gap-4">
         <NextEpisode showExtras={false} />
 
-        <h1 className="text-center text-4xl font-bold text-red-600">Rules</h1>
+        <h2 className="text-center text-3xl font-bold text-red-600">Rules</h2>
         <div className="rounded-lg bg-gray-800 p-6 shadow-lg">
           <h3 className="mb-6 text-center text-xl font-semibold text-blue-400">Synopsis</h3>
           <div className="space-y-4 text-lg">
@@ -152,24 +152,17 @@ export default function GamePage() {
           </div>
           <div className="mt-6 space-y-4 text-lg">
             <h3 className="text-center text-xl font-semibold text-blue-400">[Effective January 12, 2026]</h3>
-            <p>
-              For each assignment, you can gamble points on specific host outcomes.
-            </p>
-            <p>
-              <span className="font-semibold text-yellow-400">1x Multiplier</span>: Bet on guessing a single host&apos;s rating (MCP, Harley, or Fonso).
-            </p>
-            <p>
-              <span className="font-semibold text-orange-400">2x Multiplier</span>: Bet on guessing a pair of hosts&apos; ratings (e.g., &quot;MCP & Harley&quot; or &quot;Harley & Fonso&quot; or &quot;MCP & Fonso&quot;).
-            </p>
-            <p>
-              <span className="font-semibold text-red-400">3x Multiplier</span>: Bet on guessing all three hosts&apos; ratings (&quot;MCP & Harley & Fonso&quot;).
-            </p>
-            <p>
-              If you win, you will earn your wager back + the points wagered multiplied by the bet multiplier. If you lose, you lose the points wagered.
-            </p>
-            <p>
-              <span className="font-semibold italic text-amber-500">Note: Once a bet is confirmed by the Game Master, it is locked and cannot be changed.</span>
-            </p>
+            <p>For each assignment, you can gamble points on specific host outcomes.</p>
+            <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 rounded-lg bg-black/30 p-4">
+              <dt className="font-semibold text-yellow-400">1x Multiplier</dt>
+              <dd>Bet on guessing a single host&apos;s rating (MCP, Harley, or Fonso).</dd>
+              <dt className="font-semibold text-orange-400">2x Multiplier</dt>
+              <dd>Bet on guessing a pair of hosts&apos; ratings (e.g., &quot;MCP & Harley&quot; or &quot;Harley & Fonso&quot; or &quot;MCP & Fonso&quot;).</dd>
+              <dt className="font-semibold text-red-400">3x Multiplier</dt>
+              <dd>Bet on guessing all three hosts&apos; ratings (&quot;MCP & Harley & Fonso&quot;).</dd>
+            </dl>
+            <p>If you win, you will earn your wager back + the points wagered multiplied by the bet multiplier. If you lose, you lose the points wagered.</p>
+            <p><span className="font-semibold italic text-amber-500">Note: Once a bet is confirmed by the Game Master, it is locked and cannot be changed.</span></p>
             <p className="border-t border-gray-700 pt-4 text-sm">
               BONUS HARLEY POINTS: If you call in/leave a voice message and you wager &quot;all your points&quot; and you win, you will earn an extra 4 points BEFORE it&apos;s doubled (or tripled).
               This only applies to voice submissions.

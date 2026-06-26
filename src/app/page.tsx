@@ -67,8 +67,8 @@ export default async function HomePage() {
 
   return (
     <main className="flex min-h-screen flex-col text-white">
-      <div className="container flex flex-col  gap-12 px-4">
-        <div className="flex flex-wrap items-start justify-center gap-12">
+      <div className="container flex flex-col gap-6 px-4 py-8">
+        <div className="flex flex-wrap items-start justify-center gap-8">
           <Suspense fallback={<EpisodeSkeleton />}>
             {latestEpisode && <LatestEpisode episode={latestEpisode} hasWon={hasWon} />}
           </Suspense>

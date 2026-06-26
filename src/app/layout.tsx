@@ -76,7 +76,7 @@ export default async function RootLayout({
               <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
                 <Link href="/">Bad Boys Podcast</Link>
               </h1>
-              <p className="text-center text-sm sm:text-base text-gray-400 mt-1">Random rants on all things movie</p>
+              <p className="text-center text-base sm:text-lg text-gray-400 mt-1">Random rants on all things movie</p>
             </section>
             <main className="flex-grow">
               <div className="flex flex-col text-white main-mask">
