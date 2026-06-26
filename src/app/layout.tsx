@@ -73,11 +73,9 @@ export default async function RootLayout({
               </div>
             </header>
             <section className="py-2 flex flex-col items-center">
-              <div className="">
-                <Link href="/">
-                  <Image src="/cropped-BBPC-LOGO.png" alt="BBPC Logo" title="Bad Boys Podcast" width={120} height={40} priority sizes="120px" />
-                </Link>
-              </div>
+              <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
+                <Link href="/">Bad Boys Podcast</Link>
+              </h1>
               <p className="text-center text-sm sm:text-base text-gray-400 mt-1">Random rants on all things movie</p>
             </section>
             <main className="flex-grow">

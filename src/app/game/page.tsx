@@ -15,9 +15,9 @@ export default function GamePage() {
       <div className="mx-auto flex w-full max-w-2xl flex-col gap-4">
         <NextEpisode showExtras={false} />
 
-        <h2 className="text-center text-4xl font-bold text-red-600">Rules</h2>
+        <h1 className="text-center text-4xl font-bold text-red-600">Rules</h1>
         <div className="rounded-lg bg-gray-800 p-6 shadow-lg">
-          <h2 className="mb-6 text-center text-2xl font-semibold text-blue-400">Synopsis</h2>
+          <h3 className="mb-6 text-center text-xl font-semibold text-blue-400">Synopsis</h3>
           <div className="space-y-4 text-lg">
             <p>The player with the <span className="font-semibold text-yellow-400">most points</span> at the end of the season wins.</p>
             <p>Each season lasts <span className="font-semibold text-yellow-400">8 weeks</span>.</p>
@@ -28,7 +28,7 @@ export default function GamePage() {
         </div>
 
         <div className="rounded-lg bg-gray-800 p-6 shadow-lg">
-          <h2 className="mb-6 text-center text-2xl font-semibold text-blue-400">Gameplay</h2>
+          <h3 className="mb-6 text-center text-xl font-semibold text-blue-400">Gameplay</h3>
           <div className="space-y-4 text-lg">
             <p>Every week two movies will be assigned for review on the next episode.</p>
             <p>Players try to guess the <span className="font-semibold text-green-400">rating</span> that each host will give to each movie</p>
@@ -38,7 +38,7 @@ export default function GamePage() {
         </div>
 
         <div className="flex flex-col items-center justify-center gap-4 rounded-lg bg-gray-800 p-6 shadow-lg">
-          <h2 className="mb-6 text-center text-2xl font-semibold text-blue-400">Ratings</h2>
+          <h3 className="mb-6 text-center text-xl font-semibold text-blue-400">Ratings</h3>
           <div className="space-y-4 text-lg">
             <div className="flex items-center gap-2 leading-relaxed">
               <p><span className="font-semibold text-green-400">4</span> out of 4</p>
@@ -64,7 +64,7 @@ export default function GamePage() {
         </div>
 
         <div className="rounded-lg bg-gray-800 p-6 shadow-lg">
-          <h2 className="mb-6 text-center text-2xl font-semibold text-blue-400">Scoring</h2>
+          <h3 className="mb-6 text-center text-xl font-semibold text-blue-400">Scoring</h3>
           <div className="space-y-4 text-lg">
             <p>
               Players who <span className="font-semibold text-green-400">correctly</span> guess the rating for a host will <span className="font-semibold text-green-400">earn 1 point</span>.
@@ -82,7 +82,7 @@ export default function GamePage() {
         </div>
 
         <div className="rounded-lg bg-gray-800 p-6 shadow-lg">
-          <h2 className="mb-6 text-center text-2xl font-semibold text-blue-400">Bonus Points</h2>
+          <h3 className="mb-6 text-center text-xl font-semibold text-blue-400">Bonus Points</h3>
           <div className="space-y-4 text-lg">
             <p>
               If you use a <span className="font-semibold text-yellow-400">drastic*</span> enough accent, you will <span className="font-semibold text-green-400">earn 1 point</span>.
@@ -100,7 +100,7 @@ export default function GamePage() {
         </div>
 
         <div className="rounded-lg bg-gray-800 p-6 shadow-lg">
-          <h2 className="mb-6 text-center text-2xl font-semibold text-blue-400">Assignments</h2>
+          <h3 className="mb-6 text-center text-xl font-semibold text-blue-400">Assignments</h3>
           <div className="space-y-4 text-lg">
             <p>Assignments consist of either a <span className="font-semibold text-blue-400">Homework</span> or <span className="font-semibold text-blue-600">Extra Credit</span>.</p>
             <p>A <span className="font-semibold text-blue-400">Homework</span> assignment is a movie that all the hosts have never seen.</p>
@@ -110,7 +110,7 @@ export default function GamePage() {
         </div>
 
         <div className="rounded-lg bg-gray-800 p-6 shadow-lg">
-          <h2 className="mb-6 text-center text-2xl font-semibold text-blue-400">Wheel Spin</h2>
+          <h3 className="mb-6 text-center text-xl font-semibold text-blue-400">Wheel Spin</h3>
           <div className="space-y-4 text-lg">
             <p>
               At the end of the reviews in each episode, we spin the wheel to determine the Assignments for the next episode.
@@ -135,7 +135,7 @@ export default function GamePage() {
         </div>
 
         <div className="rounded-lg bg-gray-800 p-6 shadow-lg">
-          <h2 className="mb-6 text-center text-2xl font-semibold text-blue-400">Gambling</h2>
+          <h3 className="mb-6 text-center text-xl font-semibold text-blue-400">Gambling</h3>
           <div className="space-y-4 text-lg">
             <h3 className="text-center text-xl font-semibold text-blue-400">[Sunsetting January 12, 2026]</h3>
             <p>
@@ -178,7 +178,7 @@ export default function GamePage() {
         </div>
 
         <div className="rounded-lg bg-gray-800 p-6 shadow-lg">
-          <h2 className="mb-6 text-center text-2xl font-semibold text-blue-400">Fine Print</h2>
+          <h3 className="mb-6 text-center text-xl font-semibold text-blue-400">Fine Print</h3>
           <div className="space-y-4 text-lg">
             <p>* - All bonus points are subject to the Game Master&apos;s discretion.</p>
             <p>If a player misses 2 episodes in a row, they will start losing 1 point per episode missed.</p>

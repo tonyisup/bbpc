@@ -188,7 +188,7 @@ export default function HistoryPage() {
   return (
     <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16">
       <div className="flex justify-between items-center w-full max-w-4xl">
-        <h2 className="text-2xl font-bold">Search Episodes</h2>
+        <h1 className="text-2xl font-bold">Search Episodes</h1>
         <Link
           href="/episodes"
           className="text-red-600 hover:text-red-700"

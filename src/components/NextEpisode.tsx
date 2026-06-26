@@ -43,7 +43,7 @@ export function NextEpisode({ showExtras = true, compact = false }: NextEpisodeP
     return (
       <section className="w-full max-w-md mx-auto px-4 py-3 bg-gray-900/30 outline-2 outline-gray-500 outline rounded-2xl flex flex-col gap-2">
         <div className="flex items-center justify-between px-1">
-          <span className="text-xs uppercase tracking-wider text-gray-500 font-semibold">Coming Soon</span>
+          <span className="text-xs uppercase tracking-wider text-gray-400 font-semibold">Coming Soon</span>
           <span className="text-sm text-gray-400">{nextEpisode.number}</span>
         </div>
         <div className="text-center text-base sm:text-lg font-bold text-white px-2 py-1">
