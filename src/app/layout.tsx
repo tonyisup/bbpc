@@ -64,19 +64,21 @@ export default async function RootLayout({
       <body className={`font-sans ${inter.variable} dark`}>
         <Providers session={session}>
           <div className="bg-black w-full flex flex-col min-h-screen items-center">
-            <header className="flex sm:w-1/2 w-full items-center justify-between bg-[#020202]">
-              <NavMenu />
-              <div>
-                <Link href="/">
-                  <Image src="/logo-short.png" alt="BBPC Logo" width={120} height={40} priority sizes="120px" />
-                </Link>
+            <header className="flex w-full items-center justify-between bg-[#020202] gap-2 py-2 px-4">
+              <div className="order-2 sm:order-1 w-full sm:w-auto flex justify-center">
+                <NavMenu />
               </div>
-              <div className="px-4">
+              <div className="order-3 flex-shrink-0">
                 <LeaveMessage />
               </div>
             </header>
-            <section>
-              <p className="pb-2 text-center text-sm sm:text-lg text-red-900">Random rants on all things movie</p>
+            <section className="py-2 flex flex-col items-center">
+              <div className="">
+                <Link href="/">
+                  <Image src="/cropped-BBPC-LOGO.png" alt="BBPC Logo" title="Bad Boys Podcast" width={120} height={40} priority sizes="120px" />
+                </Link>
+              </div>
+              <p className="text-center text-sm sm:text-base text-gray-400 mt-1">Random rants on all things movie</p>
             </section>
             <main className="flex-grow">
               <div className="flex flex-col text-white main-mask">

@@ -38,17 +38,17 @@ export const LatestEpisode: FC<EpisodeProps> = ({ episode, hasWon }) => {
 	});
 
 	return (
-		<section className="w-full max-w-4xl mx-auto px-4 py-4 bg-transparent outline-2 outline-gray-500 outline rounded-2xl flex flex-col gap-4 relative overflow-hidden">
+		<section className="w-full max-w-4xl mx-auto px-4 py-4 bg-gray-900/30 outline-2 outline-gray-500 outline rounded-2xl flex flex-col gap-4 relative overflow-hidden">
 			{hasWon && (
 				<Link
 					href={getEpisodePath(episode.slug ?? episode.id)}
 					className="absolute top-0 left-0 right-0 bg-gradient-to-r from-yellow-600/20 via-yellow-500/40 to-yellow-600/20 backdrop-blur-md border-b border-yellow-500/30 py-1.5 flex justify-center items-center gap-2 z-20 group hover:via-yellow-500/60 transition-all cursor-pointer"
 				>
-					<Trophy className="w-4 h-4 text-yellow-400 animate-bounce group-hover:scale-110 transition-transform" />
+					<Trophy className="w-4 h-4 text-yellow-400 group-hover:scale-110 transition-transform" />
 					<span className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-yellow-200 drop-shadow-md">
 						🏆 You won a gamble on this episode! Click for results 🏆
 					</span>
-					<Trophy className="w-4 h-4 text-yellow-400 animate-bounce group-hover:scale-110 transition-transform" />
+					<Trophy className="w-4 h-4 text-yellow-400 group-hover:scale-110 transition-transform" />
 				</Link>
 			)}
 			{/* Header */}
@@ -65,7 +65,7 @@ export const LatestEpisode: FC<EpisodeProps> = ({ episode, hasWon }) => {
 					</Link>}
 				</div>
 				<div className="text-sm sm:text-md p-1 sm:p-2 whitespace-nowrap">
-					{episode?.date && <p>{formatPlainDate(episode.date, { month: "2-digit", day: "2-digit", year: "2-digit" }, "en-US")}</p>}
+					{episode?.date && <p>{formatPlainDate(episode.date, undefined, "en-US")}</p>}
 				</div>
 			</div>
 

@@ -111,7 +111,7 @@ export const Episode: FC<EpisodeProps> = ({
     );
 
   return (
-    <section className="flex flex-col justify-between gap-2 rounded-2xl bg-transparent px-2 outline outline-2 outline-gray-500">
+    <section className="flex flex-col justify-between gap-2 rounded-2xl bg-gray-900/30 px-2 outline outline-2 outline-gray-500">
       <div className="">
         <div className="flex items-center justify-between gap-2 px-1 font-bold sm:items-baseline sm:justify-around">
           <div className="sm:text-md whitespace-nowrap p-1 text-sm sm:p-2">
@@ -147,11 +147,7 @@ export const Episode: FC<EpisodeProps> = ({
           <div className="sm:text-md whitespace-nowrap p-1 text-sm sm:p-2">
             {episode?.date && (
               <p>
-                {formatPlainDate(
-                  episode.date,
-                  { month: "2-digit", day: "2-digit", year: "2-digit" },
-                  "en-US"
-                )}
+                {formatPlainDate(episode.date, undefined, "en-US")}
               </p>
             )}
           </div>
