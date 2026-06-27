@@ -13,6 +13,7 @@ type NextEpisodeOutput = RouterOutputs['episode']['next'];
 interface NextEpisodeProps {
   showExtras?: boolean;
   compact?: boolean;
+  allowGuesses?: boolean;
 }
 
 function assignmentToShow(assignment: CompleteEpisode["assignments"][number]): Show | null {
@@ -27,7 +28,7 @@ function assignmentToShow(assignment: CompleteEpisode["assignments"][number]): S
   };
 }
 
-export function NextEpisode({ showExtras = true, compact = false }: NextEpisodeProps) {
+export function NextEpisode({ showExtras = true, compact = false, allowGuesses = false }: NextEpisodeProps) {
   const { data } = api.episode.next.useQuery(undefined, {
     suspense: true,
     useErrorBoundary: true
@@ -82,6 +83,7 @@ export function NextEpisode({ showExtras = true, compact = false }: NextEpisodeP
     <Episode
       episode={nextEpisode}
       showExtras={showExtras}
+      allowGuesses={allowGuesses}
     />
   );
 }
