@@ -37,6 +37,49 @@ export default function GamePage() {
           </div>
         </div>
 
+        <div className="rounded-lg bg-gray-800 p-6 shadow-lg">
+          <h3 className="mb-6 text-center text-xl font-semibold text-blue-400">Quotabunga</h3>
+          <div className="space-y-4 text-lg">
+            <p>
+              Quotabunga is a <span className="font-semibold text-yellow-400">weekly quote tournament</span>.
+              Each player may submit <span className="font-semibold text-green-400">one memorable quote</span> from
+              a movie or television show per week.
+            </p>
+            <p>
+              Email your entry to{" "}
+              <a
+                href="mailto:badboyspodcasts@gmail.com"
+                className="font-semibold text-blue-400 underline"
+              >
+                badboyspodcasts@gmail.com
+              </a>
+              . Include the quote and its movie or show. A link to the scene with a timestamp is encouraged.
+            </p>
+            <p>
+              The hosts play or read the entries and vote live on the show. There is no fixed judging rubric:
+              iconic, funny, impactful, endlessly quotable, or simply living rent-free in a host&apos;s head can all
+              win the week. A majority of the three host votes decides each matchup.
+            </p>
+            <p>
+              With four entries, the matchups are randomized into two semifinals. The winners face off for first
+              and second place, and the other two entries face off for third. With fewer entries, the hosts rank
+              the available quotes directly.
+            </p>
+            <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 rounded-lg bg-black/30 p-4">
+              <dt className="font-semibold text-green-400">First place</dt>
+              <dd>40 points</dd>
+              <dt className="font-semibold text-yellow-400">Second place</dt>
+              <dd>20 points</dd>
+              <dt className="font-semibold text-orange-400">Third place</dt>
+              <dd>10 points</dd>
+            </dl>
+            <p>
+              Quotabunga starts fresh each week, and its points are added to the player&apos;s overall WTFIR season
+              total.
+            </p>
+          </div>
+        </div>
+
         <div className="flex flex-col items-center justify-center gap-4 rounded-lg bg-gray-800 p-6 shadow-lg">
           <h3 className="mb-6 text-center text-xl font-semibold text-blue-400">Ratings</h3>
           <div className="space-y-4 text-lg">

@@ -73,11 +73,8 @@ export default async function HomePage() {
           <Suspense fallback={<EpisodeSkeleton />}>
             {latestEpisode && <LatestEpisode episode={latestEpisode} hasWon={hasWon} />}
           </Suspense>
-          <Suspense fallback={null}>
-            <GameTeaser />
-          </Suspense>
           <Suspense fallback={<EpisodeSkeleton />}>
-            <NextEpisode compact />
+            <NextEpisode allowGuesses={true} />
           </Suspense>
         </div>
       </div>

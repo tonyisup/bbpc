@@ -12,7 +12,6 @@ type NextEpisodeOutput = RouterOutputs['episode']['next'];
 
 interface NextEpisodeProps {
   showExtras?: boolean;
-  compact?: boolean;
   allowGuesses?: boolean;
 }
 
@@ -28,7 +27,7 @@ function assignmentToShow(assignment: CompleteEpisode["assignments"][number]): S
   };
 }
 
-export function NextEpisode({ showExtras = true, compact = false, allowGuesses = false }: NextEpisodeProps) {
+export function NextEpisode({ showExtras = true, allowGuesses = false }: NextEpisodeProps) {
   const { data } = api.episode.next.useQuery(undefined, {
     suspense: true,
     useErrorBoundary: true
@@ -39,45 +38,6 @@ export function NextEpisode({ showExtras = true, compact = false, allowGuesses =
   const nextEpisode = data as NonNullable<NextEpisodeOutput> as CompleteEpisode;
 
   if (!nextEpisode) return null;
-
-  if (compact) {
-    return (
-      <section className="w-full max-w-md mx-auto px-4 py-3 bg-gray-900/30 outline-2 outline-gray-500 outline rounded-2xl flex flex-col gap-2">
-        <div className="flex items-center justify-between px-1">
-          <span className="text-xs uppercase tracking-wider text-gray-400 font-semibold">Coming Soon</span>
-          <span className="text-sm text-gray-400">{nextEpisode.number}</span>
-        </div>
-        <div className="text-center text-base sm:text-lg font-bold text-white px-2 py-1">
-          {nextEpisode.title || "TBD"}
-        </div>
-        {nextEpisode.assignments.length > 0 && (
-          <div className="flex justify-center gap-1 pt-1">
-            {nextEpisode.assignments.map((assignment) => {
-              const show = assignmentToShow(assignment);
-              return (
-                <div key={assignment.id} className="flex-shrink-0">
-                  {assignment.movie && (
-                    <MovieInlinePreview
-                      movie={assignment.movie}
-                      imageClassName="w-[36px] h-[54px] sm:w-[48px] sm:h-[72px]"
-                      responsive={true}
-                    />
-                  )}
-                  {!assignment.movie && show && (
-                    <ShowInlinePreview
-                      show={show}
-                      imageClassName="w-[36px] h-[54px] sm:w-[48px] sm:h-[72px]"
-                      responsive={true}
-                    />
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </section>
-    );
-  }
 
   return (
     <Episode
