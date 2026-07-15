@@ -5,6 +5,8 @@ import { api } from "@/trpc/react";
 import { type User, type Rating } from "@prisma/client";
 import { highlightText } from "@/utils/text";
 import { cn } from "@/lib/utils";
+import { useAdminCollapse } from "@/hooks/useAdminCollapse";
+import { AdminCollapsibleHeader } from "./AdminCollapsibleHeader";
 import RatingIcon from "./RatingIcon";
 import { SignInButton } from "./Auth";
 import {
@@ -69,7 +71,9 @@ export const PredictionGame: FC<PredictionGameProps> = ({
   const { data: hosts } = api.user.hosts.useQuery();
   const { data: ratings } = api.movie.ratings.useQuery();
   const { data: hasActiveSeason } = api.season.hasActiveSeason.useQuery();
-  const [isAdminCollapsed, setIsAdminCollapsed] = useState(true);
+  const isAdmin = session?.user?.isAdmin ?? false;
+  const { isAdminCollapsed, isContentVisible, headerProps } =
+    useAdminCollapse(isAdmin);
   const flagEnabled = useFeatureFlagEnabled("new-season-format");
 
   if (hasActiveSeason === false) return null;
@@ -91,57 +95,29 @@ export const PredictionGame: FC<PredictionGameProps> = ({
         Loading prediction game...
       </div>
     );
-  const isAdmin = session.user.isAdmin;
-  const toggleAdminCollapse = () => {
-    if (!isAdmin) return;
-    setIsAdminCollapsed((value) => !value);
-  };
 
   return (
     <div className="mt-6 flex flex-col gap-6 rounded-xl border border-gray-700 bg-gray-900/50 p-4 shadow-xl backdrop-blur-sm sm:gap-8 sm:p-6">
-      <div
-        className={cn(
-          "flex flex-col gap-2 pb-4",
-          isAdmin ? "cursor-pointer select-none" : "border-b border-gray-700"
-        )}
-        role="button"
-        tabIndex={isAdmin ? 0 : -1}
-        onClick={toggleAdminCollapse}
-        onKeyDown={(event) => {
-          if (!isAdmin) return;
-          if (event.key === "Enter" || event.key === " ") {
-            event.preventDefault();
-            toggleAdminCollapse();
-          }
-        }}
-      >
-        <div className="flex items-center justify-between">
-          <div className="flex flex-col gap-1">
-            <h2 className="bg-gradient-to-r from-red-300 to-red-600 bg-clip-text text-xl font-bold text-transparent sm:text-2xl">
-              Prediction Game
-            </h2>
-            {(!isAdmin || !isAdminCollapsed) && (
-              <p className="text-xs text-gray-400 sm:text-sm">
-                Predict what rating each host will give to the movies!
-              </p>
-            )}
-          </div>
-          {isAdmin && (
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-500">
-                Admin
-              </span>
-              {isAdminCollapsed ? (
-                <ChevronDown className="h-5 w-5 text-gray-400" />
-              ) : (
-                <ChevronUp className="h-5 w-5 text-gray-400" />
-              )}
-            </div>
-          )}
-        </div>
-      </div>
+      <AdminCollapsibleHeader
+        isAdmin={isAdmin}
+        isAdminCollapsed={isAdminCollapsed}
+        className={cn("gap-2 pb-4", !isAdmin && "border-b border-gray-700")}
+        title={
+          <h2 className="bg-gradient-to-r from-red-300 to-red-600 bg-clip-text text-xl font-bold text-transparent sm:text-2xl">
+            Prediction Game
+          </h2>
+        }
+        description={
+          isContentVisible ? (
+            <p className="text-xs text-gray-400 sm:text-sm">
+              Predict what rating each host will give to the movies!
+            </p>
+          ) : undefined
+        }
+        {...headerProps}
+      />
 
-      {(!isAdmin || !isAdminCollapsed) && (
+      {isContentVisible && (
         <div className="flex flex-col gap-10">
           <PredictionGameDataWrapper
             assignments={assignments}
