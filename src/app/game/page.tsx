@@ -16,8 +16,6 @@ export default function GamePage() {
       <div className="mx-auto flex w-full max-w-2xl flex-col gap-4">
         <NextEpisode showExtras={false} allowGuesses={true} />
 
-        <QuotabungaSubmission />
-
         <h2 className="text-center text-3xl font-bold text-red-600">Rules</h2>
         <div className="rounded-lg bg-gray-800 p-6 shadow-lg">
           <h3 className="mb-6 text-center text-xl font-semibold text-blue-400">Synopsis</h3>

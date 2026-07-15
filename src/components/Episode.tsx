@@ -26,6 +26,7 @@ import {
 } from "./PredictionGame";
 import { getEpisodePath } from "@/lib/routes";
 import { formatPlainDate } from "@/lib/dates";
+import QuotabungaSubmission from "./QuotabungaSubmission";
 
 /**
  * Represents an episode with all its related assignments, extras, and links.
@@ -162,11 +163,15 @@ export const Episode: FC<EpisodeProps> = ({
           fuseMatches={fuseMatches}
         />
         {showPredictionGame && predictionAssignments.length > 0 && (
-          <PredictionGame
-            assignments={predictionAssignments}
-            searchQuery={searchQuery}
-            episodeStatus={episode.status ?? ""}
-          />
+          <>
+            <PredictionGame
+              assignments={predictionAssignments}
+              searchQuery={searchQuery}
+              episodeStatus={episode.status ?? ""}
+            />
+
+            <QuotabungaSubmission />
+          </>
         )}
       </div>
       <div>
