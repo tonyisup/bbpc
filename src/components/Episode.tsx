@@ -103,7 +103,7 @@ export const Episode: FC<EpisodeProps> = ({
   fuseMatches,
 }) => {
   if (!episode) return null;
-  const showPredictionGame = isNextEpisode ?? false;
+  const showGames = isNextEpisode ?? false;
   const predictionAssignments = episode.assignments
     .map(mapEpisodeToPredictionAssignment)
     .filter(
@@ -162,7 +162,7 @@ export const Episode: FC<EpisodeProps> = ({
           searchQuery={searchQuery}
           fuseMatches={fuseMatches}
         />
-        {showPredictionGame && predictionAssignments.length > 0 && (
+        {showGames && predictionAssignments.length > 0 && (
           <>
             <PredictionGame
               assignments={predictionAssignments}
@@ -187,7 +187,7 @@ export const Episode: FC<EpisodeProps> = ({
             />
           </>
         )}
-        {showPredictionGame && showExtras && <AddExtraToNext episode={episode} />}
+        {showGames && showExtras && <AddExtraToNext episode={episode} />}
         <EpisodeLinks links={episode.links} />
       </div>
     </section>

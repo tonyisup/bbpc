@@ -4,8 +4,6 @@ import { useEffect, useState, type FormEvent } from "react";
 import { signIn, useSession } from "next-auth/react";
 import {
   CheckCircle2,
-  ChevronDown,
-  ChevronUp,
   ExternalLink,
   Loader2,
   Pencil,
@@ -13,9 +11,11 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
+import { AdminCollapsibleHeader } from "@/components/AdminCollapsibleHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { useAdminCollapse } from "@/hooks/useAdminCollapse";
 import { cn } from "@/lib/utils";
 import { api } from "@/trpc/react";
 
@@ -28,7 +28,6 @@ export default function QuotabungaSubmission() {
     enabled: !!session?.user,
   });
 
-  const [isAdminCollapsed, setIsAdminCollapsed] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [quoteText, setQuoteText] = useState("");
   const [sourceTitle, setSourceTitle] = useState("");
@@ -38,10 +37,8 @@ export default function QuotabungaSubmission() {
   const [listenerNotes, setListenerNotes] = useState("");
 
   const isAdmin = session?.user?.isAdmin ?? false;
-  const toggleAdminCollapse = () => {
-    if (!isAdmin) return;
-    setIsAdminCollapsed((value) => !value);
-  };
+  const { isAdminCollapsed, isContentVisible, headerProps } =
+    useAdminCollapse(isAdmin);
 
   const submission = current.data?.submission;
 
@@ -98,46 +95,21 @@ export default function QuotabungaSubmission() {
 
   return (
     <section id="quotabunga-submit" className="rounded-lg border border-blue-500/30 bg-gray-900 p-6 shadow-lg">
-      <div
-        className={cn(
-          "flex flex-col gap-1",
-          (!isAdmin || !isAdminCollapsed) && "mb-5",
-          isAdmin ? "cursor-pointer select-none" : "text-center"
-        )}
-        role="button"
-        tabIndex={isAdmin ? 0 : -1}
-        onClick={toggleAdminCollapse}
-        onKeyDown={(event) => {
-          if (!isAdmin) return;
-          if (event.key === "Enter" || event.key === " ") {
-            event.preventDefault();
-            toggleAdminCollapse();
-          }
-        }}
-      >
-        <div className="flex items-center justify-between">
-          <div className={cn("flex flex-col gap-1", !isAdmin && "w-full text-center")}>
-            <h2 className="text-2xl font-bold text-blue-400">Submit to Quotabunga</h2>
-            {(!isAdmin || !isAdminCollapsed) && (
-              <p className="mt-1 text-sm text-gray-400">One quote per listener, per episode.</p>
-            )}
-          </div>
-          {isAdmin && (
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-500">
-                Admin
-              </span>
-              {isAdminCollapsed ? (
-                <ChevronDown className="h-5 w-5 text-gray-400" />
-              ) : (
-                <ChevronUp className="h-5 w-5 text-gray-400" />
-              )}
-            </div>
-          )}
-        </div>
-      </div>
+      <AdminCollapsibleHeader
+        isAdmin={isAdmin}
+        isAdminCollapsed={isAdminCollapsed}
+        className={cn("gap-1", isContentVisible && "mb-5", !isAdmin && "text-center")}
+        titleWrapperClassName={cn(!isAdmin && "w-full text-center")}
+        title={<h2 className="text-2xl font-bold text-blue-400">Submit to Quotabunga</h2>}
+        description={
+          isContentVisible ? (
+            <p className="mt-1 text-sm text-gray-400">One quote per listener, per episode.</p>
+          ) : undefined
+        }
+        {...headerProps}
+      />
 
-      {(!isAdmin || !isAdminCollapsed) && (
+      {isContentVisible && (
         <>
           {sessionStatus === "loading" ? (
             <div className="flex justify-center py-6"><Loader2 className="animate-spin" /></div>
