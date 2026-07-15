@@ -80,7 +80,7 @@ export default async function EpisodePage({
           </Link>
         </Button>
       </div>
-      <Episode episode={episode} />
+      <Episode episode={episode} allowGuesses={true} />
       <EpisodeResults assignments={episode.assignments} />
     </div>
   );
