@@ -2,6 +2,7 @@ import Link from "next/link";
 import RatingIcon from "../../components/RatingIcon";
 import GamePerformanceTracking from "../../components/GamePerformanceTracking";
 import { NextEpisode } from "../../components/NextEpisode";
+import QuotabungaSubmission from "../../components/QuotabungaSubmission";
 
 export default function GamePage() {
   return (
@@ -14,6 +15,8 @@ export default function GamePage() {
 
       <div className="mx-auto flex w-full max-w-2xl flex-col gap-4">
         <NextEpisode showExtras={false} allowGuesses={true} />
+
+        <QuotabungaSubmission />
 
         <h2 className="text-center text-3xl font-bold text-red-600">Rules</h2>
         <div className="rounded-lg bg-gray-800 p-6 shadow-lg">
@@ -46,7 +49,7 @@ export default function GamePage() {
               a movie or television show per week.
             </p>
             <p>
-              Email your entry to{" "}
+              Use the submission form above, or email your entry to{" "}
               <a
                 href="mailto:badboyspodcasts@gmail.com"
                 className="font-semibold text-blue-400 underline"
