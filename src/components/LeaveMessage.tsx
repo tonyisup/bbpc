@@ -11,6 +11,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Button } from "./ui/button";
 
 const VoiceMailRecorder = dynamic(() => import("./voice-mail-recorder"), {
   ssr: false,
@@ -30,8 +31,8 @@ const LeaveMessage: FC = () => {
 
   if (!session?.user) {
     return (
-      <button
-        type="button"
+      <Button
+        variant="outline"
         aria-label="Log in to leave a voice message"
         className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-red-500/30 bg-red-500/10 px-3 text-red-300 transition-colors hover:bg-red-500/20 hover:text-red-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
         onClick={() => void signIn()}
@@ -40,23 +41,25 @@ const LeaveMessage: FC = () => {
         <span className="hidden text-sm font-semibold lg:inline">
           Leave a message
         </span>
-      </button>
+      </Button>
     );
   }
 
   return (
     <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
       <DialogTrigger asChild>
-        <button
-          aria-label="Leave a voice message"
-          className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-red-500/30 bg-red-500/10 px-3 text-red-300 transition-colors hover:bg-red-500/20 hover:text-red-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+        <Button
+          variant="ghost"
+          aria-label="Leave a voice message"      
+          className="p-1 hover:bg-transparent hover:text-accent"
+
           onClick={() => setIsModalOpen(true)}
         >
           <MicrophoneIcon />
           <span className="hidden text-sm font-semibold lg:inline">
             Leave a message
           </span>
-        </button>
+        </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
