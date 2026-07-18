@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import { TRPCError } from "@trpc/server";
+import { planRankedItemUpsert } from "./rankedListUpsertPlan.mjs";
 
 export const rankedListRouter = createTRPCRouter({
 	// Get user's ranked lists (filtered by target type if specified)
@@ -78,14 +79,22 @@ export const rankedListRouter = createTRPCRouter({
 	// Add or update an item in a ranked list
 	upsertItem: protectedProcedure
 		.input(
-			z.object({
-				rankedListId: z.string(),
-				movieId: z.string().optional(),
-				showId: z.string().optional(),
-				episodeId: z.string().optional(),
-				rank: z.number().min(1),
-				comment: z.string().optional(),
-			})
+			z
+				.object({
+					rankedListId: z.string(),
+					movieId: z.string().optional(),
+					showId: z.string().optional(),
+					episodeId: z.string().optional(),
+					rank: z.number().min(1),
+					comment: z.string().optional(),
+				})
+				.refine(
+					(input) =>
+						[input.movieId, input.showId, input.episodeId].filter(
+							(id) => id !== undefined
+						).length === 1,
+					{ message: "Exactly one ranked-item target is required" }
+				)
 		)
 		.mutation(async ({ ctx, input }) => {
 			// Get the list to verify ownership and constraints
@@ -93,7 +102,6 @@ export const rankedListRouter = createTRPCRouter({
 				where: { id: input.rankedListId },
 				include: {
 					rankedListType: true,
-					rankedItem: true,
 				},
 			});
 
@@ -120,35 +128,47 @@ export const rankedListRouter = createTRPCRouter({
 				});
 			}
 
-			// Check if item already exists at this rank
-			const existingItemAtRank = list.rankedItem.find((i) => i.rank === input.rank);
-
-			if (existingItemAtRank) {
-				// Update existing item at this rank
-				return await ctx.db.rankedItem.update({
-					where: { id: existingItemAtRank.id },
-					data: {
-						movieId: input.movieId,
-						showId: input.showId,
-						episodeId: input.episodeId,
-						comment: input.comment,
-						updatedAt: new Date(),
-					},
+			return await ctx.db.$transaction(async (transaction) => {
+				const rankedItems = await transaction.rankedItem.findMany({
+					where: { rankedListId: input.rankedListId },
 				});
-			} else {
-				// Create new item
-				return await ctx.db.rankedItem.create({
+				const plan = planRankedItemUpsert(rankedItems, input);
+				const targetData = {
+					movieId: input.movieId ?? null,
+					showId: input.showId ?? null,
+					episodeId: input.episodeId ?? null,
+					comment: input.comment,
+					updatedAt: new Date(),
+				};
+
+				if (plan.kind === "move") {
+					if (plan.displacedItemId) {
+						await transaction.rankedItem.update({
+							where: { id: plan.displacedItemId },
+							data: { rank: plan.fromRank, updatedAt: new Date() },
+						});
+					}
+					return await transaction.rankedItem.update({
+						where: { id: plan.itemId },
+						data: { ...targetData, rank: plan.toRank },
+					});
+				}
+
+				if (plan.kind === "replace") {
+					return await transaction.rankedItem.update({
+						where: { id: plan.itemId },
+						data: targetData,
+					});
+				}
+
+				return await transaction.rankedItem.create({
 					data: {
 						rankedListId: input.rankedListId,
-						movieId: input.movieId,
-						showId: input.showId,
-						episodeId: input.episodeId,
+						...targetData,
 						rank: input.rank,
-						comment: input.comment,
-						updatedAt: new Date(),
 					},
 				});
-			}
+			});
 		}),
 
 	// Remove an item from a ranked list

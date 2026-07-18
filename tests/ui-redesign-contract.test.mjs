@@ -100,12 +100,15 @@ test("home and game prioritize participation without duplicate retired behavior"
   assert.match(game, /<Suspense/);
   assert.match(game, /<CurrentRoundErrorBoundary/);
   assert.match(game, /role="status"/);
-  assert.match(game, /role="alert"/);
 
   const currentRoundBoundary = read(
     "src/app/game/CurrentRoundErrorBoundary.tsx"
   );
   assert.match(currentRoundBoundary, /getDerivedStateFromError/);
+  assert.match(currentRoundBoundary, /role="alert"/);
+  assert.match(currentRoundBoundary, /QueryErrorResetBoundary/);
+  assert.match(currentRoundBoundary, /Try again/);
+  assert.match(currentRoundBoundary, /onClick=\{this\.reset\}/);
 });
 
 test("deferred analytics and above-fold images avoid runtime console noise", () => {
@@ -215,6 +218,8 @@ test("year ranking candidates are movie-grouped, labelled, and submit once", () 
   assert.match(year, /id="ranked-list-selector"/);
   assert.match(year, /htmlFor=\{`rank-select-\$\{group\.movie\.id\}`\}/);
   assert.match(year, /id=\{`rank-select-\$\{group\.movie\.id\}`\}/);
+  assert.match(year, /key=\{`\$\{selectedListId\}:\$\{group\.movie\.id\}:/);
+  assert.match(year, /currentRank \?\? "unranked"/);
   assert.match(year, /const existingItem = selectedList\.rankedItem\.find/);
   assert.doesNotMatch(year, /rankedItem\.some\([\s\S]{0,200}movieId/);
   assert.doesNotMatch(
@@ -230,4 +235,42 @@ test("year ranking candidates are movie-grouped, labelled, and submit once", () 
     /onMutate:\s*\(\) => \(\{ rankedListId: selectedListId \}\)/
   );
   assert.match(year, /invalidateRankedLists\(context\?\.rankedListId\)/);
+});
+
+test("ranked-item updates plan an atomic move instead of duplicating a movie", async () => {
+  const { planRankedItemUpsert } = await import(
+    "../src/server/api/routers/rankedListUpsertPlan.mjs"
+  );
+  const items = [
+    { id: "movie-a", rank: 2, movieId: "a", showId: null, episodeId: null },
+    { id: "movie-b", rank: 3, movieId: "b", showId: null, episodeId: null },
+  ];
+
+  assert.deepEqual(
+    planRankedItemUpsert(items, {
+      movieId: "a",
+      showId: undefined,
+      episodeId: undefined,
+      rank: 3,
+    }),
+    {
+      kind: "move",
+      itemId: "movie-a",
+      fromRank: 2,
+      toRank: 3,
+      displacedItemId: "movie-b",
+    }
+  );
+  assert.deepEqual(planRankedItemUpsert(items, { movieId: "new", rank: 3 }), {
+    kind: "replace",
+    itemId: "movie-b",
+  });
+  assert.throws(
+    () => planRankedItemUpsert(items, { rank: 1 }),
+    /Exactly one ranked-item target/
+  );
+
+  const router = read("src/server/api/routers/rankedListRouter.ts");
+  assert.match(router, /planRankedItemUpsert/);
+  assert.match(router, /\$transaction\(async/);
 });

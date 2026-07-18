@@ -32,13 +32,7 @@ export default function GamePage() {
         >
           Play the current round
         </h2>
-        <CurrentRoundErrorBoundary
-          fallback={
-            <div className="bbpc-panel p-5 text-zinc-300" role="alert">
-              The current round could not be loaded. Please try again later.
-            </div>
-          }
-        >
+        <CurrentRoundErrorBoundary>
           <Suspense
             fallback={
               <div className="bbpc-panel p-5 text-zinc-300" role="status">

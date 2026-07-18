@@ -575,6 +575,9 @@ export function YearPageClient() {
                               </label>
                               <div className="flex items-center gap-2">
                                 <select
+                                  key={`${selectedListId}:${group.movie.id}:${
+                                    currentRank ?? "unranked"
+                                  }`}
                                   id={`rank-select-${group.movie.id}`}
                                   defaultValue={currentRank || ""}
                                   className="flex-grow rounded border border-zinc-600 bg-zinc-900 px-2 py-1 text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
