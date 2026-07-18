@@ -52,11 +52,13 @@ export function GameParticipation({
 
   return (
     <div className="mt-5 space-y-5">
-      <PredictionGame
-        assignments={assignments}
-        searchQuery={searchQuery}
-        episodeStatus={episodeStatus}
-      />
+      {assignments.length > 0 && (
+        <PredictionGame
+          assignments={assignments}
+          searchQuery={searchQuery}
+          episodeStatus={episodeStatus}
+        />
+      )}
       <QuotabungaSubmission />
     </div>
   );

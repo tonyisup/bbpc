@@ -157,7 +157,7 @@ export const Episode: FC<EpisodeProps> = ({
           searchQuery={searchQuery}
           fuseMatches={fuseMatches}
         />
-        {showGames && predictionAssignments.length > 0 && (
+        {showGames && (
           <GameParticipation
             assignments={predictionAssignments}
             searchQuery={searchQuery}

@@ -1,8 +1,10 @@
 import Link from "next/link";
+import { Suspense } from "react";
 
 import { NextEpisode } from "@/components/NextEpisode";
 import RatingIcon from "@/components/RatingIcon";
 import { SeasonStandingsDisclosure } from "@/components/SeasonStandingsDisclosure";
+import { CurrentRoundErrorBoundary } from "./CurrentRoundErrorBoundary";
 
 const ruleDetailsClass =
   "group border-b border-white/10 py-1 last:border-b-0 [&_summary::-webkit-details-marker]:hidden";
@@ -30,7 +32,23 @@ export default function GamePage() {
         >
           Play the current round
         </h2>
-        <NextEpisode showExtras={false} allowGuesses />
+        <CurrentRoundErrorBoundary
+          fallback={
+            <div className="bbpc-panel p-5 text-zinc-300" role="alert">
+              The current round could not be loaded. Please try again later.
+            </div>
+          }
+        >
+          <Suspense
+            fallback={
+              <div className="bbpc-panel p-5 text-zinc-300" role="status">
+                Loading the current round...
+              </div>
+            }
+          >
+            <NextEpisode showExtras={false} allowGuesses />
+          </Suspense>
+        </CurrentRoundErrorBoundary>
       </section>
 
       <SeasonStandingsDisclosure />

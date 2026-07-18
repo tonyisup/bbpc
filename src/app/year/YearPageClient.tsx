@@ -163,26 +163,30 @@ export function YearPageClient() {
 
   // Utils for cache invalidation
   const utils = api.useUtils();
-  const invalidateRankedLists = () => {
-    if (selectedListId) {
-      void utils.rankedList.getListById.invalidate({ id: selectedListId });
+  const invalidateRankedLists = (rankedListId?: string | null) => {
+    if (rankedListId) {
+      void utils.rankedList.getListById.invalidate({ id: rankedListId });
     }
     void utils.rankedList.getMyLists.invalidate();
   };
 
   // Mutation for adding/updating items in the list
   const upsertItem = api.rankedList.upsertItem.useMutation({
-    onSuccess: invalidateRankedLists,
+    onSuccess: (_data, variables) =>
+      invalidateRankedLists(variables.rankedListId),
   });
 
   // Mutation for removing items from the list
   const removeItem = api.rankedList.removeItem.useMutation({
-    onSuccess: invalidateRankedLists,
+    onMutate: () => ({ rankedListId: selectedListId }),
+    onSuccess: (_data, _variables, context) =>
+      invalidateRankedLists(context?.rankedListId),
   });
 
   // Mutation for reordering items
   const reorderItems = api.rankedList.reorderItems.useMutation({
-    onSuccess: invalidateRankedLists,
+    onSuccess: (_data, variables) =>
+      invalidateRankedLists(variables.rankedListId),
   });
 
   // Local state for ordered items to support drag and drop
@@ -238,13 +242,7 @@ export function YearPageClient() {
       )
     : [];
 
-  // Filter items if a list is selected (hide items already in the list)
-  const filteredItems = sortedItems?.filter((item) => {
-    if (!selectedListId || !selectedList?.rankedItem) return true;
-    return !selectedList.rankedItem.some(
-      (rankedItem) => rankedItem.movieId === item.movie.id
-    );
-  });
+  const rankingCandidates = groupedMovies;
 
   const years = Array.from({ length: 10 }, (_, i) => currentYear - i);
 
@@ -407,10 +405,14 @@ export function YearPageClient() {
               {/* Ranked List Selector for Admins */}
               {isAdmin && rankedLists && rankedLists.length > 0 && (
                 <div className="rounded-lg border border-zinc-800 bg-zinc-900/60 p-4">
-                  <label className="mb-2 block text-sm font-medium text-zinc-300">
+                  <label
+                    htmlFor="ranked-list-selector"
+                    className="mb-2 block text-sm font-medium text-zinc-300"
+                  >
                     Select a Ranked List to Add Movies:
                   </label>
                   <select
+                    id="ranked-list-selector"
                     value={selectedListId || ""}
                     onChange={(e) => setSelectedListId(e.target.value || null)}
                     className="w-full rounded-md border border-zinc-700 bg-zinc-800 px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-primary/50 md:w-auto"
@@ -463,16 +465,16 @@ export function YearPageClient() {
               )}
 
               <div className="flex flex-col gap-4">
-                {filteredItems?.map((item) => (
+                {rankingCandidates.map((group) => (
                   <div
-                    key={item.id}
+                    key={group.movie.id}
                     className="flex flex-col gap-4 rounded-lg border border-zinc-800/50 bg-zinc-900/40 p-4 transition-colors hover:bg-zinc-900/80 md:flex-row"
                   >
                     <div className="mx-auto flex-shrink-0 md:mx-0">
-                      {item.movie.poster ? (
+                      {group.movie.poster ? (
                         <Image
-                          src={item.movie.poster}
-                          alt={item.movie.title}
+                          src={group.movie.poster}
+                          alt={group.movie.title}
                           width={96}
                           height={144}
                           className="h-36 w-24 rounded object-cover shadow-lg"
@@ -486,46 +488,59 @@ export function YearPageClient() {
                     <div className="flex flex-grow flex-col justify-between py-1 text-center md:text-left">
                       <div>
                         <h3 className="mb-1 text-xl font-bold text-white">
-                          {item.movie.title}
+                          {group.movie.title}
                         </h3>
                         <div className="mb-2 text-zinc-400">
-                          {item.movie.year}
+                          {group.movie.year}
                         </div>
-
-                        {item.rating && (
-                          <div className="mb-3 flex items-center justify-center gap-2 md:justify-start">
-                            <div className="flex items-center gap-2 rounded-full bg-zinc-800 px-3 py-1">
-                              <RatingIcon value={item.rating.value} />
-                              <span className="font-medium text-white">
-                                {item.rating.name}
-                              </span>
-                            </div>
-                          </div>
-                        )}
+                        <ul
+                          className="mb-3 space-y-2"
+                          aria-label="Host ratings"
+                        >
+                          {group.reviews.map((review) => (
+                            <li
+                              key={review.id}
+                              className="flex flex-wrap items-center justify-center gap-2 md:justify-start"
+                            >
+                              <UserTag user={review.user} />
+                              {review.rating && (
+                                <span className="inline-flex items-center gap-1 text-sm text-zinc-300">
+                                  <RatingIcon value={review.rating.value} />
+                                  {review.rating.name}
+                                </span>
+                              )}
+                              {review.date && (
+                                <span className="text-xs text-zinc-500">
+                                  {formatPlainDate(review.date)}
+                                </span>
+                              )}
+                            </li>
+                          ))}
+                        </ul>
                       </div>
 
                       <div className="mt-2 flex flex-wrap items-center justify-center gap-4 md:justify-start">
-                        {item.episode && (
-                          <div className="text-sm text-zinc-300">
-                            Reviewed on{" "}
-                            <Link
-                              href={getEpisodePath(
-                                item.episode.slug ?? item.episode.id
-                              )}
-                              className="font-semibold text-primary hover:underline"
-                            >
-                              Episode {item.episode.number}
-                            </Link>
-                            <span className="ml-2 text-zinc-500">
-                              ({item.date ? formatPlainDate(item.date) : ""})
-                            </span>
+                        {group.episodes.length > 0 && (
+                          <div className="flex flex-wrap items-center gap-2 text-sm text-zinc-300">
+                            <span>Reviewed on</span>
+                            {group.episodes.map((episode) => (
+                              <Link
+                                key={episode.id}
+                                href={getEpisodePath(
+                                  episode.slug ?? episode.id
+                                )}
+                                className="font-semibold text-primary hover:underline"
+                              >
+                                Episode {episode.number}
+                              </Link>
+                            ))}
                           </div>
                         )}
 
                         <div className="ml-auto flex gap-3">
-                          {item.movie.url && (
+                          {group.movie.url && (
                             <a
-                              href={item.movie.url}
+                              href={group.movie.url}
                               target="_blank"
                               rel="noreferrer"
                               className="rounded border border-yellow-600/50 bg-yellow-600/20 px-3 py-1 text-xs text-yellow-500 transition-colors hover:bg-yellow-600/30"
@@ -542,14 +557,17 @@ export function YearPageClient() {
                       selectedList &&
                       (() => {
                         const existingItem = selectedList.rankedItem.find(
-                          (rankedItem) => rankedItem.movieId === item.movie.id
+                          (rankedItem) => rankedItem.movieId === group.movie.id
                         );
                         const currentRank = existingItem?.rank;
 
                         return (
                           <div className="flex flex-shrink-0 items-center justify-center md:justify-end">
                             <div className="flex min-w-[200px] flex-col gap-2 rounded border border-zinc-700 bg-zinc-800/50 p-3">
-                              <label className="text-xs font-medium text-zinc-400">
+                              <label
+                                htmlFor={`rank-select-${group.movie.id}`}
+                                className="text-xs font-medium text-zinc-400"
+                              >
                                 Rank in{" "}
                                 {selectedList.title ||
                                   selectedList.rankedListType.name}
@@ -557,18 +575,9 @@ export function YearPageClient() {
                               </label>
                               <div className="flex items-center gap-2">
                                 <select
+                                  id={`rank-select-${group.movie.id}`}
                                   defaultValue={currentRank || ""}
                                   className="flex-grow rounded border border-zinc-600 bg-zinc-900 px-2 py-1 text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
-                                  onChange={(e) => {
-                                    const rank = parseInt(e.target.value);
-                                    if (!isNaN(rank)) {
-                                      upsertItem.mutate({
-                                        rankedListId: selectedListId,
-                                        movieId: item.movie.id,
-                                        rank,
-                                      });
-                                    }
-                                  }}
                                 >
                                   <option value="" disabled>
                                     #
@@ -579,16 +588,16 @@ export function YearPageClient() {
                                         selectedList.rankedListType.maxItems,
                                     },
                                     (_, i) => i + 1
-                                  ).map((r) => (
-                                    <option key={r} value={r}>
-                                      Rank #{r}
+                                  ).map((rank) => (
+                                    <option key={rank} value={rank}>
+                                      Rank #{rank}
                                     </option>
                                   ))}
                                 </select>
                                 <Button
                                   size="sm"
-                                  onClick={(e) => {
-                                    const select = e.currentTarget
+                                  onClick={(event) => {
+                                    const select = event.currentTarget
                                       .previousElementSibling as HTMLSelectElement;
                                     const rank = parseInt(select.value);
                                     if (
@@ -598,7 +607,7 @@ export function YearPageClient() {
                                     ) {
                                       upsertItem.mutate({
                                         rankedListId: selectedListId,
-                                        movieId: item.movie.id,
+                                        movieId: group.movie.id,
                                         rank,
                                       });
                                     }

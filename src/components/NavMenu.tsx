@@ -178,7 +178,11 @@ const NavMenu: FC = () => {
                     <NavigationMenuLink key={item.label} asChild>
                       <Link
                         href={item.href}
-                        className="flex items-center gap-2 px-4 py-2 transition hover:text-red-400"
+                        aria-current={isActive(item.href) ? "page" : undefined}
+                        className={cn(
+                          "flex items-center gap-2 px-4 py-2 transition hover:text-red-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500",
+                          isActive(item.href) && "bg-red-500/10 text-red-300"
+                        )}
                       >
                         {item.icon}
                         {item.label}

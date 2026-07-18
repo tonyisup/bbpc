@@ -206,7 +206,7 @@ export default function HistoryPage() {
         } else {
           params.delete("q");
         }
-        router.push(`/history?${params.toString()}`);
+        router.push(`/history?${params.toString()}`, { scroll: false });
       }, 500),
     [router]
   );

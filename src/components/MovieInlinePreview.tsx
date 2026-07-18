@@ -16,6 +16,7 @@ interface MovieInlinePreviewProps {
   imageClassName?: string; // Applied to Image
   responsive?: boolean;
   priority?: boolean;
+  sizes?: string;
 }
 
 const MovieInlinePreview: FC<MovieInlinePreviewProps> = ({
@@ -26,6 +27,7 @@ const MovieInlinePreview: FC<MovieInlinePreviewProps> = ({
   imageClassName = "",
   responsive = false,
   priority = false,
+  sizes = "(max-width: 640px) 48px, 144px",
 }) => {
   const showTitle =
     Boolean(searchQuery) ||
@@ -49,7 +51,7 @@ const MovieInlinePreview: FC<MovieInlinePreviewProps> = ({
           width={144}
           height={216}
           priority={priority}
-          sizes="(max-width: 640px) 48px, 144px"
+          sizes={sizes}
         />
       )}
       {showTitle && (

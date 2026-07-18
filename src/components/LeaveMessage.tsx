@@ -25,7 +25,11 @@ const LeaveMessage: FC = () => {
     () => isModalOpen && !!session?.user,
     [isModalOpen, session?.user]
   );
-  const { data: episode } = api.episode.next.useQuery(undefined, {
+  const {
+    data: episode,
+    isLoading,
+    isError,
+  } = api.episode.next.useQuery(undefined, {
     enabled: shouldFetchEpisode,
   });
 
@@ -50,9 +54,8 @@ const LeaveMessage: FC = () => {
       <DialogTrigger asChild>
         <Button
           variant="ghost"
-          aria-label="Leave a voice message"      
+          aria-label="Leave a voice message"
           className="p-1 hover:bg-transparent hover:text-accent"
-
           onClick={() => setIsModalOpen(true)}
         >
           <MicrophoneIcon />
@@ -67,11 +70,19 @@ const LeaveMessage: FC = () => {
             Leave a Message
           </DialogTitle>
         </DialogHeader>
-        {episode ? (
-          <VoiceMailRecorder episodeId={episode.id} userId={session.user.id} />
-        ) : (
+        {isLoading ? (
           <div className="flex items-center justify-center p-8 text-muted-foreground">
             Loading episode details...
+          </div>
+        ) : isError ? (
+          <div className="p-8 text-center text-destructive" role="alert">
+            Episode details could not be loaded. Please try again.
+          </div>
+        ) : episode ? (
+          <VoiceMailRecorder episodeId={episode.id} userId={session.user.id} />
+        ) : (
+          <div className="p-8 text-center text-muted-foreground" role="status">
+            No upcoming episode is available for voice messages.
           </div>
         )}
       </DialogContent>

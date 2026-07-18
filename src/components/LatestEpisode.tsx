@@ -75,6 +75,7 @@ export const LatestEpisode: FC<EpisodeProps> = ({ episode, hasWon }) => {
                 responsive
                 priority={index === 0}
                 imageClassName="h-[108px] w-[72px] rounded-lg sm:h-[162px] sm:w-[108px]"
+                sizes="(max-width: 639px) 72px, 108px"
               />
             )}
           </div>
@@ -97,6 +98,7 @@ export const LatestEpisode: FC<EpisodeProps> = ({ episode, hasWon }) => {
                 movie={extra.review.movie}
                 responsive
                 imageClassName="h-[108px] w-[72px] rounded-lg sm:h-[162px] sm:w-[108px]"
+                sizes="(max-width: 639px) 72px, 108px"
               />
             )}
             {extra.review.show && (
