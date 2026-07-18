@@ -3,99 +3,108 @@
 @tailwind utilities;
 
 @font-face {
-  font-family: 'Great Vibes';
-  src: url('/fonts/great-vibes.woff2') format('woff2');
-  font-weight: normal;
-  font-style: normal;
+  font-family: "Great Vibes";
+  src: url("/fonts/great-vibes.woff2") format("woff2");
   font-display: swap;
-}
-
-body {
-  background-color: black;
-}
-.hero-image {
-  background-image: url('/bbpc-mcp-fonso-harley.jpg');;
-
-  /* Position and center the image to scale nicely on all screens */
-  background-repeat: no-repeat;
-  background-size: cover;
-  background-position-y: -125px;
-  position: relative;
-}
-.main-mask {
-  
-  background-image: linear-gradient(to top, rgba(0,0,0,0), rgba(0,0,0,1));
+  font-style: normal;
+  font-weight: normal;
 }
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 240 10% 3.9%;
-
-    --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
- 
-    --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
- 
-    --primary: 240 5.9% 10%;
-    --primary-foreground: 0 0% 98%;
- 
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
- 
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
- 
-    --accent: 240 4.8% 95.9%;
-    --accent-foreground: 240 5.9% 10%;
- 
-    --destructive: 0 84.2% 60.2%;
+    --background: 240 6% 4%;
+    --foreground: 0 0% 96%;
+    --card: 240 5% 7%;
+    --card-foreground: 0 0% 96%;
+    --popover: 240 5% 7%;
+    --popover-foreground: 0 0% 96%;
+    --primary: 0 72% 56%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 240 4% 14%;
+    --secondary-foreground: 0 0% 96%;
+    --muted: 240 4% 14%;
+    --muted-foreground: 240 5% 68%;
+    --accent: 0 72% 56%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 98%;
+    --border: 240 4% 19%;
+    --input: 240 4% 19%;
+    --ring: 0 72% 56%;
+    --radius: 0.75rem;
 
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
-    --ring: 240 10% 3.9%;
- 
-    --radius: 0.5rem;
+    --bbpc-bg: #09090b;
+    --bbpc-surface: #111113;
+    --bbpc-surface-raised: #19191d;
+    --bbpc-border: rgb(255 255 255 / 0.12);
+    --bbpc-text: #f4f4f5;
+    --bbpc-muted: #a1a1aa;
+    --bbpc-accent: #ef4444;
+    --bbpc-accent-soft: rgb(239 68 68 / 0.14);
   }
- 
-  .dark {
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
- 
-    --card: 240 10% 3.9%;
-    --card-foreground: 0 0% 98%;
- 
-    --popover: 240 10% 3.9%;
-    --popover-foreground: 0 0% 98%;
- 
-    --primary: 0 0% 98%;
-    --primary-foreground: 240 5.9% 10%;
- 
-    --secondary: 240 3.7% 15.9%;
-    --secondary-foreground: 0 0% 98%;
- 
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
- 
-    --accent: 240 3.7% 15.9%;
-    --accent-foreground: 0 0% 98%;
- 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
- 
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 240 4.9% 83.9%;
-  }
-}
- 
-@layer base {
+
   * {
     @apply border-border;
   }
+
+  html {
+    background: var(--bbpc-bg);
+  }
+
   body {
-    @apply bg-background text-foreground;
+    background: var(--bbpc-bg);
+    color: var(--bbpc-text);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--bbpc-accent);
+    outline-offset: 3px;
+  }
+}
+
+@layer components {
+  .bbpc-page {
+    @apply mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 sm:py-12;
+  }
+
+  .bbpc-panel {
+    border: 1px solid var(--bbpc-border);
+    border-radius: 0.75rem;
+    background: var(--bbpc-surface);
+  }
+
+  .bbpc-kicker {
+    color: #fca5a5;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .bbpc-muted {
+    color: var(--bbpc-muted);
+  }
+}
+
+.hero-image {
+  position: relative;
+  background-image: url("/bbpc-mcp-fonso-harley.jpg");
+  background-position-y: -125px;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+.main-mask {
+  background-image: linear-gradient(to top, rgb(9 9 11 / 0), rgb(9 9 11));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }

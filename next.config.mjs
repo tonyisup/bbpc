@@ -5,16 +5,30 @@
  */
 await import("./src/env.mjs");
 
-import withPWA from 'next-pwa';
+import withPWA from "next-pwa";
 
 const config = withPWA({
-  dest: 'public',
+  dest: "public",
   register: true,
   skipWaiting: true,
-  disable: process.env.NODE_ENV === 'development'
+  disable: process.env.NODE_ENV === "development",
 })({
   reactStrictMode: true,
   swcMinify: true,
+  async redirects() {
+    return [
+      {
+        source: "/tags",
+        destination: "/history",
+        permanent: true,
+      },
+      {
+        source: "/tags/:path*",
+        destination: "/history",
+        permanent: true,
+      },
+    ];
+  },
   i18n: {
     locales: ["en"],
     defaultLocale: "en",
@@ -38,8 +52,8 @@ const config = withPWA({
         port: "",
         hostname: "tools.applemediaservices.com",
         pathname: "/api/badges/**/*",
-      }
-    ]
+      },
+    ],
   },
   eslint: { ignoreDuringBuilds: true },
   typescript: { ignoreBuildErrors: true },

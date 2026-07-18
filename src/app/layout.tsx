@@ -1,13 +1,11 @@
 import { type Metadata, type Viewport } from "next";
 import { Inter } from "next/font/google";
 import { getServerAuthSession } from "@/server/auth";
-import "@/styles/globals.css"
+import "@/styles/globals.css";
 import Link from "next/link";
-import Image from "next/image";
-import LeaveMessage from "@/components/LeaveMessage";
 import { ListenHere } from "@/components/ListenHere";
 import { Providers } from "@/components/Providers";
-import NavMenu from "@/components/NavMenu";
+import { SiteHeader } from "@/components/SiteHeader";
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-sans",
@@ -23,7 +21,6 @@ export const viewport: Viewport = {
   themeColor: "black",
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
 };
 
 export const metadata: Metadata = {
@@ -58,37 +55,33 @@ export default async function RootLayout({
         <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
         <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="black" />
-        <meta name="google-site-verification" content="SC5A9TotM4gBLo9UVqxKOyJG-d4Soj6ayNxE5lk9HNs" />
+        <meta
+          name="google-site-verification"
+          content="SC5A9TotM4gBLo9UVqxKOyJG-d4Soj6ayNxE5lk9HNs"
+        />
         <title>Bad Boys Podcast</title>
       </head>
       <body className={`font-sans ${inter.variable} dark`}>
         <Providers session={session}>
-          <div className="bg-black w-full flex flex-col min-h-screen items-center">
-            <header className="flex w-full items-center justify-between bg-[#020202] gap-2 py-2 px-4">
-              <div className="order-2 sm:order-1 w-full sm:w-auto flex justify-center">
-                <NavMenu />
-              </div>
-              <div className="order-3 flex-shrink-0">
-                <LeaveMessage />
-              </div>
-            </header>
-            <section className="py-2 flex flex-col items-center">
-              <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
-                <Link href="/">Bad Boys Podcast</Link>
-              </h1>
-              <p className="text-center text-base sm:text-lg text-gray-400 mt-1">Random rants on all things movie</p>
-            </section>
-            <main className="flex-grow">
-              <div className="flex flex-col text-white main-mask">
+          <div className="flex min-h-[100dvh] w-full min-w-0 flex-col items-center bg-[color:var(--bbpc-bg)]">
+            <SiteHeader />
+            <main className="w-full min-w-0 flex-grow">
+              <div className="main-mask flex w-full min-w-0 flex-col text-white">
                 {children}
               </div>
             </main>
-            <footer className="w-full flex flex-col items-center">
+            <footer className="flex w-full flex-col items-center border-t border-white/10 bg-[color:var(--bbpc-surface)]">
               <ListenHere />
-              <div className="flex gap-4 text-xs text-gray-400 pb-8 flex-wrap justify-center">
-                <Link href="/privacy" className="hover:underline">Privacy Policy</Link>
-                <Link href="/terms" className="hover:underline">Terms of Service</Link>
-                <Link href="/data-deletion" className="hover:underline">Data Deletion</Link>
+              <div className="flex flex-wrap justify-center gap-4 pb-8 text-xs text-gray-400">
+                <Link href="/privacy" className="hover:underline">
+                  Privacy Policy
+                </Link>
+                <Link href="/terms" className="hover:underline">
+                  Terms of Service
+                </Link>
+                <Link href="/data-deletion" className="hover:underline">
+                  Data Deletion
+                </Link>
               </div>
             </footer>
           </div>
@@ -97,4 +90,3 @@ export default async function RootLayout({
     </html>
   );
 }
-

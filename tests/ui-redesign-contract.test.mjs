@@ -1,0 +1,133 @@
+import assert from "node:assert/strict";
+import { existsSync, readFileSync } from "node:fs";
+import test from "node:test";
+
+const read = (/** @type {string} */ path) =>
+  readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
+
+test("the retired Tags feature has no UI or API surface and legacy URLs redirect", () => {
+  assert.equal(existsSync(new URL("../src/app/tags", import.meta.url)), false);
+  assert.equal(
+    existsSync(
+      new URL("../src/server/api/routers/tagRouter.ts", import.meta.url)
+    ),
+    false
+  );
+  assert.equal(
+    existsSync(
+      new URL("../src/components/TagSelectorPopover.tsx", import.meta.url)
+    ),
+    false
+  );
+  assert.equal(
+    existsSync(
+      new URL("../src/components/MovieSearchCard.tsx", import.meta.url)
+    ),
+    false
+  );
+
+  const nav = read("src/components/NavMenu.tsx");
+  assert.doesNotMatch(nav, /href:\s*["']\/tags/);
+
+  const apiRoot = read("src/server/api/root.ts");
+  assert.doesNotMatch(apiRoot, /tagRouter|tag:\s*/);
+
+  const nextConfig = read("next.config.mjs");
+  assert.match(nextConfig, /source:\s*"\/tags"/);
+  assert.match(nextConfig, /source:\s*"\/tags\/:path\*"/);
+  assert.match(nextConfig, /destination:\s*["']\/history["']/);
+});
+
+test("the global shell uses the shared BBPC header and semantic visual tokens", () => {
+  const layout = read("src/app/layout.tsx");
+  const nav = read("src/components/NavMenu.tsx");
+  assert.match(layout, /<SiteHeader\s*\/?>/);
+  assert.doesNotMatch(
+    layout,
+    /<section className="py-2 flex flex-col items-center">/
+  );
+  assert.doesNotMatch(layout, /maximumScale/);
+  assert.match(layout, /<main className="[^"]*min-w-0/);
+  assert.match(
+    nav,
+    /pathname === href \|\| pathname\.startsWith\(`\$\{href\}\/`\)/
+  );
+  assert.doesNotMatch(nav, />Login<|>Logout</);
+  assert.match(nav, /xl:flex/);
+  assert.match(nav, /xl:hidden/);
+  assert.match(nav, /aria-label="Open navigation menu"/);
+
+  const styles = read("src/styles/globals.css");
+  assert.match(styles, /--bbpc-accent:/);
+  assert.match(styles, /--bbpc-surface:/);
+  assert.match(styles, /\.bbpc-panel/);
+  assert.doesNotMatch(styles, /overflow-x:\s*(hidden|clip)/);
+  assert.doesNotMatch(styles, /min-width:\s*320px/);
+});
+
+test("home and game prioritize participation without duplicate retired behavior", () => {
+  const home = read("src/app/page.tsx");
+  assert.match(home, /Latest episode/);
+  assert.match(home, /Up next/);
+
+  const moviePreview = read("src/components/MovieInlinePreview.tsx");
+  const latestEpisode = read("src/components/LatestEpisode.tsx");
+  const episode = read("src/components/Episode.tsx");
+  const episodeSkeleton = read("src/components/EpisodeSkeleton.tsx");
+  const gameParticipation = read("src/components/GameParticipation.tsx");
+  const standings = read("src/components/SeasonStandingsDisclosure.tsx");
+  assert.match(moviePreview, /priority\?: boolean/);
+  assert.match(latestEpisode, /priority=\{index === 0\}/);
+  assert.match(episode, /<GameParticipation/);
+  assert.match(episodeSkeleton, /min-w-0/);
+  assert.doesNotMatch(episodeSkeleton, /h-\[216px\] w-\[144px\]/);
+  assert.equal((gameParticipation.match(/Sign in to play/g) ?? []).length, 1);
+  assert.match(standings, /isOpen\s*&&\s*\(/);
+  assert.match(standings, /<GamePerformanceTracking/);
+
+  const game = read("src/app/game/page.tsx");
+  assert.ok(
+    game.indexOf("<NextEpisode") < game.indexOf("<SeasonStandingsDisclosure")
+  );
+  assert.doesNotMatch(game, /vote on movie tags/i);
+  assert.match(game, /<details/);
+  assert.match(game, /1x multiplier/i);
+  assert.match(game, /2x multiplier/i);
+  assert.match(game, /3x multiplier/i);
+  assert.match(game, /Bonus Harley/i);
+});
+
+test("deferred analytics and above-fold images avoid runtime console noise", () => {
+  const year = read("src/app/year/YearPageClient.tsx");
+  const movieCard = read("src/components/MovieCard.tsx");
+  const about = read("src/app/about/page.tsx");
+
+  assert.match(year, /enabled:\s*status === "authenticated"/);
+  assert.match(year, /priority=\{index === 0\}/);
+  assert.doesNotMatch(year, /type ViewMode = "grid" \| "table"/);
+  assert.match(year, /router\.replace/);
+  assert.match(year, /episodes\.some\([\s\S]*episode\.id === itemEpisode\.id/);
+  assert.match(year, /role="group"\s+aria-label="View"/);
+  assert.match(year, /review\.rating\.name/);
+  assert.match(movieCard, /priority\?: boolean/);
+  assert.match(about, /priority/);
+});
+
+test("history, about, and footer implement the approved content and accessibility guidance", () => {
+  const history = read("src/app/history/page.tsx");
+  assert.match(history, /Match close spellings/);
+  assert.match(history, /Browse all episodes/);
+  assert.match(history, /flex-col[^"\n]*sm:flex-row/);
+  assert.ok(history.indexOf("if (!query)") < history.indexOf("if (isLoading)"));
+  assert.match(history, /return \(\s*<ul/);
+
+  const about = read("src/app/about/page.tsx");
+  assert.doesNotMatch(about, /Generated by AI/i);
+  assert.doesNotMatch(about, /the the woods/i);
+  assert.match(about, /bad-ghibli-boys\.png/);
+
+  const footer = read("src/components/ListenHere.tsx");
+  assert.match(footer, /grid grid-cols-2/);
+  assert.match(footer, /SiSpotify/);
+  assert.doesNotMatch(footer, /<svg/);
+});

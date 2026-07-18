@@ -20,13 +20,10 @@ import {
   highlightWithFuseOrQuery,
 } from "@/utils/text";
 import ShowInlinePreview from "./ShowInlinePreview";
-import {
-  PredictionGame,
-  type PredictionGameAssignment,
-} from "./PredictionGame";
+import { type PredictionGameAssignment } from "./PredictionGame";
 import { getEpisodePath } from "@/lib/routes";
 import { formatPlainDate } from "@/lib/dates";
-import QuotabungaSubmission from "./QuotabungaSubmission";
+import { GameParticipation } from "./GameParticipation";
 
 /**
  * Represents an episode with all its related assignments, extras, and links.
@@ -112,15 +109,15 @@ export const Episode: FC<EpisodeProps> = ({
     );
 
   return (
-    <section className="flex flex-col justify-between gap-2 rounded-2xl bg-gray-900/30 px-2 outline outline-2 outline-gray-500">
-      <div className="">
-        <div className="flex items-center justify-between gap-2 px-1 font-bold sm:items-baseline sm:justify-around">
+    <section className="bbpc-panel flex w-full min-w-0 flex-col justify-between gap-3 overflow-hidden p-3 sm:p-5">
+      <div className="min-w-0">
+        <div className="grid min-w-0 grid-cols-[auto_1fr] items-center gap-x-3 gap-y-1 font-bold sm:grid-cols-[auto_1fr_auto]">
           <div className="sm:text-md whitespace-nowrap p-1 text-sm sm:p-2">
             <Link href={getEpisodePath(episode.slug ?? episode.id)}>
               {episode?.number}
             </Link>
           </div>
-          <div className="flex flex-grow items-center justify-center gap-2 p-2 text-center text-lg leading-tight sm:text-xl md:text-2xl">
+          <div className="min-w-0 text-center text-lg leading-tight sm:text-xl md:text-2xl">
             {!episode?.recording &&
               highlightWithFuseOrQuery(
                 episode?.title ?? "",
@@ -145,11 +142,9 @@ export const Episode: FC<EpisodeProps> = ({
               </a>
             )}
           </div>
-          <div className="sm:text-md whitespace-nowrap p-1 text-sm sm:p-2">
+          <div className="col-span-2 text-sm text-zinc-400 sm:col-span-1 sm:whitespace-nowrap sm:text-right">
             {episode?.date && (
-              <p>
-                {formatPlainDate(episode.date, undefined, "en-US")}
-              </p>
+              <p>{formatPlainDate(episode.date, undefined, "en-US")}</p>
             )}
           </div>
         </div>
@@ -163,15 +158,11 @@ export const Episode: FC<EpisodeProps> = ({
           fuseMatches={fuseMatches}
         />
         {showGames && predictionAssignments.length > 0 && (
-          <>
-            <PredictionGame
-              assignments={predictionAssignments}
-              searchQuery={searchQuery}
-              episodeStatus={episode.status ?? ""}
-            />
-
-            <QuotabungaSubmission />
-          </>
+          <GameParticipation
+            assignments={predictionAssignments}
+            searchQuery={searchQuery}
+            episodeStatus={episode.status ?? ""}
+          />
         )}
       </div>
       <div>
@@ -216,7 +207,7 @@ const EpisodeAssignments: FC<EpisodeAssignments> = ({
 }) => {
   if (!assignments || assignments.length == 0) return null;
   return (
-    <div className="flex justify-around gap-2">
+    <div className="grid min-w-0 grid-cols-2 gap-3 sm:flex sm:justify-around">
       {assignments
         .sort((a, b) => {
           const typeOrder = { HOMEWORK: 0, EXTRA_CREDIT: 1, BONUS: 2 };
@@ -320,17 +311,22 @@ const EpisodeExtras: FC<EpisodeExtras> = ({
                     ({extra.review.movie.year})
                   </div>
                 )}
-                {showMovieTitles && extra.review.show && !extra.review.movie && (
-                  <div className="text-sm text-gray-500">
-                    {showTitleIdx.length > 0
-                      ? highlightTextByIndices(
-                          extra.review.show.title,
-                          showTitleIdx
-                        )
-                      : highlightText(extra.review.show.title, searchQuery)}{" "}
-                    ({extra.review.show.year})
-                  </div>
-                )}
+                {showMovieTitles &&
+                  extra.review.show &&
+                  !extra.review.movie && (
+                    <div className="text-sm text-gray-500">
+                      {showTitleIdx.length > 0
+                        ? highlightTextByIndices(
+                            extra.review.show.title,
+                            showTitleIdx
+                          )
+                        : highlightText(
+                            extra.review.show.title,
+                            searchQuery
+                          )}{" "}
+                      ({extra.review.show.year})
+                    </div>
+                  )}
               </div>
             </div>
           );

@@ -10,17 +10,23 @@ function mergeInclusiveRanges(
   ranges: readonly (readonly [number, number])[]
 ): [number, number][] {
   if (ranges.length === 0) return [];
-  const sorted = [...ranges].map(
-    (r) => [r[0], r[1]] as [number, number]
-  ).sort((a, b) => a[0] - b[0]);
-  const out: [number, number][] = [[sorted[0][0], sorted[0][1]]];
-  for (let i = 1; i < sorted.length; i++) {
-    const [s, e] = sorted[i];
+  const sorted = [...ranges]
+    .map((range) => [range[0], range[1]] as [number, number])
+    .sort((a, b) => a[0] - b[0]);
+  const first = sorted[0];
+  if (!first) return [];
+
+  const out: [number, number][] = [[first[0], first[1]]];
+  for (const [start, end] of sorted.slice(1)) {
     const last = out[out.length - 1];
-    if (s <= last[1] + 1) {
-      last[1] = Math.max(last[1], e);
+    if (!last) {
+      out.push([start, end]);
+      continue;
+    }
+    if (start <= last[1] + 1) {
+      last[1] = Math.max(last[1], end);
     } else {
-      out.push([s, e]);
+      out.push([start, end]);
     }
   }
   return out;
@@ -73,19 +79,22 @@ export function fuseIndicesForField(
   return ranges;
 }
 
-export function highlightText(text: string | undefined, query: string): ReactElement {
+export function highlightText(
+  text: string | undefined,
+  query: string
+): ReactElement {
   if (!text) return <></>;
   if (!query) return <>{text}</>;
 
-  const parts = text.split(
-    new RegExp(`(${escapeRegExp(query)})`, "gi")
-  );
-  
+  const parts = text.split(new RegExp(`(${escapeRegExp(query)})`, "gi"));
+
   return (
     <>
-      {parts.map((part, i) => 
+      {parts.map((part, i) =>
         part.toLowerCase() === query.toLowerCase() ? (
-          <mark key={i} className="bg-yellow-200">{part}</mark>
+          <mark key={i} className="bg-yellow-200">
+            {part}
+          </mark>
         ) : (
           part
         )
