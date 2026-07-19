@@ -68,10 +68,7 @@ function SearchResults({
 }) {
   if (!query) {
     return (
-      <div
-        className="bbpc-panel flex flex-col items-center gap-3 p-8 text-center"
-        role="status"
-      >
+      <div className="bbpc-panel flex flex-col items-center gap-3 p-8 text-center">
         <h2 className="text-xl font-bold text-white">
           Find a movie, title, or episode
         </h2>
@@ -90,16 +87,12 @@ function SearchResults({
   }
 
   if (isLoading) {
-    return (
-      <div className="text-center text-zinc-300" role="status">
-        Searching...
-      </div>
-    );
+    return <div className="text-center text-zinc-300">Searching...</div>;
   }
 
   if (rows.length === 0) {
     return (
-      <div className="text-center text-zinc-400" role="status">
+      <div className="text-center text-zinc-400">
         No episodes found matching your search.
       </div>
     );
@@ -266,7 +259,7 @@ export default function HistoryPage() {
                 : `${filteredRows.length} ${
                     filteredRows.length === 1 ? "result" : "results"
                   }`
-              : "Search by episode title, movie name, or number."}
+              : "Search by episode title or movie name."}
           </p>
         </div>
       </div>

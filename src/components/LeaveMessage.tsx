@@ -37,7 +37,7 @@ const LeaveMessage: FC = () => {
     return (
       <Button
         variant="outline"
-        aria-label="Log in to leave a voice message"
+        aria-label="Log in to leave a message"
         className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-red-500/30 bg-red-500/10 px-3 text-red-300 transition-colors hover:bg-red-500/20 hover:text-red-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
         onClick={() => void signIn()}
       >
@@ -54,7 +54,7 @@ const LeaveMessage: FC = () => {
       <DialogTrigger asChild>
         <Button
           variant="ghost"
-          aria-label="Leave a voice message"
+          aria-label="Leave a message"
           className="p-1 hover:bg-transparent hover:text-accent"
           onClick={() => setIsModalOpen(true)}
         >

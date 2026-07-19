@@ -27,8 +27,13 @@ const MovieInlinePreview: FC<MovieInlinePreviewProps> = ({
   imageClassName = "",
   responsive = false,
   priority = false,
-  sizes = "(max-width: 640px) 48px, 144px",
+  sizes,
 }) => {
+  const imageSizes =
+    sizes ??
+    (responsive
+      ? "(max-width: 640px) 48px, 144px"
+      : "(max-width: 640px) 96px, 144px");
   const showTitle =
     Boolean(searchQuery) ||
     (titleHighlightIndices !== undefined && titleHighlightIndices.length > 0);
@@ -51,7 +56,7 @@ const MovieInlinePreview: FC<MovieInlinePreviewProps> = ({
           width={144}
           height={216}
           priority={priority}
-          sizes={sizes}
+          sizes={imageSizes}
         />
       )}
       {showTitle && (

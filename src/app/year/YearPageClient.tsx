@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { api } from "@/trpc/react";
@@ -129,15 +129,37 @@ export function YearPageClient() {
     searchParams.get("sort") !== "asc"
   );
   const [selectedListId, setSelectedListId] = useState<string | null>(null);
+  const searchParamsString = searchParams.toString();
+  const lastSyncedSearchParams = useRef(searchParamsString);
 
-  // Sync URL when state changes
+  // Sync controls from navigation changes and the URL from local control changes.
   useEffect(() => {
+    if (searchParamsString !== lastSyncedSearchParams.current) {
+      const params = new URLSearchParams(searchParamsString);
+      setSelectedYear(Number(params.get("y")) || currentYear);
+      setViewMode(getInitialViewMode(params.get("view")));
+      setSortDesc(params.get("sort") !== "asc");
+      lastSyncedSearchParams.current = searchParamsString;
+      return;
+    }
+
     const params = new URLSearchParams();
     params.set("y", selectedYear.toString());
     params.set("view", viewMode);
     params.set("sort", sortDesc ? "desc" : "asc");
-    router.replace(`/year?${params.toString()}`, { scroll: false });
-  }, [selectedYear, viewMode, sortDesc, router]);
+    const nextSearchParamsString = params.toString();
+    if (nextSearchParamsString === searchParamsString) return;
+
+    lastSyncedSearchParams.current = nextSearchParamsString;
+    router.replace(`/year?${nextSearchParamsString}`, { scroll: false });
+  }, [
+    currentYear,
+    router,
+    searchParamsString,
+    selectedYear,
+    sortDesc,
+    viewMode,
+  ]);
 
   const { data: items, isLoading } = api.year.getMyYearData.useQuery({
     year: selectedYear,
