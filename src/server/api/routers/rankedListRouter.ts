@@ -137,7 +137,7 @@ export const rankedListRouter = createTRPCRouter({
 					movieId: input.movieId ?? null,
 					showId: input.showId ?? null,
 					episodeId: input.episodeId ?? null,
-					comment: input.comment,
+					comment: input.comment ?? null,
 					updatedAt: new Date(),
 				};
 

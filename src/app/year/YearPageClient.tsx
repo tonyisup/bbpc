@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { api } from "@/trpc/react";
@@ -119,47 +119,29 @@ export function YearPageClient() {
 
   const currentYear =
     getPlainDateYear(getPacificTodayPlainDate()) ?? new Date().getFullYear();
-  const [selectedYear, setSelectedYear] = useState<number>(
-    Number(searchParams.get("y")) || currentYear
-  );
-  const [viewMode, setViewMode] = useState<ViewMode>(() =>
-    getInitialViewMode(searchParams.get("view"))
-  );
-  const [sortDesc, setSortDesc] = useState<boolean>(
-    searchParams.get("sort") !== "asc"
-  );
+  const selectedYear = Number(searchParams.get("y")) || currentYear;
+  const viewMode = getInitialViewMode(searchParams.get("view"));
+  const sortDesc = searchParams.get("sort") !== "asc";
   const [selectedListId, setSelectedListId] = useState<string | null>(null);
-  const searchParamsString = searchParams.toString();
-  const lastSyncedSearchParams = useRef(searchParamsString);
+  const [rankSelections, setRankSelections] = useState<
+    Record<string, { sourceRank: number | null; value: string }>
+  >({});
 
-  // Sync controls from navigation changes and the URL from local control changes.
-  useEffect(() => {
-    if (searchParamsString !== lastSyncedSearchParams.current) {
-      const params = new URLSearchParams(searchParamsString);
-      setSelectedYear(Number(params.get("y")) || currentYear);
-      setViewMode(getInitialViewMode(params.get("view")));
-      setSortDesc(params.get("sort") !== "asc");
-      lastSyncedSearchParams.current = searchParamsString;
-      return;
-    }
-
+  const replaceControls = ({
+    year = selectedYear,
+    view = viewMode,
+    descending = sortDesc,
+  }: {
+    year?: number;
+    view?: ViewMode;
+    descending?: boolean;
+  }) => {
     const params = new URLSearchParams();
-    params.set("y", selectedYear.toString());
-    params.set("view", viewMode);
-    params.set("sort", sortDesc ? "desc" : "asc");
-    const nextSearchParamsString = params.toString();
-    if (nextSearchParamsString === searchParamsString) return;
-
-    lastSyncedSearchParams.current = nextSearchParamsString;
-    router.replace(`/year?${nextSearchParamsString}`, { scroll: false });
-  }, [
-    currentYear,
-    router,
-    searchParamsString,
-    selectedYear,
-    sortDesc,
-    viewMode,
-  ]);
+    params.set("y", year.toString());
+    params.set("view", view);
+    params.set("sort", descending ? "desc" : "asc");
+    router.replace(`/year?${params.toString()}`, { scroll: false });
+  };
 
   const { data: items, isLoading } = api.year.getMyYearData.useQuery({
     year: selectedYear,
@@ -287,7 +269,9 @@ export function YearPageClient() {
             <select
               id="year-filter"
               value={selectedYear}
-              onChange={(e) => setSelectedYear(Number(e.target.value))}
+              onChange={(e) =>
+                replaceControls({ year: Number(e.target.value) })
+              }
               className="h-11 cursor-pointer appearance-none rounded-md border border-zinc-700 bg-zinc-800 py-2 pl-3 pr-8 text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
             >
               {years.map((year) => (
@@ -304,7 +288,7 @@ export function YearPageClient() {
           {/* Sort Toggle */}
           <Button
             variant="ghost"
-            onClick={() => setSortDesc(!sortDesc)}
+            onClick={() => replaceControls({ descending: !sortDesc })}
             className={`h-11 ${sortDesc ? "bg-zinc-800" : ""}`}
             aria-pressed={sortDesc}
           >
@@ -320,7 +304,7 @@ export function YearPageClient() {
           >
             <Button
               variant="ghost"
-              onClick={() => setViewMode("grid")}
+              onClick={() => replaceControls({ view: "grid" })}
               className={`h-11 px-3 ${
                 viewMode === "grid" ? "bg-zinc-700" : ""
               }`}
@@ -332,7 +316,7 @@ export function YearPageClient() {
             </Button>
             <Button
               variant="ghost"
-              onClick={() => setViewMode("list")}
+              onClick={() => replaceControls({ view: "list" })}
               className={`h-11 px-3 ${
                 viewMode === "list" ? "bg-zinc-700" : ""
               }`}
@@ -436,7 +420,10 @@ export function YearPageClient() {
                   <select
                     id="ranked-list-selector"
                     value={selectedListId || ""}
-                    onChange={(e) => setSelectedListId(e.target.value || null)}
+                    onChange={(e) => {
+                      setSelectedListId(e.target.value || null);
+                      setRankSelections({});
+                    }}
                     className="w-full rounded-md border border-zinc-700 bg-zinc-800 px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-primary/50 md:w-auto"
                   >
                     <option value="">None Selected</option>
@@ -582,6 +569,12 @@ export function YearPageClient() {
                           (rankedItem) => rankedItem.movieId === group.movie.id
                         );
                         const currentRank = existingItem?.rank;
+                        const rankSelectionKey = `${selectedListId}:${group.movie.id}`;
+                        const rankSelection = rankSelections[rankSelectionKey];
+                        const selectedRank =
+                          rankSelection?.sourceRank === (currentRank ?? null)
+                            ? rankSelection.value
+                            : currentRank?.toString() ?? "";
 
                         return (
                           <div className="flex flex-shrink-0 items-center justify-center md:justify-end">
@@ -597,11 +590,17 @@ export function YearPageClient() {
                               </label>
                               <div className="flex items-center gap-2">
                                 <select
-                                  key={`${selectedListId}:${group.movie.id}:${
-                                    currentRank ?? "unranked"
-                                  }`}
                                   id={`rank-select-${group.movie.id}`}
-                                  defaultValue={currentRank || ""}
+                                  value={selectedRank}
+                                  onChange={(event) =>
+                                    setRankSelections((selections) => ({
+                                      ...selections,
+                                      [rankSelectionKey]: {
+                                        sourceRank: currentRank ?? null,
+                                        value: event.target.value,
+                                      },
+                                    }))
+                                  }
                                   className="flex-grow rounded border border-zinc-600 bg-zinc-900 px-2 py-1 text-white focus:outline-none focus:ring-2 focus:ring-primary/50"
                                 >
                                   <option value="" disabled>
@@ -621,10 +620,8 @@ export function YearPageClient() {
                                 </select>
                                 <Button
                                   size="sm"
-                                  onClick={(event) => {
-                                    const select = event.currentTarget
-                                      .previousElementSibling as HTMLSelectElement;
-                                    const rank = parseInt(select.value);
+                                  onClick={() => {
+                                    const rank = parseInt(selectedRank);
                                     if (
                                       rank >= 1 &&
                                       rank <=

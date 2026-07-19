@@ -219,22 +219,27 @@ test("authenticated mobile navigation mirrors active route semantics", () => {
 test("year ranking candidates are movie-grouped, labelled, and submit once", () => {
   const year = read("src/app/year/YearPageClient.tsx");
 
-  assert.match(year, /const lastSyncedSearchParams = useRef/);
-  assert.match(year, /searchParamsString !== lastSyncedSearchParams\.current/);
-  assert.match(year, /setSelectedYear\(Number\(params\.get\("y"\)\)/);
+  assert.match(year, /const selectedYear = Number\(searchParams\.get\("y"\)\)/);
+  assert.match(year, /getInitialViewMode\(searchParams\.get\("view"\)\)/);
+  assert.match(year, /const sortDesc = searchParams\.get\("sort"\) !== "asc"/);
+  assert.doesNotMatch(year, /lastSyncedSearchParams/);
   assert.match(
     year,
-    /setViewMode\(getInitialViewMode\(params\.get\("view"\)\)\)/
+    /replaceControls\(\{ year: Number\(e\.target\.value\) \}\)/
   );
-  assert.match(year, /setSortDesc\(params\.get\("sort"\) !== "asc"\)/);
+  assert.match(year, /replaceControls\(\{ descending: !sortDesc \}\)/);
+  assert.match(year, /replaceControls\(\{ view: "grid" \}\)/);
+  assert.match(year, /replaceControls\(\{ view: "list" \}\)/);
   assert.match(year, /const rankingCandidates = groupedMovies/);
   assert.match(year, /rankingCandidates\.map\(\(group\)/);
   assert.match(year, /htmlFor="ranked-list-selector"/);
   assert.match(year, /id="ranked-list-selector"/);
   assert.match(year, /htmlFor=\{`rank-select-\$\{group\.movie\.id\}`\}/);
   assert.match(year, /id=\{`rank-select-\$\{group\.movie\.id\}`\}/);
-  assert.match(year, /key=\{`\$\{selectedListId\}:\$\{group\.movie\.id\}:/);
-  assert.match(year, /currentRank \?\? "unranked"/);
+  assert.match(year, /value=\{selectedRank\}/);
+  assert.match(year, /setRankSelections/);
+  assert.match(year, /parseInt\(selectedRank\)/);
+  assert.doesNotMatch(year, /previousElementSibling/);
   assert.match(year, /const existingItem = selectedList\.rankedItem\.find/);
   assert.doesNotMatch(year, /rankedItem\.some\([\s\S]{0,200}movieId/);
   assert.doesNotMatch(
@@ -280,6 +285,15 @@ test("ranked-item updates plan an atomic move instead of duplicating a movie", a
     kind: "replace",
     itemId: "movie-b",
   });
+  assert.deepEqual(planRankedItemUpsert(items, { movieId: "new", rank: 4 }), {
+    kind: "create",
+  });
+  assert.deepEqual(planRankedItemUpsert(items, { movieId: "a", rank: 4 }), {
+    kind: "move",
+    itemId: "movie-a",
+    fromRank: 2,
+    toRank: 4,
+  });
   assert.throws(
     () => planRankedItemUpsert(items, { rank: 1 }),
     /Exactly one ranked-item target/
@@ -288,4 +302,5 @@ test("ranked-item updates plan an atomic move instead of duplicating a movie", a
   const router = read("src/server/api/routers/rankedListRouter.ts");
   assert.match(router, /planRankedItemUpsert/);
   assert.match(router, /\$transaction\(async/);
+  assert.match(router, /comment: input\.comment \?\? null/);
 });
