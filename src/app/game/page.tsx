@@ -1,228 +1,252 @@
 import Link from "next/link";
-import RatingIcon from "../../components/RatingIcon";
-import GamePerformanceTracking from "../../components/GamePerformanceTracking";
-import { NextEpisode } from "../../components/NextEpisode";
-import QuotabungaSubmission from "../../components/QuotabungaSubmission";
+import { Suspense } from "react";
+
+import { NextEpisode } from "@/components/NextEpisode";
+import RatingIcon from "@/components/RatingIcon";
+import { SeasonStandingsDisclosure } from "@/components/SeasonStandingsDisclosure";
+import { CurrentRoundErrorBoundary } from "./CurrentRoundErrorBoundary";
+
+const ruleDetailsClass =
+  "group border-b border-white/10 py-1 last:border-b-0 [&_summary::-webkit-details-marker]:hidden";
+const summaryClass =
+  "flex min-h-14 cursor-pointer list-none items-center justify-between gap-4 rounded-lg px-3 text-lg font-bold text-white transition-colors hover:bg-white/[0.04] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500";
 
 export default function GamePage() {
   return (
-    <div className="mx-auto flex max-w-5xl flex-col gap-6">
-      <h1 className="text-center text-4xl font-bold text-red-600">
-        <span title="Who The Fuck Is Reggie">WTFIR</span> Game
-      </h1>
+    <div className="bbpc-page max-w-5xl space-y-10">
+      <header className="max-w-2xl">
+        <p className="bbpc-kicker">Listener competition</p>
+        <h1 className="mt-1 text-4xl font-black tracking-tight text-white sm:text-5xl">
+          <span title="Who The Fuck Is Reggie">WTFIR</span> Game
+        </h1>
+        <p className="mt-3 text-base leading-relaxed text-zinc-300">
+          Predict the hosts&apos; ratings, send in a memorable quote, and climb
+          the season standings.
+        </p>
+      </header>
 
-      <GamePerformanceTracking />
+      <section aria-labelledby="current-round-heading" className="space-y-4">
+        <h2
+          id="current-round-heading"
+          className="text-2xl font-black text-white sm:text-3xl"
+        >
+          Play the current round
+        </h2>
+        <CurrentRoundErrorBoundary>
+          <Suspense
+            fallback={
+              <div className="bbpc-panel p-5 text-zinc-300" role="status">
+                Loading the current round...
+              </div>
+            }
+          >
+            <NextEpisode showExtras={false} allowGuesses />
+          </Suspense>
+        </CurrentRoundErrorBoundary>
+      </section>
 
-      <div className="mx-auto flex w-full max-w-2xl flex-col gap-4">
-        <NextEpisode showExtras={false} allowGuesses={true} />
+      <SeasonStandingsDisclosure />
 
-        <h2 className="text-center text-3xl font-bold text-red-600">Rules</h2>
-        <div className="rounded-lg bg-gray-800 p-6 shadow-lg">
-          <h3 className="mb-6 text-center text-xl font-semibold text-blue-400">Synopsis</h3>
-          <div className="space-y-4 text-lg">
-            <p>The player with the <span className="font-semibold text-yellow-400">most points</span> at the end of the season wins.</p>
-            <p>Each season lasts <span className="font-semibold text-yellow-400">8 weeks</span>.</p>
-            <p>
-              The winner gets to pick a movie and talk to us about it as a <span className="font-semibold text-green-400">guest</span> on show!
-            </p>
-          </div>
+      <section aria-labelledby="rules-heading" className="space-y-4">
+        <div>
+          <p className="bbpc-kicker">Reference</p>
+          <h2
+            id="rules-heading"
+            className="text-3xl font-black tracking-tight text-white"
+          >
+            How the game works
+          </h2>
         </div>
 
-        <div className="rounded-lg bg-gray-800 p-6 shadow-lg">
-          <h3 className="mb-6 text-center text-xl font-semibold text-blue-400">Gameplay</h3>
-          <div className="space-y-4 text-lg">
-            <p>Every week two movies will be assigned for review on the next episode.</p>
-            <p>Players try to guess the <span className="font-semibold text-green-400">rating</span> that each host will give to each movie</p>
-            <p>Guesses may be submitted via phone message, voice message, or through the website.</p>
-            <p>Note that some bonus points are <span className="font-semibold text-yellow-400">only</span> available via phone or voice message.</p>
-          </div>
-        </div>
-
-        <div className="rounded-lg bg-gray-800 p-6 shadow-lg">
-          <h3 className="mb-6 text-center text-xl font-semibold text-blue-400">Quotabunga</h3>
-          <div className="space-y-4 text-lg">
-            <p>
-              Quotabunga is a <span className="font-semibold text-yellow-400">weekly quote tournament</span>.
-              Each player may submit <span className="font-semibold text-green-400">one memorable quote</span> from
-              a movie or television show per week.
-            </p>
-            <p>
-              Use the submission form above, or email your entry to{" "}
-              <a
-                href="mailto:badboyspodcasts@gmail.com"
-                className="font-semibold text-blue-400 underline"
-              >
-                badboyspodcasts@gmail.com
-              </a>
-              . Include the quote and its movie or show. A link to the scene with a timestamp is encouraged.
-            </p>
-            <p>
-              The hosts play or read the entries and vote live on the show. There is no fixed judging rubric:
-              iconic, funny, impactful, endlessly quotable, or simply living rent-free in a host&apos;s head can all
-              win the week. A majority of the three host votes decides each matchup.
-            </p>
-            <p>
-              With four entries, the matchups are randomized into two semifinals. The winners face off for first
-              and second place, and the other two entries face off for third. With fewer entries, the hosts rank
-              the available quotes directly.
-            </p>
-            <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 rounded-lg bg-black/30 p-4">
-              <dt className="font-semibold text-green-400">First place</dt>
-              <dd>40 points</dd>
-              <dt className="font-semibold text-yellow-400">Second place</dt>
-              <dd>20 points</dd>
-              <dt className="font-semibold text-orange-400">Third place</dt>
-              <dd>10 points</dd>
-            </dl>
-            <p>
-              Quotabunga starts fresh each week, and its points are added to the player&apos;s overall WTFIR season
-              total.
-            </p>
-          </div>
-        </div>
-
-        <div className="flex flex-col items-center justify-center gap-4 rounded-lg bg-gray-800 p-6 shadow-lg">
-          <h3 className="mb-6 text-center text-xl font-semibold text-blue-400">Ratings</h3>
-          <div className="space-y-4 text-lg">
-            <div className="flex items-center gap-2 leading-relaxed">
-              <p><span className="font-semibold text-green-400">4</span> out of 4</p>
-              <RatingIcon value={4} />
-              <p>Slater: <span className="font-semibold text-green-400">the best</span></p>
+        <div className="bbpc-panel divide-y divide-white/10 p-2 sm:p-3">
+          <details className={ruleDetailsClass} open>
+            <summary className={summaryClass}>
+              Win the season
+              <span aria-hidden="true" className="text-red-300">
+                +
+              </span>
+            </summary>
+            <div className="space-y-3 px-3 pb-5 text-zinc-300">
+              <p>
+                Each season lasts 8 weeks. The player with the most points wins.
+              </p>
+              <p>
+                The winner picks a movie and joins the hosts to discuss it on
+                the show.
+              </p>
             </div>
-            <div className="flex items-center gap-2 leading-relaxed">
-              <p><span className="font-semibold text-yellow-400">3</span> out of 4</p>
-              <RatingIcon value={3} />
-              <p>Dollar: <span className="font-semibold text-yellow-400">ok</span></p>
+          </details>
+
+          <details className={ruleDetailsClass}>
+            <summary className={summaryClass}>
+              Predict the ratings
+              <span aria-hidden="true" className="text-red-300">
+                +
+              </span>
+            </summary>
+            <div className="space-y-4 px-3 pb-5 text-zinc-300">
+              <p>
+                Two movies are assigned for the next episode. Predict the rating
+                each host will give each movie.
+              </p>
+              <p>
+                Each correct host rating earns 1 point. Guessing every host
+                correctly earns 1 extra point. Missing every host costs 1 point.
+              </p>
+              <div className="grid gap-3 sm:grid-cols-2">
+                {[
+                  { value: 4, label: "Slater", note: "the best" },
+                  { value: 3, label: "Dollar", note: "ok" },
+                  { value: 2, label: "Waste", note: "not ok" },
+                  { value: 1, label: "Goldbloom", note: "the worst" },
+                ].map((rating) => (
+                  <div
+                    key={rating.value}
+                    className="flex items-center gap-3 rounded-lg bg-white/[0.04] p-3"
+                  >
+                    <RatingIcon value={rating.value} />
+                    <p>
+                      <strong className="text-white">{rating.label}</strong>:{" "}
+                      {rating.note}
+                    </p>
+                  </div>
+                ))}
+              </div>
             </div>
-            <div className="flex items-center gap-2 leading-relaxed">
-              <p><span className="font-semibold text-orange-400">2</span> out of 4</p>
-              <RatingIcon value={2} />
-              <p>Waste: <span className="font-semibold text-orange-400">not ok</span></p>
+          </details>
+
+          <details className={ruleDetailsClass}>
+            <summary className={summaryClass}>
+              Submit to Quotabunga
+              <span aria-hidden="true" className="text-red-300">
+                +
+              </span>
+            </summary>
+            <div className="space-y-3 px-3 pb-5 text-zinc-300">
+              <p>
+                Each listener may submit one memorable movie or television quote
+                per week.
+              </p>
+              <p>
+                With four entries, the hosts play two semifinals and a final.
+                With fewer entries, they rank the available quotes directly.
+              </p>
+              <dl className="grid max-w-md grid-cols-[1fr_auto] gap-x-5 gap-y-2 rounded-lg bg-white/[0.04] p-4">
+                <dt>First place</dt>
+                <dd className="font-bold text-white">40 points</dd>
+                <dt>Second place</dt>
+                <dd className="font-bold text-white">20 points</dd>
+                <dt>Third place</dt>
+                <dd className="font-bold text-white">10 points</dd>
+              </dl>
+              <p>
+                You can also email{" "}
+                <a
+                  href="mailto:badboyspodcasts@gmail.com"
+                  className="font-semibold text-red-300 underline"
+                >
+                  badboyspodcasts@gmail.com
+                </a>
+                .
+              </p>
             </div>
-            <div className="flex items-center gap-2 leading-relaxed">
-              <p><span className="font-semibold text-red-400">1</span> out of 4</p>
-              <RatingIcon value={1} />
-              <p>Goldbloom: <span className="font-semibold text-red-400">the worst</span></p>
+          </details>
+
+          <details className={ruleDetailsClass}>
+            <summary className={summaryClass}>
+              Earn bonus points
+              <span aria-hidden="true" className="text-red-300">
+                +
+              </span>
+            </summary>
+            <div className="space-y-3 px-3 pb-5 text-zinc-300">
+              <p>
+                A committed accent or impersonation can earn 1 point at the Game
+                Master&apos;s discretion.
+              </p>
+              <p>
+                It must last for most of one movie message and cannot carry into
+                the next movie.
+              </p>
+              <p>
+                Phone and voice messages may unlock bonuses that are not
+                available through the website.
+              </p>
             </div>
-          </div>
-        </div>
+          </details>
 
-        <div className="rounded-lg bg-gray-800 p-6 shadow-lg">
-          <h3 className="mb-6 text-center text-xl font-semibold text-blue-400">Scoring</h3>
-          <div className="space-y-4 text-lg">
-            <p>
-              Players who <span className="font-semibold text-green-400">correctly</span> guess the rating for a host will <span className="font-semibold text-green-400">earn 1 point</span>.
-            </p>
-            <p>
-              Players who <span className="font-semibold text-green-400">correctly</span> guess the rating for all hosts will <span className="font-semibold text-green-400">earn an extra 1 point</span>.
-            </p>
-            <p>
-              Players who <span className="font-semibold text-red-400">incorrectly</span> guess the rating for all hosts will <span className="font-semibold text-red-400">lose 1 point</span>.
-            </p>
-            <p>
-              Players who <span className="font-semibold text-blue-400">vote on movie tags</span> will <span className="font-semibold text-green-400">earn 1 point</span> per vote.
-            </p>
-          </div>
-        </div>
+          <details className={ruleDetailsClass}>
+            <summary className={summaryClass}>
+              Assignments and the wheel
+              <span aria-hidden="true" className="text-red-300">
+                +
+              </span>
+            </summary>
+            <div className="space-y-3 px-3 pb-5 text-zinc-300">
+              <p>
+                Homework is a movie none of the hosts have seen. Extra Credit is
+                a movie at least one host has seen.
+              </p>
+              <p>
+                The wheel selects the next assignment from host entries and the
+                week&apos;s top player.
+              </p>
+              <p>
+                A winning player assignment comes from that listener&apos;s{" "}
+                <Link
+                  href="/syllabus"
+                  className="font-semibold text-red-300 underline"
+                >
+                  syllabus
+                </Link>
+                .
+              </p>
+            </div>
+          </details>
 
-        <div className="rounded-lg bg-gray-800 p-6 shadow-lg">
-          <h3 className="mb-6 text-center text-xl font-semibold text-blue-400">Bonus Points</h3>
-          <div className="space-y-4 text-lg">
-            <p>
-              If you use a <span className="font-semibold text-yellow-400">drastic*</span> enough accent, you will <span className="font-semibold text-green-400">earn 1 point</span>.
-            </p>
-            <p>
-              If you adopt an impersonation of anyone but yourself, you will <span className="font-semibold text-green-400">earn 1 point</span>.
-            </p>
-            <p>
-              Accents or impersonations are only good for <span className="font-semibold text-yellow-400">one movie</span>. They cannot be continued from one movie to the next.
-            </p>
-            <p>
-              Accents or impersonations must be maintained for the <span className="font-semibold text-yellow-400">majority*</span> of the message.
-            </p>
-          </div>
+          <details className={ruleDetailsClass}>
+            <summary className={summaryClass}>
+              Gambling and fine print
+              <span aria-hidden="true" className="text-red-300">
+                +
+              </span>
+            </summary>
+            <div className="space-y-4 px-3 pb-5 text-zinc-300">
+              <p>
+                For each assignment, wager points on specific host outcomes.
+              </p>
+              <dl className="grid gap-3 rounded-lg bg-white/[0.04] p-4 sm:grid-cols-[auto_1fr]">
+                <dt className="font-bold text-white">1x multiplier</dt>
+                <dd>Guess one host&apos;s rating.</dd>
+                <dt className="font-bold text-white">2x multiplier</dt>
+                <dd>Guess a pair of hosts&apos; ratings.</dd>
+                <dt className="font-bold text-white">3x multiplier</dt>
+                <dd>Guess all three hosts&apos; ratings.</dd>
+              </dl>
+              <p>
+                A winning bet returns the wager plus the points wagered
+                multiplied by the bet multiplier. A losing bet loses the points
+                wagered.
+              </p>
+              <p>
+                <strong className="text-white">Bonus Harley:</strong> on a phone
+                or voice-message wager of all your points, a win earns 4 extra
+                points before the wager is doubled or tripled.
+              </p>
+              <p>
+                Confirmed bets are locked. Before January 12, 2026, the retired
+                format used a 1x return for guessing all three hosts&apos;
+                ratings.
+              </p>
+              <p>
+                Missing two episodes in a row begins a 1-point penalty for each
+                additional missed episode. If the season ends in a tie, the
+                player who earned the most points in the final episode wins.
+              </p>
+            </div>
+          </details>
         </div>
-
-        <div className="rounded-lg bg-gray-800 p-6 shadow-lg">
-          <h3 className="mb-6 text-center text-xl font-semibold text-blue-400">Assignments</h3>
-          <div className="space-y-4 text-lg">
-            <p>Assignments consist of either a <span className="font-semibold text-blue-400">Homework</span> or <span className="font-semibold text-blue-600">Extra Credit</span>.</p>
-            <p>A <span className="font-semibold text-blue-400">Homework</span> assignment is a movie that all the hosts have never seen.</p>
-            <p>An <span className="font-semibold text-blue-600">Extra Credit</span> assignment is a movie that at least one host has seen.</p>
-            <p>At the end of each episode, the opportunity to choose the assignment will be randomly picked from a <span className="font-semibold text-blue-400">wheel spin</span>.</p>
-          </div>
-        </div>
-
-        <div className="rounded-lg bg-gray-800 p-6 shadow-lg">
-          <h3 className="mb-6 text-center text-xl font-semibold text-blue-400">Wheel Spin</h3>
-          <div className="space-y-4 text-lg">
-            <p>
-              At the end of the reviews in each episode, we spin the wheel to determine the Assignments for the next episode.
-            </p>
-            <p>
-              Each host will have a <span className="font-semibold text-blue-400">Homework</span> entry and an <span className="font-semibold text-blue-600">Extra Credit</span> entry.
-            </p>
-            <p>
-              The last entry will be for the player who <span className="font-semibold text-green-400">earned the most points</span> that week.
-            </p>
-            <p>
-              If the player entry is landed on, we will choose the next available assignment from that user&apos;s
-              <Link href="/syllabus" className="font-semibold text-blue-400">
-                &nbsp;syllabus
-              </Link>.
-              If the syllabus is empty, the bonus is forfeited.
-            </p>
-            <p>
-              Players may also choose no assignment at all! (Strategy!?)
-            </p>
-          </div>
-        </div>
-
-        <div className="rounded-lg bg-gray-800 p-6 shadow-lg">
-          <h3 className="mb-6 text-center text-xl font-semibold text-blue-400">Gambling</h3>
-          <div className="space-y-4 text-lg">
-            <h3 className="text-center text-xl font-semibold text-blue-400">[Sunsetting January 12, 2026]</h3>
-            <p>
-              For each assignment, you can gamble points for a 1x return guessing all three hosts&apos; ratings.
-            </p>
-            <a
-              href="https://www.instagram.com/p/DIFsttBpTaF/"
-              target="_blank"
-              rel="noreferrer"
-              className="block text-xl font-semibold text-blue-400 underline"
-            >
-              Video: How to gamble on the site
-            </a>
-          </div>
-          <div className="mt-6 space-y-4 text-lg">
-            <h3 className="text-center text-xl font-semibold text-blue-400">[Effective January 12, 2026]</h3>
-            <p>For each assignment, you can gamble points on specific host outcomes.</p>
-            <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 rounded-lg bg-black/30 p-4">
-              <dt className="font-semibold text-yellow-400">1x Multiplier</dt>
-              <dd>Bet on guessing a single host&apos;s rating (MCP, Harley, or Fonso).</dd>
-              <dt className="font-semibold text-orange-400">2x Multiplier</dt>
-              <dd>Bet on guessing a pair of hosts&apos; ratings (e.g., &quot;MCP & Harley&quot; or &quot;Harley & Fonso&quot; or &quot;MCP & Fonso&quot;).</dd>
-              <dt className="font-semibold text-red-400">3x Multiplier</dt>
-              <dd>Bet on guessing all three hosts&apos; ratings (&quot;MCP & Harley & Fonso&quot;).</dd>
-            </dl>
-            <p>If you win, you will earn your wager back + the points wagered multiplied by the bet multiplier. If you lose, you lose the points wagered.</p>
-            <p><span className="font-semibold italic text-amber-500">Note: Once a bet is confirmed by the Game Master, it is locked and cannot be changed.</span></p>
-            <p className="border-t border-gray-700 pt-4 text-sm">
-              BONUS HARLEY POINTS: If you call in/leave a voice message and you wager &quot;all your points&quot; and you win, you will earn an extra 4 points BEFORE it&apos;s doubled (or tripled).
-              This only applies to voice submissions.
-            </p>
-          </div>
-        </div>
-
-        <div className="rounded-lg bg-gray-800 p-6 shadow-lg">
-          <h3 className="mb-6 text-center text-xl font-semibold text-blue-400">Fine Print</h3>
-          <div className="space-y-4 text-lg">
-            <p>* - All bonus points are subject to the Game Master&apos;s discretion.</p>
-            <p>If a player misses 2 episodes in a row, they will start losing 1 point per episode missed.</p>
-            <p>In the event of a tie at the end of the season, the player with the most points earned in the final episode wins.</p>
-          </div>
-        </div>
-      </div>
+      </section>
     </div>
   );
 }

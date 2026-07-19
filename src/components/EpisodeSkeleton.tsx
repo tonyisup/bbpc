@@ -2,32 +2,25 @@ import { Skeleton } from "./ui/skeleton";
 
 export const EpisodeSkeleton = () => {
   return (
-    <section className="p-2 bg-transparent outline-2 outline-gray-500 outline rounded-2xl flex flex-col gap-2 justify-around">
-      <div>
-        <div className="flex justify-around items-baseline gap-2">
-          <Skeleton className="h-6 w-12" />
-          <Skeleton className="h-8 w-48" />
-          <Skeleton className="h-6 w-16" />
-        </div>
-        <div className="flex gap-2 justify-around mt-4">
-          {[1, 2].map((i) => (
-            <div key={i} className="flex flex-col items-center justify-between gap-2">
-              <Skeleton className="h-[216px] w-[144px]" />
-              <Skeleton className="h-10 w-36" />
-              <Skeleton className="h-10 w-36" />
-            </div>
-          ))}
-        </div>
+    <section
+      className="bbpc-panel flex w-full min-w-0 flex-col gap-5 overflow-hidden p-4 sm:p-6"
+      aria-label="Loading episode"
+    >
+      <div className="grid min-w-0 gap-2 sm:grid-cols-[auto_1fr_auto] sm:items-center">
+        <Skeleton className="h-5 w-24" />
+        <Skeleton className="h-9 w-full max-w-md sm:order-3 sm:col-span-3" />
+        <Skeleton className="h-5 w-28 sm:ml-auto" />
       </div>
-      <hr className="border-gray-500" />
-      <div className="p-1">        
-        <Skeleton className="h-4 w-16" />
-        <div className="flex justify-center gap-2 flex-wrap mt-2">
-          {[1, 2].map((i) => (
-            <Skeleton key={i} className="h-32 w-20" />
-          ))}
-        </div>
+      <Skeleton className="h-4 w-full max-w-2xl" />
+      <div className="flex min-w-0 max-w-full gap-2 overflow-hidden">
+        {[1, 2, 3].map((item) => (
+          <Skeleton
+            key={item}
+            className="h-[108px] w-[72px] flex-none rounded-lg sm:h-[162px] sm:w-[108px]"
+          />
+        ))}
       </div>
+      <Skeleton className="h-11 w-full rounded-full" />
     </section>
   );
-}; 
+};

@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect } from "react";
 import { api } from "@/trpc/react";
 import { Episode } from "@/components/Episode";
 import SearchFilter from "@/components/common/SearchFilter";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Fuse, { type FuseResultMatch } from "fuse.js";
-import { debounce } from 'lodash';
+import { debounce } from "lodash";
 import { type RouterOutputs } from "@/utils/trpc";
 
 const FUZZY_SEARCH_STORAGE_KEY = "bbpc-history-fuzzy-search";
@@ -19,13 +19,20 @@ type HistorySearchRow = {
   fuseMatches?: ReadonlyArray<FuseResultMatch>;
 };
 
-function episodeMatchesSubstring(episode: HistoryEpisode, needleLower: string): boolean {
+function episodeMatchesSubstring(
+  episode: HistoryEpisode,
+  needleLower: string
+): boolean {
   if (episode.title.toLowerCase().includes(needleLower)) {
     return true;
   }
   for (const a of episode.assignments) {
     const t = a.movie?.title;
-    if (t !== undefined && t !== null && t.toLowerCase().includes(needleLower)) {
+    if (
+      t !== undefined &&
+      t !== null &&
+      t.toLowerCase().includes(needleLower)
+    ) {
       return true;
     }
   }
@@ -59,20 +66,40 @@ function SearchResults({
   query: string;
   isLoading: boolean;
 }) {
-  if (isLoading) {
-    return <p className="text-center">Loading...</p>;
+  if (!query) {
+    return (
+      <div className="bbpc-panel flex flex-col items-center gap-3 p-8 text-center">
+        <h2 className="text-xl font-bold text-white">
+          Find a movie, title, or episode
+        </h2>
+        <p className="max-w-lg text-sm text-zinc-300">
+          Search the archive, or browse every episode in reverse chronological
+          order.
+        </p>
+        <Link
+          href="/episodes"
+          className="font-semibold text-red-300 underline underline-offset-4"
+        >
+          Browse all episodes
+        </Link>
+      </div>
+    );
   }
 
-  if (!query) {
-    return <p className="text-center text-gray-400">Enter a search term to find episodes.</p>;
+  if (isLoading) {
+    return <div className="text-center text-zinc-300">Searching...</div>;
   }
 
   if (rows.length === 0) {
-    return <p className="text-gray-400">No episodes found matching your search.</p>;
+    return (
+      <div className="text-center text-zinc-400">
+        No episodes found matching your search.
+      </div>
+    );
   }
 
   return (
-    <>
+    <ul>
       {rows.map(({ episode, fuseMatches }) => (
         <li className="mb-8" key={episode.id}>
           <Episode
@@ -83,7 +110,7 @@ function SearchResults({
           />
         </li>
       ))}
-    </>
+    </ul>
   );
 }
 
@@ -92,7 +119,7 @@ export default function HistoryPage() {
   const router = useRouter();
 
   // Initialize local query state from URL to allow immediate UI updates
-  const [query, setQuery] = useState(searchParams.get('q') ?? '');
+  const [query, setQuery] = useState(searchParams.get("q") ?? "");
   const [fuzzySearch, setFuzzySearch] = useState(true);
 
   useEffect(() => {
@@ -108,17 +135,23 @@ export default function HistoryPage() {
   const handleFuzzySearchChange = (enabled: boolean) => {
     setFuzzySearch(enabled);
     try {
-      localStorage.setItem(FUZZY_SEARCH_STORAGE_KEY, enabled ? "true" : "false");
+      localStorage.setItem(
+        FUZZY_SEARCH_STORAGE_KEY,
+        enabled ? "true" : "false"
+      );
     } catch {
       // ignore
     }
   };
 
   // Fetch all episodes for client-side fuzzy search
-  const { data: allEpisodes, isLoading } = api.episode.history.useQuery(undefined, {
-    staleTime: Infinity, // Cache the history data
-    refetchOnWindowFocus: false,
-  });
+  const { data: allEpisodes, isLoading } = api.episode.history.useQuery(
+    undefined,
+    {
+      staleTime: Infinity, // Cache the history data
+      refetchOnWindowFocus: false,
+    }
+  );
 
   // Initialize Fuse instance when data is available
   const fuse = useMemo(() => {
@@ -158,15 +191,16 @@ export default function HistoryPage() {
 
   // Debounced URL updater to prevent browser history spam
   const debouncedUpdateUrl = useMemo(
-    () => debounce((newQuery: string, currentParamsString: string) => {
-      const params = new URLSearchParams(currentParamsString);
-      if (newQuery) {
-        params.set('q', newQuery);
-      } else {
-        params.delete('q');
-      }
-      router.push(`/history?${params.toString()}`);
-    }, 500),
+    () =>
+      debounce((newQuery: string, currentParamsString: string) => {
+        const params = new URLSearchParams(currentParamsString);
+        if (newQuery) {
+          params.set("q", newQuery);
+        } else {
+          params.delete("q");
+        }
+        router.push(`/history?${params.toString()}`, { scroll: false });
+      }, 500),
     [router]
   );
 
@@ -186,44 +220,56 @@ export default function HistoryPage() {
   const trimmedQuery = query.trim();
 
   return (
-    <div className="container flex flex-col items-center justify-center gap-12 px-4 py-8">
-      <div className="flex justify-between items-center w-full max-w-4xl">
-        <h1 className="text-2xl font-bold">Search Episodes</h1>
+    <div className="bbpc-page flex max-w-5xl flex-col items-center gap-8">
+      <div className="flex w-full max-w-4xl flex-col items-start justify-between gap-3 sm:flex-row sm:items-end sm:gap-4">
+        <div>
+          <p className="bbpc-kicker">Archive</p>
+          <h1 className="text-3xl font-black tracking-tight sm:text-4xl">
+            Search episodes
+          </h1>
+        </div>
         <Link
           href="/episodes"
-          className="text-red-600 hover:text-red-700"
+          className="whitespace-nowrap font-semibold text-red-300 hover:text-red-200"
         >
-          View All
+          Browse all episodes
         </Link>
       </div>
       <div className="w-full max-w-4xl">
-        <label className="mb-3 flex cursor-pointer items-center gap-2 text-sm text-gray-700">
+        <label className="mb-3 flex cursor-pointer items-start gap-3 text-sm text-zinc-200">
           <input
             type="checkbox"
             checked={fuzzySearch}
             onChange={(e) => handleFuzzySearchChange(e.target.checked)}
             className="h-4 w-4 rounded border-gray-300 text-red-600 focus:ring-red-500"
           />
-          <span>Fuzzy search</span>
+          <span>
+            <span className="block font-semibold">Match close spellings</span>
+            <span className="block text-xs text-zinc-400">
+              Useful for names and movie titles you only half remember.
+            </span>
+          </span>
         </label>
         <div className="mb-6 space-y-2">
           <SearchFilter onSearch={handleSearch} initialValue={query} />
-          <p className="text-sm text-gray-500" aria-live="polite">
+          <p className="text-sm text-zinc-400" aria-live="polite">
             {trimmedQuery
               ? isLoading
-                ? "Searching…"
-                : `${filteredRows.length} ${filteredRows.length === 1 ? "result" : "results"}`
-              : "Search by episode title, movie name, or number."}
+                ? "Searching..."
+                : `${filteredRows.length} ${
+                    filteredRows.length === 1 ? "result" : "results"
+                  }`
+              : "Search by episode title or movie name."}
           </p>
         </div>
       </div>
-      <ul className="w-full max-w-4xl">
+      <div className="w-full max-w-4xl">
         <SearchResults
           rows={filteredRows}
           query={trimmedQuery}
           isLoading={isLoading}
         />
-      </ul>
+      </div>
     </div>
   );
 }

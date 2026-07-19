@@ -2,7 +2,6 @@ import { createTRPCRouter } from "@/server/api/trpc";
 import { syllabusRouter } from "./routers/syllabus";
 import { showRouter } from "./routers/showRouter";
 import { uploadInfoRouter } from "./routers/uploadInfo";
-import { tagRouter } from "./routers/tagRouter";
 import { yearRouter } from "./routers/yearRouter";
 import { rankedListRouter } from "./routers/rankedListRouter";
 import { gamblingRouter } from "./routers/gamblingRouter";
@@ -18,23 +17,22 @@ import { seasonRouter } from "./routers/seasonRouter";
 import { quotabungaRouter } from "./routers/quotabungaRouter";
 
 export const appRouter = createTRPCRouter({
-	year: yearRouter,
-	tag: tagRouter,
-	rankedList: rankedListRouter,
-	uploadInfo: uploadInfoRouter,
-	gambling: gamblingRouter,
-	episode: episodeRouter,
-	auth: authRouter,
-	user: userRouter,
-	movie: movieRouter,
-	review: reviewRouter,
-	admin: adminRouter,
-	video: videoRouter,
-	feature: featureRouter,
-	syllabus: syllabusRouter,
-	show: showRouter,
-	season: seasonRouter,
-	quotabunga: quotabungaRouter,
+  year: yearRouter,
+  rankedList: rankedListRouter,
+  uploadInfo: uploadInfoRouter,
+  gambling: gamblingRouter,
+  episode: episodeRouter,
+  auth: authRouter,
+  user: userRouter,
+  movie: movieRouter,
+  review: reviewRouter,
+  admin: adminRouter,
+  video: videoRouter,
+  feature: featureRouter,
+  syllabus: syllabusRouter,
+  show: showRouter,
+  season: seasonRouter,
+  quotabunga: quotabungaRouter,
 });
 
 export type AppRouter = typeof appRouter;

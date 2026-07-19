@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { HiSearch } from 'react-icons/hi';
+import React, { useState, useEffect } from "react";
+import { HiSearch } from "react-icons/hi";
 
-const SearchFilter = ({ 
-  onSearch, 
-  initialValue = '' 
-}: { 
+const SearchFilter = ({
+  onSearch,
+  initialValue = "",
+}: {
   onSearch: (query: string) => void;
   initialValue?: string;
 }) => {
@@ -14,14 +14,14 @@ const SearchFilter = ({
     setSearchQuery(initialValue);
   }, [initialValue]);
 
-  const handleSearch = (e: { preventDefault: () => void; }) => {
+  const handleSearch = (e: { preventDefault: () => void }) => {
     e.preventDefault();
     onSearch(searchQuery);
   };
 
   return (
     <div>
-      <form onSubmit={handleSearch} className="flex items-center">
+      <form onSubmit={handleSearch} className="flex items-stretch">
         <input
           type="text"
           placeholder="Search episodes..."
@@ -30,14 +30,15 @@ const SearchFilter = ({
             setSearchQuery(e.target.value);
             onSearch(e.target.value);
           }}
-          className="flex-grow p-2 border border-gray-300 rounded-l-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+          aria-label="Search episodes"
+          className="min-w-0 flex-grow rounded-l-lg border border-zinc-700 bg-zinc-900 px-3 py-2.5 text-white placeholder:text-zinc-500 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-red-500"
         />
         <button
           type="submit"
-          title="Search"
-          className="border border-gray-600 bg-gray-800 p-2 rounded-r-md hover:bg-gray-700 hover:border-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 focus:ring-offset-black"
+          className="inline-flex min-h-11 items-center gap-2 rounded-r-lg border border-red-500 bg-red-500 px-4 font-semibold text-white hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2 focus:ring-offset-zinc-950"
         >
-          <HiSearch className="w-6 h-6 text-gray-300" />
+          <HiSearch className="h-5 w-5" aria-hidden="true" />
+          <span className="hidden sm:inline">Search</span>
         </button>
       </form>
     </div>

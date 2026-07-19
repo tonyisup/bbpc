@@ -1,7 +1,7 @@
-'use client'
+"use client";
 import React, { useState, type FC, useMemo } from "react";
 import { signIn, useSession } from "next-auth/react";
-import { Mic, X } from "lucide-react";
+import { Mic } from "lucide-react";
 import dynamic from "next/dynamic";
 import { api } from "@/trpc/react";
 import {
@@ -10,54 +10,79 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button";
+} from "@/components/ui/dialog";
+import { Button } from "./ui/button";
 
-const VoiceMailRecorder = dynamic(() => import("./voice-mail-recorder"), { ssr: false });
+const VoiceMailRecorder = dynamic(() => import("./voice-mail-recorder"), {
+  ssr: false,
+});
 
 const LeaveMessage: FC = () => {
   const { data: session } = useSession();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const shouldFetchEpisode = useMemo(() => isModalOpen && !!session?.user, [isModalOpen, session?.user]);
-  const { data: episode } = api.episode.next.useQuery(undefined, { enabled: shouldFetchEpisode });
+  const shouldFetchEpisode = useMemo(
+    () => isModalOpen && !!session?.user,
+    [isModalOpen, session?.user]
+  );
+  const {
+    data: episode,
+    isLoading,
+    isError,
+  } = api.episode.next.useQuery(undefined, {
+    enabled: shouldFetchEpisode,
+  });
 
   if (!session?.user) {
     return (
-      <button
-        type="button"
-        title="Log in to leave a message"
-        className="text-red-500 hover:text-red-400 transition-colors"
+      <Button
+        variant="outline"
+        aria-label="Log in to leave a message"
+        className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-red-500/30 bg-red-500/10 px-3 text-red-300 transition-colors hover:bg-red-500/20 hover:text-red-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
         onClick={() => void signIn()}
       >
         <MicrophoneIcon />
-      </button>
+        <span className="hidden text-sm font-semibold lg:inline">
+          Leave a message
+        </span>
+      </Button>
     );
   }
 
   return (
     <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
       <DialogTrigger asChild>
-        <button
-          title="Leave a message"
-          className="text-red-500 hover:text-red-400 transition-colors"
+        <Button
+          variant="ghost"
+          aria-label="Leave a message"
+          className="p-1 hover:bg-transparent hover:text-accent"
           onClick={() => setIsModalOpen(true)}
         >
           <MicrophoneIcon />
-        </button>
+          <span className="hidden text-sm font-semibold lg:inline">
+            Leave a message
+          </span>
+        </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <DialogTitle className="text-xl font-bold">Leave a Message</DialogTitle>
+          <DialogTitle className="text-xl font-bold">
+            Leave a Message
+          </DialogTitle>
         </DialogHeader>
-        {episode ? (
-          <VoiceMailRecorder
-            episodeId={episode.id}
-            userId={session.user.id}
-          />
-        ) : (
+        {isLoading ? (
           <div className="flex items-center justify-center p-8 text-muted-foreground">
             Loading episode details...
+          </div>
+        ) : isError ? (
+          <div className="p-8 text-center text-destructive" role="alert">
+            Episode details could not be loaded. Please try again.
+          </div>
+        ) : episode ? (
+          <VoiceMailRecorder episodeId={episode.id} userId={session.user.id} />
+        ) : (
+          <div className="p-8 text-center text-muted-foreground" role="status">
+            No upcoming episode is available for voice messages.
           </div>
         )}
       </DialogContent>
@@ -68,11 +93,9 @@ const LeaveMessage: FC = () => {
 const MicrophoneIcon = () => {
   return (
     <div className="relative flex items-center justify-center">
-      {/* Pulse effect */}
-      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-20"></span>
-      <Mic className="h-6 w-6 filter drop-shadow-[0_0_8px_rgba(239,68,68,0.6)] animate-pulse" />
+      <Mic className="h-5 w-5" aria-hidden="true" />
     </div>
   );
-}
+};
 
 export default LeaveMessage;

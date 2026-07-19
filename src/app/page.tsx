@@ -1,17 +1,14 @@
 import { LatestEpisode } from "@/components/LatestEpisode";
-import { Episode } from "@/components/Episode";
 import { NextEpisode } from "@/components/NextEpisode";
 import { EpisodeSkeleton } from "@/components/EpisodeSkeleton";
-import { GameTeaser } from "@/components/GameTeaser";
 import { db } from "@/server/db";
 import { getServerAuthSession } from "@/server/auth";
 import { Suspense } from "react";
 
-
 export default async function HomePage() {
   const latestEpisode = await db.episode.findFirst({
     where: {
-      status: 'Published',
+      status: "Published",
       date: {
         lte: new Date(),
       },
@@ -46,7 +43,7 @@ export default async function HomePage() {
       links: true,
     },
     orderBy: {
-      date: 'desc',
+      date: "desc",
     },
   });
 
@@ -57,27 +54,48 @@ export default async function HomePage() {
     const win = await db.gamblingPoints.findFirst({
       where: {
         userId: session.user.id,
-        status: 'won',
+        status: "won",
         assignment: {
-          episodeId: latestEpisode.id
-        }
-      }
+          episodeId: latestEpisode.id,
+        },
+      },
     });
     hasWon = !!win;
   }
 
   return (
-    <main className="flex min-h-screen flex-col text-white">
-      <div className="container flex flex-col gap-6 px-4 py-8">
-        <div className="flex flex-wrap items-start justify-center gap-8">
-          <Suspense fallback={<EpisodeSkeleton />}>
-            {latestEpisode && <LatestEpisode episode={latestEpisode} hasWon={hasWon} />}
-          </Suspense>
-          <Suspense fallback={<EpisodeSkeleton />}>
-            <NextEpisode allowGuesses={true} />
-          </Suspense>
+    <div className="bbpc-page space-y-12 text-white">
+      <section aria-labelledby="latest-episode-heading" className="space-y-4">
+        <div>
+          <p className="bbpc-kicker">Listen now</p>
+          <h1
+            id="latest-episode-heading"
+            className="text-3xl font-black tracking-tight sm:text-4xl"
+          >
+            Latest episode
+          </h1>
         </div>
-      </div>
-    </main>
+        <Suspense fallback={<EpisodeSkeleton />}>
+          {latestEpisode && (
+            <LatestEpisode episode={latestEpisode} hasWon={hasWon} />
+          )}
+        </Suspense>
+      </section>
+
+      <section aria-labelledby="up-next-heading" className="space-y-4">
+        <div>
+          <p className="bbpc-kicker">Play this week</p>
+          <h2
+            id="up-next-heading"
+            className="text-3xl font-black tracking-tight sm:text-4xl"
+          >
+            Up next
+          </h2>
+        </div>
+        <Suspense fallback={<EpisodeSkeleton />}>
+          <NextEpisode allowGuesses />
+        </Suspense>
+      </section>
+    </div>
   );
-} 
+}

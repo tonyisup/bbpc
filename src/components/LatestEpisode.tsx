@@ -1,127 +1,129 @@
-import { type FC } from "react";
-import MovieInlinePreview from "./MovieInlinePreview";
-import ShowInlinePreview from "./ShowInlinePreview";
-import { RouterOutputs } from "@/utils/trpc";
+import type { FC } from "react";
 import Link from "next/link";
-import { cn } from "@/lib/utils";
 import { Trophy } from "lucide-react";
+
+import { cn } from "@/lib/utils";
 import { formatPlainDate } from "@/lib/dates";
 import { getEpisodePath } from "@/lib/routes";
+import type { RouterOutputs } from "@/utils/trpc";
 
-/**
- * Represents an episode with all its related assignments, extras, and links.
- */
-export type CompleteEpisode = NonNullable<RouterOutputs['episode']['next']>;
+import MovieInlinePreview from "./MovieInlinePreview";
+import ShowInlinePreview from "./ShowInlinePreview";
 
-/**
- * Props for the Episode component.
- */
+export type CompleteEpisode = NonNullable<RouterOutputs["episode"]["next"]>;
+
 interface EpisodeProps {
-	/** The complete episode data. */
-	episode: CompleteEpisode;
-	/** Whether the current user won any gambles in this episode. */
-	hasWon?: boolean;
+  episode: CompleteEpisode;
+  hasWon?: boolean;
 }
 
-/**
- * Renders the latest episode with specific layout:
- * - Header (Number, Title, Date)
- * - Content Row: Assignments (Left, Large) + Extras (Right, Small, Scrollable)
- * - Audio Player
- */
 export const LatestEpisode: FC<EpisodeProps> = ({ episode, hasWon }) => {
-	if (!episode) return null;
+  const sortedAssignments = [...episode.assignments].sort((a, b) => {
+    const typeOrder = { HOMEWORK: 0, EXTRA_CREDIT: 1, BONUS: 2 };
+    return (
+      (typeOrder[a.type as keyof typeof typeOrder] ?? 99) -
+      (typeOrder[b.type as keyof typeof typeOrder] ?? 99)
+    );
+  });
 
-	const sortedAssignments = [...episode.assignments].sort((a, b) => {
-		const typeOrder = { "HOMEWORK": 0, "EXTRA_CREDIT": 1, "BONUS": 2 };
-		return (typeOrder[a.type as keyof typeof typeOrder] ?? 99) - (typeOrder[b.type as keyof typeof typeOrder] ?? 99);
-	});
+  return (
+    <article className="bbpc-panel relative flex w-full min-w-0 flex-col gap-5 overflow-hidden p-4 sm:p-6">
+      {hasWon && (
+        <Link
+          href={getEpisodePath(episode.slug ?? episode.id)}
+          className="-mx-4 -mt-4 flex min-h-11 items-center justify-center gap-2 border-b border-amber-400/20 bg-amber-400/10 px-4 py-2 text-sm font-semibold text-amber-200 transition-colors hover:bg-amber-400/15 sm:-mx-6 sm:-mt-6"
+        >
+          <Trophy className="h-4 w-4" aria-hidden="true" />
+          You won a gamble. View the results.
+        </Link>
+      )}
 
-	return (
-		<section className="w-full max-w-4xl mx-auto px-4 py-4 bg-gray-900/30 outline-2 outline-gray-500 outline rounded-2xl flex flex-col gap-4 relative overflow-hidden">
-			{hasWon && (
-				<Link
-					href={getEpisodePath(episode.slug ?? episode.id)}
-					className="absolute top-0 left-0 right-0 bg-gradient-to-r from-yellow-600/20 via-yellow-500/40 to-yellow-600/20 backdrop-blur-md border-b border-yellow-500/30 py-1.5 flex justify-center items-center gap-2 z-20 group hover:via-yellow-500/60 transition-all cursor-pointer"
-				>
-					<Trophy className="w-4 h-4 text-yellow-400 group-hover:scale-110 transition-transform" />
-					<span className="text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] text-yellow-200 drop-shadow-md">
-						🏆 You won a gamble on this episode! Click for results 🏆
-					</span>
-					<Trophy className="w-4 h-4 text-yellow-400 group-hover:scale-110 transition-transform" />
-				</Link>
-			)}
-			{/* Header */}
-			<div className={cn("flex justify-between items-center gap-2 font-bold px-1 sm:justify-around sm:items-baseline", hasWon && "mt-6")}>
-				<div className="text-sm sm:text-md p-1 sm:p-2 whitespace-nowrap">
-					<Link href={getEpisodePath(episode.slug ?? episode.id)}>
-						{episode?.number}
-					</Link>
-				</div>
-				<div className="text-lg sm:text-xl md:text-2xl p-2 flex-grow flex justify-center items-center text-center gap-2 leading-tight">
-					{!episode?.recording && episode?.title}
-					{episode?.recording && <Link className="underline hover:text-gray-300" title={episode?.title} href={getEpisodePath(episode.slug ?? episode.id)}>
-						{episode?.title}
-					</Link>}
-				</div>
-				<div className="text-sm sm:text-md p-1 sm:p-2 whitespace-nowrap">
-					{episode?.date && <p>{formatPlainDate(episode.date, undefined, "en-US")}</p>}
-				</div>
-			</div>
+      <div className="grid min-w-0 gap-2 sm:grid-cols-[auto_1fr_auto] sm:items-center">
+        <Link
+          href={getEpisodePath(episode.slug ?? episode.id)}
+          className="text-sm font-semibold text-zinc-400 hover:text-red-300 sm:order-1"
+        >
+          Episode {episode.number}
+        </Link>
+        <h2 className="min-w-0 text-2xl font-black leading-tight tracking-tight sm:order-3 sm:col-span-3 sm:text-4xl">
+          <Link
+            href={getEpisodePath(episode.slug ?? episode.id)}
+            className="hover:text-red-300"
+          >
+            {episode.title}
+          </Link>
+        </h2>
+        {episode.date && (
+          <p className="text-sm text-zinc-400 sm:order-2 sm:text-right">
+            {formatPlainDate(episode.date, undefined, "en-US")}
+          </p>
+        )}
+      </div>
 
-			{/* Content Area: Assignments + Extras */}
-			<div className="flex flex-col md:flex-row gap-1 overflow-hidden relative">
-				{/* Assignments (Left, Fixed/Large) */}
-				{sortedAssignments.length > 0 && (
-					<div className="flex-shrink-0 flex justify-center md:justify-start gap-1 z-10 bg-black/50 md:bg-transparent md:p-0 rounded-lg">
-						{sortedAssignments.map((assignment) => (
-							<div key={assignment.id} className="flex-shrink-0">
-								{assignment.movie && (
-									<MovieInlinePreview
-										movie={assignment.movie}
-										responsive={true}
-										imageClassName="w-[48px] h-[72px] sm:w-[96px] sm:h-[144px]"
-									/>
-								)}
-							</div>
-						))}
-						{episode.extras.length > 0 && <div className="w-[2px] bg-gray-500 self-stretch opacity-30" />}
-						<div className="flex-grow min-w-0 overflow-x-scroll flex items-center gap-2 pb-2">
-							{episode.extras.map((extra) => (
-								<div key={extra.id} className="flex-shrink-0">
-									{extra.review.movie && (
-										<MovieInlinePreview
-											movie={extra.review.movie}
-											responsive={true}
-											imageClassName="w-[48px] h-[72px] sm:w-[96px] sm:h-[144px]"
-										/>
-									)}
-									{extra.review.show && (
-										<ShowInlinePreview
-											show={extra.review.show}
-											responsive={true}
-											imageClassName="w-[48px] h-[72px] sm:w-[96px] sm:h-[144px]"
-										/>
-									)}
-								</div>
-							))}
-						</div>
-					</div>
-				)}
-			</div>
+      {episode.description && (
+        <p className="max-w-2xl text-sm leading-relaxed text-zinc-300 sm:text-base">
+          {episode.description}
+        </p>
+      )}
 
-			{/* Audio Player */}
-			{episode.recording && (
-				<div className="w-full mt-2">
-					<audio
-						controls
-						className="w-full h-10 block"
-						src={episode.recording}
-					>
-						Your browser does not support the audio element.
-					</audio>
-				</div>
-			)}
-		</section>
-	);
-}
+      <div className="flex min-w-0 max-w-full items-center gap-2 overflow-x-auto pb-1">
+        {sortedAssignments.map((assignment, index) => (
+          <div key={assignment.id} className="flex-none">
+            {assignment.movie && (
+              <MovieInlinePreview
+                movie={assignment.movie}
+                responsive
+                priority={index === 0}
+                imageClassName="h-[108px] w-[72px] rounded-lg sm:h-[162px] sm:w-[108px]"
+                sizes="(max-width: 639px) 72px, 108px"
+              />
+            )}
+          </div>
+        ))}
+
+        {episode.extras.length > 0 && (
+          <div
+            className="mx-1 h-20 w-px flex-none bg-white/15 sm:h-32"
+            aria-hidden="true"
+          />
+        )}
+
+        {episode.extras.map((extra) => (
+          <div
+            key={extra.id}
+            className="flex-none opacity-80 transition-opacity hover:opacity-100"
+          >
+            {extra.review.movie && (
+              <MovieInlinePreview
+                movie={extra.review.movie}
+                responsive
+                imageClassName="h-[108px] w-[72px] rounded-lg sm:h-[162px] sm:w-[108px]"
+                sizes="(max-width: 639px) 72px, 108px"
+              />
+            )}
+            {extra.review.show && (
+              <ShowInlinePreview
+                show={extra.review.show}
+                responsive
+                imageClassName="h-[108px] w-[72px] rounded-lg sm:h-[162px] sm:w-[108px]"
+              />
+            )}
+          </div>
+        ))}
+      </div>
+
+      {episode.recording && (
+        <div className={cn("w-full", !episode.description && "mt-1")}>
+          <audio
+            controls
+            preload="metadata"
+            className="block h-11 w-full"
+            src={episode.recording}
+          >
+            Your browser does not support the audio element.
+          </audio>
+        </div>
+      )}
+    </article>
+  );
+};

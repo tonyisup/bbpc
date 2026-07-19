@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { type Movie } from "@prisma/client";
 import Image from "next/image";
@@ -15,6 +15,8 @@ interface MovieInlinePreviewProps {
   className?: string; // Applied to container (Link)
   imageClassName?: string; // Applied to Image
   responsive?: boolean;
+  priority?: boolean;
+  sizes?: string;
 }
 
 const MovieInlinePreview: FC<MovieInlinePreviewProps> = ({
@@ -24,7 +26,14 @@ const MovieInlinePreview: FC<MovieInlinePreviewProps> = ({
   className = "",
   imageClassName = "",
   responsive = false,
+  priority = false,
+  sizes,
 }) => {
+  const imageSizes =
+    sizes ??
+    (responsive
+      ? "(max-width: 640px) 48px, 144px"
+      : "(max-width: 640px) 96px, 144px");
   const showTitle =
     Boolean(searchQuery) ||
     (titleHighlightIndices !== undefined && titleHighlightIndices.length > 0);
@@ -38,16 +47,16 @@ const MovieInlinePreview: FC<MovieInlinePreviewProps> = ({
       {movie.poster && (
         <Image
           className={cn(
-            "rounded-2xl w-[96px] h-[144px] md:w-[144px] md:h-[216px]",
-            responsive ? "w-[48px] h-[72px] sm:w-[144px] sm:h-[216px]" : "",
+            "h-[144px] w-[96px] rounded-2xl md:h-[216px] md:w-[144px]",
+            responsive ? "h-[72px] w-[48px] sm:h-[216px] sm:w-[144px]" : "",
             imageClassName
           )}
           src={movie.poster}
           alt={movie.title}
           width={144}
           height={216}
-          priority={false}
-          sizes="(max-width: 640px) 48px, 144px"
+          priority={priority}
+          sizes={imageSizes}
         />
       )}
       {showTitle && (
@@ -59,6 +68,6 @@ const MovieInlinePreview: FC<MovieInlinePreviewProps> = ({
       )}
     </Link>
   );
-}
+};
 
 export default MovieInlinePreview;
