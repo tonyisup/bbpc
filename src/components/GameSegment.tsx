@@ -364,12 +364,13 @@ const RatingButton: FC<RatingButtonProps> = ({ value, selected, click }) => {
     click(value);
   };
   return (
-    <div
+    <button
+      type="button"
       className="cursor-pointer rounded-sm p-4 text-2xl ring-red-900 hover:ring-2"
       onClick={handleClick}
     >
       <RatingIcon value={value} />
-    </div>
+    </button>
   );
 };
 export default GameSegment;

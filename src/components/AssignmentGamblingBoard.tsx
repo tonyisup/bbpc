@@ -32,6 +32,15 @@ type WagerOption = {
   targetHostId?: string;
 };
 
+const wagerHostIdentifiers = ["mcp", "fonso", "harley"] as const;
+type WagerHostIdentifier = (typeof wagerHostIdentifiers)[number];
+
+const fallbackHostNames: Record<WagerHostIdentifier, string> = {
+  mcp: "MCP",
+  fonso: "Fonso",
+  harley: "Harley",
+};
+
 const firstName = (host: User | undefined, fallback: string) =>
   host?.name?.split(" ")[0] ?? fallback;
 
@@ -113,6 +122,40 @@ const AssignmentGamblingBoard: FC<AssignmentGamblingBoardProps> = ({
   const getTypeFor = (lookupId: string) =>
     gamblingTypes.find((candidate) => candidate.lookupId === lookupId);
 
+  const getHostByIdentifier = (identifier: WagerHostIdentifier) =>
+    hosts.find(
+      (host) => firstName(host, "").toLowerCase() === identifier.toLowerCase()
+    );
+
+  const getHostIdentifiersForLookupId = (
+    lookupId: string
+  ): WagerHostIdentifier[] => {
+    if (lookupId.startsWith("all-rating-guess-")) {
+      return [...wagerHostIdentifiers];
+    }
+
+    const encodedHosts = lookupId.split("-rating-guess-")[0]?.split("-") ?? [];
+    return encodedHosts.filter(
+      (identifier): identifier is WagerHostIdentifier =>
+        wagerHostIdentifiers.includes(identifier as WagerHostIdentifier)
+    );
+  };
+
+  const getHostLabelForLookupId = (lookupId: string) =>
+    getHostIdentifiersForLookupId(lookupId)
+      .map((identifier) =>
+        firstName(
+          getHostByIdentifier(identifier),
+          fallbackHostNames[identifier]
+        )
+      )
+      .join(" + ");
+
+  const getSingleHostForLookupId = (lookupId: string) => {
+    const identifier = getHostIdentifiersForLookupId(lookupId)[0];
+    return identifier ? getHostByIdentifier(identifier) : undefined;
+  };
+
   const handleSubmit = async (input: WagerInput) => {
     await submitBet.mutateAsync(input);
     await Promise.all([
@@ -127,20 +170,20 @@ const AssignmentGamblingBoard: FC<AssignmentGamblingBoardProps> = ({
   const hostOptions: WagerOption[] = [
     {
       lookupId: "mcp-rating-guess-1x",
-      targetHostId: hosts[0]?.id,
-      label: `${firstName(hosts[0], "Host 1")}’s rating`,
+      targetHostId: getSingleHostForLookupId("mcp-rating-guess-1x")?.id,
+      label: `${getHostLabelForLookupId("mcp-rating-guess-1x")}’s rating`,
       description: "Win if this one host matches your saved pick.",
     },
     {
       lookupId: "fonso-rating-guess-1x",
-      targetHostId: hosts[1]?.id,
-      label: `${firstName(hosts[1], "Host 2")}’s rating`,
+      targetHostId: getSingleHostForLookupId("fonso-rating-guess-1x")?.id,
+      label: `${getHostLabelForLookupId("fonso-rating-guess-1x")}’s rating`,
       description: "Win if this one host matches your saved pick.",
     },
     {
       lookupId: "harley-rating-guess-1x",
-      targetHostId: hosts[2]?.id,
-      label: `${firstName(hosts[2], "Host 3")}’s rating`,
+      targetHostId: getSingleHostForLookupId("harley-rating-guess-1x")?.id,
+      label: `${getHostLabelForLookupId("harley-rating-guess-1x")}’s rating`,
       description: "Win if this one host matches your saved pick.",
     },
   ].filter((option) => option.targetHostId);
@@ -148,26 +191,17 @@ const AssignmentGamblingBoard: FC<AssignmentGamblingBoardProps> = ({
   const pairOptions: WagerOption[] = [
     {
       lookupId: "mcp-fonso-rating-guess-2x",
-      label: `${firstName(hosts[0], "Host 1")} + ${firstName(
-        hosts[1],
-        "Host 2"
-      )}`,
+      label: getHostLabelForLookupId("mcp-fonso-rating-guess-2x"),
       description: "Win only if both hosts match your saved picks.",
     },
     {
       lookupId: "mcp-harley-rating-guess-2x",
-      label: `${firstName(hosts[0], "Host 1")} + ${firstName(
-        hosts[2],
-        "Host 3"
-      )}`,
+      label: getHostLabelForLookupId("mcp-harley-rating-guess-2x"),
       description: "Win only if both hosts match your saved picks.",
     },
     {
       lookupId: "fonso-harley-rating-guess-2x",
-      label: `${firstName(hosts[1], "Host 2")} + ${firstName(
-        hosts[2],
-        "Host 3"
-      )}`,
+      label: getHostLabelForLookupId("fonso-harley-rating-guess-2x"),
       description: "Win only if both hosts match your saved picks.",
     },
   ];
@@ -175,7 +209,7 @@ const AssignmentGamblingBoard: FC<AssignmentGamblingBoardProps> = ({
   const allOptions: WagerOption[] = [
     {
       lookupId: "all-rating-guess-3x",
-      label: "All three hosts",
+      label: getHostLabelForLookupId("all-rating-guess-3x"),
       description: "Win only if every host matches your saved picks.",
     },
   ];
@@ -209,13 +243,14 @@ const AssignmentGamblingBoard: FC<AssignmentGamblingBoardProps> = ({
   return (
     <div className="space-y-5">
       <div className="grid gap-3 rounded-lg border border-amber-400/20 bg-amber-400/[0.06] p-4 sm:grid-cols-[1fr_auto] sm:items-start">
+      
         <div>
           <p className="flex items-center gap-2 font-bold text-white">
             <AlertTriangle
               className="h-4 w-4 text-amber-300"
               aria-hidden="true"
             />
-            Wagers can lose points
+            † Wagers can lose points
           </p>
           <p className="mt-1 text-sm leading-relaxed text-zinc-300">
             A loss deducts your wager. A win returns the wager plus the listed

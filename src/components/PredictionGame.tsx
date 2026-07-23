@@ -13,7 +13,7 @@ import {
   Voicemail,
   X,
 } from "lucide-react";
-import { type FC, type ReactNode, useState } from "react";
+import { type FC, type ReactNode, useState, useEffect } from "react";
 
 import {
   PredictionRoundError,
@@ -36,6 +36,8 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "./ui/popover";
+
+import { motion, AnimatePresence } from "motion/react";
 
 export type PredictionGameAssignment = {
   id: string;
@@ -465,6 +467,60 @@ interface AssignmentPredictionProps {
   initiallyExpanded: boolean;
 }
 
+const WagerTeaser = () => {
+
+  const gamblingTitle = [
+    "Wanna bet?",
+    "Go ahead and gamble!",
+    "You've got nothing to lose! †",
+    "How confident are you?",
+  ]
+	const [titleIndex, setTitleIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTitleIndex((prev) => (prev + 1) % gamblingTitle.length);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, []);
+  return (
+    <div className="relative">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.8, rotate: -10 }}
+        animate={{ opacity: 1, scale: 1, rotate: 2 }}
+        whileHover={{ scale: 1.1, rotate: 0 }}
+        className="absolute -top-10 -right-10 flex items-center gap-1.5 px-3 py-1 bg-gradient-to-r from-amber-400 to-amber-600 rounded-full shadow-lg shadow-amber-500/20 cursor-default select-none z-20 group overflow-hidden"
+      >
+        {/* Shine effect */}
+        <motion.div
+          animate={{ x: ["-100%", "200%"] }}
+          transition={{ repeat: Infinity, duration: 3, ease: "linear", repeatDelay: 1 }}
+          className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -skew-x-[20deg]"
+        />
+
+        <AnimatePresence mode="wait">
+          <motion.span
+            key={titleIndex}
+            initial={{ y: 10, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: -10, opacity: 0 }}
+            className="relative text-[10px] font-black text-amber-950 uppercase tracking-widest drop-shadow-sm inline-block min-w-[240px] text-center"
+          >
+            {gamblingTitle[titleIndex]}
+          </motion.span>
+        </AnimatePresence>
+        <motion.span
+          animate={{ rotate: [0, 15, -15, 0] }}
+          transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+          className="relative text-xs"
+        >
+          🎲
+        </motion.span>
+      </motion.div>
+    </div>
+  )
+};
+
 const AssignmentPrediction: FC<AssignmentPredictionProps> = ({
   assignment,
   assignmentIds,
@@ -793,6 +849,7 @@ const AssignmentPrediction: FC<AssignmentPredictionProps> = ({
           {hasAllGuesses && (
             <details className="rounded-lg border border-white/10 bg-black/20">
               <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 font-bold text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400 [&::-webkit-details-marker]:hidden">
+                
                 <span className="flex items-center gap-2">
                   <Coins
                     className="h-4 w-4 text-amber-300"
@@ -800,10 +857,12 @@ const AssignmentPrediction: FC<AssignmentPredictionProps> = ({
                   />
                   Wager points <span className="text-zinc-500">— optional</span>
                 </span>
+                <WagerTeaser />
                 <ChevronDown
                   className="h-4 w-4 text-zinc-400"
                   aria-hidden="true"
                 />
+                
               </summary>
               <div className="border-t border-white/10 p-3 sm:p-4">
                 <AssignmentGamblingBoard

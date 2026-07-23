@@ -142,6 +142,10 @@ test("wagering presents risk, confirmation, recovery, and accurate lock states",
   assert.match(board, /One host/);
   assert.match(board, /Two hosts/);
   assert.match(board, /All hosts/);
+  assert.match(board, /getHostIdentifiersForLookupId/);
+  assert.match(board, /getHostLabelForLookupId\("mcp-fonso-rating-guess-2x"\)/);
+  assert.match(board, /getHostLabelForLookupId\("all-rating-guess-3x"\)/);
+  assert.doesNotMatch(board, /firstName\(hosts\[[012]\]/);
   assert.match(board, /payoutMultiplier=\{getPayoutMultiplier/);
   assert.match(board, /payoutTone="standard"/);
   assert.match(board, /payoutTone="boosted"/);
@@ -161,6 +165,16 @@ test("wagering presents risk, confirmation, recovery, and accurate lock states",
   assert.match(wager, /border-cyan-300/);
   assert.match(wager, /border-amber-300/);
   assert.match(wager, /border-rose-300/);
+});
+
+test("legacy rating controls use native buttons for click interactions", () => {
+  const segment = read("src/components/GameSegment.tsx");
+  const ratingButtonStart = segment.indexOf("const RatingButton:");
+  const ratingButton = segment.slice(ratingButtonStart);
+
+  assert.match(ratingButton, /<button\s+type="button"/);
+  assert.match(ratingButton, /onClick=\{handleClick\}/);
+  assert.doesNotMatch(ratingButton, /<div[^>]*onClick=/);
 });
 
 test("assignment wagers are locked and target-validated inside the transaction", () => {
