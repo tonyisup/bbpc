@@ -1,7 +1,13 @@
 import { z } from "zod";
 import { Prisma } from "@prisma/client";
+import { TRPCError } from "@trpc/server";
 import { createTRPCRouter, protectedProcedure, publicProcedure } from "@/server/api/trpc";
 import { getCurrentSeasonID, calculateUserPoints } from "@/utils/points";
+import {
+	PredictionRoundError,
+	PredictionRoundState,
+	getPredictionRoundState,
+} from "@/lib/predictionRound.mjs";
 
 export const gamblingRouter = createTRPCRouter({
 	getAllActive: publicProcedure.query(({ ctx }) => {
@@ -12,7 +18,7 @@ export const gamblingRouter = createTRPCRouter({
 	submitPoints: protectedProcedure
 		.input(z.object({
 			gamblingTypeId: z.string().optional(),
-			points: z.number(),
+			points: z.number().int().nonnegative(),
 			assignmentId: z.string().optional(),
 			targetUserId: z.string().optional(),
 		}))
@@ -43,6 +49,69 @@ export const gamblingRouter = createTRPCRouter({
 
 			// Perform everything inside a transaction to prevent race conditions on balance verification
 			return await ctx.db.$transaction(async (tx) => {
+				if (assignmentId) {
+					const assignment = await tx.assignment.findUnique({
+						where: { id: assignmentId },
+						select: {
+							playable: true,
+							episode: { select: { status: true } },
+							assignmentReviews: {
+								where: targetUserId
+									? { review: { userId: targetUserId } }
+									: undefined,
+								select: { id: true },
+							},
+						},
+					});
+
+					if (!assignment) {
+						throw new TRPCError({
+							code: "NOT_FOUND",
+							message: PredictionRoundError.ASSIGNMENT_NOT_FOUND,
+						});
+					}
+
+					if (
+						getPredictionRoundState(
+							assignment.episode.status,
+							assignment.playable
+						) !== PredictionRoundState.OPEN
+					) {
+						throw new TRPCError({
+							code: "PRECONDITION_FAILED",
+							message: PredictionRoundError.ROUND_LOCKED,
+						});
+					}
+
+					if (
+						targetUserId &&
+						assignment.assignmentReviews.length === 0
+					) {
+						throw new TRPCError({
+							code: "BAD_REQUEST",
+							message: PredictionRoundError.INVALID_HOST,
+						});
+					}
+				}
+
+				const gamblingType = await tx.gamblingType.findUnique({
+					where: { id: gamblingTypeId },
+					select: { isActive: true, lookupId: true },
+				});
+				if (!gamblingType?.isActive) {
+					throw new TRPCError({
+						code: "PRECONDITION_FAILED",
+						message: PredictionRoundError.WAGER_TYPE_UNAVAILABLE,
+					});
+				}
+				const requiresTarget = gamblingType.lookupId.endsWith("-1x");
+				if (requiresTarget !== Boolean(targetUserId)) {
+					throw new TRPCError({
+						code: "BAD_REQUEST",
+						message: PredictionRoundError.INVALID_HOST,
+					});
+				}
+
 				const existingPoints = await tx.gamblingPoints.findFirst({
 					where: {
 						userId: callerId,

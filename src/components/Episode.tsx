@@ -65,7 +65,13 @@ const mapEpisodeToPredictionAssignment = (
 
   return {
     id: assignment.id,
-    movie: assignment.movie ? { title: assignment.movie.title } : null,
+    playable: assignment.playable,
+    movie: assignment.movie
+      ? {
+          title: assignment.movie.title,
+          poster: assignment.movie.poster,
+        }
+      : null,
   };
 };
 
