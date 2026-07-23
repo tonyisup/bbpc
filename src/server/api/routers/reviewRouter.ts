@@ -1,16 +1,15 @@
 import { z } from "zod";
-import { TRPCError } from "@trpc/server";
 import {
   createTRPCRouter,
   protectedProcedure,
   publicProcedure,
 } from "@/server/api/trpc";
-import {
-  PredictionRoundError,
-  PredictionRoundState,
-  getPredictionRoundState,
-} from "@/lib/predictionRound.mjs";
 import { getPredictionScoring } from "@/server/predictionScoring";
+import {
+  getGuessesForAssignmentForUser,
+  getUsersGuessesForAssignments,
+  submitGuess,
+} from "./reviewProcedures.mjs";
 
 export const reviewRouter = createTRPCRouter({
   getPredictionScoring: protectedProcedure.query(({ ctx }) =>
@@ -128,47 +127,7 @@ export const reviewRouter = createTRPCRouter({
         assignmentIds: z.array(z.string()),
       })
     )
-    .query(async ({ ctx, input }) => {
-      const assignmentReviews = await ctx.db.assignmentReview.findMany({
-        where: {
-          assignmentId: { in: input.assignmentIds },
-        },
-        select: {
-          id: true,
-          assignmentId: true,
-        },
-      });
-
-      const guesses = await ctx.db.guess.findMany({
-        where: {
-          assignmntReviewId: {
-            in: assignmentReviews.map((ar) => ar.id),
-          },
-          userId: ctx.session.user.id,
-        },
-        include: {
-          rating: true,
-          assignmentReview: {
-            include: {
-              review: {
-                include: {
-                  user: true,
-                },
-              },
-            },
-          },
-        },
-      });
-
-      // Group guesses by assignmentId
-      const result: Record<string, typeof guesses> = {};
-      for (const a of input.assignmentIds) {
-        result[a] = guesses.filter(
-          (g) => g.assignmentReview.assignmentId === a
-        );
-      }
-      return result;
-    }),
+    .query(({ ctx, input }) => getUsersGuessesForAssignments({ ctx, input })),
 
   getUsersGamblingPointsForAssignments: protectedProcedure
     .input(
@@ -328,38 +287,7 @@ export const reviewRouter = createTRPCRouter({
         assignmentId: z.string(),
       })
     )
-    .query(async ({ ctx, input }) => {
-      const assignmentReviews = await ctx.db.assignmentReview.findMany({
-        where: {
-          assignmentId: input.assignmentId,
-        },
-        select: {
-          id: true,
-        },
-      });
-
-      const guesses = await ctx.db.guess.findMany({
-        where: {
-          assignmntReviewId: {
-            in: assignmentReviews.map((ar) => ar.id),
-          },
-          userId: ctx.session.user.id,
-        },
-        include: {
-          rating: true,
-          assignmentReview: {
-            include: {
-              review: {
-                include: {
-                  user: true,
-                },
-              },
-            },
-          },
-        },
-      });
-      return guesses;
-    }),
+    .query(({ ctx, input }) => getGuessesForAssignmentForUser({ ctx, input })),
 
   submitGuess: protectedProcedure
     .input(
@@ -369,65 +297,7 @@ export const reviewRouter = createTRPCRouter({
         ratingId: z.string(),
       })
     )
-    .mutation(async ({ ctx, input }) => {
-      return ctx.db.$transaction(async (tx) => {
-        const assignment = await tx.assignment.findUnique({
-          where: { id: input.assignmentId },
-          select: {
-            playable: true,
-            episode: { select: { status: true } },
-            assignmentReviews: {
-              where: { review: { userId: input.hostId } },
-              select: { id: true },
-            },
-          },
-        });
-
-        if (!assignment) {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: PredictionRoundError.ASSIGNMENT_NOT_FOUND,
-          });
-        }
-
-        if (
-          getPredictionRoundState(
-            assignment.episode.status,
-            assignment.playable
-          ) !== PredictionRoundState.OPEN
-        ) {
-          throw new TRPCError({
-            code: "PRECONDITION_FAILED",
-            message: PredictionRoundError.ROUND_LOCKED,
-          });
-        }
-
-        if (assignment.assignmentReviews.length === 0) {
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: PredictionRoundError.INVALID_HOST,
-          });
-        }
-
-        const rating = await tx.rating.findUnique({
-          where: { id: input.ratingId },
-          select: { id: true },
-        });
-        if (!rating) {
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: PredictionRoundError.INVALID_RATING,
-          });
-        }
-
-        return tx.$executeRaw`
-					EXEC [SubmitGuess]
-						@assignmentId=${input.assignmentId},
-						@hostId=${input.hostId},
-						@guesserId=${ctx.session.user.id},
-						@ratingId=${input.ratingId}`;
-      });
-    }),
+    .mutation(({ ctx, input }) => submitGuess({ ctx, input })),
 
   updateAudioMessage: protectedProcedure
     .input(

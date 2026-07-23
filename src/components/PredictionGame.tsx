@@ -41,6 +41,7 @@ import { motion, AnimatePresence } from "motion/react";
 
 export type PredictionGameAssignment = {
   id: string;
+  playable: boolean;
   movie: {
     title: string;
     poster: string | null;
@@ -468,14 +469,13 @@ interface AssignmentPredictionProps {
 }
 
 const WagerTeaser = () => {
-
   const gamblingTitle = [
     "Wanna bet?",
     "Go ahead and gamble!",
-    "You've got nothing to lose! †",
+    "You've got nothing to lose! †" /* This is just for fun, don't remove it. The dagger points to the explainer in the AssignmentGamblingBoard component. */,
     "How confident are you?",
-  ]
-	const [titleIndex, setTitleIndex] = useState(0);
+  ];
+  const [titleIndex, setTitleIndex] = useState(0);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -489,13 +489,18 @@ const WagerTeaser = () => {
         initial={{ opacity: 0, scale: 0.8, rotate: -10 }}
         animate={{ opacity: 1, scale: 1, rotate: 2 }}
         whileHover={{ scale: 1.1, rotate: 0 }}
-        className="absolute -top-10 -right-10 flex items-center gap-1.5 px-3 py-1 bg-gradient-to-r from-amber-400 to-amber-600 rounded-full shadow-lg shadow-amber-500/20 cursor-default select-none z-20 group overflow-hidden"
+        className="group absolute -right-10 -top-10 z-20 flex cursor-default select-none items-center gap-1.5 overflow-hidden rounded-full bg-gradient-to-r from-amber-400 to-amber-600 px-3 py-1 shadow-lg shadow-amber-500/20"
       >
         {/* Shine effect */}
         <motion.div
           animate={{ x: ["-100%", "200%"] }}
-          transition={{ repeat: Infinity, duration: 3, ease: "linear", repeatDelay: 1 }}
-          className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -skew-x-[20deg]"
+          transition={{
+            repeat: Infinity,
+            duration: 3,
+            ease: "linear",
+            repeatDelay: 1,
+          }}
+          className="absolute inset-0 -skew-x-[20deg] bg-gradient-to-r from-transparent via-white/30 to-transparent"
         />
 
         <AnimatePresence mode="wait">
@@ -504,7 +509,7 @@ const WagerTeaser = () => {
             initial={{ y: 10, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: -10, opacity: 0 }}
-            className="relative text-[10px] font-black text-amber-950 uppercase tracking-widest drop-shadow-sm inline-block min-w-[240px] text-center"
+            className="relative inline-block min-w-[240px] text-center text-[10px] font-black uppercase tracking-widest text-amber-950 drop-shadow-sm"
           >
             {gamblingTitle[titleIndex]}
           </motion.span>
@@ -518,7 +523,7 @@ const WagerTeaser = () => {
         </motion.span>
       </motion.div>
     </div>
-  )
+  );
 };
 
 const AssignmentPrediction: FC<AssignmentPredictionProps> = ({
@@ -545,7 +550,10 @@ const AssignmentPrediction: FC<AssignmentPredictionProps> = ({
     findGuessForHost(guesses, host.id)
   ).length;
   const hasAllGuesses = hosts.length > 0 && selectedCount === hosts.length;
-  const roundState = getPredictionRoundState(episodeStatus);
+  const roundState = getPredictionRoundState(
+    episodeStatus,
+    assignment.playable
+  );
   const isRoundOpen = roundState === PredictionRoundState.OPEN;
   const gambleAmountForAssignment = gamblePoints.reduce(
     (total, point) => total + point.points,
@@ -849,7 +857,6 @@ const AssignmentPrediction: FC<AssignmentPredictionProps> = ({
           {hasAllGuesses && (
             <details className="rounded-lg border border-white/10 bg-black/20">
               <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 font-bold text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400 [&::-webkit-details-marker]:hidden">
-                
                 <span className="flex items-center gap-2">
                   <Coins
                     className="h-4 w-4 text-amber-300"
@@ -862,7 +869,6 @@ const AssignmentPrediction: FC<AssignmentPredictionProps> = ({
                   className="h-4 w-4 text-zinc-400"
                   aria-hidden="true"
                 />
-                
               </summary>
               <div className="border-t border-white/10 p-3 sm:p-4">
                 <AssignmentGamblingBoard
@@ -870,6 +876,7 @@ const AssignmentPrediction: FC<AssignmentPredictionProps> = ({
                   hosts={hosts}
                   guesses={guessesForGambling}
                   episodeStatus={episodeStatus}
+                  playable={assignment.playable}
                 />
               </div>
             </details>

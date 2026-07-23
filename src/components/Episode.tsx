@@ -65,6 +65,7 @@ const mapEpisodeToPredictionAssignment = (
 
   return {
     id: assignment.id,
+    playable: assignment.playable,
     movie: assignment.movie
       ? {
           title: assignment.movie.title,

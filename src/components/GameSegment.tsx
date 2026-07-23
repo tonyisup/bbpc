@@ -339,6 +339,7 @@ const RatingSelect: FC<RatingSelectProps> = ({ selectRating }) => {
             <RatingButton
               key={rating.id}
               value={rating.value}
+              label={rating.name}
               selected={isSelectedByValue(rating.value)}
               click={handleRatingSelection}
             />
@@ -349,10 +350,16 @@ const RatingSelect: FC<RatingSelectProps> = ({ selectRating }) => {
 };
 interface RatingButtonProps {
   value: number;
+  label: string;
   selected?: boolean;
   click: Dispatch<number>;
 }
-const RatingButton: FC<RatingButtonProps> = ({ value, selected, click }) => {
+const RatingButton: FC<RatingButtonProps> = ({
+  value,
+  label,
+  selected,
+  click,
+}) => {
   if (selected) {
     return (
       <div className="cursor-pointer rounded-sm p-4 text-2xl ring-2 ring-red-900 hover:ring-2">
@@ -368,6 +375,7 @@ const RatingButton: FC<RatingButtonProps> = ({ value, selected, click }) => {
       type="button"
       className="cursor-pointer rounded-sm p-4 text-2xl ring-red-900 hover:ring-2"
       onClick={handleClick}
+      aria-label={label}
     >
       <RatingIcon value={value} />
     </button>

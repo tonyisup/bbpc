@@ -23,6 +23,7 @@ interface AssignmentGamblingBoardProps {
     ratingId: number;
   }[];
   episodeStatus: string;
+  playable: boolean;
 }
 
 type WagerOption = {
@@ -49,6 +50,7 @@ const AssignmentGamblingBoard: FC<AssignmentGamblingBoardProps> = ({
   hosts,
   guesses,
   episodeStatus,
+  playable,
 }) => {
   const gamblingTypesQuery = api.gambling.getAllActive.useQuery();
   const userPointsQuery = api.user.points.useQuery();
@@ -56,7 +58,8 @@ const AssignmentGamblingBoard: FC<AssignmentGamblingBoardProps> = ({
   const utils = api.useUtils();
   const submitBet = api.gambling.submitPoints.useMutation();
   const isRoundOpen =
-    getPredictionRoundState(episodeStatus) === PredictionRoundState.OPEN;
+    getPredictionRoundState(episodeStatus, playable) ===
+    PredictionRoundState.OPEN;
 
   if (
     gamblingTypesQuery.isLoading ||
@@ -243,14 +246,14 @@ const AssignmentGamblingBoard: FC<AssignmentGamblingBoardProps> = ({
   return (
     <div className="space-y-5">
       <div className="grid gap-3 rounded-lg border border-amber-400/20 bg-amber-400/[0.06] p-4 sm:grid-cols-[1fr_auto] sm:items-start">
-      
         <div>
           <p className="flex items-center gap-2 font-bold text-white">
             <AlertTriangle
               className="h-4 w-4 text-amber-300"
               aria-hidden="true"
             />
-            † Wagers can lose points
+            † Wagers can lose points{" "}
+            {/* Here's the explainer for the dagger. Don't remove it. */}
           </p>
           <p className="mt-1 text-sm leading-relaxed text-zinc-300">
             A loss deducts your wager. A win returns the wager plus the listed
