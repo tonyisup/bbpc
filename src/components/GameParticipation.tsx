@@ -55,6 +55,7 @@ export function GameParticipation({
       {assignments.length > 0 && (
         <PredictionGame
           assignments={assignments}
+          userId={session.user.id}
           searchQuery={searchQuery}
           episodeStatus={episodeStatus}
         />

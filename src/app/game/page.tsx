@@ -4,6 +4,8 @@ import { Suspense } from "react";
 import { NextEpisode } from "@/components/NextEpisode";
 import RatingIcon from "@/components/RatingIcon";
 import { SeasonStandingsDisclosure } from "@/components/SeasonStandingsDisclosure";
+import { db } from "@/server/db";
+import { getPredictionScoring } from "@/server/predictionScoring";
 import { CurrentRoundErrorBoundary } from "./CurrentRoundErrorBoundary";
 
 const ruleDetailsClass =
@@ -11,7 +13,14 @@ const ruleDetailsClass =
 const summaryClass =
   "flex min-h-14 cursor-pointer list-none items-center justify-between gap-4 rounded-lg px-3 text-lg font-bold text-white transition-colors hover:bg-white/[0.04] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500";
 
-export default function GamePage() {
+export default async function GamePage() {
+  const predictionScoring = await getPredictionScoring(db);
+  const formatPoints = (points: number | null) => {
+    if (points === null) return "an unavailable number of points";
+    const absolutePoints = Math.abs(points);
+    return `${absolutePoints} ${absolutePoints === 1 ? "point" : "points"}`;
+  };
+
   return (
     <div className="bbpc-page max-w-5xl space-y-10">
       <header className="max-w-2xl">
@@ -90,8 +99,11 @@ export default function GamePage() {
                 each host will give each movie.
               </p>
               <p>
-                Each correct host rating earns 1 point. Guessing every host
-                correctly earns 1 extra point. Missing every host costs 1 point.
+                Each correct host rating earns{" "}
+                {formatPoints(predictionScoring.correctHost)}. Guessing every
+                host correctly earns an additional{" "}
+                {formatPoints(predictionScoring.allCorrectBonus)}. Missing every
+                host costs {formatPoints(predictionScoring.allIncorrect)}.
               </p>
               <div className="grid gap-3 sm:grid-cols-2">
                 {[

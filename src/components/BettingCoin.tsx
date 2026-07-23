@@ -1,131 +1,289 @@
-'use client'
+"use client";
 
-import { type FC, useState } from "react";
-import { type GamblingType, type GamblingPoints } from "@prisma/client";
-import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
+import { type GamblingPoints, type GamblingType } from "@prisma/client";
+import { Loader2 } from "lucide-react";
+import { type FormEvent, type FC, useState } from "react";
+
+import { cn } from "@/lib/utils";
+
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
-import { cn } from "@/lib/utils";
-import { Loader2 } from "lucide-react";
 
-export interface BettingCoinProps {
-	lookupId: string;
-	targetHostId?: string;
-	label: string;
-	gamblingTypes: GamblingType[] | undefined;
-	getBetFor: (lookupId: string, targetHostId?: string) => GamblingPoints | undefined;
-	submitBet: any;
-	assignmentId: string;
-	userPoints: number | undefined;
-	episodeStatus: string;
+export type WagerInput = {
+  gamblingTypeId: string;
+  points: number;
+  assignmentId: string;
+  targetUserId?: string;
+};
+
+export type PayoutTone = "standard" | "boosted" | "maximum";
+
+interface BettingCoinProps {
+  type: GamblingType;
+  targetHostId?: string;
+  label: string;
+  description: string;
+  payoutTone: PayoutTone;
+  existingBet:
+    | (GamblingPoints & {
+        gamblingType?: GamblingType;
+      })
+    | undefined;
+  assignmentId: string;
+  userPoints: number;
+  isRoundOpen: boolean;
+  onSubmit: (input: WagerInput) => Promise<void>;
 }
 
 const BettingCoin: FC<BettingCoinProps> = ({
-	lookupId,
-	targetHostId,
-	label,
-	gamblingTypes,
-	getBetFor,
-	submitBet,
-	assignmentId,
-	userPoints,
-	episodeStatus
+  type,
+  targetHostId,
+  label,
+  description,
+  payoutTone,
+  existingBet,
+  assignmentId,
+  userPoints,
+  isRoundOpen,
+  onSubmit,
 }) => {
-	const [amount, setAmount] = useState<string>("");
-	const type = gamblingTypes?.find(t => t.lookupId === lookupId);
-	const existingBet = getBetFor(lookupId, targetHostId);
-	const isLocked = episodeStatus === "recording" || episodeStatus === "published" || (existingBet && existingBet.status !== "pending");
+  const [isEditing, setIsEditing] = useState(false);
+  const [amount, setAmount] = useState(existingBet?.points.toString() ?? "");
+  const [reviewAmount, setReviewAmount] = useState<number | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const isResolved = Boolean(existingBet && existingBet.status !== "pending");
+  const isLocked = !isRoundOpen || isResolved;
+  const currentAmount = existingBet?.points ?? 0;
+  const maximumAmount = userPoints + currentAmount;
+  const payoutBorder =
+    payoutTone === "standard"
+      ? "border-cyan-400/20"
+      : payoutTone === "boosted"
+      ? "border-amber-400/20"
+      : "border-rose-400/20";
+  const payoutBadge =
+    payoutTone === "standard"
+      ? "border-cyan-300/30 bg-cyan-400/10 text-cyan-200"
+      : payoutTone === "boosted"
+      ? "border-amber-300/30 bg-amber-400/10 text-amber-200"
+      : "border-rose-300/30 bg-rose-400/10 text-rose-200";
 
-	const handleBet = () => {
-		if (!type) return;
-		if (userPoints === undefined) return;
-		const pts = parseInt(amount);
-		if (isNaN(pts) || pts <= 0) {
-			alert("Please enter a valid amount greater than zero.");
-			return;
-		}
+  const validateAmount = () => {
+    const points = Number(amount);
+    if (!Number.isInteger(points) || points <= 0) {
+      setError("Enter a whole number greater than zero.");
+      return null;
+    }
+    if (points > maximumAmount) {
+      setError(`You can wager up to ${maximumAmount} points on this outcome.`);
+      return null;
+    }
+    setError(null);
+    return points;
+  };
 
-		const currentBetAmount = existingBet ? existingBet.points : 0;
-		if (pts > userPoints + currentBetAmount) {
-			alert("Not enough points available to place this bet");
-			return;
-		}
+  const prepareReview = (event: FormEvent) => {
+    event.preventDefault();
+    const points = validateAmount();
+    if (points !== null) setReviewAmount(points);
+  };
 
-		submitBet.mutate({
-			gamblingTypeId: type.id,
-			points: pts,
-			assignmentId,
-			targetUserId: targetHostId
-		});
-	};
+  const submit = async (points: number) => {
+    setIsSubmitting(true);
+    setError(null);
+    try {
+      await onSubmit({
+        gamblingTypeId: type.id,
+        points,
+        assignmentId,
+        targetUserId: targetHostId,
+      });
+      setAmount(points > 0 ? points.toString() : "");
+      setReviewAmount(null);
+      setIsEditing(false);
+    } catch (submissionError) {
+      const message =
+        submissionError instanceof Error ? submissionError.message : "";
+      setError(
+        message.includes("ROUND_LOCKED")
+          ? "Betting closed before this wager could be saved."
+          : "Couldn’t save this wager. Check your connection and retry."
+      );
+      setReviewAmount(null);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
-	if (!type) return null;
+  return (
+    <div
+      className={cn(
+        "rounded-lg border bg-black/20 p-3",
+        currentAmount > 0 ? "border-emerald-400/30" : payoutBorder
+      )}
+    >
+      <div className="flex min-h-11 items-start justify-between gap-3">
+        <div>
+          <p className="font-bold text-white">{label}</p>
+          <p className="mt-0.5 text-xs leading-relaxed text-zinc-400">
+            {description}
+          </p>
+        </div>
+        <span
+          className={cn(
+            "shrink-0 rounded-md border px-2.5 py-1 text-sm font-black tabular-nums",
+            payoutBadge
+          )}
+        >
+          <span className="mr-1 text-[10px] uppercase tracking-wider opacity-70">
+            Pays
+          </span>
+          {type.multiplier}x
+        </span>
+      </div>
 
-	const coinCount = lookupId.endsWith('-1x') ? 1 : lookupId.endsWith('-2x') ? 2 : 3;
+      {currentAmount > 0 && (
+        <p className="mt-3 text-sm font-semibold text-emerald-300">
+          {currentAmount} points {isLocked ? "locked" : "wagered"}
+        </p>
+      )}
 
-	return (
-		<Popover>
-			<PopoverTrigger asChild>
-				<div className="flex flex-col items-center gap-1 cursor-pointer group">
-					<div className="flex -space-x-1 group-hover:scale-110 transition-transform">
-						{[...Array(coinCount)].map((_, i) => (
-							<div key={i} className={cn(
-								"w-6 h-6 rounded-full bg-amber-500 border-2 border-amber-300 flex items-center justify-center shadow-lg",
-								existingBet && existingBet.points > 0 ? "bg-emerald-500 border-emerald-300" : ""
-							)}>
-								<span className="text-[10px] font-bold text-amber-900 leading-none">1</span>
-							</div>
-						))}
-					</div>
-					<span className="text-[10px] font-bold text-gray-500 uppercase tracking-tighter">{label}</span>
-					{existingBet && existingBet.points > 0 && (
-						<span className="text-[10px] bg-emerald-900/50 text-emerald-400 px-1 rounded border border-emerald-500/30">
-							{existingBet.points}
-						</span>
-					)}
-				</div>
-			</PopoverTrigger>
-			<PopoverContent className="w-48 bg-gray-900 border-gray-700 p-3">
-				<div className="flex flex-col gap-2">
-					<p className="text-xs text-gray-400 font-medium">Bet on {label} ({type.multiplier}x)</p>
-					<div className="flex gap-2">
-						<Input
-							type="number"
-							placeholder="Pts"
-							value={amount}
-							onChange={(e) => setAmount(e.target.value)}
-							className="h-8 bg-gray-800 border-gray-700 text-white"
-							disabled={isLocked}
-							min="0"
-						/>
-						<Button
-							size="sm"
-							onClick={handleBet}
-							disabled={submitBet.isLoading || isLocked || userPoints === undefined}
-							className="h-8"
-						>
-							{submitBet.isLoading ? <Loader2 className="animate-spin w-3 h-3" /> : "Bet"}
-						</Button>
-					</div>
-					{isLocked && (
-						<p className="text-xs text-amber-500 font-medium italic">
-							Bet confirmed and locked.
-						</p>
-					)}
-					{!isLocked && existingBet?.status === "pending" && (
-						<Button variant="ghost" size="sm" disabled={userPoints === undefined} onClick={() => {
-							if (userPoints === undefined) return;
-							setAmount("0");
-							submitBet.mutate({ gamblingTypeId: type.id, points: 0, assignmentId, targetUserId: targetHostId });
-						}} className="h-6 text-[10px] text-red-400 hover:text-red-300">
-							Clear Bet
-						</Button>
-					)}
-					<p className="text-[10px] text-gray-500 italic">Balance: {userPoints ?? 0} pts</p>
-				</div>
-			</PopoverContent>
-		</Popover>
-	);
+      {isLocked ? (
+        <p className="mt-3 text-xs text-zinc-500">
+          {currentAmount > 0
+            ? isResolved
+              ? `Wager ${existingBet?.status ?? "locked"}.`
+              : "This wager can’t be changed after picks close."
+            : "Betting closed for this outcome."}
+        </p>
+      ) : !isEditing ? (
+        <Button
+          type="button"
+          className="mt-3 min-h-11 w-full"
+          variant="outline"
+          onClick={() => {
+            setAmount(currentAmount > 0 ? currentAmount.toString() : "");
+            setError(null);
+            setIsEditing(true);
+          }}
+        >
+          {currentAmount > 0 ? "Edit wager" : "Set wager"}
+        </Button>
+      ) : reviewAmount === null ? (
+        <form className="mt-3 space-y-3" onSubmit={prepareReview}>
+          <div>
+            <label
+              htmlFor={`wager-${type.id}-${targetHostId ?? "all"}`}
+              className="text-xs font-bold text-zinc-300"
+            >
+              Points to risk
+            </label>
+            <Input
+              id={`wager-${type.id}-${targetHostId ?? "all"}`}
+              type="number"
+              inputMode="numeric"
+              min={1}
+              max={maximumAmount}
+              step={1}
+              value={amount}
+              onChange={(event) => {
+                setAmount(event.target.value);
+                setError(null);
+              }}
+              className="mt-1 h-11 bg-black/30"
+              aria-describedby={`wager-help-${type.id}-${
+                targetHostId ?? "all"
+              }`}
+              aria-invalid={Boolean(error)}
+              disabled={isSubmitting}
+            />
+            <p
+              id={`wager-help-${type.id}-${targetHostId ?? "all"}`}
+              className="mt-1 text-xs text-zinc-500"
+            >
+              Available: {userPoints} points · Maximum here: {maximumAmount}
+            </p>
+          </div>
+          {error && (
+            <p className="text-xs font-semibold text-red-300" role="alert">
+              {error}
+            </p>
+          )}
+          <div className="flex gap-2">
+            <Button
+              type="submit"
+              className="min-h-11 flex-1"
+              disabled={isSubmitting}
+            >
+              Review wager
+            </Button>
+            <Button
+              type="button"
+              className="min-h-11"
+              variant="ghost"
+              onClick={() => {
+                setIsEditing(false);
+                setError(null);
+              }}
+            >
+              Cancel
+            </Button>
+          </div>
+          {currentAmount > 0 && (
+            <Button
+              type="button"
+              className="min-h-11 w-full text-red-300"
+              variant="ghost"
+              onClick={() => void submit(0)}
+              disabled={isSubmitting}
+            >
+              Clear wager
+            </Button>
+          )}
+        </form>
+      ) : (
+        <div className="mt-3 rounded-lg border border-amber-400/20 bg-amber-400/[0.06] p-3">
+          <p className="font-bold text-white">Confirm {reviewAmount} points?</p>
+          <p className="mt-1 text-xs leading-relaxed text-zinc-300">
+            A loss costs {reviewAmount} points. A win returns your wager plus a{" "}
+            {type.multiplier}x payout.
+          </p>
+          {error && (
+            <p className="mt-2 text-xs font-semibold text-red-300" role="alert">
+              {error}
+            </p>
+          )}
+          <div className="mt-3 flex gap-2">
+            <Button
+              type="button"
+              className="min-h-11 flex-1"
+              onClick={() => void submit(reviewAmount)}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="animate-spin" aria-hidden="true" />
+                  Saving…
+                </>
+              ) : (
+                "Confirm wager"
+              )}
+            </Button>
+            <Button
+              type="button"
+              className="min-h-11"
+              variant="ghost"
+              onClick={() => setReviewAmount(null)}
+              disabled={isSubmitting}
+            >
+              Back
+            </Button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 };
 
 export default BettingCoin;

@@ -1,242 +1,343 @@
-'use client'
+"use client";
 
-import { type FC, useState, useEffect } from "react";
-import { motion, AnimatePresence } from "motion/react";
+import { type User } from "@prisma/client";
+import { AlertTriangle, Coins } from "lucide-react";
+import { type FC } from "react";
+
+import {
+  PredictionRoundState,
+  getPredictionRoundState,
+} from "@/lib/predictionRound.mjs";
+import { cn } from "@/lib/utils";
 import { api } from "@/trpc/react";
-import { Rating, User } from "@prisma/client";
-import BettingCoin from "./BettingCoin";
+
+import BettingCoin, { type PayoutTone, type WagerInput } from "./BettingCoin";
 import RatingIcon from "./RatingIcon";
+import { Button } from "./ui/button";
 
 interface AssignmentGamblingBoardProps {
-	assignmentId: string;
-	hosts: User[];
-	guesses: {
-		hostId: string;
-		ratingId: number;
-	}[];
-	episodeStatus: string;
+  assignmentId: string;
+  hosts: User[];
+  guesses: {
+    hostId: string;
+    ratingId: number;
+  }[];
+  episodeStatus: string;
 }
 
+type WagerOption = {
+  lookupId: string;
+  label: string;
+  description: string;
+  targetHostId?: string;
+};
 
-const gamblingTitle = [
-	"Wanna bet?",
-	"Go ahead and gamble!",
-	"You've got nothing to lose!",
-	"How confident are you?",
-]
-const AssignmentGamblingBoard: FC<AssignmentGamblingBoardProps> = ({ assignmentId, hosts, guesses, episodeStatus }) => {
-	const { data: gamblingTypes } = api.gambling.getAllActive.useQuery();
-	const { data: userPoints } = api.user.points.useQuery();
-	const { data: myBets, refetch: refetchBets } = api.gambling.getForAssignment.useQuery({ assignmentId });
+const firstName = (host: User | undefined, fallback: string) =>
+  host?.name?.split(" ")[0] ?? fallback;
 
-	const [titleIndex, setTitleIndex] = useState(0);
+const AssignmentGamblingBoard: FC<AssignmentGamblingBoardProps> = ({
+  assignmentId,
+  hosts,
+  guesses,
+  episodeStatus,
+}) => {
+  const gamblingTypesQuery = api.gambling.getAllActive.useQuery();
+  const userPointsQuery = api.user.points.useQuery();
+  const betsQuery = api.gambling.getForAssignment.useQuery({ assignmentId });
+  const utils = api.useUtils();
+  const submitBet = api.gambling.submitPoints.useMutation();
+  const isRoundOpen =
+    getPredictionRoundState(episodeStatus) === PredictionRoundState.OPEN;
 
-	useEffect(() => {
-		const interval = setInterval(() => {
-			setTitleIndex((prev) => (prev + 1) % gamblingTitle.length);
-		}, 3000);
-		return () => clearInterval(interval);
-	}, []);
+  if (
+    gamblingTypesQuery.isLoading ||
+    userPointsQuery.isLoading ||
+    betsQuery.isLoading
+  ) {
+    return (
+      <div
+        className="rounded-lg bg-white/[0.03] p-4 text-sm text-zinc-400"
+        role="status"
+      >
+        Loading wager options…
+      </div>
+    );
+  }
 
-	const utils = api.useUtils();
+  if (
+    gamblingTypesQuery.isError ||
+    userPointsQuery.isError ||
+    betsQuery.isError
+  ) {
+    return (
+      <div
+        className="rounded-lg border border-red-500/30 bg-red-500/[0.08] p-4"
+        role="alert"
+      >
+        <p className="font-bold text-white">Couldn&apos;t load wagering.</p>
+        <p className="mt-1 text-sm text-zinc-300">
+          Your existing wagers have not been changed.
+        </p>
+        <Button
+          className="mt-3"
+          size="sm"
+          variant="outline"
+          onClick={() => {
+            void gamblingTypesQuery.refetch();
+            void userPointsQuery.refetch();
+            void betsQuery.refetch();
+          }}
+        >
+          Try again
+        </Button>
+      </div>
+    );
+  }
 
-	const submitBet = api.gambling.submitPoints.useMutation({
-		onSuccess: () => {
-			refetchBets();
-			utils.user.points.invalidate();
-		}
-	});
+  const gamblingTypes = gamblingTypesQuery.data ?? [];
+  const myBets = betsQuery.data ?? [];
+  const userPoints = userPointsQuery.data ?? 0;
 
-	const getBetFor = (lookupId: string, targetHostId?: string) => {
-		const type = gamblingTypes?.find(t => t.lookupId === lookupId);
-		if (!type) return undefined;
-		return myBets?.find(b =>
-			b.gamblingTypeId === type.id &&
-			(!targetHostId || (b as any).targetUserId === targetHostId)
-		);
-	};
+  const getBetFor = (lookupId: string, targetHostId?: string) => {
+    const type = gamblingTypes.find(
+      (candidate) => candidate.lookupId === lookupId
+    );
+    if (!type) return undefined;
+    return myBets.find(
+      (bet) =>
+        bet.gamblingTypeId === type.id &&
+        (targetHostId ? bet.targetUserId === targetHostId : !bet.targetUserId)
+    );
+  };
 
-	return (
-		<div className="flex flex-col items-center gap-2 p-6 bg-gray-900/30 rounded-2xl border border-gray-800 shadow-inner max-w-2xl mx-auto w-full">
-			<div className="relative grid grid-cols-7 w-full items-center">
-				<motion.div
-					initial={{ opacity: 0, scale: 0.8, rotate: -10 }}
-					animate={{ opacity: 1, scale: 1, rotate: 2 }}
-					whileHover={{ scale: 1.1, rotate: 0 }}
-					className="absolute -top-3 -right-3 flex items-center gap-1.5 px-3 py-1 bg-gradient-to-r from-amber-400 to-amber-600 rounded-full shadow-lg shadow-amber-500/20 cursor-default select-none z-20 group overflow-hidden"
-				>
-					{/* Shine effect */}
-					<motion.div
-						animate={{ x: ["-100%", "200%"] }}
-						transition={{ repeat: Infinity, duration: 3, ease: "linear", repeatDelay: 1 }}
-						className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -skew-x-[20deg]"
-					/>
+  const getTypeFor = (lookupId: string) =>
+    gamblingTypes.find((candidate) => candidate.lookupId === lookupId);
 
-					<AnimatePresence mode="wait">
-						<motion.span
-							key={titleIndex}
-							initial={{ y: 10, opacity: 0 }}
-							animate={{ y: 0, opacity: 1 }}
-							exit={{ y: -10, opacity: 0 }}
-							className="relative text-[10px] font-black text-amber-950 uppercase tracking-widest drop-shadow-sm inline-block min-w-[120px] text-right"
-						>
-							{gamblingTitle[titleIndex]}
-						</motion.span>
-					</AnimatePresence>
-					<motion.span
-						animate={{ rotate: [0, 15, -15, 0] }}
-						transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
-						className="relative text-xs"
-					>
-						🎲
-					</motion.span>
-				</motion.div>
+  const handleSubmit = async (input: WagerInput) => {
+    await submitBet.mutateAsync(input);
+    await Promise.all([
+      betsQuery.refetch(),
+      utils.user.points.invalidate(),
+      utils.gambling.getUsersGamblingPointsForAssignments.invalidate({
+        assignmentIds: [assignmentId],
+      }),
+    ]);
+  };
 
-				{/* Row 1: Top Arch Bet (2x) - MCP & Harley */}
-				<div className="col-start-1 col-span-5 row-start-1 relative flex justify-center h-20 mt-5 sm:mt-0">
-					<div className="absolute top-10 w-[85%] h-14 border-t-2 border-x-2 border-gray-700 rounded-t-[120px] pointer-events-none opacity-50" />
-					<div className="z-10 px-4 py-1 rounded-full self-start">
-						<BettingCoin
-							lookupId="mcp-harley-rating-guess-2x"
-							label="MCP & Harley"
-							gamblingTypes={gamblingTypes}
-							getBetFor={getBetFor}
-							submitBet={submitBet}
+  const hostOptions: WagerOption[] = [
+    {
+      lookupId: "mcp-rating-guess-1x",
+      targetHostId: hosts[0]?.id,
+      label: `${firstName(hosts[0], "Host 1")}’s rating`,
+      description: "Win if this one host matches your saved pick.",
+    },
+    {
+      lookupId: "fonso-rating-guess-1x",
+      targetHostId: hosts[1]?.id,
+      label: `${firstName(hosts[1], "Host 2")}’s rating`,
+      description: "Win if this one host matches your saved pick.",
+    },
+    {
+      lookupId: "harley-rating-guess-1x",
+      targetHostId: hosts[2]?.id,
+      label: `${firstName(hosts[2], "Host 3")}’s rating`,
+      description: "Win if this one host matches your saved pick.",
+    },
+  ].filter((option) => option.targetHostId);
 
-							assignmentId={assignmentId}
-							userPoints={userPoints}
-							episodeStatus={episodeStatus}
-						/>
-						<div className="w-full text-center text-[10px] text-gray-500 font-bold mb-1 opacity-70">2x</div>
-					</div>
-				</div>
+  const pairOptions: WagerOption[] = [
+    {
+      lookupId: "mcp-fonso-rating-guess-2x",
+      label: `${firstName(hosts[0], "Host 1")} + ${firstName(
+        hosts[1],
+        "Host 2"
+      )}`,
+      description: "Win only if both hosts match your saved picks.",
+    },
+    {
+      lookupId: "mcp-harley-rating-guess-2x",
+      label: `${firstName(hosts[0], "Host 1")} + ${firstName(
+        hosts[2],
+        "Host 3"
+      )}`,
+      description: "Win only if both hosts match your saved picks.",
+    },
+    {
+      lookupId: "fonso-harley-rating-guess-2x",
+      label: `${firstName(hosts[1], "Host 2")} + ${firstName(
+        hosts[2],
+        "Host 3"
+      )}`,
+      description: "Win only if both hosts match your saved picks.",
+    },
+  ];
 
-				{/* Row 2: Host Name Cards + Trio Agree */}
-				<div className="col-start-1 row-start-2 flex justify-center">
-					<div className="w-full flex flex-col sm:flex-row justify-center items-center p-2 gap-2">
-						{hosts[0]?.name && <span className="text-gray-200 rounded-lg leading-loose self-center underline underline-offset-4">{hosts[0].name}</span>}
-						{guesses.find(g => g.hostId == hosts[0]?.id) && <RatingIcon value={guesses.find(g => g.hostId == hosts[0]?.id)?.ratingId} />}
-					</div>
-				</div>
-				<div className="col-start-3 row-start-2 flex justify-center">
-					<div className="w-full flex flex-col sm:flex-row justify-center items-center p-2 gap-2">
-						{hosts[1]?.name && <span className="text-gray-200 rounded-lg leading-loose self-center underline underline-offset-4">{hosts[1].name}</span>}
-						{guesses.find(g => g.hostId === hosts[1]?.id) && <RatingIcon value={guesses.find(g => g.hostId === hosts[1]?.id)?.ratingId} />}
-					</div>
-				</div>
-				<div className="col-start-5 row-start-2 flex justify-center">
-					<div className="w-full flex flex-col sm:flex-row justify-center items-center p-2 gap-2">
-						{hosts[2]?.name && <span className="text-gray-200 rounded-lg leading-loose self-center underline underline-offset-4">{hosts[2].name}</span>}
-						{guesses.find(g => g.hostId === hosts[2]?.id) && <RatingIcon value={guesses.find(g => g.hostId === hosts[2]?.id)?.ratingId} />}
-					</div>
-				</div>
+  const allOptions: WagerOption[] = [
+    {
+      lookupId: "all-rating-guess-3x",
+      label: "All three hosts",
+      description: "Win only if every host matches your saved picks.",
+    },
+  ];
 
-				<div className="col-start-6 row-start-2 flex justify-center">
-					<div className="w-full text-right text-[10px] text-gray-500 font-bold mb-1 opacity-70">3x</div>
-				</div>
+  const getPayoutMultiplier = (options: WagerOption[]) =>
+    options
+      .map((option) => getTypeFor(option.lookupId)?.multiplier)
+      .find((multiplier) => multiplier !== undefined);
 
-				<div className="col-start-7 row-start-2 flex flex-col items-center pl-4 py-2">
-					<BettingCoin
-						lookupId="all-rating-guess-3x"
-						label="All Three"
-						gamblingTypes={gamblingTypes}
-						getBetFor={getBetFor}
-						submitBet={submitBet}
+  const renderOptions = (options: WagerOption[], payoutTone: PayoutTone) =>
+    options.map((option) => {
+      const type = getTypeFor(option.lookupId);
+      if (!type) return null;
+      return (
+        <BettingCoin
+          key={`${option.lookupId}-${option.targetHostId ?? "all"}`}
+          type={type}
+          targetHostId={option.targetHostId}
+          label={option.label}
+          description={option.description}
+          payoutTone={payoutTone}
+          existingBet={getBetFor(option.lookupId, option.targetHostId)}
+          assignmentId={assignmentId}
+          userPoints={userPoints}
+          isRoundOpen={isRoundOpen}
+          onSubmit={handleSubmit}
+        />
+      );
+    });
 
-						assignmentId={assignmentId}
-						userPoints={userPoints}
-						episodeStatus={episodeStatus}
-					/>
-				</div>
+  return (
+    <div className="space-y-5">
+      <div className="grid gap-3 rounded-lg border border-amber-400/20 bg-amber-400/[0.06] p-4 sm:grid-cols-[1fr_auto] sm:items-start">
+        <div>
+          <p className="flex items-center gap-2 font-bold text-white">
+            <AlertTriangle
+              className="h-4 w-4 text-amber-300"
+              aria-hidden="true"
+            />
+            Wagers can lose points
+          </p>
+          <p className="mt-1 text-sm leading-relaxed text-zinc-300">
+            A loss deducts your wager. A win returns the wager plus the listed
+            multiplier payout.
+          </p>
+        </div>
+        <div className="flex items-center gap-2 rounded-lg bg-black/25 px-3 py-2 text-sm">
+          <Coins className="h-4 w-4 text-amber-300" aria-hidden="true" />
+          <span className="text-zinc-400">Available</span>
+          <strong className="text-white">{userPoints} points</strong>
+        </div>
+      </div>
 
-				{/* Row 3: 1x Bets */}
-				<div className="col-start-1 row-start-3 flex flex-col items-center">
-					<span className="text-[10px] text-gray-500 font-bold mb-1 opacity-70">1x</span>
-					<BettingCoin
-						lookupId="mcp-rating-guess-1x"
-						targetHostId={hosts[0]?.id}
-						label={hosts[0]?.name?.split(' ')[0] ?? ""}
-						gamblingTypes={gamblingTypes}
-						getBetFor={getBetFor}
-						submitBet={submitBet}
+      {!isRoundOpen && (
+        <p className="rounded-lg border border-amber-400/20 bg-amber-400/[0.06] p-3 text-sm font-semibold text-amber-100">
+          Betting is closed. Existing wagers are locked and shown below.
+        </p>
+      )}
 
-						assignmentId={assignmentId}
-						userPoints={userPoints}
-						episodeStatus={episodeStatus}
-					/>
-				</div>
-				<div className="col-start-3 row-start-3 flex flex-col items-center">
-					<span className="text-[10px] text-gray-500 font-bold mb-1 opacity-70">1x</span>
-					<BettingCoin
-						lookupId="fonso-rating-guess-1x"
-						targetHostId={hosts[1]?.id}
-						label={hosts[1]?.name?.split(' ')[0] ?? ""}
-						gamblingTypes={gamblingTypes}
-						getBetFor={getBetFor}
-						submitBet={submitBet}
+      <div className="rounded-lg bg-white/[0.025] p-3">
+        <p className="text-xs font-bold uppercase tracking-wider text-zinc-500">
+          Your saved picks
+        </p>
+        <ul className="mt-2 flex flex-wrap gap-x-5 gap-y-2">
+          {hosts.map((host) => {
+            const guess = guesses.find(
+              (candidate) => candidate.hostId === host.id
+            );
+            return (
+              <li
+                key={host.id}
+                className="flex items-center gap-2 text-sm text-zinc-300"
+              >
+                <span className="font-semibold text-white">
+                  {host.name ?? "Host"}
+                </span>
+                {guess ? (
+                  <RatingIcon value={guess.ratingId} />
+                ) : (
+                  <span>Not picked</span>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+      </div>
 
-						assignmentId={assignmentId}
-						userPoints={userPoints}
-						episodeStatus={episodeStatus}
-					/>
-				</div>
-				<div className="col-start-5 row-start-3 flex flex-col items-center">
-					<span className="text-[10px] text-gray-500 font-bold mb-1 opacity-70">1x</span>
-					<BettingCoin
-						lookupId="harley-rating-guess-1x"
-						targetHostId={hosts[2]?.id}
-						label={hosts[2]?.name?.split(' ')[0] ?? ""}
-						gamblingTypes={gamblingTypes}
-						getBetFor={getBetFor}
-						submitBet={submitBet}
+      <WagerGroup
+        title="One host"
+        payoutMultiplier={getPayoutMultiplier(hostOptions)}
+        payoutTone="standard"
+        description="Lower risk: one result must match."
+      >
+        {renderOptions(hostOptions, "standard")}
+      </WagerGroup>
+      <WagerGroup
+        title="Two hosts"
+        payoutMultiplier={getPayoutMultiplier(pairOptions)}
+        payoutTone="boosted"
+        description="Both selected results must match."
+      >
+        {renderOptions(pairOptions, "boosted")}
+      </WagerGroup>
+      <WagerGroup
+        title="All hosts"
+        payoutMultiplier={getPayoutMultiplier(allOptions)}
+        payoutTone="maximum"
+        description="Highest risk: all three results must match."
+      >
+        {renderOptions(allOptions, "maximum")}
+      </WagerGroup>
+    </div>
+  );
+};
 
-						assignmentId={assignmentId}
-						userPoints={userPoints}
-						episodeStatus={episodeStatus}
-					/>
-				</div>
+const WagerGroup = ({
+  title,
+  payoutMultiplier,
+  payoutTone,
+  description,
+  children,
+}: {
+  title: string;
+  payoutMultiplier: number | undefined;
+  payoutTone: PayoutTone;
+  description: string;
+  children: React.ReactNode;
+}) => {
+  const sectionTone =
+    payoutTone === "standard"
+      ? "border-cyan-400/20 bg-cyan-400/[0.035]"
+      : payoutTone === "boosted"
+      ? "border-amber-400/20 bg-amber-400/[0.035]"
+      : "border-rose-400/20 bg-rose-400/[0.035]";
+  const payoutBadge =
+    payoutTone === "standard"
+      ? "border-cyan-300/30 bg-cyan-400/10 text-cyan-200"
+      : payoutTone === "boosted"
+      ? "border-amber-300/30 bg-amber-400/10 text-amber-200"
+      : "border-rose-300/30 bg-rose-400/10 text-rose-200";
 
-				{/* Row 4: Pair Agree Bets (positioned between hosts) */}
-				<div className="col-start-2 row-start-4 flex flex-col items-center">
-					<div className="w-full text-center text-[10px] text-gray-500 font-bold mb-1 opacity-70">2x</div>
-
-					<div className="w-12 h-4 border-b-2 border-x-2 border-gray-700 rounded-b-xl opacity-50 mb-1" />
-					<div className="whitespace-nowrap flex justify-center">
-
-						<BettingCoin
-							lookupId="mcp-fonso-rating-guess-2x"
-							label="MCP & Fonso"
-							gamblingTypes={gamblingTypes}
-							getBetFor={getBetFor}
-							submitBet={submitBet}
-
-							assignmentId={assignmentId}
-							userPoints={userPoints}
-							episodeStatus={episodeStatus}
-						/>
-					</div>
-				</div>
-				<div className="col-start-4 row-start-4 flex flex-col items-center">
-					<div className="w-full text-center text-[10px] text-gray-500 font-bold mb-1 opacity-70">2x</div>
-
-					<div className="w-12 h-4 border-b-2 border-x-2 border-gray-700 rounded-b-xl opacity-50 mb-1" />
-					<div className="whitespace-nowrap flex justify-center">
-						<BettingCoin
-							lookupId="fonso-harley-rating-guess-2x"
-							label="Fonso & Harley"
-							gamblingTypes={gamblingTypes}
-							getBetFor={getBetFor}
-							submitBet={submitBet}
-
-							assignmentId={assignmentId}
-							userPoints={userPoints}
-							episodeStatus={episodeStatus}
-						/>
-					</div>
-				</div>
-			</div>
-		</div>
-	);
+  return (
+    <section className={cn("rounded-xl border p-3 sm:p-4", sectionTone)}>
+      <div className="mb-3 flex flex-wrap items-center gap-x-3 gap-y-2">
+        <span
+          className={cn(
+            "rounded-lg border px-3 py-1.5 text-base font-black tabular-nums",
+            payoutBadge
+          )}
+        >
+          {payoutMultiplier !== undefined
+            ? `${payoutMultiplier}x payout`
+            : "Payout unavailable"}
+        </span>
+        <div>
+          <h4 className="font-black text-white">{title}</h4>
+          <p className="text-xs text-zinc-400">{description}</p>
+        </div>
+      </div>
+      <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">{children}</div>
+    </section>
+  );
 };
 
 export default AssignmentGamblingBoard;
