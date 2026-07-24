@@ -37,7 +37,11 @@ test("the Convex prediction UI is independent of the SQL transport and auth stac
   assert.match(component, /onGuessSaved\(optimisticGuess\)/u);
   assert.match(component, /onGuessSaved\(previousGuess\)/u);
   assert.match(component, /onGuessRemoved\(hostId\)/u);
-  assert.match(component, /Wagering and assignment voice messages/u);
+  assert.match(component, /ConvexAssignmentGamblingBoard/u);
+  assert.match(
+    component,
+    /Assignment voice messages are temporarily read-only/u
+  );
 });
 
 test("canonical account resolution gates both Convex participation clients", () => {

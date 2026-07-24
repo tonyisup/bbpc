@@ -1,6 +1,5 @@
 "use client";
 
-import { type GamblingPoints, type GamblingType } from "@prisma/client";
 import { Loader2 } from "lucide-react";
 import { type FormEvent, type FC, useState } from "react";
 
@@ -18,21 +17,28 @@ export type WagerInput = {
 
 export type PayoutTone = "standard" | "boosted" | "maximum";
 
+export interface WagerType {
+  id: string;
+  multiplier: number;
+}
+
+export interface ExistingWager {
+  points: number;
+  status: string;
+}
+
 interface BettingCoinProps {
-  type: GamblingType;
+  type: WagerType;
   targetHostId?: string;
   label: string;
   description: string;
   payoutTone: PayoutTone;
-  existingBet:
-    | (GamblingPoints & {
-        gamblingType?: GamblingType;
-      })
-    | undefined;
+  existingBet: ExistingWager | undefined;
   assignmentId: string;
   userPoints: number;
   isRoundOpen: boolean;
   onSubmit: (input: WagerInput) => Promise<void>;
+  formatSubmissionError?: (error: unknown) => string;
 }
 
 const BettingCoin: FC<BettingCoinProps> = ({
@@ -46,6 +52,7 @@ const BettingCoin: FC<BettingCoinProps> = ({
   userPoints,
   isRoundOpen,
   onSubmit,
+  formatSubmissionError,
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [amount, setAmount] = useState(existingBet?.points.toString() ?? "");
@@ -104,11 +111,13 @@ const BettingCoin: FC<BettingCoinProps> = ({
       setIsEditing(false);
     } catch (submissionError) {
       const message =
-        submissionError instanceof Error ? submissionError.message : "";
+        formatSubmissionError?.(submissionError) ??
+        (submissionError instanceof Error ? submissionError.message : "");
       setError(
         message.includes("ROUND_LOCKED")
           ? "Betting closed before this wager could be saved."
-          : "Couldn’t save this wager. Check your connection and retry."
+          : message ||
+              "Couldn’t save this wager. Check your connection and retry."
       );
       setReviewAmount(null);
     } finally {

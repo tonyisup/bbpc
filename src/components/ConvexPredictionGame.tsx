@@ -13,6 +13,7 @@ import {
 } from "react";
 
 import RatingIcon from "@/components/RatingIcon";
+import { ConvexAssignmentGamblingBoard } from "@/components/ConvexAssignmentGamblingBoard";
 import { Button } from "@/components/ui/button";
 import {
   type ConvexPredictionData,
@@ -590,11 +591,32 @@ const ConvexAssignmentPrediction: FC<ConvexAssignmentPredictionProps> = ({
           ) : null}
 
           {hasAllGuesses ? (
-            <div className="rounded-lg border border-amber-400/20 bg-amber-400/[0.06] p-3 text-sm text-amber-100">
-              Wagering and assignment voice messages are temporarily read-only
-              while their Convex clients are migrated.
-            </div>
+            <details className="rounded-lg border border-white/10 bg-black/20">
+              <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 font-bold text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400 [&::-webkit-details-marker]:hidden">
+                <span className="flex items-center gap-2">
+                  Wager points <span className="text-zinc-500">— optional</span>
+                </span>
+                <ChevronDown
+                  className="h-4 w-4 text-zinc-400"
+                  aria-hidden="true"
+                />
+              </summary>
+              <div className="border-t border-white/10 p-3 sm:p-4">
+                <ConvexAssignmentGamblingBoard
+                  assignmentId={assignment.id}
+                  hosts={hosts}
+                  guesses={guesses}
+                  episodeStatus={episodeStatus}
+                  playable={assignment.playable}
+                />
+              </div>
+            </details>
           ) : null}
+
+          <div className="rounded-lg border border-amber-400/20 bg-amber-400/[0.06] p-3 text-sm text-amber-100">
+            Assignment voice messages are temporarily read-only while their
+            Convex recording client is integrated.
+          </div>
         </div>
       ) : null}
     </article>
