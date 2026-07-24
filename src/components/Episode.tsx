@@ -2,15 +2,6 @@ import { type FC } from "react";
 import type { FuseResultMatch } from "fuse.js";
 import Assignment from "./Assignment";
 import MovieInlinePreview from "./MovieInlinePreview";
-import type {
-  AssignmentReview,
-  Assignment as PrismaAssignment,
-  GamblingPoints,
-  Link as EpisodeLink,
-  Movie,
-  Show,
-  User,
-} from "@prisma/client";
 import Link from "next/link";
 import { AddExtraToNext } from "./AddExtraToNext";
 import {
@@ -24,37 +15,14 @@ import { type PredictionGameAssignment } from "./PredictionGame";
 import { getEpisodePath } from "@/lib/routes";
 import { formatPlainDate } from "@/lib/dates";
 import { GameParticipation } from "./GameParticipation";
+import type {
+  CompleteEpisode,
+  EpisodeAssignment,
+  EpisodeExtra,
+  EpisodeLink,
+} from "@/types/episode";
 
-/**
- * Represents an episode with all its related assignments, extras, and links.
- */
-type EpisodeAssignment = PrismaAssignment & {
-  movie: Movie | null;
-  user: User;
-  assignmentReviews?: AssignmentReview[];
-  gamblingPoints?: GamblingPoints[];
-};
-export type EpisodeExtra = {
-  id: string;
-  review: {
-    movie?: Movie | null;
-    show?: Show | null;
-  };
-};
-
-export type CompleteEpisode = {
-  id: string;
-  slug?: string | null;
-  number: number;
-  title: string;
-  recording: string | null;
-  date: Date | null;
-  description: string | null;
-  status: string | null;
-  assignments: EpisodeAssignment[];
-  extras: EpisodeExtra[];
-  links: EpisodeLink[];
-};
+export type { CompleteEpisode, EpisodeExtra } from "@/types/episode";
 
 const mapEpisodeToPredictionAssignment = (
   assignment: EpisodeAssignment

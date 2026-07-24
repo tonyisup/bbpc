@@ -1,8 +1,8 @@
-import type { User } from "@prisma/client";
 import type { FC } from "react";
+import type { EpisodeUser } from "@/types/episode";
 
 interface UserTagProps {
-  user: User | null;
+  user: EpisodeUser | null;
 }
 
 const UserTag: FC<UserTagProps> = ({ user }) => {

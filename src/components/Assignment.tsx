@@ -8,15 +8,12 @@ import {
   highlightText,
   highlightTextByIndices,
 } from "@/utils/text";
-import type { Assignment as AssignmentType, Movie, User } from "@prisma/client";
+import type { EpisodeAssignment } from "@/types/episode";
 
 interface AssignmentProps {
-  assignment: AssignmentType & {
-    movie: Movie | null;
-    user: User;
-  }
-  showMovieTitles?: boolean,
-  searchQuery?: string,
+  assignment: EpisodeAssignment;
+  showMovieTitles?: boolean;
+  searchQuery?: string;
   fuseMatches?: ReadonlyArray<FuseResultMatch>;
   assignmentRefIndex?: number;
 }
@@ -37,27 +34,29 @@ const Assignment: FC<AssignmentProps> = ({
         )
       : [];
 
-  return <div className="flex flex-col items-center gap-2 p-2">
-    {assignment.movie && (
-      <MovieInlinePreview
-        movie={assignment.movie}
-        searchQuery={searchQuery}
-        titleHighlightIndices={titleIdx}
-      />
-    )}
-    {showMovieTitles && assignment.movie && (
-      <div className="text-sm text-gray-500">
-        {titleIdx.length > 0
-          ? highlightTextByIndices(assignment.movie.title, titleIdx)
-          : highlightText(assignment.movie.title, searchQuery)}{" "}
-        ({assignment.movie.year})
+  return (
+    <div className="flex flex-col items-center gap-2 p-2">
+      {assignment.movie && (
+        <MovieInlinePreview
+          movie={assignment.movie}
+          searchQuery={searchQuery}
+          titleHighlightIndices={titleIdx}
+        />
+      )}
+      {showMovieTitles && assignment.movie && (
+        <div className="text-sm text-gray-500">
+          {titleIdx.length > 0
+            ? highlightTextByIndices(assignment.movie.title, titleIdx)
+            : highlightText(assignment.movie.title, searchQuery)}{" "}
+          ({assignment.movie.year})
+        </div>
+      )}
+      <div className="flex items-center justify-between gap-4">
+        <HomeworkFlag type={assignment.type} />
+        <UserTag user={assignment.user} />
       </div>
-    )}
-    <div className="flex items-center justify-between gap-4">
-      <HomeworkFlag type={assignment.type} />
-      <UserTag user={assignment.user} />
     </div>
-  </div>
-}
+  );
+};
 
 export default Assignment;

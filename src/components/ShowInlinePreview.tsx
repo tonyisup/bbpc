@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import { type Show } from "@prisma/client";
 import Image from "next/image";
 import Link from "next/link";
 import type { FC } from "react";
 import { highlightText, highlightTextByIndices } from "@/utils/text";
 import { cn } from "@/lib/utils";
+import type { EpisodeShow } from "@/types/episode";
 
 interface ShowInlinePreviewProps {
-  show: Show;
+  show: EpisodeShow;
   searchQuery?: string;
   titleHighlightIndices?: ReadonlyArray<readonly [number, number]>;
   className?: string; // Applied to container (Link)
@@ -37,8 +37,8 @@ const ShowInlinePreview: FC<ShowInlinePreviewProps> = ({
       {show.poster && (
         <Image
           className={cn(
-            "rounded-2xl w-[48px] h-[72px] sm:w-[144px] sm:h-[216px]",
-            responsive ? "w-[48px] h-[72px] sm:w-[144px] sm:h-[216px]" : "",
+            "h-[72px] w-[48px] rounded-2xl sm:h-[216px] sm:w-[144px]",
+            responsive ? "h-[72px] w-[48px] sm:h-[216px] sm:w-[144px]" : "",
             imageClassName
           )}
           src={show.poster}
@@ -58,6 +58,6 @@ const ShowInlinePreview: FC<ShowInlinePreviewProps> = ({
       )}
     </Link>
   );
-}
+};
 
 export default ShowInlinePreview;

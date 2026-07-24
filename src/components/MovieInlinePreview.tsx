@@ -1,14 +1,14 @@
 "use client";
 
-import { type Movie } from "@prisma/client";
 import Image from "next/image";
 import Link from "next/link";
 import type { FC } from "react";
 import { highlightText, highlightTextByIndices } from "@/utils/text";
 import { cn } from "@/lib/utils";
+import type { EpisodeMovie } from "@/types/episode";
 
 interface MovieInlinePreviewProps {
-  movie: Movie;
+  movie: EpisodeMovie;
   searchQuery?: string;
   /** When set (e.g. fuzzy search), highlights Fuse match ranges on the title. */
   titleHighlightIndices?: ReadonlyArray<readonly [number, number]>;

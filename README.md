@@ -63,6 +63,15 @@ value to `convex` activates Clerk middleware plus the Clerk-authenticated Convex
 provider. Convex mode fails immediately unless both Clerk keys and
 `NEXT_PUBLIC_CONVEX_URL` are configured; it never silently falls back to SQL.
 
+The first compatibility slice routes the public `episode.next` tRPC procedure to
+`episodes/public:nextScheduled` in Convex. Its server-only adapter validates the returned
+data at runtime against a storage-neutral presentation contract. The SQL implementation
+remains the default until the complete consumer acceptance gate is signed off.
+
+The shared `@tonyisup/bbpc-convex-api` package is not yet published. Until it is
+available to CI and Vercel, this app keeps its narrow function reference and runtime
+schema locally so a sibling checkout is not a deployment dependency.
+
 ## 📱 Features
 
 - Full-stack TypeScript integration
