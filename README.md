@@ -7,8 +7,8 @@ A modern web application built with the T3 Stack, combining powerful technologie
 ## ��� Tech Stack
 
 - **Framework**: [Next.js 14](https://nextjs.org/) with TypeScript
-- **Authentication**: [NextAuth.js](https://next-auth.js.org/) for secure user authentication
-- **Database**: [Prisma](https://prisma.io) as the ORM
+- **Authentication**: NextAuth.js for the current SQL path; Clerk is pinned for the Convex cutover
+- **Database**: Prisma/SQL for the current path; Convex adapters are being migrated domain by domain
 - **API**: [tRPC](https://trpc.io) for end-to-end typesafe APIs
 - **Styling**: [Tailwind CSS](https://tailwindcss.com) with additional utilities:
   - Headless UI components
@@ -54,6 +54,14 @@ A modern web application built with the T3 Stack, combining powerful technologie
 ## 🔒 Environment Variables
 
 Required environment variables can be found in `.env.example`. Make sure to set these up before running the application.
+
+### Convex migration mode
+
+`NEXT_PUBLIC_BBPC_BACKEND` defaults to `sql`. The existing NextAuth, Prisma, and tRPC
+path remains active while compatibility adapters are migrated and verified. Setting the
+value to `convex` activates Clerk middleware plus the Clerk-authenticated Convex React
+provider. Convex mode fails immediately unless both Clerk keys and
+`NEXT_PUBLIC_CONVEX_URL` are configured; it never silently falls back to SQL.
 
 ## 📱 Features
 
