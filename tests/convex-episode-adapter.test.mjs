@@ -38,6 +38,18 @@ const episodeResults = await readFile(
   new URL("../src/components/EpisodeResults.tsx", import.meta.url),
   "utf8"
 );
+const homePage = await readFile(
+  new URL("../src/app/page.tsx", import.meta.url),
+  "utf8"
+);
+const gambling = await readFile(
+  new URL("../src/server/convex/gambling.ts", import.meta.url),
+  "utf8"
+);
+const middleware = await readFile(
+  new URL("../src/middleware.ts", import.meta.url),
+  "utf8"
+);
 
 test("anonymous next-episode reads use a fail-closed Convex adapter", () => {
   assert.match(client, /import "server-only"/u);
@@ -86,6 +98,22 @@ test("anonymous next-episode reads use a fail-closed Convex adapter", () => {
   );
   assert.doesNotMatch(episodeResults, /\bany\b/u);
   assert.match(episodeResults, /results: EpisodeResultsData/u);
+  assert.match(
+    homePage,
+    /NEXT_PUBLIC_BBPC_BACKEND === "convex"[\s\S]*getLatestPublishedEpisode/u
+  );
+  assert.match(
+    homePage,
+    /NEXT_PUBLIC_BBPC_BACKEND === "convex"[\s\S]*hasSignedInUserWonForEpisode/u
+  );
+  assert.match(gambling, /games\/gambling:hasWonForEpisode/u);
+  assert.match(client, /auth\(\)/u);
+  assert.match(client, /getToken\(\{ template: "convex" \}\)/u);
+});
+
+test("Clerk middleware matches routes before Next.js locale rewriting", () => {
+  assert.match(middleware, /clerkMiddleware/u);
+  assert.equal(middleware.match(/locale: false/gu)?.length, 3);
 });
 
 test("the public episode presentation contract is storage-neutral", () => {

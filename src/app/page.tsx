@@ -4,9 +4,13 @@ import { EpisodeSkeleton } from "@/components/EpisodeSkeleton";
 import { db } from "@/server/db";
 import { getServerAuthSession } from "@/server/auth";
 import { Suspense } from "react";
+import { env } from "@/env.mjs";
+import { getLatestPublishedEpisode } from "@/server/convex/episodes";
+import { hasSignedInUserWonForEpisode } from "@/server/convex/gambling";
+import { getPacificTodayPlainDate } from "@/lib/dates";
 
-export default async function HomePage() {
-  const latestEpisode = await db.episode.findFirst({
+async function loadSqlLatestEpisode() {
+  return db.episode.findFirst({
     where: {
       status: "Published",
       date: {
@@ -46,10 +50,25 @@ export default async function HomePage() {
       date: "desc",
     },
   });
+}
 
+async function loadHomeEpisode() {
+  if (env.NEXT_PUBLIC_BBPC_BACKEND === "convex") {
+    const latestEpisode = await getLatestPublishedEpisode(
+      getPacificTodayPlainDate()
+    );
+    return {
+      latestEpisode,
+      hasWon:
+        latestEpisode === null
+          ? false
+          : await hasSignedInUserWonForEpisode(latestEpisode.id),
+    };
+  }
+
+  const latestEpisode = await loadSqlLatestEpisode();
   const session = await getServerAuthSession();
   let hasWon = false;
-
   if (session?.user && latestEpisode) {
     const win = await db.gamblingPoints.findFirst({
       where: {
@@ -62,7 +81,11 @@ export default async function HomePage() {
     });
     hasWon = !!win;
   }
+  return { latestEpisode, hasWon };
+}
 
+export default async function HomePage() {
+  const { latestEpisode, hasWon } = await loadHomeEpisode();
   return (
     <div className="bbpc-page space-y-12 text-white">
       <section aria-labelledby="latest-episode-heading" className="space-y-4">

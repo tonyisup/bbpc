@@ -1,5 +1,6 @@
 import "server-only";
 
+import { auth } from "@clerk/nextjs/server";
 import { fetchQuery } from "convex/nextjs";
 import {
   makeFunctionReference,
@@ -14,10 +15,7 @@ export const publicQueryReference = <Args extends DefaultFunctionArgs>(
   name: string
 ) => makeFunctionReference<"query", Args, unknown>(name);
 
-export async function fetchPublicQuery<Args extends DefaultFunctionArgs>(
-  query: ReturnType<typeof publicQueryReference<Args>>,
-  args: Args
-): Promise<unknown> {
+function requireConvexUrl(): string {
   if (env.NEXT_PUBLIC_BBPC_BACKEND !== "convex") {
     throw new Error(
       "Convex queries are disabled while NEXT_PUBLIC_BBPC_BACKEND is not convex."
@@ -28,10 +26,59 @@ export async function fetchPublicQuery<Args extends DefaultFunctionArgs>(
   if (!url) {
     throw new Error("Convex mode requires NEXT_PUBLIC_CONVEX_URL.");
   }
+  return url;
+}
 
-  const argsAndOptions = [args, { url }] as unknown as ArgsAndOptions<
+function queryArgs<Args extends DefaultFunctionArgs>(
+  query: ReturnType<typeof publicQueryReference<Args>>,
+  args: Args,
+  options: NextjsOptions
+) {
+  return [args, options] as unknown as ArgsAndOptions<
     typeof query,
     NextjsOptions
   >;
-  return fetchQuery(query, ...argsAndOptions);
+}
+
+export async function fetchPublicQuery<Args extends DefaultFunctionArgs>(
+  query: ReturnType<typeof publicQueryReference<Args>>,
+  args: Args
+): Promise<unknown> {
+  return fetchQuery(
+    query,
+    ...queryArgs(query, args, {
+      url: requireConvexUrl(),
+    })
+  );
+}
+
+async function getOptionalConvexToken(): Promise<string | null> {
+  const clerkAuth = await auth();
+  if (clerkAuth.userId === null) {
+    return null;
+  }
+  const token =
+    clerkAuth.sessionClaims?.aud === "convex"
+      ? await clerkAuth.getToken()
+      : await clerkAuth.getToken({ template: "convex" });
+  if (token === null) {
+    throw new Error(
+      "Clerk is authenticated but did not provide a Convex token."
+    );
+  }
+  return token;
+}
+
+export async function fetchQueryForSignedInUser<
+  Args extends DefaultFunctionArgs
+>(
+  query: ReturnType<typeof publicQueryReference<Args>>,
+  args: Args
+): Promise<unknown | null> {
+  const url = requireConvexUrl();
+  const token = await getOptionalConvexToken();
+  if (token === null) {
+    return null;
+  }
+  return fetchQuery(query, ...queryArgs(query, args, { url, token }));
 }
