@@ -3,8 +3,13 @@
 import { useState } from "react";
 
 import GamePerformanceTracking from "@/components/GamePerformanceTracking";
+import type { GamePerformanceData } from "@/types/game";
 
-export function SeasonStandingsDisclosure() {
+export function SeasonStandingsDisclosure({
+  data,
+}: {
+  data: GamePerformanceData | null;
+}) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -21,7 +26,7 @@ export function SeasonStandingsDisclosure() {
       </summary>
       {isOpen && (
         <div className="border-t border-white/10 p-3 sm:p-5">
-          <GamePerformanceTracking />
+          <GamePerformanceTracking data={data} />
         </div>
       )}
     </details>

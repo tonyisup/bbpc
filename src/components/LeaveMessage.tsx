@@ -1,6 +1,5 @@
 "use client";
 import React, { useState, type FC, useMemo } from "react";
-import { signIn, useSession } from "next-auth/react";
 import { Mic } from "lucide-react";
 import dynamic from "next/dynamic";
 import { api } from "@/trpc/react";
@@ -12,18 +11,19 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "./ui/button";
+import { useBbpcAuth } from "@/components/auth/BbpcAuthContext";
 
 const VoiceMailRecorder = dynamic(() => import("./voice-mail-recorder"), {
   ssr: false,
 });
 
 const LeaveMessage: FC = () => {
-  const { data: session } = useSession();
+  const { backend, signIn, user } = useBbpcAuth();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const shouldFetchEpisode = useMemo(
-    () => isModalOpen && !!session?.user,
-    [isModalOpen, session?.user]
+    () => isModalOpen && user !== null && backend === "sql",
+    [backend, isModalOpen, user]
   );
   const {
     data: episode,
@@ -33,13 +33,13 @@ const LeaveMessage: FC = () => {
     enabled: shouldFetchEpisode,
   });
 
-  if (!session?.user) {
+  if (user === null) {
     return (
       <Button
         variant="outline"
         aria-label="Log in to leave a message"
         className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-red-500/30 bg-red-500/10 px-3 text-red-300 transition-colors hover:bg-red-500/20 hover:text-red-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
-        onClick={() => void signIn()}
+        onClick={signIn}
       >
         <MicrophoneIcon />
         <span className="hidden text-sm font-semibold lg:inline">
@@ -70,7 +70,12 @@ const LeaveMessage: FC = () => {
             Leave a Message
           </DialogTitle>
         </DialogHeader>
-        {isLoading ? (
+        {backend === "convex" ? (
+          <div className="p-8 text-center text-muted-foreground" role="status">
+            Voice messages are temporarily unavailable while their storage
+            workflow is migrated.
+          </div>
+        ) : isLoading ? (
           <div className="flex items-center justify-center p-8 text-muted-foreground">
             Loading episode details...
           </div>
@@ -78,8 +83,12 @@ const LeaveMessage: FC = () => {
           <div className="p-8 text-center text-destructive" role="alert">
             Episode details could not be loaded. Please try again.
           </div>
+        ) : episode && user.appUserId ? (
+          <VoiceMailRecorder episodeId={episode.id} userId={user.appUserId} />
         ) : episode ? (
-          <VoiceMailRecorder episodeId={episode.id} userId={session.user.id} />
+          <div className="p-8 text-center text-destructive" role="alert">
+            Your account could not be resolved. Please sign in again.
+          </div>
         ) : (
           <div className="p-8 text-center text-muted-foreground" role="status">
             No upcoming episode is available for voice messages.

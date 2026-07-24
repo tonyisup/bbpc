@@ -271,11 +271,16 @@ test("prediction cards expose progress, accessible choices, and save recovery", 
   const game = read("src/components/PredictionGame.tsx");
   const participation = read("src/components/GameParticipation.tsx");
   const scoring = read("src/server/predictionScoring.ts");
+  const sqlGames = read("src/server/sql/games.ts");
   const reviewRouter = read("src/server/api/routers/reviewRouter.ts");
   const gamePage = read("src/app/game/page.tsx");
 
   assert.doesNotMatch(game, /api\.auth\.getSession/);
-  assert.match(participation, /userId=\{session\.user\.id\}/);
+  assert.match(participation, /userId=\{user\.appUserId\}/);
+  assert.match(
+    participation,
+    /backend === "convex"[\s\S]*temporarily read-only/u
+  );
   assert.match(game, /firstIncompleteIndex/);
   assert.match(game, /Make picks/);
   assert.match(game, /View or edit picks/);
@@ -317,7 +322,8 @@ test("prediction cards expose progress, accessible choices, and save recovery", 
   assert.match(reviewRouter, /getPredictionScoring/);
   assert.match(scoring, /lookupID: \{ in: \[\.\.\.predictionPointTypes\] \}/);
   assert.match(scoring, /gameType: \{ lookupID: "wtfir" \}/);
-  assert.match(gamePage, /getPredictionScoring\(db\)/);
+  assert.match(gamePage, /getConvexPredictionScoring\(\)/);
+  assert.match(sqlGames, /getPredictionScoring\(db\)/);
   assert.doesNotMatch(gamePage, /Each correct host rating earns 1 point/);
 });
 

@@ -1,20 +1,36 @@
 import Link from "next/link";
-import { Suspense } from "react";
 
-import { NextEpisode } from "@/components/NextEpisode";
+import { Episode } from "@/components/Episode";
 import RatingIcon from "@/components/RatingIcon";
 import { SeasonStandingsDisclosure } from "@/components/SeasonStandingsDisclosure";
-import { db } from "@/server/db";
-import { getPredictionScoring } from "@/server/predictionScoring";
-import { CurrentRoundErrorBoundary } from "./CurrentRoundErrorBoundary";
+import { env } from "@/env.mjs";
+import { getPacificTodayPlainDate } from "@/lib/dates";
+import { getNextScheduledEpisode } from "@/server/convex/episodes";
+import {
+  getConvexCurrentPerformance,
+  getConvexPredictionScoring,
+} from "@/server/convex/games";
 
 const ruleDetailsClass =
   "group border-b border-white/10 py-1 last:border-b-0 [&_summary::-webkit-details-marker]:hidden";
 const summaryClass =
   "flex min-h-14 cursor-pointer list-none items-center justify-between gap-4 rounded-lg px-3 text-lg font-bold text-white transition-colors hover:bg-white/[0.04] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500";
 
+async function loadGamePageData() {
+  if (env.NEXT_PUBLIC_BBPC_BACKEND !== "convex") {
+    return (await import("@/server/sql/games")).getSqlGamePageData();
+  }
+  const today = getPacificTodayPlainDate();
+  const [episode, predictionScoring, performance] = await Promise.all([
+    getNextScheduledEpisode(),
+    getConvexPredictionScoring(),
+    getConvexCurrentPerformance(today),
+  ]);
+  return { episode, predictionScoring, performance };
+}
+
 export default async function GamePage() {
-  const predictionScoring = await getPredictionScoring(db);
+  const { episode, performance, predictionScoring } = await loadGamePageData();
   const formatPoints = (points: number | null) => {
     if (points === null) return "an unavailable number of points";
     const absolutePoints = Math.abs(points);
@@ -41,20 +57,16 @@ export default async function GamePage() {
         >
           Play the current round
         </h2>
-        <CurrentRoundErrorBoundary>
-          <Suspense
-            fallback={
-              <div className="bbpc-panel p-5 text-zinc-300" role="status">
-                Loading the current round...
-              </div>
-            }
-          >
-            <NextEpisode showExtras={false} allowGuesses />
-          </Suspense>
-        </CurrentRoundErrorBoundary>
+        {episode ? (
+          <Episode episode={episode} showExtras={false} allowGuesses />
+        ) : (
+          <div className="bbpc-panel p-5 text-zinc-300" role="status">
+            No current round is available.
+          </div>
+        )}
       </section>
 
-      <SeasonStandingsDisclosure />
+      <SeasonStandingsDisclosure data={performance} />
 
       <section aria-labelledby="rules-heading" className="space-y-4">
         <div>

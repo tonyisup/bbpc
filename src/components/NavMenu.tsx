@@ -23,10 +23,10 @@ import {
   NavigationMenuTrigger,
   NavigationMenuContent,
 } from "@/components/ui/navigation-menu";
-import { useSession, signOut } from "next-auth/react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ImpersonationSelector } from "./ImpersonationSelector";
 import { cn } from "@/lib/utils";
+import { useBbpcAuth } from "@/components/auth/BbpcAuthContext";
 
 interface NavItem {
   href: string;
@@ -70,9 +70,9 @@ const authNavItems: NavItem[] = [
 ];
 
 const NavMenu: FC = () => {
-  const { data: session } = useSession();
+  const { backend, signIn, signOut, user } = useBbpcAuth();
   const pathname = usePathname();
-  const isLoggedIn = !!session?.user;
+  const isLoggedIn = user !== null;
   const isActive = (href: string) =>
     href === "/"
       ? pathname === "/"
@@ -85,7 +85,7 @@ const NavMenu: FC = () => {
 
   return (
     <div className="flex items-center gap-2">
-      <ImpersonationSelector />
+      {backend === "sql" ? <ImpersonationSelector /> : null}
 
       {/* Desktop horizontal nav */}
       <nav
@@ -114,20 +114,21 @@ const NavMenu: FC = () => {
         ))}
         {isLoggedIn ? (
           <button
-            onClick={() => signOut({ callbackUrl: window.location.pathname })}
+            onClick={signOut}
             className="flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm text-gray-300 transition-colors hover:bg-white/5 hover:text-red-400"
           >
             <LogOut className="h-4 w-4" />
             <span>Sign out</span>
           </button>
         ) : (
-          <Link
-            href="/api/auth/signin"
+          <button
+            type="button"
+            onClick={signIn}
             className="flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm text-gray-300 transition-colors hover:bg-white/5 hover:text-red-400"
           >
             <LogIn className="h-4 w-4" />
             <span>Sign in</span>
-          </Link>
+          </button>
         )}
       </nav>
 
@@ -137,12 +138,10 @@ const NavMenu: FC = () => {
           <NavigationMenuList>
             <NavigationMenuItem>
               <NavigationMenuTrigger aria-label="Open navigation menu">
-                {session?.user ? (
+                {user ? (
                   <Avatar>
-                    <AvatarImage src={session.user.image} />
-                    <AvatarFallback>
-                      {session.user.name?.charAt(0)}
-                    </AvatarFallback>
+                    <AvatarImage src={user.image ?? undefined} />
+                    <AvatarFallback>{user.name?.charAt(0)}</AvatarFallback>
                   </Avatar>
                 ) : (
                   <Menu className="h-5 w-5" aria-hidden="true" />
@@ -192,9 +191,7 @@ const NavMenu: FC = () => {
                 {isLoggedIn ? (
                   <NavigationMenuLink asChild>
                     <button
-                      onClick={() =>
-                        signOut({ callbackUrl: window.location.pathname })
-                      }
+                      onClick={signOut}
                       className="flex w-full items-center gap-2 px-4 py-2 text-left transition hover:text-red-400"
                     >
                       <LogOut className="h-4 w-4" />
@@ -203,13 +200,14 @@ const NavMenu: FC = () => {
                   </NavigationMenuLink>
                 ) : (
                   <NavigationMenuLink asChild>
-                    <Link
-                      href="/api/auth/signin"
+                    <button
+                      type="button"
+                      onClick={signIn}
                       className="flex items-center gap-2 px-4 py-2 transition hover:text-red-400"
                     >
                       <LogIn className="h-4 w-4" />
                       Sign in
-                    </Link>
+                    </button>
                   </NavigationMenuLink>
                 )}
               </NavigationMenuContent>

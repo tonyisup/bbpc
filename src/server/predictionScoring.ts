@@ -1,12 +1,9 @@
 import { type PrismaClient } from "@prisma/client";
+import type { PredictionScoring } from "@/types/game";
 
 const predictionPointTypes = ["guess", "allcorrect", "all-incorrect"] as const;
 
-export type PredictionScoring = {
-  correctHost: number | null;
-  allCorrectBonus: number | null;
-  allIncorrect: number | null;
-};
+export type { PredictionScoring } from "@/types/game";
 
 export const getPredictionScoring = async (
   db: Pick<PrismaClient, "gamePointType">

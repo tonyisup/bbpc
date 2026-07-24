@@ -1,11 +1,11 @@
 import { type Metadata, type Viewport } from "next";
 import { Inter } from "next/font/google";
-import { getServerAuthSession } from "@/server/auth";
 import "@/styles/globals.css";
 import Link from "next/link";
 import { ListenHere } from "@/components/ListenHere";
 import { Providers } from "@/components/Providers";
 import { SiteHeader } from "@/components/SiteHeader";
+import { env } from "@/env.mjs";
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-sans",
@@ -44,7 +44,10 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const session = await getServerAuthSession();
+  const session =
+    env.NEXT_PUBLIC_BBPC_BACKEND === "convex"
+      ? null
+      : await (await import("@/server/auth")).getServerAuthSession();
 
   return (
     <html lang="en" suppressHydrationWarning>

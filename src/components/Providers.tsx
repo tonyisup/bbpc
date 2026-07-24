@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { ClerkProvider, useAuth } from "@clerk/nextjs";
 import { ConvexReactClient } from "convex/react";
@@ -9,6 +9,10 @@ import { type Session } from "next-auth";
 import { ThemeProvider } from "next-themes";
 import { Toaster } from "@/components/ui/sonner";
 import dynamic from "next/dynamic";
+import {
+  ClerkBbpcAuthProvider,
+  SqlBbpcAuthProvider,
+} from "@/components/auth/BbpcAuthContext";
 
 const PostHogProviderDynamic = dynamic(
   () => import("./PostHogProvider").then((m) => m.PostHogProvider),
@@ -17,34 +21,31 @@ const PostHogProviderDynamic = dynamic(
 
 const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL;
 const convexClient =
-  convexUrl === undefined
-    ? null
-    : new ConvexReactClient(convexUrl);
+  convexUrl === undefined ? null : new ConvexReactClient(convexUrl);
 
-function DataProviders({
+function SharedProviders({
   children,
+  headers,
 }: {
   children: React.ReactNode;
+  headers?: Headers;
 }) {
-  if (process.env.NEXT_PUBLIC_BBPC_BACKEND !== "convex") {
-    return children;
-  }
-  const publishableKey =
-    process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
-  if (publishableKey === undefined || convexClient === null) {
-    throw new Error(
-      "Convex mode requires NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY and NEXT_PUBLIC_CONVEX_URL.",
-    );
-  }
   return (
-    <ClerkProvider publishableKey={publishableKey}>
-      <ConvexProviderWithClerk
-        client={convexClient}
-        useAuth={useAuth}
-      >
-        {children}
-      </ConvexProviderWithClerk>
-    </ClerkProvider>
+    <TRPCReactProvider headers={headers}>
+      <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
+        {process.env.NEXT_PUBLIC_POSTHOG_KEY ? (
+          <PostHogProviderDynamic>
+            {children}
+            <Toaster />
+          </PostHogProviderDynamic>
+        ) : (
+          <>
+            {children}
+            <Toaster />
+          </>
+        )}
+      </ThemeProvider>
+    </TRPCReactProvider>
   );
 }
 
@@ -57,29 +58,32 @@ export function Providers({
   session: Session | null;
   headers?: Headers;
 }) {
-  return (
-    <DataProviders>
+  const shared = (
+    <SharedProviders headers={headers}>{children}</SharedProviders>
+  );
+
+  if (process.env.NEXT_PUBLIC_BBPC_BACKEND !== "convex") {
+    return (
       <SessionProvider session={session}>
-        <TRPCReactProvider headers={headers}>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="dark"
-            enableSystem={false}
-          >
-            {process.env.NEXT_PUBLIC_POSTHOG_KEY ? (
-              <PostHogProviderDynamic>
-                {children}
-                <Toaster />
-              </PostHogProviderDynamic>
-            ) : (
-              <>
-                {children}
-                <Toaster />
-              </>
-            )}
-          </ThemeProvider>
-        </TRPCReactProvider>
+        <SqlBbpcAuthProvider>{shared}</SqlBbpcAuthProvider>
       </SessionProvider>
-    </DataProviders>
+    );
+  }
+
+  const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+  if (publishableKey === undefined || convexClient === null) {
+    throw new Error(
+      "Convex mode requires NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY and NEXT_PUBLIC_CONVEX_URL."
+    );
+  }
+
+  return (
+    <ClerkProvider publishableKey={publishableKey}>
+      <ConvexProviderWithClerk client={convexClient} useAuth={useAuth}>
+        <ClerkBbpcAuthProvider>
+          <SessionProvider session={null}>{shared}</SessionProvider>
+        </ClerkBbpcAuthProvider>
+      </ConvexProviderWithClerk>
+    </ClerkProvider>
   );
 }

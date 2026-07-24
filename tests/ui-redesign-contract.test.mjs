@@ -86,19 +86,22 @@ test("home and game prioritize participation without duplicate retired behavior"
   assert.match(standings, /<GamePerformanceTracking/);
 
   const game = read("src/app/game/page.tsx");
-  const nextEpisodeIndex = game.indexOf("<NextEpisode");
+  const nextEpisodeIndex = game.indexOf("<Episode");
   const standingsIndex = game.indexOf("<SeasonStandingsDisclosure");
   assert.notEqual(nextEpisodeIndex, -1);
   assert.notEqual(standingsIndex, -1);
   assert.ok(nextEpisodeIndex < standingsIndex);
+  assert.doesNotMatch(game, /<NextEpisode/);
+  assert.match(game, /getNextScheduledEpisode\(\)/);
+  assert.match(game, /getConvexCurrentPerformance\(today\)/);
   assert.doesNotMatch(game, /vote on movie tags/i);
   assert.match(game, /<details/);
   assert.match(game, /1x multiplier/i);
   assert.match(game, /2x multiplier/i);
   assert.match(game, /3x multiplier/i);
   assert.match(game, /Bonus Harley/i);
-  assert.match(game, /<Suspense/);
-  assert.match(game, /<CurrentRoundErrorBoundary/);
+  assert.doesNotMatch(game, /<Suspense/);
+  assert.doesNotMatch(game, /<CurrentRoundErrorBoundary/);
   assert.match(game, /role="status"/);
 
   const currentRoundBoundary = read(

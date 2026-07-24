@@ -1,4 +1,3 @@
-import { db } from "@/server/db";
 import { type Metadata } from "next";
 import { Episode } from "@/components/Episode";
 import { env } from "@/env.mjs";
@@ -54,41 +53,7 @@ async function loadNextEpisode() {
     return getNextScheduledEpisode();
   }
 
-  return db.episode.findFirst({
-    orderBy: {
-      number: "desc",
-    },
-    include: {
-      assignments: {
-        include: {
-          movie: true,
-          user: true,
-          assignmentReviews: {
-            include: {
-              review: {
-                include: {
-                  rating: true,
-                  user: true,
-                },
-              },
-            },
-          },
-        },
-      },
-      extras: {
-        include: {
-          review: {
-            include: {
-              movie: true,
-              user: true,
-              show: true,
-            },
-          },
-        },
-      },
-      links: true,
-    },
-  });
+  return (await import("@/server/sql/episodes")).getSqlNextEpisode();
 }
 
 export default async function NextPage() {

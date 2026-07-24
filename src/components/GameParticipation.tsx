@@ -1,13 +1,12 @@
 "use client";
 
-import { signIn, useSession } from "next-auth/react";
-
 import {
   PredictionGame,
   type PredictionGameAssignment,
 } from "@/components/PredictionGame";
 import QuotabungaSubmission from "@/components/QuotabungaSubmission";
 import { Button } from "@/components/ui/button";
+import { useBbpcAuth } from "@/components/auth/BbpcAuthContext";
 
 interface GameParticipationProps {
   assignments: PredictionGameAssignment[];
@@ -20,7 +19,7 @@ export function GameParticipation({
   episodeStatus,
   searchQuery = "",
 }: GameParticipationProps) {
-  const { data: session, status } = useSession();
+  const { backend, signIn, status, user } = useBbpcAuth();
 
   if (status === "loading") {
     return (
@@ -31,7 +30,7 @@ export function GameParticipation({
     );
   }
 
-  if (!session?.user) {
+  if (!user) {
     return (
       <section className="mt-5 rounded-lg border border-red-500/20 bg-red-500/[0.06] p-5 text-center">
         <h3 className="text-lg font-bold text-white">
@@ -40,13 +39,32 @@ export function GameParticipation({
         <p className="mx-auto mt-1 max-w-lg text-sm text-zinc-300">
           One account unlocks both parts of this week&apos;s listener game.
         </p>
-        <Button
-          className="mt-4 whitespace-nowrap"
-          onClick={() => void signIn()}
-        >
+        <Button className="mt-4 whitespace-nowrap" onClick={signIn}>
           Sign in to play
         </Button>
       </section>
+    );
+  }
+
+  if (backend === "convex") {
+    return (
+      <section className="mt-5 rounded-lg border border-amber-500/20 bg-amber-500/[0.06] p-5 text-center">
+        <h3 className="text-lg font-bold text-white">
+          Game submissions are temporarily read-only
+        </h3>
+        <p className="mx-auto mt-1 max-w-lg text-sm text-zinc-300">
+          Your Clerk session is active. Prediction and Quotabunga writes will
+          reopen after the account-linking workflow is enabled for cutover.
+        </p>
+      </section>
+    );
+  }
+
+  if (user.appUserId === null) {
+    return (
+      <div className="mt-5 text-center text-red-300" role="alert">
+        Your account could not be resolved. Please sign in again.
+      </div>
     );
   }
 
@@ -55,7 +73,7 @@ export function GameParticipation({
       {assignments.length > 0 && (
         <PredictionGame
           assignments={assignments}
-          userId={session.user.id}
+          userId={user.appUserId}
           searchQuery={searchQuery}
           episodeStatus={episodeStatus}
         />

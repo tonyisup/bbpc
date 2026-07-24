@@ -1,45 +1,67 @@
-import type { Session } from "next-auth";
-import { signIn, useSession } from "next-auth/react";
+"use client";
+
 import Link from "next/link";
 import type { FC } from "react";
-import { Avatar, AvatarImage, AvatarFallback } from "../../@/components/ui/avatar";
 
-export const SignInButton: FC<{ className?: string }> = ({ className }) => (
-  <button
-    type="button"
-    title="Sign in"
-    className={`font-semibold text-red-600 no-underline transition hover:text-red-400 ${className ?? ''}`}
-    onClick={() => signIn()}
-  >
-    Sign in
-  </button>
-);
+import {
+  type BbpcAuthUser,
+  useBbpcAuth,
+} from "@/components/auth/BbpcAuthContext";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@/components/ui/avatar";
+
+export const SignInButton: FC<{ className?: string }> = ({ className }) => {
+  const { signIn } = useBbpcAuth();
+  return (
+    <button
+      type="button"
+      title="Sign in"
+      className={`font-semibold text-red-600 no-underline transition hover:text-red-400 ${
+        className ?? ""
+      }`}
+      onClick={signIn}
+    >
+      Sign in
+    </button>
+  );
+};
 
 export const Auth: React.FC = () => {
-  const { data: sessionData, status } = useSession();
-  
+  const { status, user } = useBbpcAuth();
+
   if (status === "loading") {
-    return <div className="animate-pulse w-8 h-8 rounded-full" />;
+    return <div className="h-8 w-8 animate-pulse rounded-full" />;
   }
-  
-  return <LoggedInAs session={sessionData} />;
+
+  return <LoggedInAs user={user} />;
 };
 
 interface LoggedInAsProps {
-	session: Session | null;
+  user: BbpcAuthUser | null;
 }
 
-const LoggedInAs: FC<LoggedInAsProps> = ({ session }) => {
-	if (!session || !session.user) return <SignInButton />;
+const LoggedInAs: FC<LoggedInAsProps> = ({ user }) => {
+  if (!user) return <SignInButton />;
 
-	return <Link className="transition hover:text-red-400 cursor-pointer" href="/profile">
-    <Avatar>
-      <AvatarImage src={session.user.image ?? ""} alt={(session.user.name || session.user.email) ?? ""} />
-      <AvatarFallback>Profile</AvatarFallback>
-    </Avatar>
-  </Link>
-}
+  return (
+    <Link
+      className="cursor-pointer transition hover:text-red-400"
+      href="/profile"
+    >
+      <Avatar>
+        <AvatarImage
+          src={user.image ?? ""}
+          alt={(user.name || user.email) ?? ""}
+        />
+        <AvatarFallback>Profile</AvatarFallback>
+      </Avatar>
+    </Link>
+  );
+};
 
 export function AuthAvatar() {
-  return 
+  return null;
 }
