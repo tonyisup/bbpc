@@ -51,7 +51,7 @@ test("Clerk subjects never become legacy application-data identifiers", () => {
   );
   assert.match(
     participation,
-    /backend === "convex"[\s\S]*temporarily read-only/u
+    /backend === "convex"[\s\S]*accountStatus !== "ready"[\s\S]*<ConvexPredictionGame/u
   );
   assert.ok(
     participation.indexOf('backend === "convex"') <

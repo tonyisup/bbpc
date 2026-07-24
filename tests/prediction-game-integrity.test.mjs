@@ -279,7 +279,7 @@ test("prediction cards expose progress, accessible choices, and save recovery", 
   assert.match(participation, /userId=\{user\.appUserId\}/);
   assert.match(
     participation,
-    /backend === "convex"[\s\S]*temporarily read-only/u
+    /backend === "convex"[\s\S]*<ConvexPredictionGame/u
   );
   assert.match(game, /firstIncompleteIndex/);
   assert.match(game, /Make picks/);

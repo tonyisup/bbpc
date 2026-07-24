@@ -41,10 +41,7 @@ test("game participation exposes quote writes only after canonical identity reso
     participation,
     /backend === "convex"[\s\S]*<ConvexQuotabungaSubmission/u
   );
-  assert.match(
-    participation,
-    /Prediction submissions are temporarily read-only/u
-  );
+  assert.match(participation, /<ConvexPredictionGame/u);
   assert.match(
     participation,
     /<PredictionGame[\s\S]*<QuotabungaSubmission \/>/u

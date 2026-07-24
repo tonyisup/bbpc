@@ -4,6 +4,7 @@ import {
   PredictionGame,
   type PredictionGameAssignment,
 } from "@/components/PredictionGame";
+import { ConvexPredictionGame } from "@/components/ConvexPredictionGame";
 import { ConvexQuotabungaSubmission } from "@/components/ConvexQuotabungaSubmission";
 import QuotabungaSubmission from "@/components/QuotabungaSubmission";
 import { Button } from "@/components/ui/button";
@@ -101,15 +102,12 @@ export function GameParticipation({
     return (
       <div className="mt-5 space-y-5">
         {assignments.length > 0 ? (
-          <section className="rounded-lg border border-amber-500/20 bg-amber-500/[0.06] p-5 text-center">
-            <h3 className="text-lg font-bold text-white">
-              Prediction submissions are temporarily read-only
-            </h3>
-            <p className="mx-auto mt-1 max-w-lg text-sm text-zinc-300">
-              Quotabunga is open below. Prediction picks will reopen after the
-              public host catalog is migrated.
-            </p>
-          </section>
+          <ConvexPredictionGame
+            key={`${user.appUserId}:predictions`}
+            assignments={assignments}
+            searchQuery={searchQuery}
+            episodeStatus={episodeStatus}
+          />
         ) : null}
         <ConvexQuotabungaSubmission
           key={user.appUserId}
