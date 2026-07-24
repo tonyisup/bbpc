@@ -1,11 +1,16 @@
 import { db } from "@/server/db";
 import { getEpisodePath } from "@/lib/routes";
 import type { MetadataRoute } from "next";
+import { env } from "@/env.mjs";
+import { listEpisodeHistory } from "@/server/convex/episodes";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const episodes = await db.episode.findMany({
-    select: { id: true, slug: true },
-  });
+  const episodes =
+    env.NEXT_PUBLIC_BBPC_BACKEND === "convex"
+      ? await listEpisodeHistory()
+      : await db.episode.findMany({
+          select: { id: true, slug: true },
+        });
 
   const episodeEntries = episodes.map((episode) => ({
     url: `https://badboyspodcast.com${getEpisodePath(

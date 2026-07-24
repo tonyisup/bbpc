@@ -1,11 +1,17 @@
 import { db } from "@/server/db";
 import { Episode } from "@/components/Episode";
 import Link from "next/link";
+import { env } from "@/env.mjs";
+import { listEpisodeHistory } from "@/server/convex/episodes";
 
-export default async function EpisodesPage() {
-  const episodes = await db.episode.findMany({
+async function loadEpisodes() {
+  if (env.NEXT_PUBLIC_BBPC_BACKEND === "convex") {
+    return listEpisodeHistory();
+  }
+
+  return db.episode.findMany({
     orderBy: {
-      date: 'desc',
+      date: "desc",
     },
     include: {
       assignments: {
@@ -39,15 +45,15 @@ export default async function EpisodesPage() {
       links: true,
     },
   });
+}
 
+export default async function EpisodesPage() {
+  const episodes = await loadEpisodes();
   return (
     <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16">
-      <div className="flex justify-between items-center w-full max-w-4xl">
+      <div className="flex w-full max-w-4xl items-center justify-between">
         <h2 className="text-2xl font-bold">All Episodes</h2>
-        <Link
-          href="/history"
-          className="text-red-600 hover:text-red-700"
-        >
+        <Link href="/history" className="text-red-600 hover:text-red-700">
           Search Episodes
         </Link>
       </div>
@@ -64,4 +70,4 @@ export default async function EpisodesPage() {
       </ul>
     </div>
   );
-} 
+}

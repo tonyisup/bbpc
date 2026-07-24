@@ -65,11 +65,11 @@ provider. Convex mode fails immediately unless both Clerk keys and
 
 The first compatibility slices route the public `episode.next`, `episode.search`,
 `episode.history`, and legacy-ID lookup tRPC procedures to Convex. The server-rendered
-`/next` page uses the same adapter in Convex mode. Every result is runtime-validated
-against a storage-neutral presentation contract. History pagination fails closed at
-1,000 episodes or if a cursor does not advance; search is capped at 20 results. The SQL
-implementations remain the default until the complete consumer acceptance gate is
-signed off.
+`/next` and `/episodes` pages and the sitemap use the same adapter in Convex mode. Every
+result is runtime-validated against a storage-neutral presentation contract. History
+pagination fails closed at 1,000 episodes or if a cursor does not advance; search is
+capped at 20 results. The SQL implementations remain the default until the complete
+consumer acceptance gate is signed off.
 
 The shared `@tonyisup/bbpc-convex-api` package is not yet published. Until it is
 available to CI and Vercel, this app keeps its narrow function reference and runtime

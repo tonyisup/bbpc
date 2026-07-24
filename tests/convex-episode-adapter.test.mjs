@@ -22,6 +22,14 @@ const nextPage = await readFile(
   new URL("../src/app/next/page.tsx", import.meta.url),
   "utf8"
 );
+const episodesPage = await readFile(
+  new URL("../src/app/episodes/page.tsx", import.meta.url),
+  "utf8"
+);
+const sitemap = await readFile(
+  new URL("../src/app/sitemap.ts", import.meta.url),
+  "utf8"
+);
 
 test("anonymous next-episode reads use a fail-closed Convex adapter", () => {
   assert.match(client, /import "server-only"/u);
@@ -53,6 +61,14 @@ test("anonymous next-episode reads use a fail-closed Convex adapter", () => {
   assert.match(
     nextPage,
     /NEXT_PUBLIC_BBPC_BACKEND === "convex"[\s\S]*getNextScheduledEpisode/u
+  );
+  assert.match(
+    episodesPage,
+    /NEXT_PUBLIC_BBPC_BACKEND === "convex"[\s\S]*listEpisodeHistory/u
+  );
+  assert.match(
+    sitemap,
+    /NEXT_PUBLIC_BBPC_BACKEND === "convex"[\s\S]*listEpisodeHistory/u
   );
 });
 
