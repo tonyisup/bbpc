@@ -1,8 +1,4 @@
-import { notFound, permanentRedirect } from "next/navigation";
-
-import AddExtraPageClient from "./AddExtraPageClient";
-import { getEpisodeExtrasAddPath } from "@/lib/routes";
-import { resolveEpisodeRouteParam } from "@/server/slugs";
+import { env } from "@/env.mjs";
 
 interface AddExtraPageProps {
   params: Promise<{ slug: string }>;
@@ -10,15 +6,11 @@ interface AddExtraPageProps {
 
 export default async function AddExtraPage({ params }: AddExtraPageProps) {
   const { slug } = await params;
-  const { episode, shouldRedirect } = await resolveEpisodeRouteParam(slug);
-
-  if (!episode) {
-    notFound();
+  if (env.NEXT_PUBLIC_BBPC_BACKEND === "convex") {
+    const { ConvexAddExtraPage } = await import("./ConvexAddExtraPage");
+    return <ConvexAddExtraPage slug={slug} />;
   }
 
-  if (shouldRedirect && episode.slug) {
-    permanentRedirect(getEpisodeExtrasAddPath(episode.slug));
-  }
-
-  return <AddExtraPageClient episodeId={episode.id} />;
+  const { default: SqlAddExtraPage } = await import("./SqlAddExtraPage");
+  return <SqlAddExtraPage slug={slug} />;
 }
