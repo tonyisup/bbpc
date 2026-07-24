@@ -26,7 +26,7 @@ export type EpisodeAssignment = {
   type: string;
   playable: boolean;
   slug: string | null;
-  movie: EpisodeMovie | null;
+  movie: EpisodeMovie;
   user: EpisodeUser;
 };
 

@@ -18,15 +18,40 @@ const episodeTypes = await readFile(
   new URL("../src/types/episode.ts", import.meta.url),
   "utf8"
 );
+const nextPage = await readFile(
+  new URL("../src/app/next/page.tsx", import.meta.url),
+  "utf8"
+);
 
 test("anonymous next-episode reads use a fail-closed Convex adapter", () => {
   assert.match(client, /import "server-only"/u);
   assert.match(client, /NEXT_PUBLIC_BBPC_BACKEND !== "convex"/u);
   assert.match(client, /Convex mode requires NEXT_PUBLIC_CONVEX_URL/u);
   assert.match(episodes, /episodes\/public:nextScheduled/u);
+  assert.match(episodes, /episodes\/public:search/u);
+  assert.match(episodes, /episodes\/public:listPage/u);
+  assert.match(episodes, /episodes\/public:getByLegacyId/u);
   assert.match(episodes, /episodeSchema\.nullable\(\)\.parse/u);
+  assert.match(episodes, /HISTORY_EPISODE_LIMIT = 1_000/u);
+  assert.match(episodes, /pagination did not advance/u);
   assert.match(
     router,
+    /NEXT_PUBLIC_BBPC_BACKEND === "convex"[\s\S]*getNextScheduledEpisode/u
+  );
+  assert.match(
+    router,
+    /NEXT_PUBLIC_BBPC_BACKEND === "convex"[\s\S]*searchEpisodes/u
+  );
+  assert.match(
+    router,
+    /NEXT_PUBLIC_BBPC_BACKEND === "convex"[\s\S]*listEpisodeHistory/u
+  );
+  assert.match(
+    router,
+    /NEXT_PUBLIC_BBPC_BACKEND === "convex"[\s\S]*getEpisodeByLegacyId/u
+  );
+  assert.match(
+    nextPage,
     /NEXT_PUBLIC_BBPC_BACKEND === "convex"[\s\S]*getNextScheduledEpisode/u
   );
 });

@@ -1,6 +1,8 @@
 import { db } from "@/server/db";
 import { type Metadata } from "next";
 import { Episode } from "@/components/Episode";
+import { env } from "@/env.mjs";
+import { getNextScheduledEpisode } from "@/server/convex/episodes";
 
 // Structured data types for schema.org
 interface StructuredMovie {
@@ -47,10 +49,14 @@ export const metadata: Metadata = {
   description: "Movie assignments for the next episode of the show",
 };
 
-export default async function NextPage() {
-  const nextEpisode = await db.episode.findFirst({
+async function loadNextEpisode() {
+  if (env.NEXT_PUBLIC_BBPC_BACKEND === "convex") {
+    return getNextScheduledEpisode();
+  }
+
+  return db.episode.findFirst({
     orderBy: {
-      number: 'desc',
+      number: "desc",
     },
     include: {
       assignments: {
@@ -83,8 +89,10 @@ export default async function NextPage() {
       links: true,
     },
   });
+}
 
-
+export default async function NextPage() {
+  const nextEpisode = await loadNextEpisode();
   let movieList: StructuredData | undefined;
 
   if (nextEpisode) {
@@ -106,9 +114,9 @@ export default async function NextPage() {
         return {
           "@type": "ListItem",
           position: index + 1,
-          item: structuredMovie
+          item: structuredMovie,
         };
-      })
+      }),
     };
   }
   return (
@@ -119,7 +127,7 @@ export default async function NextPage() {
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify(movieList)
+            __html: JSON.stringify(movieList),
           }}
         />
       )}

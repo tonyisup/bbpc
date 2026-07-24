@@ -5,7 +5,12 @@ import {
   protectedProcedure,
   publicProcedure,
 } from "@/server/api/trpc";
-import { getNextScheduledEpisode } from "@/server/convex/episodes";
+import {
+  getEpisodeByLegacyId,
+  getNextScheduledEpisode,
+  listEpisodeHistory,
+  searchEpisodes,
+} from "@/server/convex/episodes";
 
 export const episodeRouter = createTRPCRouter({
   next: publicProcedure.query(async ({ ctx }) => {
@@ -59,6 +64,10 @@ export const episodeRouter = createTRPCRouter({
       if (!input.query.trim()) {
         return [];
       }
+      if (env.NEXT_PUBLIC_BBPC_BACKEND === "convex") {
+        return searchEpisodes(input.query);
+      }
+
       return ctx.db.episode.findMany({
         where: {
           OR: [
@@ -114,6 +123,10 @@ export const episodeRouter = createTRPCRouter({
       });
     }),
   history: publicProcedure.query(async ({ ctx }) => {
+    if (env.NEXT_PUBLIC_BBPC_BACKEND === "convex") {
+      return listEpisodeHistory();
+    }
+
     return ctx.db.episode.findMany({
       orderBy: {
         date: "desc",
@@ -216,6 +229,10 @@ export const episodeRouter = createTRPCRouter({
   getById: publicProcedure
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
+      if (env.NEXT_PUBLIC_BBPC_BACKEND === "convex") {
+        return getEpisodeByLegacyId(input.id);
+      }
+
       return ctx.db.episode.findUnique({
         where: { id: input.id },
         include: {

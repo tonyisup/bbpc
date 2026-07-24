@@ -5,6 +5,10 @@ import { z } from "zod";
 import { fetchPublicQuery, publicQueryReference } from "./client";
 import type { CompleteEpisode } from "@/types/episode";
 
+const PUBLIC_SEARCH_LIMIT = 20;
+const HISTORY_PAGE_SIZE = 20;
+const HISTORY_EPISODE_LIMIT = 1_000;
+
 const movieSchema = z.object({
   id: z.string(),
   title: z.string(),
@@ -68,7 +72,104 @@ const nextScheduledReference = publicQueryReference<Record<string, never>>(
   "episodes/public:nextScheduled"
 );
 
+const latestPublishedReference = publicQueryReference<{
+  onOrBefore: string;
+}>("episodes/public:latestPublished");
+
+const searchReference = publicQueryReference<{
+  query: string;
+  limit: number;
+}>("episodes/public:search");
+
+const listPageReference = publicQueryReference<{
+  paginationOpts: {
+    cursor: string | null;
+    numItems: number;
+  };
+}>("episodes/public:listPage");
+
+const getByLegacyIdReference = publicQueryReference<{
+  legacyId: string;
+}>("episodes/public:getByLegacyId");
+
+const episodePageSchema = z.object({
+  page: z.array(episodeSchema),
+  isDone: z.boolean(),
+  continueCursor: z.string(),
+});
+
 export async function getNextScheduledEpisode(): Promise<CompleteEpisode | null> {
   const result = await fetchPublicQuery(nextScheduledReference, {});
   return episodeSchema.nullable().parse(result);
+}
+
+export async function getLatestPublishedEpisode(
+  onOrBefore: string
+): Promise<CompleteEpisode | null> {
+  const result = await fetchPublicQuery(latestPublishedReference, {
+    onOrBefore,
+  });
+  return episodeSchema.nullable().parse(result);
+}
+
+export async function searchEpisodes(
+  query: string
+): Promise<CompleteEpisode[]> {
+  const trimmedQuery = query.trim();
+  if (!trimmedQuery) {
+    return [];
+  }
+
+  const result = await fetchPublicQuery(searchReference, {
+    query: trimmedQuery,
+    limit: PUBLIC_SEARCH_LIMIT,
+  });
+  return z.array(episodeSchema).parse(result);
+}
+
+export async function getEpisodeByLegacyId(
+  legacyId: string
+): Promise<CompleteEpisode | null> {
+  const result = await fetchPublicQuery(getByLegacyIdReference, {
+    legacyId,
+  });
+  return episodeSchema.nullable().parse(result);
+}
+
+export async function listEpisodeHistory(): Promise<CompleteEpisode[]> {
+  const episodes: CompleteEpisode[] = [];
+  const seenCursors = new Set<string>();
+  let cursor: string | null = null;
+
+  while (true) {
+    const result = episodePageSchema.parse(
+      await fetchPublicQuery(listPageReference, {
+        paginationOpts: {
+          cursor,
+          numItems: HISTORY_PAGE_SIZE,
+        },
+      })
+    );
+
+    if (episodes.length + result.page.length > HISTORY_EPISODE_LIMIT) {
+      throw new Error(
+        `Episode history exceeds the ${HISTORY_EPISODE_LIMIT}-episode compatibility limit.`
+      );
+    }
+    episodes.push(...result.page);
+
+    if (result.isDone) {
+      return episodes;
+    }
+    if (
+      result.page.length === 0 ||
+      result.continueCursor === cursor ||
+      seenCursors.has(result.continueCursor)
+    ) {
+      throw new Error("Convex episode history pagination did not advance.");
+    }
+
+    seenCursors.add(result.continueCursor);
+    cursor = result.continueCursor;
+  }
 }
