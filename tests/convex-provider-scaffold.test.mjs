@@ -25,6 +25,18 @@ const exampleEnv = await readFile(
   new URL("../.env.example", import.meta.url),
   "utf8"
 );
+const profilePage = await readFile(
+  new URL("../src/app/profile/page.tsx", import.meta.url),
+  "utf8"
+);
+const convexProfilePage = await readFile(
+  new URL("../src/app/profile/ConvexProfilePage.tsx", import.meta.url),
+  "utf8"
+);
+const convexProfileAdapter = await readFile(
+  new URL("../src/convex/profile.ts", import.meta.url),
+  "utf8"
+);
 
 test("the SQL-default consumer scaffold pins and fail-closes Clerk plus Convex", () => {
   assert.equal(packageJson.dependencies["@clerk/nextjs"], "6.39.6");
@@ -67,4 +79,27 @@ test("the SQL-default consumer scaffold pins and fail-closes Clerk plus Convex",
   assert.match(exampleEnv, /NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=[\r\n]/u);
   assert.match(exampleEnv, /CLERK_SECRET_KEY=[\r\n]/u);
   assert.match(exampleEnv, /NEXT_PUBLIC_CONVEX_URL=[\r\n]/u);
+});
+
+test("the profile route cannot fall through to SQL in Convex mode", () => {
+  assert.match(
+    profilePage,
+    /NEXT_PUBLIC_BBPC_BACKEND === "convex"[\s\S]*import\("\.\/ConvexProfilePage"\)/u
+  );
+  assert.match(profilePage, /import\("\.\/SqlProfilePage"\)/u);
+  assert.doesNotMatch(profilePage, /server\/auth|server\/db/u);
+  assert.doesNotMatch(convexProfilePage, /next-auth|server\/db|prisma/u);
+  assert.match(convexProfilePage, /accountStatus !== "ready"/u);
+  assert.match(convexProfilePage, /user\.appUserId === null/u);
+  assert.match(convexProfileAdapter, /syllabus\/mine:list/u);
+  assert.match(convexProfileAdapter, /games\/member:myAvailablePoints/u);
+  assert.match(convexProfileAdapter, /games\/member:myPointsPage/u);
+  assert.doesNotMatch(convexProfileAdapter, /userId[\s\S]*client\.query/u);
+  assert.match(convexProfileAdapter, /syllabusListSchema[\s\S]*\.parse/u);
+  assert.match(convexProfileAdapter, /availablePointsSchema\.parse/u);
+  assert.match(convexProfileAdapter, /pointHistoryPageSchema\.parse/u);
+  assert.match(
+    convexProfileAdapter,
+    /paginationOpts: \{[\s\S]*numItems: 20,[\s\S]*cursor/u
+  );
 });

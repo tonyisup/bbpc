@@ -6,9 +6,31 @@ import {
   signOut as signOutWithNextAuth,
   useSession,
 } from "next-auth/react";
-import { createContext, useCallback, useContext, useMemo } from "react";
+import { useConvex, useConvexAuth } from "convex/react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+
+import {
+  type ConvexIdentityIssue,
+  type ConvexIdentityProfile,
+  getConvexIdentityIssue,
+  resolveConvexIdentity,
+} from "@/convex/identity";
 
 export type BbpcAuthStatus = "loading" | "authenticated" | "unauthenticated";
+export type BbpcAccountStatus =
+  | "not-applicable"
+  | "resolving"
+  | "ready"
+  | "action-required"
+  | "unavailable";
 
 export interface BbpcAuthUser {
   appUserId: string | null;
@@ -22,9 +44,12 @@ export interface BbpcAuthUser {
 export interface BbpcAuthState {
   backend: "sql" | "convex";
   status: BbpcAuthStatus;
+  accountStatus: BbpcAccountStatus;
+  accountIssue: ConvexIdentityIssue | null;
   user: BbpcAuthUser | null;
   signIn: () => void;
   signOut: () => void;
+  refreshAccount: () => void;
 }
 
 const BbpcAuthContext = createContext<BbpcAuthState | null>(null);
@@ -51,10 +76,18 @@ export function SqlBbpcAuthProvider({
       callbackUrl: window.location.pathname,
     });
   }, []);
+  const refreshAccount = useCallback(() => undefined, []);
   const value = useMemo<BbpcAuthState>(
     () => ({
       backend: "sql",
       status,
+      accountStatus:
+        status === "loading"
+          ? "resolving"
+          : session?.user
+          ? "ready"
+          : "not-applicable",
+      accountIssue: null,
       user: session?.user
         ? {
             appUserId: session.user.id,
@@ -67,8 +100,9 @@ export function SqlBbpcAuthProvider({
         : null,
       signIn,
       signOut,
+      refreshAccount,
     }),
-    [session, signIn, signOut, status]
+    [refreshAccount, session, signIn, signOut, status]
   );
 
   return (
@@ -85,6 +119,80 @@ export function ClerkBbpcAuthProvider({
 }) {
   const clerk = useClerk();
   const { isLoaded, isSignedIn, user } = useClerkUser();
+  const convex = useConvex();
+  const {
+    isAuthenticated: isConvexAuthenticated,
+    isLoading: isConvexAuthLoading,
+  } = useConvexAuth();
+  const [profile, setProfile] = useState<ConvexIdentityProfile | null>(null);
+  const [accountIssue, setAccountIssue] = useState<ConvexIdentityIssue | null>(
+    null
+  );
+  const [resolutionRevision, setResolutionRevision] = useState(0);
+  const attemptedSessionRef = useRef<string | null>(null);
+  const activeSessionRef = useRef<string | null>(null);
+  const resolutionGenerationRef = useRef(0);
+  const clerkUserId = user?.id ?? null;
+
+  useEffect(() => {
+    activeSessionRef.current = clerkUserId;
+    if (!isLoaded || !isSignedIn || clerkUserId === null) {
+      attemptedSessionRef.current = null;
+      resolutionGenerationRef.current += 1;
+      setProfile(null);
+      setAccountIssue(null);
+      return;
+    }
+    if (isConvexAuthLoading) {
+      return;
+    }
+    if (!isConvexAuthenticated) {
+      attemptedSessionRef.current = null;
+      resolutionGenerationRef.current += 1;
+      setProfile(null);
+      setAccountIssue("unavailable");
+      return;
+    }
+
+    // The Clerk user ID is only a local session-attempt key. Canonical
+    // ownership always comes from the Convex profile returned below.
+    const attemptKey = clerkUserId;
+    if (attemptedSessionRef.current === attemptKey) {
+      return;
+    }
+    attemptedSessionRef.current = attemptKey;
+    const resolutionGeneration = resolutionGenerationRef.current + 1;
+    resolutionGenerationRef.current = resolutionGeneration;
+    setProfile(null);
+    setAccountIssue(null);
+
+    void resolveConvexIdentity(convex)
+      .then((resolvedProfile) => {
+        if (
+          activeSessionRef.current === attemptKey &&
+          resolutionGenerationRef.current === resolutionGeneration
+        ) {
+          setProfile(resolvedProfile);
+        }
+      })
+      .catch((error: unknown) => {
+        if (
+          activeSessionRef.current === attemptKey &&
+          resolutionGenerationRef.current === resolutionGeneration
+        ) {
+          setAccountIssue(getConvexIdentityIssue(error));
+        }
+      });
+  }, [
+    clerkUserId,
+    convex,
+    isConvexAuthLoading,
+    isConvexAuthenticated,
+    isLoaded,
+    isSignedIn,
+    resolutionRevision,
+  ]);
+
   const signIn = useCallback(() => {
     void clerk.redirectToSignIn({
       redirectUrl: window.location.href,
@@ -95,37 +203,71 @@ export function ClerkBbpcAuthProvider({
       redirectUrl: window.location.pathname,
     });
   }, [clerk]);
-  const value = useMemo<BbpcAuthState>(
-    () => ({
-      backend: "convex",
-      status: !isLoaded
+  const refreshAccount = useCallback(() => {
+    attemptedSessionRef.current = null;
+    setResolutionRevision((revision) => revision + 1);
+  }, []);
+  const value = useMemo<BbpcAuthState>(() => {
+    const status: BbpcAuthStatus =
+      !isLoaded || (isSignedIn && isConvexAuthLoading)
         ? "loading"
         : isSignedIn
         ? "authenticated"
-        : "unauthenticated",
+        : "unauthenticated";
+    const hasActionRequiredIssue =
+      accountIssue === "account-disabled" ||
+      accountIssue === "identity-conflict";
+
+    return {
+      backend: "convex",
+      status,
+      accountStatus: !isSignedIn
+        ? "not-applicable"
+        : profile !== null
+        ? "ready"
+        : accountIssue === null
+        ? "resolving"
+        : hasActionRequiredIssue
+        ? "action-required"
+        : "unavailable",
+      accountIssue,
       user:
         isLoaded && isSignedIn
           ? {
               // Canonical Convex user IDs are resolved by authenticated
               // backend functions. A Clerk subject must never be used as
               // an application-data foreign key.
-              appUserId: null,
+              appUserId: profile?.id ?? null,
               name:
+                profile?.name ??
                 user.fullName ??
                 user.username ??
                 user.primaryEmailAddress?.emailAddress ??
                 null,
-              email: user.primaryEmailAddress?.emailAddress ?? null,
-              image: user.imageUrl ?? null,
-              isAdmin: false,
+              email:
+                profile?.email ??
+                user.primaryEmailAddress?.emailAddress ??
+                null,
+              image: profile?.image ?? user.imageUrl ?? null,
+              isAdmin: profile?.isAdmin ?? false,
               isImpersonating: false,
             }
           : null,
       signIn,
       signOut,
-    }),
-    [isLoaded, isSignedIn, signIn, signOut, user]
-  );
+      refreshAccount,
+    };
+  }, [
+    accountIssue,
+    isConvexAuthLoading,
+    isLoaded,
+    isSignedIn,
+    profile,
+    refreshAccount,
+    signIn,
+    signOut,
+    user,
+  ]);
 
   return (
     <BbpcAuthContext.Provider value={value}>
