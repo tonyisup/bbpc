@@ -1,8 +1,4 @@
-import { notFound, permanentRedirect } from "next/navigation";
-import Assignment from "@/components/Assignment";
-import GameSegment from "@/components/GameSegment";
-import { getAssignmentPath } from "@/lib/routes";
-import { resolveAssignmentRouteParam } from "@/server/slugs";
+import { env } from "@/env.mjs";
 
 interface AssignmentPageProps {
   params: {
@@ -11,22 +7,11 @@ interface AssignmentPageProps {
 }
 
 export default async function AssignmentPage({ params }: AssignmentPageProps) {
-  const { assignment, shouldRedirect } = await resolveAssignmentRouteParam(
-    params.slug
-  );
-
-  if (shouldRedirect && assignment?.slug) {
-    permanentRedirect(getAssignmentPath(assignment.slug));
+  if (env.NEXT_PUBLIC_BBPC_BACKEND === "convex") {
+    const { ConvexAssignmentPage } = await import("./ConvexAssignmentPage");
+    return <ConvexAssignmentPage slug={params.slug} />;
   }
 
-  if (!assignment) {
-    notFound();
-  }
-
-  return (
-    <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16">
-      <Assignment assignment={assignment} />
-      <GameSegment assignment={assignment} />
-    </div>
-  );
+  const { default: SqlAssignmentPage } = await import("./SqlAssignmentPage");
+  return <SqlAssignmentPage slug={params.slug} />;
 }

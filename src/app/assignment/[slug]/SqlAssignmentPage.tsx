@@ -1,0 +1,33 @@
+import { notFound, permanentRedirect } from "next/navigation";
+
+import Assignment from "@/components/Assignment";
+import GameSegment from "@/components/GameSegment";
+import { getAssignmentPath } from "@/lib/routes";
+import { resolveAssignmentRouteParam } from "@/server/slugs";
+
+interface SqlAssignmentPageProps {
+  slug: string;
+}
+
+export default async function SqlAssignmentPage({
+  slug,
+}: SqlAssignmentPageProps) {
+  const { assignment, shouldRedirect } = await resolveAssignmentRouteParam(
+    slug
+  );
+
+  if (shouldRedirect && assignment?.slug) {
+    permanentRedirect(getAssignmentPath(assignment.slug));
+  }
+
+  if (!assignment) {
+    notFound();
+  }
+
+  return (
+    <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16">
+      <Assignment assignment={assignment} />
+      <GameSegment assignment={assignment} />
+    </div>
+  );
+}
