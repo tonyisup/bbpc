@@ -13,6 +13,7 @@ const identityProfileSchema = z.object({
   email: z.string().nullable(),
   image: z.string().nullable(),
   isAdmin: z.boolean(),
+  isHost: z.boolean(),
 });
 
 const identityLinkResultSchema = identityProfileSchema.extend({

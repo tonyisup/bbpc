@@ -37,6 +37,10 @@ const convexProfileAdapter = await readFile(
   new URL("../src/convex/profile.ts", import.meta.url),
   "utf8"
 );
+const convexIdentityAdapter = await readFile(
+  new URL("../src/convex/identity.ts", import.meta.url),
+  "utf8"
+);
 
 test("the SQL-default consumer scaffold pins and fail-closes Clerk plus Convex", () => {
   assert.equal(packageJson.dependencies["@clerk/nextjs"], "6.39.6");
@@ -75,6 +79,8 @@ test("the SQL-default consumer scaffold pins and fail-closes Clerk plus Convex",
     authContext,
     /A Clerk subject must never be used as[\s\S]*an application-data foreign key/u
   );
+  assert.match(convexIdentityAdapter, /isHost: z\.boolean\(\)/u);
+  assert.match(authContext, /isHost: profile\?\.isHost \?\? false/u);
   assert.match(exampleEnv, /NEXT_PUBLIC_BBPC_BACKEND=sql/u);
   assert.match(exampleEnv, /NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=[\r\n]/u);
   assert.match(exampleEnv, /CLERK_SECRET_KEY=[\r\n]/u);

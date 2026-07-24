@@ -6,11 +6,12 @@ import test from "node:test";
 const read = async (path) =>
   readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
-const [route, page, component, adapter] = await Promise.all([
+const [route, page, component, adapter, affordance] = await Promise.all([
   read("src/app/episodes/[slug]/extras/add/page.tsx"),
   read("src/app/episodes/[slug]/extras/add/ConvexAddExtraPage.tsx"),
   read("src/app/episodes/[slug]/extras/add/ConvexAddExtraPageClient.tsx"),
   read("src/convex/extras.ts"),
+  read("src/components/AddExtraToNext.tsx"),
 ]);
 
 test("the add-extra route selects its backend before importing a controller", () => {
@@ -37,6 +38,11 @@ test("Convex extras use owner-derived versioned mutations", () => {
   assert.match(component, /accountStatus !== "ready"/u);
   assert.match(component, /user\.appUserId === null/u);
   assert.doesNotMatch(component, /next-auth|trpc|prisma|server\/db/u);
+  assert.match(affordance, /backend === "convex" \? user\?\.isHost === true/u);
+  assert.match(
+    affordance,
+    /enabled: backend === "sql" && status === "authenticated"/u
+  );
 });
 
 test("catalog search survives an unavailable external provider", () => {

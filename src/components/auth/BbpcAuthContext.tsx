@@ -38,6 +38,7 @@ export interface BbpcAuthUser {
   email: string | null;
   image: string | null;
   isAdmin: boolean;
+  isHost: boolean;
   isImpersonating: boolean;
 }
 
@@ -95,6 +96,7 @@ export function SqlBbpcAuthProvider({
             email: session.user.email ?? null,
             image: session.user.image ?? null,
             isAdmin: session.user.isAdmin,
+            isHost: false,
             isImpersonating: session.user.isImpersonating ?? false,
           }
         : null,
@@ -250,6 +252,7 @@ export function ClerkBbpcAuthProvider({
                 null,
               image: profile?.image ?? user.imageUrl ?? null,
               isAdmin: profile?.isAdmin ?? false,
+              isHost: profile?.isHost ?? false,
               isImpersonating: false,
             }
           : null,
