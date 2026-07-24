@@ -1,4 +1,9 @@
 import { db } from "@/server/db";
+import { env } from "@/env.mjs";
+import {
+  getEpisodeByLegacyId,
+  getEpisodeBySlug,
+} from "@/server/convex/episodes";
 
 export const UUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -57,6 +62,17 @@ const assignmentInclude = {
 } as const;
 
 export async function resolveEpisodeRouteParam(slugOrId: string) {
+  if (env.NEXT_PUBLIC_BBPC_BACKEND === "convex") {
+    const episode =
+      (await getEpisodeBySlug(slugOrId)) ??
+      (isUuid(slugOrId) ? await getEpisodeByLegacyId(slugOrId) : null);
+    return {
+      episode,
+      shouldRedirect:
+        !!episode?.slug && isUuid(slugOrId) && episode.slug !== slugOrId,
+    };
+  }
+
   const episode =
     (await db.episode.findUnique({
       where: { slug: slugOrId },
@@ -71,7 +87,8 @@ export async function resolveEpisodeRouteParam(slugOrId: string) {
 
   return {
     episode,
-    shouldRedirect: !!episode?.slug && isUuid(slugOrId) && episode.id === slugOrId,
+    shouldRedirect:
+      !!episode?.slug && isUuid(slugOrId) && episode.id === slugOrId,
   };
 }
 
@@ -90,6 +107,7 @@ export async function resolveAssignmentRouteParam(slugOrId: string) {
 
   return {
     assignment,
-    shouldRedirect: !!assignment?.slug && isUuid(slugOrId) && assignment.id === slugOrId,
+    shouldRedirect:
+      !!assignment?.slug && isUuid(slugOrId) && assignment.id === slugOrId,
   };
 }

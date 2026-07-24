@@ -8,14 +8,23 @@ import { notFound, permanentRedirect } from "next/navigation";
 import { db } from "@/server/db";
 import { getEpisodePath } from "@/lib/routes";
 import { resolveEpisodeRouteParam } from "@/server/slugs";
+import { env } from "@/env.mjs";
+import {
+  getEpisodeResults,
+  listEpisodeHistory,
+} from "@/server/convex/episodes";
+import { mapSqlEpisodeResults } from "@/server/sql/episodeResults";
 
 export const revalidate = 3600;
 
 export async function generateStaticParams() {
-  const episodes = await db.episode.findMany({
-    where: { slug: { not: null } },
-    select: { slug: true },
-  });
+  const episodes =
+    env.NEXT_PUBLIC_BBPC_BACKEND === "convex"
+      ? await listEpisodeHistory()
+      : await db.episode.findMany({
+          where: { slug: { not: null } },
+          select: { slug: true },
+        });
 
   return episodes
     .filter((episode): episode is { slug: string } => !!episode.slug)
@@ -69,6 +78,10 @@ export default async function EpisodePage({
   if (!episode) {
     notFound();
   }
+  const results =
+    env.NEXT_PUBLIC_BBPC_BACKEND === "convex"
+      ? await getEpisodeResults(episode.id)
+      : mapSqlEpisodeResults(episode.assignments);
 
   return (
     <div className="container mx-auto max-w-4xl p-4">
@@ -81,7 +94,7 @@ export default async function EpisodePage({
         </Button>
       </div>
       <Episode episode={episode} allowGuesses={true} />
-      <EpisodeResults assignments={episode.assignments} />
+      <EpisodeResults results={results} />
     </div>
   );
 }

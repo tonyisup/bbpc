@@ -1,131 +1,132 @@
-'use client'
+"use client";
 
-import { Trophy, Target, Coins, User as UserIcon } from "lucide-react";
+import { Trophy, Target, Coins } from "lucide-react";
 import Image from "next/image";
 import RatingIcon from "./RatingIcon";
-import { cn } from "@/lib/utils";
+import type { EpisodeResultsData } from "@/types/episode";
 
 interface EpisodeResultsProps {
-	assignments: any[];
+  results: EpisodeResultsData;
 }
 
-export default function EpisodeResults({ assignments }: EpisodeResultsProps) {
-	// Aggregate results across all assignments
-	const winningGambles = assignments.flatMap(a =>
-		a.gamblingPoints.filter((gp: any) => gp.status === 'won').map((gp: any) => ({
-			...gp,
-			movieTitle: a.movie?.title,
-			moviePoster: a.movie?.poster
-		}))
-	);
+export default function EpisodeResults({ results }: EpisodeResultsProps) {
+  const { gamblingWinners, guessWinners } = results;
 
-	const winningGuesses = assignments.flatMap(a =>
-		a.assignmentReviews.flatMap((ar: any) =>
-			ar.guesses.filter((g: any) => g.ratingId === ar.review.ratingId).map((g: any) => ({
-				...g,
-				movieTitle: a.movie?.title,
-				moviePoster: a.movie?.poster,
-				hostName: ar.review.user.name,
-				actualRating: ar.review.rating.value
-			}))
-		)
-	);
+  if (gamblingWinners.length === 0 && guessWinners.length === 0) {
+    return null;
+  }
 
-	if (winningGambles.length === 0 && winningGuesses.length === 0) {
-		return null;
-	}
+  return (
+    <div className="mt-12 space-y-8 duration-700 animate-in fade-in slide-in-from-bottom-4">
+      <div className="flex items-center gap-3 border-l-4 border-yellow-500 pl-4">
+        <Trophy className="h-8 w-8 text-yellow-500" />
+        <h2 className="text-3xl font-black uppercase tracking-tighter text-white">
+          Episode Results
+        </h2>
+      </div>
 
-	return (
-		<div className="mt-12 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-			<div className="flex items-center gap-3 border-l-4 border-yellow-500 pl-4">
-				<Trophy className="w-8 h-8 text-yellow-500" />
-				<h2 className="text-3xl font-black uppercase tracking-tighter text-white">Episode Results</h2>
-			</div>
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+        {/* Winning Gambles */}
+        {gamblingWinners.length > 0 && (
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-purple-400">
+              <Coins className="h-4 w-4" />
+              Big Winners (Gambles)
+            </div>
+            <div className="grid gap-3">
+              {gamblingWinners.map((win) => (
+                <div
+                  key={win.id}
+                  className="group flex items-center gap-4 rounded-xl border border-purple-500/20 bg-purple-900/10 p-3 backdrop-blur-sm transition-all hover:bg-purple-900/20"
+                >
+                  <div className="relative h-14 w-10 flex-shrink-0 overflow-hidden rounded shadow-lg transition-transform group-hover:scale-105">
+                    {win.movie.poster && (
+                      <Image
+                        src={win.movie.poster}
+                        alt={win.movie.title}
+                        fill
+                        className="object-cover"
+                      />
+                    )}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="truncate font-bold text-white">
+                        {win.user.name}
+                      </span>
+                      <span className="rounded bg-purple-500/20 px-1.5 py-0.5 text-[10px] font-black uppercase tracking-wider text-purple-300">
+                        +{Math.floor(win.points * win.gamblingType.multiplier)}{" "}
+                        PTS
+                      </span>
+                    </div>
+                    <div className="mt-0.5 truncate text-xs text-gray-400">
+                      on{" "}
+                      <span className="font-medium text-gray-300">
+                        {win.movie.title}
+                      </span>
+                    </div>
+                    <div className="mt-1 text-[10px] font-bold uppercase tracking-widest text-purple-400/70">
+                      {win.gamblingType.title}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
-			<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-				{/* Winning Gambles */}
-				{winningGambles.length > 0 && (
-					<div className="space-y-4">
-						<div className="flex items-center gap-2 text-purple-400 font-bold uppercase tracking-widest text-xs">
-							<Coins className="w-4 h-4" />
-							Big Winners (Gambles)
-						</div>
-						<div className="grid gap-3">
-							{winningGambles.map((win) => (
-								<div key={win.id} className="flex items-center gap-4 bg-purple-900/10 border border-purple-500/20 p-3 rounded-xl backdrop-blur-sm group hover:bg-purple-900/20 transition-all">
-									<div className="relative w-10 h-14 rounded overflow-hidden flex-shrink-0 shadow-lg group-hover:scale-105 transition-transform">
-										{win.moviePoster && (
-											<Image
-												src={win.moviePoster}
-												alt={win.movieTitle}
-												fill
-												className="object-cover"
-											/>
-										)}
-									</div>
-									<div className="flex-1 min-w-0">
-										<div className="flex items-center gap-2">
-											<span className="font-bold text-white truncate">{win.user.name}</span>
-											<span className="text-[10px] bg-purple-500/20 text-purple-300 px-1.5 py-0.5 rounded font-black uppercase tracking-wider">
-												+{Math.floor(win.points * win.gamblingType.multiplier)} PTS
-											</span>
-										</div>
-										<div className="text-xs text-gray-400 truncate mt-0.5">
-											on <span className="text-gray-300 font-medium">{win.movieTitle}</span>
-										</div>
-										<div className="text-[10px] text-purple-400/70 font-bold uppercase tracking-widest mt-1">
-											{win.gamblingType.title}
-										</div>
-									</div>
-								</div>
-							))}
-						</div>
-					</div>
-				)}
-
-				{/* Winning Guesses */}
-				{winningGuesses.length > 0 && (
-					<div className="space-y-4">
-						<div className="flex items-center gap-2 text-indigo-400 font-bold uppercase tracking-widest text-xs">
-							<Target className="w-4 h-4" />
-							Sharp Shooters (Guesses)
-						</div>
-						<div className="grid gap-3">
-							{winningGuesses.map((guess) => (
-								<div key={guess.id} className="flex items-center gap-4 bg-indigo-900/10 border border-indigo-500/20 p-3 rounded-xl backdrop-blur-sm group hover:bg-indigo-900/20 transition-all">
-									<div className="relative w-10 h-14 rounded overflow-hidden flex-shrink-0 shadow-lg group-hover:scale-105 transition-transform">
-										{guess.moviePoster && (
-											<Image
-												src={guess.moviePoster}
-												alt={guess.movieTitle}
-												fill
-												className="object-cover opacity-40 group-hover:opacity-60 grayscale-[0.5] group-hover:grayscale-0 transition-all"
-											/>
-										)}
-										<div className="absolute inset-0 flex items-center justify-center group-hover:rotate-12 transition-transform">
-											<RatingIcon value={guess.actualRating} />
-										</div>
-									</div>
-									<div className="flex-1 min-w-0">
-										<div className="flex items-center gap-2">
-											<span className="font-bold text-white truncate">{guess.user.name}</span>
-											<span className="text-[10px] bg-indigo-500/20 text-indigo-300 px-1.5 py-0.5 rounded font-black uppercase tracking-wider">
-												CORRECT
-											</span>
-										</div>
-										<div className="text-xs text-gray-400 truncate mt-0.5">
-											Predicted <span className="text-gray-300 font-medium">{guess.hostName}&apos;s</span> rating
-										</div>
-										<div className="text-[10px] text-indigo-400/70 font-bold uppercase tracking-widest mt-1">
-											for {guess.movieTitle}
-										</div>
-									</div>
-								</div>
-							))}
-						</div>
-					</div>
-				)}
-			</div>
-		</div>
-	);
+        {/* Winning Guesses */}
+        {guessWinners.length > 0 && (
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-indigo-400">
+              <Target className="h-4 w-4" />
+              Sharp Shooters (Guesses)
+            </div>
+            <div className="grid gap-3">
+              {guessWinners.map((guess) => (
+                <div
+                  key={guess.id}
+                  className="group flex items-center gap-4 rounded-xl border border-indigo-500/20 bg-indigo-900/10 p-3 backdrop-blur-sm transition-all hover:bg-indigo-900/20"
+                >
+                  <div className="relative h-14 w-10 flex-shrink-0 overflow-hidden rounded shadow-lg transition-transform group-hover:scale-105">
+                    {guess.movie.poster && (
+                      <Image
+                        src={guess.movie.poster}
+                        alt={guess.movie.title}
+                        fill
+                        className="object-cover opacity-40 grayscale-[0.5] transition-all group-hover:opacity-60 group-hover:grayscale-0"
+                      />
+                    )}
+                    <div className="absolute inset-0 flex items-center justify-center transition-transform group-hover:rotate-12">
+                      <RatingIcon value={guess.actualRating} />
+                    </div>
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="truncate font-bold text-white">
+                        {guess.user.name}
+                      </span>
+                      <span className="rounded bg-indigo-500/20 px-1.5 py-0.5 text-[10px] font-black uppercase tracking-wider text-indigo-300">
+                        CORRECT
+                      </span>
+                    </div>
+                    <div className="mt-0.5 truncate text-xs text-gray-400">
+                      Predicted{" "}
+                      <span className="font-medium text-gray-300">
+                        {guess.host.name ?? "Host"}&apos;s
+                      </span>{" "}
+                      rating
+                    </div>
+                    <div className="mt-1 text-[10px] font-bold uppercase tracking-widest text-indigo-400/70">
+                      for {guess.movie.title}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 }

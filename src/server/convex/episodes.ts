@@ -92,10 +92,48 @@ const getByLegacyIdReference = publicQueryReference<{
   legacyId: string;
 }>("episodes/public:getByLegacyId");
 
+const getBySlugReference = publicQueryReference<{
+  slug: string;
+}>("episodes/public:getBySlug");
+
+const resultsReference = publicQueryReference<{
+  episodeId: string;
+}>("episodes/public:results");
+
 const episodePageSchema = z.object({
   page: z.array(episodeSchema),
   isDone: z.boolean(),
   continueCursor: z.string(),
+});
+
+const episodeUserSchema = z.object({
+  id: z.string(),
+  name: z.string().nullable(),
+  image: z.string().nullable(),
+});
+
+const episodeResultsSchema = z.object({
+  gamblingWinners: z.array(
+    z.object({
+      id: z.string(),
+      user: episodeUserSchema,
+      points: z.number(),
+      gamblingType: z.object({
+        title: z.string(),
+        multiplier: z.number(),
+      }),
+      movie: movieSchema,
+    })
+  ),
+  guessWinners: z.array(
+    z.object({
+      id: z.string(),
+      user: episodeUserSchema,
+      host: episodeUserSchema,
+      actualRating: z.number(),
+      movie: movieSchema,
+    })
+  ),
 });
 
 export async function getNextScheduledEpisode(): Promise<CompleteEpisode | null> {
@@ -134,6 +172,22 @@ export async function getEpisodeByLegacyId(
     legacyId,
   });
   return episodeSchema.nullable().parse(result);
+}
+
+export async function getEpisodeBySlug(
+  slug: string
+): Promise<CompleteEpisode | null> {
+  const result = await fetchPublicQuery(getBySlugReference, {
+    slug,
+  });
+  return episodeSchema.nullable().parse(result);
+}
+
+export async function getEpisodeResults(episodeId: string) {
+  const result = await fetchPublicQuery(resultsReference, {
+    episodeId,
+  });
+  return episodeResultsSchema.parse(result);
 }
 
 export async function listEpisodeHistory(): Promise<CompleteEpisode[]> {

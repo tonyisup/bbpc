@@ -62,3 +62,27 @@ export type CompleteEpisode = {
   extras: EpisodeExtra[];
   links: EpisodeLink[];
 };
+
+export type EpisodeGamblingWinner = {
+  id: string;
+  user: EpisodeUser;
+  points: number;
+  gamblingType: {
+    title: string;
+    multiplier: number;
+  };
+  movie: EpisodeMovie;
+};
+
+export type EpisodeGuessWinner = {
+  id: string;
+  user: EpisodeUser;
+  host: EpisodeUser;
+  actualRating: number;
+  movie: EpisodeMovie;
+};
+
+export type EpisodeResultsData = {
+  gamblingWinners: EpisodeGamblingWinner[];
+  guessWinners: EpisodeGuessWinner[];
+};

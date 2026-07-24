@@ -71,6 +71,11 @@ pagination fails closed at 1,000 episodes or if a cursor does not advance; searc
 capped at 20 results. The SQL implementations remain the default until the complete
 consumer acceptance gate is signed off.
 
+Episode detail routes resolve both canonical slugs and transitional SQL UUIDs through
+Convex mode. Their results section consumes a separate 50-row-bounded public winner
+contract that omits emails, notes, losing wagers, and incorrect guesses. SQL mode maps
+its existing read into that same result shape through a runtime-validated adapter.
+
 The shared `@tonyisup/bbpc-convex-api` package is not yet published. Until it is
 available to CI and Vercel, this app keeps its narrow function reference and runtime
 schema locally so a sibling checkout is not a deployment dependency.

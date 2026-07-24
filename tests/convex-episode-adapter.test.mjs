@@ -30,6 +30,14 @@ const sitemap = await readFile(
   new URL("../src/app/sitemap.ts", import.meta.url),
   "utf8"
 );
+const episodeDetailPage = await readFile(
+  new URL("../src/app/episodes/[slug]/page.tsx", import.meta.url),
+  "utf8"
+);
+const episodeResults = await readFile(
+  new URL("../src/components/EpisodeResults.tsx", import.meta.url),
+  "utf8"
+);
 
 test("anonymous next-episode reads use a fail-closed Convex adapter", () => {
   assert.match(client, /import "server-only"/u);
@@ -39,6 +47,8 @@ test("anonymous next-episode reads use a fail-closed Convex adapter", () => {
   assert.match(episodes, /episodes\/public:search/u);
   assert.match(episodes, /episodes\/public:listPage/u);
   assert.match(episodes, /episodes\/public:getByLegacyId/u);
+  assert.match(episodes, /episodes\/public:getBySlug/u);
+  assert.match(episodes, /episodes\/public:results/u);
   assert.match(episodes, /episodeSchema\.nullable\(\)\.parse/u);
   assert.match(episodes, /HISTORY_EPISODE_LIMIT = 1_000/u);
   assert.match(episodes, /pagination did not advance/u);
@@ -70,6 +80,12 @@ test("anonymous next-episode reads use a fail-closed Convex adapter", () => {
     sitemap,
     /NEXT_PUBLIC_BBPC_BACKEND === "convex"[\s\S]*listEpisodeHistory/u
   );
+  assert.match(
+    episodeDetailPage,
+    /NEXT_PUBLIC_BBPC_BACKEND === "convex"[\s\S]*getEpisodeResults/u
+  );
+  assert.doesNotMatch(episodeResults, /\bany\b/u);
+  assert.match(episodeResults, /results: EpisodeResultsData/u);
 });
 
 test("the public episode presentation contract is storage-neutral", () => {
