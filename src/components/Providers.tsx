@@ -25,27 +25,23 @@ const convexClient =
 
 function SharedProviders({
   children,
-  headers,
 }: {
   children: React.ReactNode;
-  headers?: Headers;
 }) {
   return (
-    <TRPCReactProvider headers={headers}>
-      <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
-        {process.env.NEXT_PUBLIC_POSTHOG_KEY ? (
-          <PostHogProviderDynamic>
-            {children}
-            <Toaster />
-          </PostHogProviderDynamic>
-        ) : (
-          <>
-            {children}
-            <Toaster />
-          </>
-        )}
-      </ThemeProvider>
-    </TRPCReactProvider>
+    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
+      {process.env.NEXT_PUBLIC_POSTHOG_KEY ? (
+        <PostHogProviderDynamic>
+          {children}
+          <Toaster />
+        </PostHogProviderDynamic>
+      ) : (
+        <>
+          {children}
+          <Toaster />
+        </>
+      )}
+    </ThemeProvider>
   );
 }
 
@@ -58,15 +54,15 @@ export function Providers({
   session: Session | null;
   headers?: Headers;
 }) {
-  const shared = (
-    <SharedProviders headers={headers}>{children}</SharedProviders>
-  );
+  const shared = <SharedProviders>{children}</SharedProviders>;
 
   if (process.env.NEXT_PUBLIC_BBPC_BACKEND !== "convex") {
     return (
-      <SessionProvider session={session}>
-        <SqlBbpcAuthProvider>{shared}</SqlBbpcAuthProvider>
-      </SessionProvider>
+      <TRPCReactProvider headers={headers}>
+        <SessionProvider session={session}>
+          <SqlBbpcAuthProvider>{shared}</SqlBbpcAuthProvider>
+        </SessionProvider>
+      </TRPCReactProvider>
     );
   }
 

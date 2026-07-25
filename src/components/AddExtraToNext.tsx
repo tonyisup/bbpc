@@ -13,18 +13,7 @@ interface AddExtraToNextProps {
   episode: CompleteEpisode | null;
 }
 
-export const AddExtraToNext: FC<AddExtraToNextProps> = ({ episode }) => {
-  const { backend, status, user } = useBbpcAuth();
-  const { data: isSqlHost } = api.auth.isHost.useQuery(undefined, {
-    enabled: backend === "sql" && status === "authenticated",
-    retry: false,
-  });
-  const canAddExtra =
-    backend === "convex" ? user?.isHost === true : isSqlHost === true;
-
-  if (!episode) return null;
-  if (!canAddExtra) return null;
-
+function AddExtraLink({ episode }: { episode: CompleteEpisode }) {
   return (
     <div className="flex w-full items-center justify-center gap-2 p-2">
       <Button variant="outline" asChild>
@@ -36,5 +25,36 @@ export const AddExtraToNext: FC<AddExtraToNextProps> = ({ episode }) => {
         </Link>
       </Button>
     </div>
+  );
+}
+
+function SqlAddExtraToNext({
+  episode,
+  authenticated,
+}: {
+  episode: CompleteEpisode;
+  authenticated: boolean;
+}) {
+  const { data: isSqlHost } = api.auth.isHost.useQuery(undefined, {
+    enabled: authenticated,
+    retry: false,
+  });
+  if (isSqlHost !== true) return null;
+  return <AddExtraLink episode={episode} />;
+}
+
+export const AddExtraToNext: FC<AddExtraToNextProps> = ({ episode }) => {
+  const { backend, status, user } = useBbpcAuth();
+  if (!episode) return null;
+  if (backend === "convex") {
+    return user?.isHost === true ? (
+      <AddExtraLink episode={episode} />
+    ) : null;
+  }
+  return (
+    <SqlAddExtraToNext
+      episode={episode}
+      authenticated={status === "authenticated"}
+    />
   );
 };

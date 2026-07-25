@@ -41,13 +41,25 @@ const convexIdentityAdapter = await readFile(
   new URL("../src/convex/identity.ts", import.meta.url),
   "utf8"
 );
+const leaveMessage = await readFile(
+  new URL("../src/components/LeaveMessage.tsx", import.meta.url),
+  "utf8"
+);
+const addExtraToNext = await readFile(
+  new URL("../src/components/AddExtraToNext.tsx", import.meta.url),
+  "utf8"
+);
+const gameParticipation = await readFile(
+  new URL("../src/components/GameParticipation.tsx", import.meta.url),
+  "utf8"
+);
 
 test("the SQL-default consumer scaffold pins and fail-closes Clerk plus Convex", () => {
   assert.equal(packageJson.dependencies["@clerk/nextjs"], "6.39.6");
   assert.equal(packageJson.dependencies.convex, "1.42.3");
   assert.match(
     providers,
-    /NEXT_PUBLIC_BBPC_BACKEND !== "convex"[\s\S]*<SessionProvider[\s\S]*<SqlBbpcAuthProvider/u
+    /NEXT_PUBLIC_BBPC_BACKEND !== "convex"[\s\S]*<TRPCReactProvider[\s\S]*<SessionProvider[\s\S]*<SqlBbpcAuthProvider/u
   );
   assert.match(
     providers,
@@ -56,6 +68,30 @@ test("the SQL-default consumer scaffold pins and fail-closes Clerk plus Convex",
   assert.match(
     providers,
     /<ClerkBbpcAuthProvider>\{shared\}<\/ClerkBbpcAuthProvider>/u
+  );
+  const convexProviderBranch = providers.slice(
+    providers.indexOf("const publishableKey"),
+  );
+  assert.doesNotMatch(convexProviderBranch, /TRPCReactProvider|SessionProvider/u);
+  assert.match(
+    leaveMessage,
+    /function SqlMessageContent[\s\S]*api\.episode\.next\.useQuery/u
+  );
+  assert.match(
+    leaveMessage,
+    /backend === "convex"[\s\S]*Voice messages are temporarily unavailable[\s\S]*<SqlMessageContent/u
+  );
+  assert.match(
+    addExtraToNext,
+    /function SqlAddExtraToNext[\s\S]*api\.auth\.isHost\.useQuery/u
+  );
+  assert.match(
+    addExtraToNext,
+    /backend === "convex"[\s\S]*user\?\.isHost === true[\s\S]*<SqlAddExtraToNext/u
+  );
+  assert.match(
+    gameParticipation,
+    /useState\(false\)[\s\S]*setMounted\(true\)[\s\S]*!mounted \|\| status === "loading"/u
   );
   assert.match(providers, /NEXT_PUBLIC_BBPC_BACKEND !== "convex"/u);
   assert.match(

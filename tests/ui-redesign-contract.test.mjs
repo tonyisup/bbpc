@@ -131,7 +131,7 @@ test("deferred analytics and above-fold images avoid runtime console noise", () 
 });
 
 test("history, about, and footer implement the approved content and accessibility guidance", () => {
-  const history = read("src/app/history/page.tsx");
+  const history = read("src/app/history/HistoryPageClient.tsx");
   assert.match(history, /Match close spellings/);
   assert.match(history, /Browse all episodes/);
   assert.match(history, /flex-col[^"\n]*sm:flex-row/);

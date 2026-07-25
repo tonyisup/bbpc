@@ -42,6 +42,18 @@ const homePage = await readFile(
   new URL("../src/app/page.tsx", import.meta.url),
   "utf8"
 );
+const historyPage = await readFile(
+  new URL("../src/app/history/page.tsx", import.meta.url),
+  "utf8"
+);
+const historyClient = await readFile(
+  new URL("../src/app/history/HistoryPageClient.tsx", import.meta.url),
+  "utf8"
+);
+const sqlHistoryPage = await readFile(
+  new URL("../src/app/history/SqlHistoryPage.tsx", import.meta.url),
+  "utf8"
+);
 const gambling = await readFile(
   new URL("../src/server/convex/gambling.ts", import.meta.url),
   "utf8"
@@ -88,6 +100,12 @@ test("anonymous next-episode reads use a fail-closed Convex adapter", () => {
     episodesPage,
     /NEXT_PUBLIC_BBPC_BACKEND === "convex"[\s\S]*listEpisodeHistory/u
   );
+  assert.match(
+    historyPage,
+    /NEXT_PUBLIC_BBPC_BACKEND === "convex"[\s\S]*listEpisodeHistory\(\)[\s\S]*import\("\.\/SqlHistoryPage"\)/u
+  );
+  assert.doesNotMatch(historyClient, /trpc|next-auth|@prisma|server\/db/u);
+  assert.match(sqlHistoryPage, /api\.episode\.history\.useQuery/u);
   assert.match(
     sitemap,
     /NEXT_PUBLIC_BBPC_BACKEND === "convex"[\s\S]*listEpisodeHistory/u

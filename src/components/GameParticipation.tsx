@@ -9,6 +9,7 @@ import { ConvexQuotabungaSubmission } from "@/components/ConvexQuotabungaSubmiss
 import QuotabungaSubmission from "@/components/QuotabungaSubmission";
 import { Button } from "@/components/ui/button";
 import { useBbpcAuth } from "@/components/auth/BbpcAuthContext";
+import { useEffect, useState } from "react";
 
 interface GameParticipationProps {
   assignments: PredictionGameAssignment[];
@@ -21,6 +22,7 @@ export function GameParticipation({
   episodeStatus,
   searchQuery = "",
 }: GameParticipationProps) {
+  const [mounted, setMounted] = useState(false);
   const {
     accountIssue,
     accountStatus,
@@ -32,7 +34,11 @@ export function GameParticipation({
     user,
   } = useBbpcAuth();
 
-  if (status === "loading") {
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted || status === "loading") {
     return (
       <div
         className="h-24 animate-pulse rounded-lg bg-white/[0.04]"

@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, type FC, useMemo } from "react";
+import React, { useState, type FC } from "react";
 import { Mic } from "lucide-react";
 import dynamic from "next/dynamic";
 import { api } from "@/trpc/react";
@@ -17,21 +17,55 @@ const VoiceMailRecorder = dynamic(() => import("./voice-mail-recorder"), {
   ssr: false,
 });
 
-const LeaveMessage: FC = () => {
-  const { backend, signIn, user } = useBbpcAuth();
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
-  const shouldFetchEpisode = useMemo(
-    () => isModalOpen && user !== null && backend === "sql",
-    [backend, isModalOpen, user]
-  );
+function SqlMessageContent({
+  isModalOpen,
+  userId,
+}: {
+  isModalOpen: boolean;
+  userId: string | null;
+}) {
   const {
     data: episode,
     isLoading,
     isError,
   } = api.episode.next.useQuery(undefined, {
-    enabled: shouldFetchEpisode,
+    enabled: isModalOpen && userId !== null,
   });
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center p-8 text-muted-foreground">
+        Loading episode details...
+      </div>
+    );
+  }
+  if (isError) {
+    return (
+      <div className="p-8 text-center text-destructive" role="alert">
+        Episode details could not be loaded. Please try again.
+      </div>
+    );
+  }
+  if (episode && userId) {
+    return <VoiceMailRecorder episodeId={episode.id} userId={userId} />;
+  }
+  if (episode) {
+    return (
+      <div className="p-8 text-center text-destructive" role="alert">
+        Your account could not be resolved. Please sign in again.
+      </div>
+    );
+  }
+  return (
+    <div className="p-8 text-center text-muted-foreground" role="status">
+      No upcoming episode is available for voice messages.
+    </div>
+  );
+}
+
+const LeaveMessage: FC = () => {
+  const { backend, signIn, user } = useBbpcAuth();
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   if (user === null) {
     return (
@@ -75,24 +109,11 @@ const LeaveMessage: FC = () => {
             Voice messages are temporarily unavailable while their storage
             workflow is migrated.
           </div>
-        ) : isLoading ? (
-          <div className="flex items-center justify-center p-8 text-muted-foreground">
-            Loading episode details...
-          </div>
-        ) : isError ? (
-          <div className="p-8 text-center text-destructive" role="alert">
-            Episode details could not be loaded. Please try again.
-          </div>
-        ) : episode && user.appUserId ? (
-          <VoiceMailRecorder episodeId={episode.id} userId={user.appUserId} />
-        ) : episode ? (
-          <div className="p-8 text-center text-destructive" role="alert">
-            Your account could not be resolved. Please sign in again.
-          </div>
         ) : (
-          <div className="p-8 text-center text-muted-foreground" role="status">
-            No upcoming episode is available for voice messages.
-          </div>
+          <SqlMessageContent
+            isModalOpen={isModalOpen}
+            userId={user.appUserId}
+          />
         )}
       </DialogContent>
     </Dialog>

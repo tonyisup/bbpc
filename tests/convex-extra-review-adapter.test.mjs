@@ -38,10 +38,13 @@ test("Convex extras use owner-derived versioned mutations", () => {
   assert.match(component, /accountStatus !== "ready"/u);
   assert.match(component, /user\.appUserId === null/u);
   assert.doesNotMatch(component, /next-auth|trpc|prisma|server\/db/u);
-  assert.match(affordance, /backend === "convex" \? user\?\.isHost === true/u);
   assert.match(
     affordance,
-    /enabled: backend === "sql" && status === "authenticated"/u
+    /backend === "convex"[\s\S]*user\?\.isHost === true/u
+  );
+  assert.match(
+    affordance,
+    /function SqlAddExtraToNext[\s\S]*enabled: authenticated/u
   );
 });
 
