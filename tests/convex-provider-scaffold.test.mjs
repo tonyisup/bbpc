@@ -55,7 +55,7 @@ test("the SQL-default consumer scaffold pins and fail-closes Clerk plus Convex",
   );
   assert.match(
     providers,
-    /<ClerkBbpcAuthProvider>[\s\S]*<SessionProvider session=\{null\}>/u
+    /<ClerkBbpcAuthProvider>\{shared\}<\/ClerkBbpcAuthProvider>/u
   );
   assert.match(providers, /NEXT_PUBLIC_BBPC_BACKEND !== "convex"/u);
   assert.match(
@@ -67,6 +67,10 @@ test("the SQL-default consumer scaffold pins and fail-closes Clerk plus Convex",
     /NEXT_PUBLIC_BBPC_BACKEND !== "convex"[\s\S]*NextResponse\.next/u
   );
   assert.match(middleware, /process\.env\.CLERK_SECRET_KEY === undefined/u);
+  assert.match(
+    middleware,
+    /pathname\.startsWith\("\/api\/auth"\)[\s\S]*pathname\.startsWith\("\/api\/trpc"\)[\s\S]*status: 404/u
+  );
   assert.match(
     layout,
     /NEXT_PUBLIC_BBPC_BACKEND === "convex"[\s\S]*\? null[\s\S]*getServerAuthSession/u

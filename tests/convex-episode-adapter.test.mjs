@@ -106,6 +106,10 @@ test("anonymous next-episode reads use a fail-closed Convex adapter", () => {
     homePage,
     /NEXT_PUBLIC_BBPC_BACKEND === "convex"[\s\S]*hasSignedInUserWonForEpisode/u
   );
+  assert.match(
+    homePage,
+    /NEXT_PUBLIC_BBPC_BACKEND === "convex"[\s\S]*nextEpisode[\s\S]*<Episode episode=\{nextEpisode\} allowGuesses/u
+  );
   assert.match(gambling, /games\/gambling:hasWonForEpisode/u);
   assert.match(client, /auth\(\)/u);
   assert.match(client, /getToken\(\{ template: "convex" \}\)/u);

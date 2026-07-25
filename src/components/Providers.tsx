@@ -80,9 +80,7 @@ export function Providers({
   return (
     <ClerkProvider publishableKey={publishableKey}>
       <ConvexProviderWithClerk client={convexClient} useAuth={useAuth}>
-        <ClerkBbpcAuthProvider>
-          <SessionProvider session={null}>{shared}</SessionProvider>
-        </ClerkBbpcAuthProvider>
+        <ClerkBbpcAuthProvider>{shared}</ClerkBbpcAuthProvider>
       </ConvexProviderWithClerk>
     </ClerkProvider>
   );

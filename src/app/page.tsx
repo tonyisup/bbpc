@@ -1,11 +1,15 @@
 import { LatestEpisode } from "@/components/LatestEpisode";
 import { NextEpisode } from "@/components/NextEpisode";
+import { Episode } from "@/components/Episode";
 import { EpisodeSkeleton } from "@/components/EpisodeSkeleton";
 import { db } from "@/server/db";
 import { getServerAuthSession } from "@/server/auth";
 import { Suspense } from "react";
 import { env } from "@/env.mjs";
-import { getLatestPublishedEpisode } from "@/server/convex/episodes";
+import {
+  getLatestPublishedEpisode,
+  getNextScheduledEpisode,
+} from "@/server/convex/episodes";
 import { hasSignedInUserWonForEpisode } from "@/server/convex/gambling";
 import { getPacificTodayPlainDate } from "@/lib/dates";
 
@@ -54,11 +58,13 @@ async function loadSqlLatestEpisode() {
 
 async function loadHomeEpisode() {
   if (env.NEXT_PUBLIC_BBPC_BACKEND === "convex") {
-    const latestEpisode = await getLatestPublishedEpisode(
-      getPacificTodayPlainDate()
-    );
+    const [latestEpisode, nextEpisode] = await Promise.all([
+      getLatestPublishedEpisode(getPacificTodayPlainDate()),
+      getNextScheduledEpisode(),
+    ]);
     return {
       latestEpisode,
+      nextEpisode,
       hasWon:
         latestEpisode === null
           ? false
@@ -81,11 +87,12 @@ async function loadHomeEpisode() {
     });
     hasWon = !!win;
   }
-  return { latestEpisode, hasWon };
+  return { latestEpisode, nextEpisode: null, hasWon };
 }
 
 export default async function HomePage() {
-  const { latestEpisode, hasWon } = await loadHomeEpisode();
+  const { latestEpisode, nextEpisode, hasWon } =
+    await loadHomeEpisode();
   return (
     <div className="bbpc-page space-y-12 text-white">
       <section aria-labelledby="latest-episode-heading" className="space-y-4">
@@ -116,7 +123,13 @@ export default async function HomePage() {
           </h2>
         </div>
         <Suspense fallback={<EpisodeSkeleton />}>
-          <NextEpisode allowGuesses />
+          {env.NEXT_PUBLIC_BBPC_BACKEND === "convex" ? (
+            nextEpisode && (
+              <Episode episode={nextEpisode} allowGuesses />
+            )
+          ) : (
+            <NextEpisode allowGuesses />
+          )}
         </Suspense>
       </section>
     </div>

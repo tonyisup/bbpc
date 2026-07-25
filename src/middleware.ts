@@ -17,6 +17,17 @@ export default function middleware(
   ) {
     throw new Error("Convex mode requires Clerk publishable and secret keys.");
   }
+  if (
+    request.nextUrl.pathname.startsWith("/api/auth") ||
+    request.nextUrl.pathname.startsWith("/api/trpc")
+  ) {
+    return new NextResponse(null, {
+      status: 404,
+      headers: {
+        "Cache-Control": "no-store",
+      },
+    });
+  }
   return handleClerkRequest(request, event);
 }
 
