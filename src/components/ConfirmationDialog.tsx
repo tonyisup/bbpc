@@ -62,7 +62,7 @@ export function ConfirmationDialog({
             className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
           />
           <Label htmlFor="dont-ask-again" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-            Don't ask me again
+            Don&apos;t ask me again
           </Label>
         </div>
         <DialogFooter>
