@@ -1,5 +1,6 @@
 import "server-only";
 
+import { isClerkAPIResponseError } from "@clerk/nextjs/errors";
 import { auth } from "@clerk/nextjs/server";
 import { fetchQuery } from "convex/nextjs";
 import {
@@ -52,15 +53,43 @@ export async function fetchPublicQuery<Args extends DefaultFunctionArgs>(
   );
 }
 
+async function retryClerkNotFound<T>(
+  operation: () => Promise<T>
+): Promise<T> {
+  try {
+    return await operation();
+  } catch (error) {
+    if (!isClerkAPIResponseError(error) || error.status !== 404) {
+      throw error;
+    }
+  }
+
+  // A newly completed Clerk sign-up can briefly precede session-token
+  // propagation to the Backend API.
+  await new Promise((resolve) => setTimeout(resolve, 250));
+
+  try {
+    return await operation();
+  } catch (error) {
+    if (!isClerkAPIResponseError(error) || error.status !== 404) {
+      throw error;
+    }
+  }
+
+  await new Promise((resolve) => setTimeout(resolve, 500));
+  return operation();
+}
+
 async function getOptionalConvexToken(): Promise<string | null> {
   const clerkAuth = await auth();
   if (clerkAuth.userId === null) {
     return null;
   }
-  const token =
+  const token = await retryClerkNotFound(() =>
     clerkAuth.sessionClaims?.aud === "convex"
-      ? await clerkAuth.getToken()
-      : await clerkAuth.getToken({ template: "convex" });
+      ? clerkAuth.getToken()
+      : clerkAuth.getToken({ template: "convex" })
+  );
   if (token === null) {
     throw new Error(
       "Clerk is authenticated but did not provide a Convex token."

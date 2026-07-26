@@ -131,6 +131,14 @@ test("anonymous next-episode reads use a fail-closed Convex adapter", () => {
   assert.match(gambling, /games\/gambling:hasWonForEpisode/u);
   assert.match(client, /auth\(\)/u);
   assert.match(client, /getToken\(\{ template: "convex" \}\)/u);
+  assert.match(
+    client,
+    /isClerkAPIResponseError\(error\)[\s\S]*error\.status !== 404/u
+  );
+  assert.match(
+    client,
+    /setTimeout\(resolve, 250\)[\s\S]*setTimeout\(resolve, 500\)/u
+  );
 });
 
 test("Clerk middleware matches routes before Next.js locale rewriting", () => {
