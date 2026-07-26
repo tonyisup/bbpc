@@ -53,6 +53,10 @@ const gameParticipation = await readFile(
   new URL("../src/components/GameParticipation.tsx", import.meta.url),
   "utf8"
 );
+const navMenu = await readFile(
+  new URL("../src/components/NavMenu.tsx", import.meta.url),
+  "utf8"
+);
 
 test("the SQL-default consumer scaffold pins and fail-closes Clerk plus Convex", () => {
   assert.equal(packageJson.dependencies["@clerk/nextjs"], "6.39.6");
@@ -92,6 +96,10 @@ test("the SQL-default consumer scaffold pins and fail-closes Clerk plus Convex",
   assert.match(
     gameParticipation,
     /useState\(false\)[\s\S]*setMounted\(true\)[\s\S]*!mounted \|\| status === "loading"/u
+  );
+  assert.match(
+    navMenu,
+    /useState\(false\)[\s\S]*setMounted\(true\)[\s\S]*visibleUser = mounted \? user : null/u
   );
   assert.match(providers, /NEXT_PUBLIC_BBPC_BACKEND !== "convex"/u);
   assert.match(

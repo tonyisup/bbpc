@@ -1,6 +1,6 @@
 "use client";
 
-import type { FC } from "react";
+import { useEffect, useState, type FC } from "react";
 import Link from "next/link";
 import {
   HomeIcon,
@@ -72,7 +72,12 @@ const authNavItems: NavItem[] = [
 const NavMenu: FC = () => {
   const { backend, signIn, signOut, user } = useBbpcAuth();
   const pathname = usePathname();
-  const isLoggedIn = user !== null;
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+  const visibleUser = mounted ? user : null;
+  const isLoggedIn = visibleUser !== null;
   const isActive = (href: string) =>
     href === "/"
       ? pathname === "/"
@@ -138,10 +143,12 @@ const NavMenu: FC = () => {
           <NavigationMenuList>
             <NavigationMenuItem>
               <NavigationMenuTrigger aria-label="Open navigation menu">
-                {user ? (
+                {visibleUser ? (
                   <Avatar>
-                    <AvatarImage src={user.image ?? undefined} />
-                    <AvatarFallback>{user.name?.charAt(0)}</AvatarFallback>
+                    <AvatarImage src={visibleUser.image ?? undefined} />
+                    <AvatarFallback>
+                      {visibleUser.name?.charAt(0)}
+                    </AvatarFallback>
                   </Avatar>
                 ) : (
                   <Menu className="h-5 w-5" aria-hidden="true" />
