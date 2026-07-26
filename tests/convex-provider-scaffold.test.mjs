@@ -57,6 +57,17 @@ const navMenu = await readFile(
   new URL("../src/components/NavMenu.tsx", import.meta.url),
   "utf8"
 );
+const convexImpersonationControl = await readFile(
+  new URL(
+    "../src/components/ConvexImpersonationControl.tsx",
+    import.meta.url
+  ),
+  "utf8"
+);
+const convexImpersonationAdapter = await readFile(
+  new URL("../src/convex/impersonation.ts", import.meta.url),
+  "utf8"
+);
 
 test("the SQL-default consumer scaffold pins and fail-closes Clerk plus Convex", () => {
   assert.equal(packageJson.dependencies["@clerk/nextjs"], "6.39.6");
@@ -100,6 +111,22 @@ test("the SQL-default consumer scaffold pins and fail-closes Clerk plus Convex",
   assert.match(
     navMenu,
     /useState\(false\)[\s\S]*setMounted\(true\)[\s\S]*visibleUser = mounted \? user : null/u
+  );
+  assert.match(
+    navMenu,
+    /dynamic\([\s\S]*import\("\.\/ImpersonationSelector"\)[\s\S]*backend === "sql"[\s\S]*SqlImpersonationSelector/u
+  );
+  assert.match(
+    convexImpersonationAdapter,
+    /identity\/impersonation:current[\s\S]*identity\/impersonation:revoke/u
+  );
+  assert.doesNotMatch(
+    `${convexImpersonationControl}\n${convexImpersonationAdapter}`,
+    /trpc|next-auth|@prisma/u
+  );
+  assert.match(
+    convexImpersonationControl,
+    /Could not end impersonation\. Try again\./u
   );
   assert.match(providers, /NEXT_PUBLIC_BBPC_BACKEND !== "convex"/u);
   assert.match(
