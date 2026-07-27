@@ -17,6 +17,13 @@ const layout = await readFile(
   new URL("../src/app/layout.tsx", import.meta.url),
   "utf8"
 );
+const accountRecoveryBanner = await readFile(
+  new URL(
+    "../src/components/ConvexAccountRecoveryBanner.tsx",
+    import.meta.url
+  ),
+  "utf8"
+);
 const authContext = await readFile(
   new URL("../src/components/auth/BbpcAuthContext.tsx", import.meta.url),
   "utf8"
@@ -149,6 +156,11 @@ test("the SQL-default consumer scaffold pins and fail-closes Clerk plus Convex",
   assert.doesNotMatch(
     layout,
     /import \{ getServerAuthSession \} from "@\/server\/auth"/u
+  );
+  assert.match(layout, /<ConvexAccountRecoveryBanner \/>/u);
+  assert.match(
+    accountRecoveryBanner,
+    /accountStatus === "ready"[\s\S]*accountStatus === "resolving"[\s\S]*Sign out to use a different email[\s\S]*onClick=\{signOut\}/u
   );
   assert.match(
     authContext,

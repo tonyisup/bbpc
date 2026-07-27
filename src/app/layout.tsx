@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ListenHere } from "@/components/ListenHere";
 import { Providers } from "@/components/Providers";
 import { SiteHeader } from "@/components/SiteHeader";
+import { ConvexAccountRecoveryBanner } from "@/components/ConvexAccountRecoveryBanner";
 import { env } from "@/env.mjs";
 const inter = Inter({
   subsets: ["latin"],
@@ -68,6 +69,7 @@ export default async function RootLayout({
         <Providers session={session}>
           <div className="flex min-h-[100dvh] w-full min-w-0 flex-col items-center bg-[color:var(--bbpc-bg)]">
             <SiteHeader />
+            <ConvexAccountRecoveryBanner />
             <main className="w-full min-w-0 flex-grow">
               <div className="main-mask flex w-full min-w-0 flex-col text-white">
                 {children}
