@@ -1,4 +1,3 @@
-import { db } from "@/server/db";
 import { env } from "@/env.mjs";
 import { isUuid, UUID_PATTERN } from "@/lib/ids";
 import {
@@ -69,6 +68,7 @@ export async function resolveEpisodeRouteParam(slugOrId: string) {
     };
   }
 
+  const { db } = await import("@/server/db");
   const episode =
     (await db.episode.findUnique({
       where: { slug: slugOrId },
@@ -89,6 +89,7 @@ export async function resolveEpisodeRouteParam(slugOrId: string) {
 }
 
 export async function resolveAssignmentRouteParam(slugOrId: string) {
+  const { db } = await import("@/server/db");
   const assignment =
     (await db.assignment.findUnique({
       where: { slug: slugOrId },

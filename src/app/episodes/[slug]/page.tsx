@@ -5,7 +5,6 @@ import { Episode } from "@/components/Episode";
 import EpisodeResults from "@/components/EpisodeResults";
 import type { Metadata } from "next";
 import { notFound, permanentRedirect } from "next/navigation";
-import { db } from "@/server/db";
 import { getEpisodePath } from "@/lib/routes";
 import { resolveEpisodeRouteParam } from "@/server/slugs";
 import { env } from "@/env.mjs";
@@ -13,18 +12,20 @@ import {
   getEpisodeResults,
   listEpisodeHistory,
 } from "@/server/convex/episodes";
-import { mapSqlEpisodeResults } from "@/server/sql/episodeResults";
 
 export const revalidate = 3600;
 
 export async function generateStaticParams() {
-  const episodes =
-    env.NEXT_PUBLIC_BBPC_BACKEND === "convex"
-      ? await listEpisodeHistory()
-      : await db.episode.findMany({
-          where: { slug: { not: null } },
-          select: { slug: true },
-        });
+  let episodes;
+  if (env.NEXT_PUBLIC_BBPC_BACKEND === "convex") {
+    episodes = await listEpisodeHistory();
+  } else {
+    const { db } = await import("@/server/db");
+    episodes = await db.episode.findMany({
+      where: { slug: { not: null } },
+      select: { slug: true },
+    });
+  }
 
   return episodes
     .filter((episode): episode is { slug: string } => !!episode.slug)
@@ -81,7 +82,9 @@ export default async function EpisodePage({
   const results =
     env.NEXT_PUBLIC_BBPC_BACKEND === "convex"
       ? await getEpisodeResults(episode.id)
-      : mapSqlEpisodeResults(episode.assignments);
+      : (
+          await import("@/server/sql/episodeResults")
+        ).mapSqlEpisodeResults(episode.assignments);
 
   return (
     <div className="container mx-auto max-w-4xl p-4">

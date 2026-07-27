@@ -1,4 +1,3 @@
-import { db } from "@/server/db";
 import { Episode } from "@/components/Episode";
 import Link from "next/link";
 import { env } from "@/env.mjs";
@@ -9,6 +8,7 @@ async function loadEpisodes() {
     return listEpisodeHistory();
   }
 
+  const { db } = await import("@/server/db");
   return db.episode.findMany({
     orderBy: {
       date: "desc",

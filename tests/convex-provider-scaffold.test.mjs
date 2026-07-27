@@ -90,6 +90,26 @@ const convexImpersonationAdapter = await readFile(
   new URL("../src/convex/impersonation.ts", import.meta.url),
   "utf8"
 );
+const publicHomePage = await readFile(
+  new URL("../src/app/page.tsx", import.meta.url),
+  "utf8"
+);
+const publicEpisodesPage = await readFile(
+  new URL("../src/app/episodes/page.tsx", import.meta.url),
+  "utf8"
+);
+const publicEpisodeDetailPage = await readFile(
+  new URL("../src/app/episodes/[slug]/page.tsx", import.meta.url),
+  "utf8"
+);
+const publicSitemap = await readFile(
+  new URL("../src/app/sitemap.ts", import.meta.url),
+  "utf8"
+);
+const publicSlugResolver = await readFile(
+  new URL("../src/server/slugs.ts", import.meta.url),
+  "utf8"
+);
 
 test("the SQL-default consumer scaffold pins and fail-closes Clerk plus Convex", () => {
   assert.equal(packageJson.dependencies["@clerk/nextjs"], "6.39.6");
@@ -233,5 +253,47 @@ test("the profile route cannot fall through to SQL in Convex mode", () => {
   assert.doesNotMatch(
     convexUploadRouter,
     /server\/auth|server\/db|next-auth|prisma/u
+  );
+});
+
+test("Convex public route controllers do not statically load SQL or NextAuth", () => {
+  for (const source of [
+    publicHomePage,
+    publicEpisodesPage,
+    publicEpisodeDetailPage,
+    publicSitemap,
+    publicSlugResolver,
+  ]) {
+    assert.doesNotMatch(
+      source,
+      /^import .*["']@\/server\/(?:db|auth)["'];?$/mu
+    );
+  }
+
+  assert.match(
+    publicHomePage,
+    /NEXT_PUBLIC_BBPC_BACKEND === "convex"[\s\S]*getLatestPublishedEpisode/u
+  );
+  assert.match(publicHomePage, /await import\("@\/server\/db"\)/u);
+  assert.match(publicHomePage, /import\("@\/server\/auth"\)/u);
+  assert.match(
+    publicEpisodesPage,
+    /NEXT_PUBLIC_BBPC_BACKEND === "convex"[\s\S]*listEpisodeHistory[\s\S]*await import\("@\/server\/db"\)/u
+  );
+  assert.match(
+    publicEpisodeDetailPage,
+    /NEXT_PUBLIC_BBPC_BACKEND === "convex"[\s\S]*listEpisodeHistory[\s\S]*await import\("@\/server\/db"\)/u
+  );
+  assert.match(
+    publicEpisodeDetailPage,
+    /NEXT_PUBLIC_BBPC_BACKEND === "convex"[\s\S]*getEpisodeResults[\s\S]*import\("@\/server\/sql\/episodeResults"\)/u
+  );
+  assert.match(
+    publicSitemap,
+    /NEXT_PUBLIC_BBPC_BACKEND === "convex"[\s\S]*listEpisodeHistory[\s\S]*await import\("@\/server\/db"\)/u
+  );
+  assert.match(
+    publicSlugResolver,
+    /NEXT_PUBLIC_BBPC_BACKEND === "convex"[\s\S]*getEpisodeBySlug[\s\S]*await import\("@\/server\/db"\)/u
   );
 });

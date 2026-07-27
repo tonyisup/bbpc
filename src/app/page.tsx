@@ -2,8 +2,6 @@ import { LatestEpisode } from "@/components/LatestEpisode";
 import { NextEpisode } from "@/components/NextEpisode";
 import { Episode } from "@/components/Episode";
 import { EpisodeSkeleton } from "@/components/EpisodeSkeleton";
-import { db } from "@/server/db";
-import { getServerAuthSession } from "@/server/auth";
 import { Suspense } from "react";
 import { env } from "@/env.mjs";
 import {
@@ -14,7 +12,8 @@ import { hasSignedInUserWonForEpisode } from "@/server/convex/gambling";
 import { getPacificTodayPlainDate } from "@/lib/dates";
 
 async function loadSqlLatestEpisode() {
-  return db.episode.findFirst({
+  const { db } = await import("@/server/db");
+  const latestEpisode = await db.episode.findFirst({
     where: {
       status: "Published",
       date: {
@@ -54,6 +53,7 @@ async function loadSqlLatestEpisode() {
       date: "desc",
     },
   });
+  return { db, latestEpisode };
 }
 
 async function loadHomeEpisode() {
@@ -72,7 +72,10 @@ async function loadHomeEpisode() {
     };
   }
 
-  const latestEpisode = await loadSqlLatestEpisode();
+  const [{ db, latestEpisode }, { getServerAuthSession }] = await Promise.all([
+    loadSqlLatestEpisode(),
+    import("@/server/auth"),
+  ]);
   const session = await getServerAuthSession();
   let hasWon = false;
   if (session?.user && latestEpisode) {
