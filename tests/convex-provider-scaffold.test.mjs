@@ -118,6 +118,10 @@ const legacyTrpcRoute = await readFile(
   new URL("../src/app/api/trpc/[trpc]/route.ts", import.meta.url),
   "utf8"
 );
+const legacyRestrictedRoute = await readFile(
+  new URL("../src/app/api/restricted/route.ts", import.meta.url),
+  "utf8"
+);
 
 test("the SQL-default consumer scaffold pins and fail-closes Clerk plus Convex", () => {
   assert.equal(packageJson.dependencies["@clerk/nextjs"], "6.39.6");
@@ -307,7 +311,11 @@ test("Convex public route controllers do not statically load SQL or NextAuth", (
 });
 
 test("Convex mode rejects legacy API routes before loading their stacks", () => {
-  for (const source of [legacyAuthRoute, legacyTrpcRoute]) {
+  for (const source of [
+    legacyAuthRoute,
+    legacyTrpcRoute,
+    legacyRestrictedRoute,
+  ]) {
     assert.match(
       source,
       /NEXT_PUBLIC_BBPC_BACKEND === "convex"[\s\S]*status: 404[\s\S]*Cache-Control/u
@@ -330,5 +338,14 @@ test("Convex mode rejects legacy API routes before loading their stacks", () => 
   assert.match(
     legacyTrpcRoute,
     /Promise\.all\(\[[\s\S]*import\("@trpc\/server\/adapters\/fetch"\)[\s\S]*import\("@\/server\/api\/root"\)[\s\S]*import\("@\/server\/api\/trpc"\)/u
+  );
+
+  assert.doesNotMatch(
+    legacyRestrictedRoute,
+    /^import .*["']@\/server\/auth["'];?$/mu
+  );
+  assert.match(
+    legacyRestrictedRoute,
+    /NEXT_PUBLIC_BBPC_BACKEND === "convex"[\s\S]*await import\("@\/server\/auth"\)/u
   );
 });
