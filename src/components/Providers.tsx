@@ -3,16 +3,17 @@
 import { ClerkProvider, useAuth } from "@clerk/nextjs";
 import { ConvexReactClient } from "convex/react";
 import { ConvexProviderWithClerk } from "convex/react-clerk";
-import { SessionProvider } from "next-auth/react";
-import { TRPCReactProvider } from "@/trpc/react";
 import { type Session } from "next-auth";
 import { ThemeProvider } from "next-themes";
 import { Toaster } from "@/components/ui/sonner";
 import dynamic from "next/dynamic";
-import {
-  ClerkBbpcAuthProvider,
-  SqlBbpcAuthProvider,
-} from "@/components/auth/BbpcAuthContext";
+import { ClerkBbpcAuthProvider } from "@/components/auth/BbpcAuthContext";
+import type { SqlProvidersProps } from "@/components/SqlProviders";
+
+const SqlProviders = dynamic<SqlProvidersProps>(
+  () => import("@/components/SqlProviders"),
+  { loading: () => null }
+);
 
 const PostHogProviderDynamic = dynamic(
   () => import("./PostHogProvider").then((m) => m.PostHogProvider),
@@ -58,11 +59,9 @@ export function Providers({
 
   if (process.env.NEXT_PUBLIC_BBPC_BACKEND !== "convex") {
     return (
-      <TRPCReactProvider headers={headers}>
-        <SessionProvider session={session}>
-          <SqlBbpcAuthProvider>{shared}</SqlBbpcAuthProvider>
-        </SessionProvider>
-      </TRPCReactProvider>
+      <SqlProviders session={session} headers={headers}>
+        {shared}
+      </SqlProviders>
     );
   }
 

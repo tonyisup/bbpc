@@ -9,6 +9,17 @@ const providers = await readFile(
   new URL("../src/components/Providers.tsx", import.meta.url),
   "utf8"
 );
+const sqlProviders = await readFile(
+  new URL("../src/components/SqlProviders.tsx", import.meta.url),
+  "utf8"
+);
+const sqlAuthProvider = await readFile(
+  new URL(
+    "../src/components/auth/SqlBbpcAuthProvider.tsx",
+    import.meta.url
+  ),
+  "utf8"
+);
 const middleware = await readFile(
   new URL("../src/middleware.ts", import.meta.url),
   "utf8"
@@ -136,8 +147,17 @@ test("the SQL-default consumer scaffold pins and fail-closes Clerk plus Convex",
   assert.equal(packageJson.dependencies.convex, "1.42.3");
   assert.match(
     providers,
-    /NEXT_PUBLIC_BBPC_BACKEND !== "convex"[\s\S]*<TRPCReactProvider[\s\S]*<SessionProvider[\s\S]*<SqlBbpcAuthProvider/u
+    /NEXT_PUBLIC_BBPC_BACKEND !== "convex"[\s\S]*<SqlProviders/u
   );
+  assert.doesNotMatch(
+    providers,
+    /next-auth\/react|TRPCReactProvider|SqlBbpcAuthProvider/u
+  );
+  assert.match(
+    sqlProviders,
+    /<TRPCReactProvider[\s\S]*<SessionProvider[\s\S]*<SqlBbpcAuthProvider/u
+  );
+  assert.match(sqlAuthProvider, /useSession[\s\S]*BbpcAuthStateProvider/u);
   assert.match(
     providers,
     /<ClerkProvider[\s\S]*<ConvexProviderWithClerk[\s\S]*<ClerkBbpcAuthProvider/u
@@ -149,7 +169,10 @@ test("the SQL-default consumer scaffold pins and fail-closes Clerk plus Convex",
   const convexProviderBranch = providers.slice(
     providers.indexOf("const publishableKey"),
   );
-  assert.doesNotMatch(convexProviderBranch, /TRPCReactProvider|SessionProvider/u);
+  assert.doesNotMatch(
+    convexProviderBranch,
+    /SqlProviders|TRPCReactProvider|SessionProvider/u
+  );
   assert.match(
     leaveMessage,
     /function SqlMessageContent[\s\S]*api\.episode\.next\.useQuery/u
