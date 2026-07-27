@@ -62,6 +62,10 @@ const middleware = await readFile(
   new URL("../src/middleware.ts", import.meta.url),
   "utf8"
 );
+const nextEpisodeApi = await readFile(
+  new URL("../src/app/api/episode/next/route.ts", import.meta.url),
+  "utf8"
+);
 
 test("anonymous next-episode reads use a fail-closed Convex adapter", () => {
   assert.match(client, /import "server-only"/u);
@@ -127,6 +131,18 @@ test("anonymous next-episode reads use a fail-closed Convex adapter", () => {
   assert.match(
     homePage,
     /NEXT_PUBLIC_BBPC_BACKEND === "convex"[\s\S]*nextEpisode[\s\S]*<Episode episode=\{nextEpisode\} allowGuesses/u
+  );
+  assert.match(
+    nextEpisodeApi,
+    /NEXT_PUBLIC_BBPC_BACKEND === "convex"[\s\S]*getNextScheduledEpisode[\s\S]*await import\("@\/server\/api\/trpc"\)/u
+  );
+  assert.doesNotMatch(
+    nextEpisodeApi,
+    /^import .*["']@\/server\/api\/trpc["'];?$/mu
+  );
+  assert.match(
+    nextEpisodeApi,
+    /"assignmentReviews" in assignment[\s\S]*: \[\]/u
   );
   assert.match(gambling, /games\/gambling:hasWonForEpisode/u);
   assert.match(

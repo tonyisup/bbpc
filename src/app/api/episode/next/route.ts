@@ -1,15 +1,8 @@
-import { NextRequest, NextResponse } from "next/server";
-import { createTRPCContext } from "@/server/api/trpc";
+import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
-// Dialogflow webhook request/response types
-interface WebhookRequest {
-  queryResult: {
-    intent: {
-      displayName: string;
-    };
-    parameters?: Record<string, any>;
-  };
-}
+import { env } from "@/env.mjs";
+import { getNextScheduledEpisode } from "@/server/convex/episodes";
 
 interface WebhookResponse {
   fulfillmentMessages: Array<{
@@ -59,46 +52,52 @@ interface StructuredData {
   }>;
 }
 
-export async function GET() {
-  try {
-    // Create a tRPC context
-    const ctx = await createTRPCContext();
+async function loadNextEpisode() {
+  if (env.NEXT_PUBLIC_BBPC_BACKEND === "convex") {
+    return getNextScheduledEpisode();
+  }
 
-    // Get the next episode data
-    const episode = await ctx.db.episode.findFirst({
-      orderBy: {
-        number: 'desc',
-      },
-      include: {
-        assignments: {
-          include: {
-            movie: true,
-            user: true,
-            assignmentReviews: {
-              include: {
-                review: {
-                  include: {
-                    rating: true,
-                    user: true,
-                  },
+  const { createTRPCContext } = await import("@/server/api/trpc");
+  const ctx = await createTRPCContext();
+  return ctx.db.episode.findFirst({
+    orderBy: {
+      number: "desc",
+    },
+    include: {
+      assignments: {
+        include: {
+          movie: true,
+          user: true,
+          assignmentReviews: {
+            include: {
+              review: {
+                include: {
+                  rating: true,
+                  user: true,
                 },
               },
             },
           },
         },
-        extras: {
-          include: {
-            review: {
-              include: {
-                movie: true,
-                user: true,
-              },
+      },
+      extras: {
+        include: {
+          review: {
+            include: {
+              movie: true,
+              user: true,
             },
           },
         },
-        links: true,
       },
-    });
+      links: true,
+    },
+  });
+}
+
+export async function GET() {
+  try {
+    const episode = await loadNextEpisode();
 
     if (!episode) {
       return NextResponse.json({ error: "No episodes found." }, { status: 404 });
@@ -110,13 +109,16 @@ export async function GET() {
       "@type": "ItemList",
       itemListElement: episode.assignments.map((assignment, index) => {
         const movie = assignment.movie;
-        const user = assignment.user;
 
         // Get the user's review for this movie if it exists
-        const userReview = assignment.assignmentReviews[0]?.review;
+        const assignmentReviews =
+          "assignmentReviews" in assignment
+            ? assignment.assignmentReviews
+            : [];
+        const userReview = assignmentReviews[0]?.review;
 
         // Calculate aggregate rating from all reviews
-        const allReviews = assignment.assignmentReviews.map(ar => ar.review);
+        const allReviews = assignmentReviews.map((entry) => entry.review);
         const totalRating = allReviews.reduce((sum, review) => sum + (review.rating?.value || 0), 0);
         const averageRating = allReviews.length > 0 ? totalRating / allReviews.length : 0;
 
@@ -166,37 +168,8 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   try {
-    // Parse the webhook request
-    const webhookRequest: WebhookRequest = await req.json();
-
-    // Create a tRPC context
-    const ctx = await createTRPCContext();
-
-    // Get the next episode data
-    const episode = await ctx.db.episode.findFirst({
-      orderBy: {
-        number: 'desc',
-      },
-      include: {
-        assignments: {
-          include: {
-            movie: true,
-            user: true,
-          },
-        },
-        extras: {
-          include: {
-            review: {
-              include: {
-                movie: true,
-                user: true,
-              },
-            },
-          },
-        },
-        links: true,
-      },
-    });
+    await req.json();
+    const episode = await loadNextEpisode();
 
     if (!episode) {
       const response: WebhookResponse = {
