@@ -1,15 +1,21 @@
 import { z } from "zod";
 import { createEnv } from "@t3-oss/env-nextjs";
 
+const sqlBackendSelected =
+  process.env.NEXT_PUBLIC_BBPC_BACKEND !== "convex";
+const sqlRequiredString = sqlBackendSelected
+  ? z.string().min(1)
+  : z.string().optional().default("");
+
 export const env = createEnv({
   server: {
     NODE_ENV: z.enum(["development", "test", "production"]),
-    DATABASE_URL: z.string().min(1),
+    DATABASE_URL: sqlRequiredString,
     NEXTAUTH_SECRET: z.string().optional(),
     NEXTAUTH_URL: z.string().optional(),
     CLERK_SECRET_KEY: z.string().optional(),
-    GOOGLE_CLIENT_ID: z.string(),
-    GOOGLE_CLIENT_SECRET: z.string(),
+    GOOGLE_CLIENT_ID: sqlRequiredString,
+    GOOGLE_CLIENT_SECRET: sqlRequiredString,
     PHONE_NUMBER: z.string().optional(),
     TMDB_API_KEY: z.string().optional(),
     GOOGLE_API_KEY: z.string().optional(),

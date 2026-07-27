@@ -1,12 +1,18 @@
 // @ts-check
 import { z } from "zod";
 
+const sqlBackendSelected =
+  process.env.NEXT_PUBLIC_BBPC_BACKEND !== "convex";
+const sqlRequiredString = sqlBackendSelected
+  ? z.string().min(1)
+  : z.string().optional().default("");
+
 /**
  * Specify your server-side environment variables schema here.
  * This way you can ensure the app isn't built with invalid env vars.
  */
 export const serverSchema = z.object({
-  DATABASE_URL: z.string(),
+  DATABASE_URL: sqlRequiredString,
   TMDB_API_KEY: z.string().optional(),
   GOOGLE_API_KEY: z.string().optional(),
   NODE_ENV: z.enum(["development", "test", "production"]),

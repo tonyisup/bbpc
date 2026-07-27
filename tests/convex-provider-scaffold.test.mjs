@@ -32,6 +32,14 @@ const exampleEnv = await readFile(
   new URL("../.env.example", import.meta.url),
   "utf8"
 );
+const runtimeEnv = await readFile(
+  new URL("../src/env.mjs", import.meta.url),
+  "utf8"
+);
+const serverEnvSchema = await readFile(
+  new URL("../src/env/schema.mjs", import.meta.url),
+  "utf8"
+);
 const profilePage = await readFile(
   new URL("../src/app/profile/page.tsx", import.meta.url),
   "utf8"
@@ -219,7 +227,21 @@ test("the SQL-default consumer scaffold pins and fail-closes Clerk plus Convex",
   assert.match(exampleEnv, /NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=[\r\n]/u);
   assert.match(exampleEnv, /CLERK_SECRET_KEY=[\r\n]/u);
   assert.match(exampleEnv, /NEXT_PUBLIC_CONVEX_URL=[\r\n]/u);
+  expectSqlOnlyEnvironmentIsolation(runtimeEnv);
+  expectSqlOnlyEnvironmentIsolation(serverEnvSchema);
+  assert.match(runtimeEnv, /DATABASE_URL: sqlRequiredString/u);
+  assert.match(runtimeEnv, /GOOGLE_CLIENT_ID: sqlRequiredString/u);
+  assert.match(runtimeEnv, /GOOGLE_CLIENT_SECRET: sqlRequiredString/u);
+  assert.match(serverEnvSchema, /DATABASE_URL: sqlRequiredString/u);
 });
+
+/** @param {string} source */
+function expectSqlOnlyEnvironmentIsolation(source) {
+  assert.match(
+    source,
+    /NEXT_PUBLIC_BBPC_BACKEND !== "convex"[\s\S]*z\.string\(\)\.min\(1\)[\s\S]*z\.string\(\)\.optional\(\)\.default\(""\)/u
+  );
+}
 
 test("the profile route cannot fall through to SQL in Convex mode", () => {
   assert.match(
