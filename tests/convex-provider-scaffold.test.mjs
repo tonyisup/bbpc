@@ -40,12 +40,27 @@ const convexProfilePage = await readFile(
   new URL("../src/app/profile/ConvexProfilePage.tsx", import.meta.url),
   "utf8"
 );
+const convexProfileForm = await readFile(
+  new URL("../src/app/profile/ConvexProfileForm.tsx", import.meta.url),
+  "utf8"
+);
 const convexProfileAdapter = await readFile(
   new URL("../src/convex/profile.ts", import.meta.url),
   "utf8"
 );
 const convexIdentityAdapter = await readFile(
   new URL("../src/convex/identity.ts", import.meta.url),
+  "utf8"
+);
+const uploadRoute = await readFile(
+  new URL("../src/app/api/uploadthing/route.ts", import.meta.url),
+  "utf8"
+);
+const convexUploadRouter = await readFile(
+  new URL(
+    "../src/server/upload/convexUploadthing.ts",
+    import.meta.url
+  ),
   "utf8"
 );
 const leaveMessage = await readFile(
@@ -194,5 +209,29 @@ test("the profile route cannot fall through to SQL in Convex mode", () => {
   assert.match(
     convexProfileAdapter,
     /paginationOpts: \{[\s\S]*numItems: 20,[\s\S]*cursor/u
+  );
+  assert.match(
+    convexProfileForm,
+    /assertConvexProfileImageUploadAllowed[\s\S]*startUpload[\s\S]*updateConvexProfileWithImage/u
+  );
+  assert.match(
+    convexProfileForm,
+    /discardConvexProfileImageUpload[\s\S]*automatic cleanup could not be queued/u
+  );
+  assert.match(
+    convexIdentityAdapter,
+    /identity\/profile:updateMyProfileWithImage[\s\S]*identity\/profile:discardMyProfileImageUpload/u
+  );
+  assert.match(
+    uploadRoute,
+    /NEXT_PUBLIC_BBPC_BACKEND === "convex"[\s\S]*convexUploadthing[\s\S]*@\/server\/upload\/uploadthing[\s\S]*\.ourFileRouter/u
+  );
+  assert.match(
+    convexUploadRouter,
+    /identity\/profile:actionGateProbe[\s\S]*fetchActionForSignedInUser/u
+  );
+  assert.doesNotMatch(
+    convexUploadRouter,
+    /server\/auth|server\/db|next-auth|prisma/u
   );
 });

@@ -80,10 +80,6 @@ export function ConvexProfilePage() {
       <ConvexProfileSummary appUserId={user.appUserId} />
       <ConvexPointHistory appUserId={user.appUserId} />
 
-      <p className="max-w-xl text-sm text-zinc-400">
-        Profile image changes remain paused until durable media handling moves
-        to Convex.
-      </p>
       <SignOutButton />
     </div>
   );

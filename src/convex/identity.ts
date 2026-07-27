@@ -55,9 +55,55 @@ const updateMyNameReference = makeFunctionReference<
   unknown
 >("identity/profile:updateMyName");
 
+const actionGateReference = makeFunctionReference<
+  "action",
+  { clientApiVersion: string },
+  unknown
+>("identity/profile:actionGateProbe");
+
+const updateMyProfileWithImageReference = makeFunctionReference<
+  "mutation",
+  {
+    clientApiVersion: string;
+    name: string;
+    image: string;
+    fileKey: string;
+    uploadId: string;
+    expectedImage: string | null;
+  },
+  unknown
+>("identity/profile:updateMyProfileWithImage");
+
+const discardMyProfileImageUploadReference = makeFunctionReference<
+  "mutation",
+  {
+    clientApiVersion: string;
+    fileKey: string;
+    uploadId: string;
+  },
+  unknown
+>("identity/profile:discardMyProfileImageUpload");
+
 const updateMyNameResultSchema = z.object({
   name: z.string(),
   updatedAt: z.number(),
+});
+
+const actionGateResultSchema = z.object({
+  allowed: z.literal(true),
+  cutoverStage: z.enum(["S0", "S1", "S2", "S3", "S4"]),
+  isAdmin: z.boolean(),
+});
+
+const updateProfileWithImageResultSchema = z.object({
+  name: z.string(),
+  image: z.string().url(),
+  updatedAt: z.number(),
+});
+
+const discardProfileImageResultSchema = z.object({
+  queued: z.literal(true),
+  intentId: z.string().min(1),
 });
 
 export type ConvexIdentityProfile = z.infer<typeof identityProfileSchema>;
@@ -117,6 +163,46 @@ export async function updateConvexProfileName(
     await client.mutation(updateMyNameReference, {
       clientApiVersion: BBPC_CLIENT_API_VERSION,
       name,
+    })
+  );
+}
+
+export async function assertConvexProfileImageUploadAllowed(
+  client: ConvexReactClient
+) {
+  return actionGateResultSchema.parse(
+    await client.action(actionGateReference, {
+      clientApiVersion: BBPC_CLIENT_API_VERSION,
+    })
+  );
+}
+
+export async function updateConvexProfileWithImage(
+  client: ConvexReactClient,
+  input: {
+    name: string;
+    image: string;
+    fileKey: string;
+    uploadId: string;
+    expectedImage: string | null;
+  }
+) {
+  return updateProfileWithImageResultSchema.parse(
+    await client.mutation(updateMyProfileWithImageReference, {
+      clientApiVersion: BBPC_CLIENT_API_VERSION,
+      ...input,
+    })
+  );
+}
+
+export async function discardConvexProfileImageUpload(
+  client: ConvexReactClient,
+  input: { fileKey: string; uploadId: string }
+) {
+  return discardProfileImageResultSchema.parse(
+    await client.mutation(discardMyProfileImageUploadReference, {
+      clientApiVersion: BBPC_CLIENT_API_VERSION,
+      ...input,
     })
   );
 }

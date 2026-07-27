@@ -2,7 +2,7 @@ import "server-only";
 
 import { isClerkAPIResponseError } from "@clerk/nextjs/errors";
 import { auth } from "@clerk/nextjs/server";
-import { fetchQuery } from "convex/nextjs";
+import { fetchAction, fetchQuery } from "convex/nextjs";
 import {
   makeFunctionReference,
   type ArgsAndOptions,
@@ -15,6 +15,10 @@ import { env } from "@/env.mjs";
 export const publicQueryReference = <Args extends DefaultFunctionArgs>(
   name: string
 ) => makeFunctionReference<"query", Args, unknown>(name);
+
+export const publicActionReference = <Args extends DefaultFunctionArgs>(
+  name: string
+) => makeFunctionReference<"action", Args, unknown>(name);
 
 function requireConvexUrl(): string {
   if (env.NEXT_PUBLIC_BBPC_BACKEND !== "convex") {
@@ -37,6 +41,17 @@ function queryArgs<Args extends DefaultFunctionArgs>(
 ) {
   return [args, options] as unknown as ArgsAndOptions<
     typeof query,
+    NextjsOptions
+  >;
+}
+
+function actionArgs<Args extends DefaultFunctionArgs>(
+  action: ReturnType<typeof publicActionReference<Args>>,
+  args: Args,
+  options: NextjsOptions
+) {
+  return [args, options] as unknown as ArgsAndOptions<
+    typeof action,
     NextjsOptions
   >;
 }
@@ -110,4 +125,18 @@ export async function fetchQueryForSignedInUser<
     return null;
   }
   return fetchQuery(query, ...queryArgs(query, args, { url, token }));
+}
+
+export async function fetchActionForSignedInUser<
+  Args extends DefaultFunctionArgs
+>(
+  action: ReturnType<typeof publicActionReference<Args>>,
+  args: Args
+): Promise<unknown | null> {
+  const url = requireConvexUrl();
+  const token = await getOptionalConvexToken();
+  if (token === null) {
+    return null;
+  }
+  return fetchAction(action, ...actionArgs(action, args, { url, token }));
 }
