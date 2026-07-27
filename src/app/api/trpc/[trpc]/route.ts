@@ -1,12 +1,23 @@
-import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
-import { type NextRequest } from "next/server";
+import type { NextRequest } from "next/server";
 
 import { env } from "@/env.mjs";
-import { appRouter } from "@/server/api/root";
-import { createTRPCContext } from "@/server/api/trpc";
 
-const handler = (req: NextRequest) =>
-  fetchRequestHandler({
+const handler = async (req: NextRequest) => {
+  if (env.NEXT_PUBLIC_BBPC_BACKEND === "convex") {
+    return new Response(null, {
+      status: 404,
+      headers: { "Cache-Control": "no-store" },
+    });
+  }
+
+  const [{ fetchRequestHandler }, { appRouter }, { createTRPCContext }] =
+    await Promise.all([
+      import("@trpc/server/adapters/fetch"),
+      import("@/server/api/root"),
+      import("@/server/api/trpc"),
+    ]);
+
+  return fetchRequestHandler({
     endpoint: "/api/trpc",
     req,
     router: appRouter,
@@ -20,5 +31,6 @@ const handler = (req: NextRequest) =>
           }
         : undefined,
   });
+};
 
-export { handler as GET, handler as POST }; 
+export { handler as GET, handler as POST };
