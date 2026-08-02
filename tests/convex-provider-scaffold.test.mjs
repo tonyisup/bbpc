@@ -223,6 +223,17 @@ test("the SQL-default consumer scaffold pins and fail-closes Clerk plus Convex",
     /NEXT_PUBLIC_BBPC_BACKEND !== "convex"[\s\S]*NextResponse\.next/u
   );
   assert.match(middleware, /process\.env\.CLERK_SECRET_KEY === undefined/u);
+  assert.match(middleware, /const authorizedParties/u);
+  assert.match(
+    middleware,
+    /https:\/\/badboyspodcast\.com[\s\S]*https:\/\/www\.badboyspodcast\.com/u
+  );
+  assert.match(middleware, /process\.env\.VERCEL_URL/u);
+  assert.match(middleware, /http:\/\/localhost:3000/u);
+  assert.match(
+    middleware,
+    /clerkMiddleware\(\{ authorizedParties \}\)/u
+  );
   assert.match(
     middleware,
     /pathname\.startsWith\("\/api\/auth"\)[\s\S]*pathname\.startsWith\("\/api\/trpc"\)[\s\S]*status: 404/u
