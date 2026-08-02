@@ -38,7 +38,16 @@ test("the Convex prediction UI is independent of the SQL transport and auth stac
   assert.match(component, /onGuessSaved\(previousGuess\)/u);
   assert.match(component, /onGuessRemoved\(hostId\)/u);
   assert.match(component, /ConvexAssignmentGamblingBoard/u);
-  assert.match(
+  for (const name of [
+    "assignments/public:listMyAudioMessages",
+    "assignments/public:createMyAudioMessage",
+    "assignments/public:deleteMyAudioMessage",
+    "assignments/public:discardMyAudioUpload",
+  ]) {
+    assert.match(component, new RegExp(name.replace("/", "\\/"), "u"));
+  }
+  assert.match(component, /useUploadThing\("audioUploader"\)/u);
+  assert.doesNotMatch(
     component,
     /Assignment voice messages are temporarily read-only/u
   );

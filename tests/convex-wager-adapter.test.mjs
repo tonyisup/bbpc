@@ -49,6 +49,10 @@ test("wagering is exposed only after every host prediction is present", () => {
   );
   assert.match(
     prediction,
+    /<ConvexAssignmentVoiceMessages assignmentId=\{assignment\.id\}/u
+  );
+  assert.doesNotMatch(
+    prediction,
     /Assignment voice messages are temporarily read-only/u
   );
 });

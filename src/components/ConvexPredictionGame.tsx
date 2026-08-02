@@ -1,7 +1,22 @@
 "use client";
 
 import { useConvex } from "convex/react";
-import { Check, ChevronDown, ChevronUp, Film, Info } from "lucide-react";
+import type { ConvexReactClient } from "convex/react";
+import { makeFunctionReference } from "convex/server";
+import {
+  Check,
+  ChevronDown,
+  ChevronUp,
+  Film,
+  Info,
+  Loader2,
+  Mic,
+  Play,
+  Send,
+  Square,
+  Trash2,
+  X,
+} from "lucide-react";
 import Image from "next/image";
 import {
   useCallback,
@@ -11,9 +26,13 @@ import {
   useState,
   type FC,
 } from "react";
+import { toast } from "sonner";
+import { z } from "zod";
 
 import RatingIcon from "@/components/RatingIcon";
 import { ConvexAssignmentGamblingBoard } from "@/components/ConvexAssignmentGamblingBoard";
+import { VoiceVisualizer } from "@/components/common/VoiceVisualizer";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
   type ConvexPredictionData,
@@ -23,14 +42,69 @@ import {
   loadConvexPredictionData,
   submitConvexPrediction,
 } from "@/convex/predictions";
-import { getConvexDomainErrorCode } from "@/convex/identity";
+import {
+  BBPC_CLIENT_API_VERSION,
+  getConvexDomainErrorCode,
+} from "@/convex/identity";
 import {
   PredictionRoundState,
   getPredictionRoundState,
 } from "@/lib/predictionRound.mjs";
 import { cn } from "@/lib/utils";
 import { highlightText } from "@/utils/text";
+import { useAudioRecorder } from "@/hooks/useAudioRecorder";
+import { useUploadThing } from "@/utils/uploadthing";
 import type { PredictionGameAssignment } from "@/components/PredictionGame";
+
+const assignmentAudioMessageSchema = z.object({
+  id: z.string().min(1),
+  url: z.string().url(),
+  createdAt: z.number().finite(),
+  fileKey: z.string().nullable(),
+});
+const assignmentAudioMessagesSchema = z.array(assignmentAudioMessageSchema);
+type AssignmentAudioMessage = z.infer<typeof assignmentAudioMessageSchema>;
+
+const listMyAudioMessagesReference = makeFunctionReference<
+  "query",
+  { assignmentId: string },
+  unknown
+>("assignments/public:listMyAudioMessages");
+const createMyAudioMessageReference = makeFunctionReference<
+  "mutation",
+  {
+    clientApiVersion: string;
+    assignmentId: string;
+    url: string;
+    fileKey: string;
+    createdAt: number;
+  },
+  unknown
+>("assignments/public:createMyAudioMessage");
+const deleteMyAudioMessageReference = makeFunctionReference<
+  "mutation",
+  { clientApiVersion: string; id: string },
+  unknown
+>("assignments/public:deleteMyAudioMessage");
+const discardMyAudioUploadReference = makeFunctionReference<
+  "mutation",
+  {
+    clientApiVersion: string;
+    assignmentId: string;
+    fileKey: string;
+    uploadId: string;
+  },
+  unknown
+>("assignments/public:discardMyAudioUpload");
+
+async function loadMyAssignmentAudioMessages(
+  convex: ConvexReactClient,
+  assignmentId: string
+) {
+  return assignmentAudioMessagesSchema.parse(
+    await convex.query(listMyAudioMessagesReference, { assignmentId })
+  );
+}
 
 function saveError(error: unknown): string {
   switch (getConvexDomainErrorCode(error)) {
@@ -49,6 +123,275 @@ function saveError(error: unknown): string {
 
 function findGuessForHost(guesses: ConvexPredictionGuess[], hostId: string) {
   return guesses.find((guess) => guess.hostId === hostId);
+}
+
+function ConvexAssignmentVoiceMessages({
+  assignmentId,
+}: {
+  assignmentId: string;
+}) {
+  const convex = useConvex();
+  const [messages, setMessages] = useState<AssignmentAudioMessage[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const {
+    isRecording,
+    recordingTime,
+    audioBlob,
+    isPlaying,
+    permissionDenied,
+    volume,
+    startRecording,
+    stopRecording,
+    playRecording,
+    stopPlayback,
+    resetRecording,
+  } = useAudioRecorder();
+  const { startUpload, isUploading } = useUploadThing("audioUploader");
+
+  const reload = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      setMessages(await loadMyAssignmentAudioMessages(convex, assignmentId));
+      setErrorMessage(null);
+    } catch {
+      setErrorMessage("Couldn’t load your voice messages.");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [assignmentId, convex]);
+
+  useEffect(() => {
+    void reload();
+  }, [reload]);
+
+  const submit = async () => {
+    if (audioBlob === null) return;
+    setIsSubmitting(true);
+    setErrorMessage(null);
+    let uploadedFile: { key: string; url: string } | undefined;
+    const uploadId = crypto.randomUUID();
+    try {
+      const extension =
+        audioBlob.type.split("/")[1]?.split(";")[0] ?? "webm";
+      const file = new File(
+        [audioBlob],
+        `assignment-${assignmentId}-voice-${Date.now()}.${extension}`,
+        { type: audioBlob.type }
+      );
+      uploadedFile = (await startUpload([file], { assignmentId }))?.[0];
+      if (
+        uploadedFile === undefined ||
+        uploadedFile.key.length === 0 ||
+        uploadedFile.url.length === 0
+      ) {
+        throw new Error("assignment-audio-upload-failed");
+      }
+      assignmentAudioMessageSchema.parse(
+        await convex.mutation(createMyAudioMessageReference, {
+          clientApiVersion: BBPC_CLIENT_API_VERSION,
+          assignmentId,
+          url: uploadedFile.url,
+          fileKey: uploadedFile.key,
+          createdAt: Date.now(),
+        })
+      );
+      resetRecording();
+      await reload();
+      toast.success("Voice message submitted");
+    } catch {
+      if (uploadedFile !== undefined) {
+        try {
+          const adopted = await loadMyAssignmentAudioMessages(
+            convex,
+            assignmentId
+          );
+          if (
+            adopted.some(
+              (message) => message.fileKey === uploadedFile?.key
+            )
+          ) {
+            setMessages(adopted);
+            resetRecording();
+            toast.success("Voice message submitted");
+            return;
+          }
+        } catch {
+          // If recovery cannot confirm adoption, queue provider cleanup below.
+        }
+        try {
+          await convex.mutation(discardMyAudioUploadReference, {
+            clientApiVersion: BBPC_CLIENT_API_VERSION,
+            assignmentId,
+            fileKey: uploadedFile.key,
+            uploadId,
+          });
+        } catch {
+          setErrorMessage(
+            "The recording wasn’t saved and its cleanup needs administrator review."
+          );
+          setIsSubmitting(false);
+          return;
+        }
+      }
+      setErrorMessage("Couldn’t submit the voice message. Please retry.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const remove = async (id: string) => {
+    if (!window.confirm("Delete this recording?")) return;
+    setDeletingId(id);
+    setErrorMessage(null);
+    try {
+      await convex.mutation(deleteMyAudioMessageReference, {
+        clientApiVersion: BBPC_CLIENT_API_VERSION,
+        id,
+      });
+      setMessages((current) =>
+        current.filter((message) => message.id !== id)
+      );
+      toast.success("Recording deleted");
+    } catch {
+      setErrorMessage("Couldn’t delete the recording. Please retry.");
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  const formatTime = (seconds: number) =>
+    `${String(Math.floor(seconds / 60)).padStart(2, "0")}:${String(
+      seconds % 60
+    ).padStart(2, "0")}`;
+  const busy = isSubmitting || isUploading;
+
+  return (
+    <div className="space-y-3 rounded-lg border border-white/10 bg-black/20 p-3">
+      <div className="flex items-center justify-between gap-3">
+        <p className="font-bold text-white">Assignment voice message</p>
+        <span className="text-xs text-zinc-400">
+          {isLoading ? "Loading…" : `${messages.length} saved`}
+        </span>
+      </div>
+
+      {messages.length > 0 ? (
+        <div className="space-y-2">
+          {messages.map((message, index) => (
+            <div
+              key={message.id}
+              className="flex items-center gap-2 rounded-md bg-white/[0.04] p-2"
+            >
+              <audio
+                className="h-9 min-w-0 flex-1"
+                controls
+                preload="none"
+                src={message.url}
+                aria-label={`Saved recording ${index + 1}`}
+              />
+              <Button
+                type="button"
+                size="icon"
+                variant="ghost"
+                aria-label={`Delete saved recording ${index + 1}`}
+                disabled={deletingId !== null}
+                onClick={() => void remove(message.id)}
+              >
+                {deletingId === message.id ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Trash2 className="h-4 w-4" />
+                )}
+              </Button>
+            </div>
+          ))}
+        </div>
+      ) : null}
+
+      {permissionDenied ? (
+        <Alert variant="destructive">
+          <AlertDescription>
+            Microphone access was denied. Allow microphone access and retry.
+          </AlertDescription>
+        </Alert>
+      ) : null}
+
+      <div className="flex min-h-24 items-center justify-center rounded-md bg-white/[0.04] p-3 text-center">
+        {isRecording ? (
+          <div className="flex flex-col items-center">
+            <VoiceVisualizer
+              volume={volume}
+              isRecording={isRecording}
+              className="mb-2"
+            />
+            <span className="font-bold text-white">
+              Recording {formatTime(recordingTime)}
+            </span>
+          </div>
+        ) : audioBlob !== null ? (
+          <span className="text-sm text-zinc-300">
+            Ready to send · {formatTime(recordingTime)}
+          </span>
+        ) : (
+          <span className="text-sm text-zinc-400">
+            Record a short message for the episode.
+          </span>
+        )}
+      </div>
+
+      {isRecording ? (
+        <Button
+          type="button"
+          variant="destructive"
+          className="w-full"
+          onClick={stopRecording}
+        >
+          <Square className="mr-2 h-4 w-4" /> Stop recording
+        </Button>
+      ) : audioBlob !== null ? (
+        <div className="grid grid-cols-3 gap-2">
+          <Button type="button" variant="outline" onClick={resetRecording}>
+            <X className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">Cancel</span>
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={isPlaying ? stopPlayback : playRecording}
+          >
+            {isPlaying ? (
+              <Square className="h-4 w-4 sm:mr-2" />
+            ) : (
+              <Play className="h-4 w-4 sm:mr-2" />
+            )}
+            <span className="hidden sm:inline">
+              {isPlaying ? "Stop" : "Preview"}
+            </span>
+          </Button>
+          <Button type="button" disabled={busy} onClick={() => void submit()}>
+            {busy ? (
+              <Loader2 className="h-4 w-4 animate-spin sm:mr-2" />
+            ) : (
+              <Send className="h-4 w-4 sm:mr-2" />
+            )}
+            <span className="hidden sm:inline">Send</span>
+          </Button>
+        </div>
+      ) : (
+        <Button type="button" className="w-full" onClick={startRecording}>
+          <Mic className="mr-2 h-4 w-4" /> Record voice message
+        </Button>
+      )}
+
+      {errorMessage !== null ? (
+        <p className="text-sm text-red-200" role="alert">
+          {errorMessage}
+        </p>
+      ) : null}
+    </div>
+  );
 }
 
 export function ConvexPredictionGame({
@@ -613,10 +956,7 @@ const ConvexAssignmentPrediction: FC<ConvexAssignmentPredictionProps> = ({
             </details>
           ) : null}
 
-          <div className="rounded-lg border border-amber-400/20 bg-amber-400/[0.06] p-3 text-sm text-amber-100">
-            Assignment voice messages are temporarily read-only while their
-            Convex recording client is integrated.
-          </div>
+          <ConvexAssignmentVoiceMessages assignmentId={assignment.id} />
         </div>
       ) : null}
     </article>
