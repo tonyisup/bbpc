@@ -5,16 +5,21 @@
  */
 await import("./src/env.mjs");
 
-import withPWA from "next-pwa";
+import createPWA from "@ducanh2912/next-pwa";
 
-const config = withPWA({
+const withPWA = createPWA({
   dest: "public",
   register: true,
-  skipWaiting: true,
-  disable: process.env.NODE_ENV === "development",
-})({
+  workboxOptions: {
+    skipWaiting: true,
+  },
+  disable:
+    process.env.NODE_ENV === "development" ||
+    process.env.BBPC_DISABLE_PWA_BUILD === "1",
+});
+
+const config = withPWA({
   reactStrictMode: true,
-  swcMinify: true,
   async redirects() {
     return [
       {

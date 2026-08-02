@@ -6,7 +6,7 @@ A modern web application built with the T3 Stack, combining powerful technologie
 
 ## ��� Tech Stack
 
-- **Framework**: [Next.js 14](https://nextjs.org/) with TypeScript
+- **Framework**: [Next.js 15](https://nextjs.org/) with TypeScript
 - **Authentication**: NextAuth.js for the current SQL path; Clerk is pinned for the Convex cutover
 - **Database**: Prisma/SQL for the current path; Convex adapters are being migrated domain by domain
 - **API**: [tRPC](https://trpc.io) for end-to-end typesafe APIs

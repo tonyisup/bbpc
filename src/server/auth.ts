@@ -5,9 +5,9 @@ import {
   type NextAuthOptions,
 } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
-import EmailProvider from "next-auth/providers/email";
 import { env } from "@/env.mjs";
 import { db } from "@/server/db";
+import { createSecureEmailProvider } from "@/server/secureEmailProvider";
 import { calculateUserPoints } from "@/utils/points";
 
 declare module "next-auth" {
@@ -102,10 +102,13 @@ export const authOptions: NextAuthOptions = {
   },
   adapter: PrismaAdapter(db),
   providers: [
-    EmailProvider({
+    createSecureEmailProvider({
       server: {
         host: env.EMAIL_SERVER_HOST,
-        port: env.EMAIL_SERVER_PORT,
+        port:
+          env.EMAIL_SERVER_PORT === undefined
+            ? undefined
+            : Number(env.EMAIL_SERVER_PORT),
         auth: {
           user: env.EMAIL_SERVER_USER,
           pass: env.EMAIL_SERVER_PASSWORD
@@ -137,4 +140,4 @@ export const authOptions: NextAuthOptions = {
   ],
 };
 
-export const getServerAuthSession = () => getServerSession(authOptions); 
+export const getServerAuthSession = () => getServerSession(authOptions);

@@ -3,9 +3,7 @@ import type { NextRequest } from "next/server";
 import { env } from "@/env.mjs";
 
 interface RouteHandlerContext {
-  params:
-    | { nextauth: string[] }
-    | Promise<{ nextauth: string[] }>;
+  params: Promise<{ nextauth: string[] }>;
 }
 
 const handler = async (
