@@ -13,13 +13,10 @@ const [route, page, manager, adapter] = await Promise.all([
   read("src/convex/syllabus.ts"),
 ]);
 
-test("the protected syllabus route cannot import SQL in Convex mode", () => {
-  assert.match(
-    route,
-    /NEXT_PUBLIC_BBPC_BACKEND === "convex"[\s\S]*import\("\.\/ConvexSyllabusPage"\)/u
-  );
-  assert.match(route, /import\("\.\/SqlSyllabusPage"\)/u);
-  assert.doesNotMatch(route, /server\/auth|server\/db/u);
+test("the protected syllabus route uses only Convex", () => {
+  assert.match(route, /import \{ ConvexSyllabusPage \}/u);
+  assert.match(route, /<ConvexSyllabusPage \/>/u);
+  assert.doesNotMatch(route, /SqlSyllabusPage|server\/auth|server\/db/u);
   assert.doesNotMatch(page, /next-auth|server\/db|prisma|trpc/u);
   assert.match(page, /accountStatus !== "ready"/u);
   assert.match(page, /user\.appUserId === null/u);

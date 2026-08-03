@@ -1,7 +1,6 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
-import { env } from "@/env.mjs";
 import { getNextScheduledEpisode } from "@/server/convex/episodes";
 
 interface WebhookResponse {
@@ -23,23 +22,6 @@ interface StructuredMovie {
     "@type": "Person";
     name: string;
   };
-  review?: {
-    "@type": "Review";
-    reviewRating: {
-      "@type": "Rating";
-      ratingValue: number;
-    };
-    author: {
-      "@type": "Person";
-      name: string;
-    };
-  };
-  aggregateRating?: {
-    "@type": "AggregateRating";
-    ratingValue: number;
-    bestRating: number;
-    ratingCount: number;
-  };
 }
 
 interface StructuredData {
@@ -53,46 +35,7 @@ interface StructuredData {
 }
 
 async function loadNextEpisode() {
-  if (env.NEXT_PUBLIC_BBPC_BACKEND === "convex") {
-    return getNextScheduledEpisode();
-  }
-
-  const { createTRPCContext } = await import("@/server/api/trpc");
-  const ctx = await createTRPCContext();
-  return ctx.db.episode.findFirst({
-    orderBy: {
-      number: "desc",
-    },
-    include: {
-      assignments: {
-        include: {
-          movie: true,
-          user: true,
-          assignmentReviews: {
-            include: {
-              review: {
-                include: {
-                  rating: true,
-                  user: true,
-                },
-              },
-            },
-          },
-        },
-      },
-      extras: {
-        include: {
-          review: {
-            include: {
-              movie: true,
-              user: true,
-            },
-          },
-        },
-      },
-      links: true,
-    },
-  });
+  return getNextScheduledEpisode();
 }
 
 export async function GET() {
@@ -110,18 +53,6 @@ export async function GET() {
       itemListElement: episode.assignments.map((assignment, index) => {
         const movie = assignment.movie;
 
-        // Get the user's review for this movie if it exists
-        const assignmentReviews =
-          "assignmentReviews" in assignment
-            ? assignment.assignmentReviews
-            : [];
-        const userReview = assignmentReviews[0]?.review;
-
-        // Calculate aggregate rating from all reviews
-        const allReviews = assignmentReviews.map((entry) => entry.review);
-        const totalRating = allReviews.reduce((sum, review) => sum + (review.rating?.value || 0), 0);
-        const averageRating = allReviews.length > 0 ? totalRating / allReviews.length : 0;
-
         const structuredMovie: StructuredMovie = {
           "@type": "Movie",
           name: movie.title,
@@ -131,24 +62,7 @@ export async function GET() {
           director: {
             "@type": "Person",
             name: "Unknown Director" // We don't have director info in the current schema
-          },
-          review: userReview ? {
-            "@type": "Review",
-            reviewRating: {
-              "@type": "Rating",
-              ratingValue: userReview.rating?.value || 0
-            },
-            author: {
-              "@type": "Person",
-              name: userReview.user?.name || "Anonymous"
-            }
-          } : undefined,
-          aggregateRating: allReviews.length > 0 ? {
-            "@type": "AggregateRating",
-            ratingValue: Math.round(averageRating),
-            bestRating: 5, // Assuming 5-star rating system based on Rating model
-            ratingCount: allReviews.length
-          } : undefined
+          }
         };
 
         return {

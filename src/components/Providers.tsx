@@ -3,17 +3,10 @@
 import { ClerkProvider, useAuth } from "@clerk/nextjs";
 import { ConvexReactClient } from "convex/react";
 import { ConvexProviderWithClerk } from "convex/react-clerk";
-import { type Session } from "next-auth";
 import { ThemeProvider } from "next-themes";
 import { Toaster } from "@/components/ui/sonner";
 import dynamic from "next/dynamic";
 import { ClerkBbpcAuthProvider } from "@/components/auth/BbpcAuthContext";
-import type { SqlProvidersProps } from "@/components/SqlProviders";
-
-const SqlProviders = dynamic<SqlProvidersProps>(
-  () => import("@/components/SqlProviders"),
-  { loading: () => null }
-);
 
 const PostHogProviderDynamic = dynamic(
   () => import("./PostHogProvider").then((m) => m.PostHogProvider),
@@ -48,27 +41,15 @@ function SharedProviders({
 
 export function Providers({
   children,
-  session,
-  headers,
 }: {
   children: React.ReactNode;
-  session: Session | null;
-  headers?: Headers;
 }) {
   const shared = <SharedProviders>{children}</SharedProviders>;
-
-  if (process.env.NEXT_PUBLIC_BBPC_BACKEND !== "convex") {
-    return (
-      <SqlProviders session={session} headers={headers}>
-        {shared}
-      </SqlProviders>
-    );
-  }
 
   const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
   if (publishableKey === undefined || convexClient === null) {
     throw new Error(
-      "Convex mode requires NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY and NEXT_PUBLIC_CONVEX_URL."
+      "BBPC requires NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY and NEXT_PUBLIC_CONVEX_URL."
     );
   }
 

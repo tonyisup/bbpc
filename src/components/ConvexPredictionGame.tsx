@@ -54,7 +54,7 @@ import { cn } from "@/lib/utils";
 import { highlightText } from "@/utils/text";
 import { useAudioRecorder } from "@/hooks/useAudioRecorder";
 import { useUploadThing } from "@/utils/uploadthing";
-import type { PredictionGameAssignment } from "@/components/PredictionGame";
+import type { PredictionGameAssignment } from "@/types/prediction";
 
 const assignmentAudioMessageSchema = z.object({
   id: z.string().min(1),

@@ -2,7 +2,6 @@
 import React, { useState, type FC } from "react";
 import { Mic } from "lucide-react";
 import dynamic from "next/dynamic";
-import { api } from "@/trpc/react";
 import {
   Dialog,
   DialogContent,
@@ -13,9 +12,6 @@ import {
 import { Button } from "./ui/button";
 import { useBbpcAuth } from "@/components/auth/BbpcAuthContext";
 
-const VoiceMailRecorder = dynamic(() => import("./voice-mail-recorder"), {
-  ssr: false,
-});
 const ConvexVoiceMailRecorder = dynamic(
   () =>
     import("./ConvexVoiceMailRecorder").then(
@@ -24,54 +20,8 @@ const ConvexVoiceMailRecorder = dynamic(
   { ssr: false }
 );
 
-function SqlMessageContent({
-  isModalOpen,
-  userId,
-}: {
-  isModalOpen: boolean;
-  userId: string | null;
-}) {
-  const {
-    data: episode,
-    isLoading,
-    isError,
-  } = api.episode.next.useQuery(undefined, {
-    enabled: isModalOpen && userId !== null,
-  });
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center p-8 text-muted-foreground">
-        Loading episode details...
-      </div>
-    );
-  }
-  if (isError) {
-    return (
-      <div className="p-8 text-center text-destructive" role="alert">
-        Episode details could not be loaded. Please try again.
-      </div>
-    );
-  }
-  if (episode && userId) {
-    return <VoiceMailRecorder episodeId={episode.id} userId={userId} />;
-  }
-  if (episode) {
-    return (
-      <div className="p-8 text-center text-destructive" role="alert">
-        Your account could not be resolved. Please sign in again.
-      </div>
-    );
-  }
-  return (
-    <div className="p-8 text-center text-muted-foreground" role="status">
-      No upcoming episode is available for voice messages.
-    </div>
-  );
-}
-
 const LeaveMessage: FC = () => {
-  const { backend, signIn, user } = useBbpcAuth();
+  const { signIn, user } = useBbpcAuth();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   if (user === null) {
@@ -111,14 +61,7 @@ const LeaveMessage: FC = () => {
             Leave a Message
           </DialogTitle>
         </DialogHeader>
-        {backend === "convex" ? (
-          <ConvexVoiceMailRecorder enabled={isModalOpen} />
-        ) : (
-          <SqlMessageContent
-            isModalOpen={isModalOpen}
-            userId={user.appUserId}
-          />
-        )}
+        <ConvexVoiceMailRecorder enabled={isModalOpen} />
       </DialogContent>
     </Dialog>
   );

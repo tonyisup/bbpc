@@ -7,7 +7,6 @@ import type { Metadata } from "next";
 import { notFound, permanentRedirect } from "next/navigation";
 import { getEpisodePath } from "@/lib/routes";
 import { resolveEpisodeRouteParam } from "@/server/slugs";
-import { env } from "@/env.mjs";
 import {
   getEpisodeResults,
   listEpisodeHistory,
@@ -16,20 +15,13 @@ import {
 export const revalidate = 3600;
 
 export async function generateStaticParams() {
-  let episodes;
-  if (env.NEXT_PUBLIC_BBPC_BACKEND === "convex") {
-    episodes = await listEpisodeHistory();
-  } else {
-    const { db } = await import("@/server/db");
-    episodes = await db.episode.findMany({
-      where: { slug: { not: null } },
-      select: { slug: true },
-    });
-  }
+  const episodes = await listEpisodeHistory();
 
-  return episodes
-    .filter((episode): episode is { slug: string } => !!episode.slug)
-    .map((episode) => ({ slug: episode.slug }));
+  return episodes.flatMap((episode) =>
+    episode.slug === null || episode.slug === undefined
+      ? []
+      : [{ slug: episode.slug }]
+  );
 }
 
 export async function generateMetadata({
@@ -79,12 +71,7 @@ export default async function EpisodePage({
   if (!episode) {
     notFound();
   }
-  const results =
-    env.NEXT_PUBLIC_BBPC_BACKEND === "convex"
-      ? await getEpisodeResults(episode.id)
-      : (
-          await import("@/server/sql/episodeResults")
-        ).mapSqlEpisodeResults(episode.assignments);
+  const results = await getEpisodeResults(episode.id);
 
   return (
     <div className="container mx-auto max-w-4xl p-4">

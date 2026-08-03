@@ -5,12 +5,10 @@ import { Trophy } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatPlainDate } from "@/lib/dates";
 import { getEpisodePath } from "@/lib/routes";
-import type { RouterOutputs } from "@/utils/trpc";
+import type { CompleteEpisode } from "@/types/episode";
 
 import MovieInlinePreview from "./MovieInlinePreview";
 import ShowInlinePreview from "./ShowInlinePreview";
-
-export type CompleteEpisode = NonNullable<RouterOutputs["episode"]["next"]>;
 
 interface EpisodeProps {
   episode: CompleteEpisode;

@@ -38,7 +38,6 @@ export interface BbpcAuthUser {
 }
 
 export interface BbpcAuthState {
-  backend: "sql" | "convex";
   status: BbpcAuthStatus;
   accountStatus: BbpcAccountStatus;
   accountIssue: ConvexIdentityIssue | null;
@@ -179,7 +178,6 @@ export function ClerkBbpcAuthProvider({
       accountIssue === "identity-conflict";
 
     return {
-      backend: "convex",
       status,
       accountStatus: !isSignedIn
         ? "not-applicable"

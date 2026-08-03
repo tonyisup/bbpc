@@ -29,8 +29,10 @@ test("the retired Tags feature has no UI or API surface and legacy URLs redirect
   const nav = read("src/components/NavMenu.tsx");
   assert.doesNotMatch(nav, /href:\s*["']\/tags/);
 
-  const apiRoot = read("src/server/api/root.ts");
-  assert.doesNotMatch(apiRoot, /tagRouter|tag:\s*/);
+  assert.equal(
+    existsSync(new URL("../src/server/api", import.meta.url)),
+    false
+  );
 
   const nextConfig = read("next.config.mjs");
   assert.match(nextConfig, /source:\s*"\/tags"/);
@@ -104,29 +106,20 @@ test("home and game prioritize participation without duplicate retired behavior"
   assert.doesNotMatch(game, /<CurrentRoundErrorBoundary/);
   assert.match(game, /role="status"/);
 
-  const currentRoundBoundary = read(
-    "src/app/game/CurrentRoundErrorBoundary.tsx"
-  );
-  assert.match(currentRoundBoundary, /getDerivedStateFromError/);
-  assert.match(currentRoundBoundary, /role="alert"/);
-  assert.match(currentRoundBoundary, /QueryErrorResetBoundary/);
-  assert.match(currentRoundBoundary, /Try again/);
-  assert.match(currentRoundBoundary, /onClick=\{this\.reset\}/);
 });
 
 test("deferred analytics and above-fold images avoid runtime console noise", () => {
-  const year = read("src/app/year/YearPageClient.tsx");
-  const movieCard = read("src/components/MovieCard.tsx");
+  const year = read("src/app/year/ConvexYearPageClient.tsx");
+  const moviePreview = read("src/components/MovieInlinePreview.tsx");
   const about = read("src/app/about/page.tsx");
 
-  assert.match(year, /enabled:\s*status === "authenticated"/);
+  assert.match(year, /status === "authenticated"/);
   assert.match(year, /priority=\{index === 0\}/);
   assert.doesNotMatch(year, /type ViewMode = "grid" \| "table"/);
   assert.match(year, /router\.replace/);
-  assert.match(year, /episodes\.some\([\s\S]*episode\.id === itemEpisode\.id/);
   assert.match(year, /role="group"\s+aria-label="View"/);
   assert.match(year, /review\.rating\.name/);
-  assert.match(movieCard, /priority\?: boolean/);
+  assert.match(moviePreview, /priority\?: boolean/);
   assert.match(about, /priority/);
 });
 
@@ -165,26 +158,23 @@ test("game participation keeps Quotabunga available without prediction assignmen
     episode,
     /showGames\s*&&\s*predictionAssignments\.length\s*>\s*0/
   );
-  assert.match(participation, /assignments\.length\s*>\s*0\s*&&/);
+  assert.match(participation, /assignments\.length\s*>\s*0\s*\?/);
   assert.ok(
     participation.indexOf("assignments.length > 0") <
-      participation.indexOf("<QuotabungaSubmission")
+      participation.indexOf("<ConvexQuotabungaSubmission")
   );
 });
 
-test("voice message query distinguishes loading, error, and no upcoming episode", () => {
+test("voice messages use the Convex recorder without a SQL fallback", () => {
   const leaveMessage = read("src/components/LeaveMessage.tsx");
+  const recorder = read("src/components/ConvexVoiceMailRecorder.tsx");
 
-  assert.match(leaveMessage, /isLoading/);
-  assert.match(leaveMessage, /isError/);
-  assert.match(leaveMessage, /No upcoming episode/i);
   assert.match(leaveMessage, /aria-label="Log in to leave a message"/);
   assert.match(leaveMessage, /aria-label="Leave a message"/);
-  assert.doesNotMatch(leaveMessage, /aria-label="[^"]*voice[^"]*"/i);
-  assert.doesNotMatch(
-    leaveMessage,
-    /episode\s*\?\s*\([\s\S]*Loading episode details/
-  );
+  assert.match(leaveMessage, /<ConvexVoiceMailRecorder enabled=\{isModalOpen\}/);
+  assert.doesNotMatch(leaveMessage, /SqlMessageContent|voice-mail-recorder|trpc/);
+  assert.match(recorder, /episodes\/public:nextScheduled/);
+  assert.match(recorder, /No upcoming episode/i);
 });
 
 test("latest movie previews declare their rendered responsive sizes", () => {
@@ -220,90 +210,35 @@ test("authenticated mobile navigation mirrors active route semantics", () => {
 });
 
 test("year ranking candidates are movie-grouped, labelled, and submit once", () => {
-  const year = read("src/app/year/YearPageClient.tsx");
+  const year = read("src/app/year/ConvexYearPageClient.tsx");
 
-  assert.match(year, /const selectedYear = Number\(searchParams\.get\("y"\)\)/);
+  assert.match(year, /const selectedYear = getSelectedYear\(searchParams\.get\("y"\)/);
   assert.match(year, /getInitialViewMode\(searchParams\.get\("view"\)\)/);
   assert.match(year, /const sortDesc = searchParams\.get\("sort"\) !== "asc"/);
   assert.doesNotMatch(year, /lastSyncedSearchParams/);
   assert.match(
     year,
-    /replaceControls\(\{ year: Number\(e\.target\.value\) \}\)/
+    /replaceControls\(\{ year: Number\(event\.target\.value\) \}\)/
   );
   assert.match(year, /replaceControls\(\{ descending: !sortDesc \}\)/);
   assert.match(year, /replaceControls\(\{ view: "grid" \}\)/);
   assert.match(year, /replaceControls\(\{ view: "list" \}\)/);
-  assert.match(year, /const rankingCandidates = groupedMovies/);
-  assert.match(year, /rankingCandidates\.map\(\(group\)/);
+  assert.match(year, /const groupedMovies = useMemo/);
+  assert.match(year, /groupedMovies\.map\(\(group\)/);
   assert.match(year, /htmlFor="ranked-list-selector"/);
   assert.match(year, /id="ranked-list-selector"/);
   assert.match(year, /htmlFor=\{`rank-select-\$\{group\.movie\.id\}`\}/);
   assert.match(year, /id=\{`rank-select-\$\{group\.movie\.id\}`\}/);
   assert.match(year, /value=\{selectedRank\}/);
   assert.match(year, /setRankSelections/);
-  assert.match(year, /parseInt\(selectedRank\)/);
+  assert.match(year, /Number\.parseInt\(selectedRank/);
   assert.doesNotMatch(year, /previousElementSibling/);
-  assert.match(year, /const existingItem = selectedList\.rankedItem\.find/);
-  assert.doesNotMatch(year, /rankedItem\.some\([\s\S]{0,200}movieId/);
+  assert.match(year, /const existingItem = selectedList\?\.items\.find/);
   assert.doesNotMatch(
     year,
-    /<select[\s\S]{0,500}onChange=\{\(e\) => \{[\s\S]{0,300}upsertItem\.mutate/
+    /<select[\s\S]{0,500}onChange=\{[\s\S]{0,300}upsertConvexMovieRankingItem/
   );
-  assert.equal(
-    (year.match(/onSuccess:\s*\(_data, variables\)/g) ?? []).length,
-    2
-  );
-  assert.match(
-    year,
-    /onMutate:\s*\(\) => \(\{ rankedListId: selectedListId \}\)/
-  );
-  assert.match(year, /invalidateRankedLists\(context\?\.rankedListId\)/);
-});
-
-test("ranked-item updates plan an atomic move instead of duplicating a movie", async () => {
-  const { planRankedItemUpsert } = await import(
-    "../src/server/api/routers/rankedListUpsertPlan.mjs"
-  );
-  const items = [
-    { id: "movie-a", rank: 2, movieId: "a", showId: null, episodeId: null },
-    { id: "movie-b", rank: 3, movieId: "b", showId: null, episodeId: null },
-  ];
-
-  assert.deepEqual(
-    planRankedItemUpsert(items, {
-      movieId: "a",
-      showId: undefined,
-      episodeId: undefined,
-      rank: 3,
-    }),
-    {
-      kind: "move",
-      itemId: "movie-a",
-      fromRank: 2,
-      toRank: 3,
-      displacedItemId: "movie-b",
-    }
-  );
-  assert.deepEqual(planRankedItemUpsert(items, { movieId: "new", rank: 3 }), {
-    kind: "replace",
-    itemId: "movie-b",
-  });
-  assert.deepEqual(planRankedItemUpsert(items, { movieId: "new", rank: 4 }), {
-    kind: "create",
-  });
-  assert.deepEqual(planRankedItemUpsert(items, { movieId: "a", rank: 4 }), {
-    kind: "move",
-    itemId: "movie-a",
-    fromRank: 2,
-    toRank: 4,
-  });
-  assert.throws(
-    () => planRankedItemUpsert(items, { rank: 1 }),
-    /Exactly one ranked-item target/
-  );
-
-  const router = read("src/server/api/routers/rankedListRouter.ts");
-  assert.match(router, /planRankedItemUpsert/);
-  assert.match(router, /\$transaction\(async/);
-  assert.match(router, /comment: input\.comment \?\? null/);
+  assert.match(year, /await upsertConvexMovieRankingItem/);
+  assert.match(year, /await reorderConvexMovieRankingItems/);
+  assert.match(year, /await removeConvexMovieRankingItem/);
 });

@@ -9,14 +9,12 @@ export function ConvexAccountRecoveryBanner() {
   const {
     accountIssue,
     accountStatus,
-    backend,
     refreshAccount,
     signOut,
     status,
   } = useBbpcAuth();
 
   if (
-    backend !== "convex" ||
     status !== "authenticated" ||
     accountStatus === "ready" ||
     accountStatus === "resolving"

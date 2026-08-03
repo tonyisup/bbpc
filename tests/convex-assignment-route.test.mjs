@@ -13,15 +13,12 @@ const [route, page, game, adapter] = await Promise.all([
   read("src/server/convex/assignments.ts"),
 ]);
 
-test("the assignment route selects its backend before importing a controller", () => {
-  assert.match(
-    route,
-    /NEXT_PUBLIC_BBPC_BACKEND === "convex"[\s\S]*import\("\.\/ConvexAssignmentPage"\)/u
-  );
-  assert.match(route, /import\("\.\/SqlAssignmentPage"\)/u);
+test("the assignment route uses only the Convex controller", () => {
+  assert.match(route, /import \{ ConvexAssignmentPage \}/u);
+  assert.match(route, /<ConvexAssignmentPage slug=\{slug\}/u);
   assert.doesNotMatch(
     route,
-    /GameSegment|resolveAssignmentRouteParam|server\/db|server\/auth/u
+    /SqlAssignmentPage|GameSegment|resolveAssignmentRouteParam|server\/db|server\/auth/u
   );
 });
 

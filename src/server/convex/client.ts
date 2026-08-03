@@ -21,17 +21,7 @@ export const publicActionReference = <Args extends DefaultFunctionArgs>(
 ) => makeFunctionReference<"action", Args, unknown>(name);
 
 function requireConvexUrl(): string {
-  if (env.NEXT_PUBLIC_BBPC_BACKEND !== "convex") {
-    throw new Error(
-      "Convex queries are disabled while NEXT_PUBLIC_BBPC_BACKEND is not convex."
-    );
-  }
-
-  const url = env.NEXT_PUBLIC_CONVEX_URL;
-  if (!url) {
-    throw new Error("Convex mode requires NEXT_PUBLIC_CONVEX_URL.");
-  }
-  return url;
+  return env.NEXT_PUBLIC_CONVEX_URL;
 }
 
 function queryArgs<Args extends DefaultFunctionArgs>(

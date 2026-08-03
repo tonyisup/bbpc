@@ -47,3 +47,5 @@ export const convexFileRouter = {
       fileKey: file.key,
     })),
 } satisfies FileRouter;
+
+export type ConvexFileRouter = typeof convexFileRouter;

@@ -14,15 +14,12 @@ const [route, page, component, adapter, affordance] = await Promise.all([
   read("src/components/AddExtraToNext.tsx"),
 ]);
 
-test("the add-extra route selects its backend before importing a controller", () => {
-  assert.match(
-    route,
-    /NEXT_PUBLIC_BBPC_BACKEND === "convex"[\s\S]*import\("\.\/ConvexAddExtraPage"\)/u
-  );
-  assert.match(route, /import\("\.\/SqlAddExtraPage"\)/u);
+test("the add-extra route uses only the Convex controller", () => {
+  assert.match(route, /import \{ ConvexAddExtraPage \}/u);
+  assert.match(route, /<ConvexAddExtraPage slug=\{slug\}/u);
   assert.doesNotMatch(
     route,
-    /AddExtraPageClient|resolveEpisodeRouteParam|server\/db|trpc/u
+    /SqlAddExtraPage|AddExtraPageClient|resolveEpisodeRouteParam|server\/db|trpc/u
   );
   assert.doesNotMatch(page, /server\/db|next-auth|trpc|prisma/u);
   assert.match(page, /getEpisodeBySlug\(slug\)/u);
@@ -38,14 +35,8 @@ test("Convex extras use owner-derived versioned mutations", () => {
   assert.match(component, /accountStatus !== "ready"/u);
   assert.match(component, /user\.appUserId === null/u);
   assert.doesNotMatch(component, /next-auth|trpc|prisma|server\/db/u);
-  assert.match(
-    affordance,
-    /backend === "convex"[\s\S]*user\?\.isHost === true/u
-  );
-  assert.match(
-    affordance,
-    /function SqlAddExtraToNext[\s\S]*enabled: authenticated/u
-  );
+  assert.match(affordance, /user\?\.isHost === true/u);
+  assert.doesNotMatch(affordance, /SqlAddExtraToNext|backend|trpc/u);
 });
 
 test("catalog search survives an unavailable external provider", () => {

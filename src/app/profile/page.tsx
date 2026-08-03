@@ -1,11 +1,5 @@
-import { env } from "@/env.mjs";
+import { ConvexProfilePage } from "./ConvexProfilePage";
 
-export default async function ProfilePage() {
-  if (env.NEXT_PUBLIC_BBPC_BACKEND === "convex") {
-    const { ConvexProfilePage } = await import("./ConvexProfilePage");
-    return <ConvexProfilePage />;
-  }
-
-  const { default: SqlProfilePage } = await import("./SqlProfilePage");
-  return <SqlProfilePage />;
+export default function ProfilePage() {
+  return <ConvexProfilePage />;
 }

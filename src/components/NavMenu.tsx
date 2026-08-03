@@ -2,7 +2,6 @@
 
 import { useEffect, useState, type FC } from "react";
 import Link from "next/link";
-import dynamic from "next/dynamic";
 import {
   HomeIcon,
   HistoryIcon,
@@ -28,14 +27,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ConvexImpersonationControl } from "./ConvexImpersonationControl";
 import { cn } from "@/lib/utils";
 import { useBbpcAuth } from "@/components/auth/BbpcAuthContext";
-
-const SqlImpersonationSelector = dynamic(
-  () =>
-    import("./ImpersonationSelector").then(
-      (module) => module.ImpersonationSelector
-    ),
-  { ssr: false }
-);
 
 interface NavItem {
   href: string;
@@ -79,7 +70,7 @@ const authNavItems: NavItem[] = [
 ];
 
 const NavMenu: FC = () => {
-  const { backend, signIn, signOut, user } = useBbpcAuth();
+  const { signIn, signOut, user } = useBbpcAuth();
   const pathname = usePathname();
   const [mounted, setMounted] = useState(false);
   useEffect(() => {
@@ -99,8 +90,7 @@ const NavMenu: FC = () => {
 
   return (
     <div className="flex items-center gap-2">
-      {backend === "sql" ? <SqlImpersonationSelector /> : null}
-      {backend === "convex" ? <ConvexImpersonationControl /> : null}
+      <ConvexImpersonationControl />
 
       {/* Desktop horizontal nav */}
       <nav

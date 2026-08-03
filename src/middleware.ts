@@ -19,14 +19,11 @@ export default function middleware(
   request: NextRequest,
   event: NextFetchEvent
 ) {
-  if (process.env.NEXT_PUBLIC_BBPC_BACKEND !== "convex") {
-    return NextResponse.next();
-  }
   if (
     process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY === undefined ||
     process.env.CLERK_SECRET_KEY === undefined
   ) {
-    throw new Error("Convex mode requires Clerk publishable and secret keys.");
+    throw new Error("BBPC requires Clerk publishable and secret keys.");
   }
   if (
     request.nextUrl.pathname.startsWith("/api/auth") ||
