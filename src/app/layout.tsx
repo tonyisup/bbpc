@@ -6,14 +6,15 @@ import { ListenHere } from "@/components/ListenHere";
 import { Providers } from "@/components/Providers";
 import { SiteHeader } from "@/components/SiteHeader";
 import { ConvexAccountRecoveryBanner } from "@/components/ConvexAccountRecoveryBanner";
-import { env } from "@/env.mjs";
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-sans",
 });
 
 function getSiteUrl() {
-  if (process.env.NEXTAUTH_URL) return process.env.NEXTAUTH_URL;
+  if (process.env.NODE_ENV === "production") {
+    return "https://badboyspodcast.com";
+  }
   if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
   return `http://localhost:${process.env.PORT ?? 3000}`;
 }
@@ -40,16 +41,11 @@ export const metadata: Metadata = {
   ],
 };
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const session =
-    env.NEXT_PUBLIC_BBPC_BACKEND === "convex"
-      ? null
-      : await (await import("@/server/auth")).getServerAuthSession();
-
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -66,7 +62,7 @@ export default async function RootLayout({
         <title>Bad Boys Podcast</title>
       </head>
       <body className={`font-sans ${inter.variable} dark`}>
-        <Providers session={session}>
+        <Providers>
           <div className="flex min-h-[100dvh] w-full min-w-0 flex-col items-center bg-[color:var(--bbpc-bg)]">
             <SiteHeader />
             <ConvexAccountRecoveryBanner />

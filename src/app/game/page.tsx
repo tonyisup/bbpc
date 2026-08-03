@@ -3,7 +3,6 @@ import Link from "next/link";
 import { Episode } from "@/components/Episode";
 import RatingIcon from "@/components/RatingIcon";
 import { SeasonStandingsDisclosure } from "@/components/SeasonStandingsDisclosure";
-import { env } from "@/env.mjs";
 import { getPacificTodayPlainDate } from "@/lib/dates";
 import { getNextScheduledEpisode } from "@/server/convex/episodes";
 import {
@@ -17,9 +16,6 @@ const summaryClass =
   "flex min-h-14 cursor-pointer list-none items-center justify-between gap-4 rounded-lg px-3 text-lg font-bold text-white transition-colors hover:bg-white/[0.04] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500";
 
 async function loadGamePageData() {
-  if (env.NEXT_PUBLIC_BBPC_BACKEND !== "convex") {
-    return (await import("@/server/sql/games")).getSqlGamePageData();
-  }
   const today = getPacificTodayPlainDate();
   const [episode, predictionScoring, performance] = await Promise.all([
     getNextScheduledEpisode(),

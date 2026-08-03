@@ -12,13 +12,10 @@ const [route, component, adapter] = await Promise.all([
   read("src/convex/year.ts"),
 ]);
 
-test("the year route selects its backend before importing a controller", () => {
-  assert.match(
-    route,
-    /NEXT_PUBLIC_BBPC_BACKEND === "convex"[\s\S]*import\("\.\/ConvexYearPageClient"\)/u
-  );
-  assert.match(route, /import\("\.\/YearPageClient"\)/u);
-  assert.doesNotMatch(route, /^import .*YearPageClient/mu);
+test("the year route uses only the Convex controller", () => {
+  assert.match(route, /import \{ ConvexYearPageClient \}/u);
+  assert.match(route, /<ConvexYearPageClient \/>/u);
+  assert.doesNotMatch(route, /import\("\.\/YearPageClient"\)/u);
   assert.doesNotMatch(route, /next-auth|trpc|prisma|server\/db/u);
 });
 

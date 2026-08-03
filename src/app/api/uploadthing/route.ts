@@ -1,24 +1,16 @@
 import type { NextRequest } from "next/server";
 import {
   createRouteHandler,
-  type FileRouter,
 } from "uploadthing/next";
 
-import { env } from "@/env.mjs";
+import { convexFileRouter } from "@/server/upload/convexUploadthing";
 
-async function routeHandlers() {
-  const router: FileRouter =
-    env.NEXT_PUBLIC_BBPC_BACKEND === "convex"
-      ? (await import("@/server/upload/convexUploadthing"))
-          .convexFileRouter
-      : (await import("@/server/upload/uploadthing")).ourFileRouter;
-  return createRouteHandler({ router });
-}
+const routeHandlers = createRouteHandler({ router: convexFileRouter });
 
 export async function GET(request: NextRequest) {
-  return (await routeHandlers()).GET(request);
+  return routeHandlers.GET(request);
 }
 
 export async function POST(request: NextRequest) {
-  return (await routeHandlers()).POST(request);
+  return routeHandlers.POST(request);
 }

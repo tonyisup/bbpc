@@ -4,9 +4,9 @@ import {
 } from "@uploadthing/react";
 import { generateReactHelpers } from "@uploadthing/react";
 
-import type { OurFileRouter } from "../server/upload/uploadthing";
+import type { ConvexFileRouter } from "@/server/upload/convexUploadthing";
 
-export const UploadButton = generateUploadButton<OurFileRouter>();
-export const UploadDropzone = generateUploadDropzone<OurFileRouter>();
+export const UploadButton = generateUploadButton<ConvexFileRouter>();
+export const UploadDropzone = generateUploadDropzone<ConvexFileRouter>();
 export const { useUploadThing, uploadFiles } =
-  generateReactHelpers<OurFileRouter>();
+  generateReactHelpers<ConvexFileRouter>();

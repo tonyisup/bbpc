@@ -245,7 +245,7 @@ export const useAudioRecorder = (options: UseAudioRecorderOptions = {}) => {
 			}
 
 			// MAX_RECORDING_TIME env var is in seconds. Default to 300 (5 minutes).
-			const maxDuration = options.maxDuration ?? Number(process.env.NEXT_PUBLIC_MAX_RECORDING_TIME || process.env.MAX_RECORDING_TIME || 300);
+			const maxDuration = options.maxDuration ?? Number(process.env.NEXT_PUBLIC_MAX_RECORDING_TIME || 300);
 
 			timerRef.current = setInterval(() => {
 				const current = recordingTimeRef.current;

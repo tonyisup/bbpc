@@ -1,4 +1,4 @@
-import { env } from "@/env.mjs";
+import { ConvexAddExtraPage } from "./ConvexAddExtraPage";
 
 interface AddExtraPageProps {
   params: Promise<{ slug: string }>;
@@ -6,11 +6,5 @@ interface AddExtraPageProps {
 
 export default async function AddExtraPage({ params }: AddExtraPageProps) {
   const { slug } = await params;
-  if (env.NEXT_PUBLIC_BBPC_BACKEND === "convex") {
-    const { ConvexAddExtraPage } = await import("./ConvexAddExtraPage");
-    return <ConvexAddExtraPage slug={slug} />;
-  }
-
-  const { default: SqlAddExtraPage } = await import("./SqlAddExtraPage");
-  return <SqlAddExtraPage slug={slug} />;
+  return <ConvexAddExtraPage slug={slug} />;
 }

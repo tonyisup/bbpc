@@ -1,15 +1,7 @@
-import { env } from "@/env.mjs";
 import { listEpisodeHistory } from "@/server/convex/episodes";
+import { HistoryPageClient } from "./HistoryPageClient";
 
 export default async function HistoryPage() {
-  if (env.NEXT_PUBLIC_BBPC_BACKEND === "convex") {
-    const [{ HistoryPageClient }, episodes] = await Promise.all([
-      import("./HistoryPageClient"),
-      listEpisodeHistory(),
-    ]);
-    return <HistoryPageClient allEpisodes={episodes} />;
-  }
-
-  const { SqlHistoryPage } = await import("./SqlHistoryPage");
-  return <SqlHistoryPage />;
+  const episodes = await listEpisodeHistory();
+  return <HistoryPageClient allEpisodes={episodes} />;
 }

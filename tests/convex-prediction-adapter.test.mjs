@@ -57,6 +57,7 @@ test("canonical account resolution gates both Convex participation clients", () 
   assert.match(participation, /accountStatus !== "ready"/u);
   assert.match(
     participation,
-    /backend === "convex"[\s\S]*<ConvexPredictionGame[\s\S]*<ConvexQuotabungaSubmission/u
+    /<ConvexPredictionGame[\s\S]*<ConvexQuotabungaSubmission/u
   );
+  assert.doesNotMatch(participation, /backend|<PredictionGame/u);
 });

@@ -11,7 +11,7 @@ import {
   highlightWithFuseOrQuery,
 } from "@/utils/text";
 import ShowInlinePreview from "./ShowInlinePreview";
-import { type PredictionGameAssignment } from "./PredictionGame";
+import type { PredictionGameAssignment } from "@/types/prediction";
 import { getEpisodePath } from "@/lib/routes";
 import { formatPlainDate } from "@/lib/dates";
 import { GameParticipation } from "./GameParticipation";

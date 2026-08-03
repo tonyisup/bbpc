@@ -22,10 +22,7 @@ test("the public game page reads bounded runtime-validated Convex data directly"
   assert.match(adapter, /games\/public:currentPerformance/u);
   assert.match(adapter, /predictionScoringSchema\.parse/u);
   assert.match(adapter, /currentPerformanceSchema\.parse/u);
-  assert.match(
-    gamePage,
-    /NEXT_PUBLIC_BBPC_BACKEND !== "convex"[\s\S]*server\/sql\/games/u
-  );
+  assert.doesNotMatch(gamePage, /BBPC_BACKEND|server\/sql|trpc/u);
   assert.match(
     gamePage,
     /getNextScheduledEpisode\(\)[\s\S]*getConvexPredictionScoring\(\)[\s\S]*getConvexCurrentPerformance\(today\)/u
@@ -51,10 +48,7 @@ test("Clerk subjects never become legacy application-data identifiers", () => {
   );
   assert.match(
     participation,
-    /backend === "convex"[\s\S]*accountStatus !== "ready"[\s\S]*<ConvexPredictionGame/u
+    /accountStatus !== "ready"[\s\S]*<ConvexPredictionGame/u
   );
-  assert.ok(
-    participation.indexOf('backend === "convex"') <
-      participation.indexOf("userId={user.appUserId}")
-  );
+  assert.doesNotMatch(participation, /backend|userId=\{user\.appUserId\}/u);
 });

@@ -1,7 +1,6 @@
 "use client";
 
 import { getEpisodeExtrasAddPath } from "@/lib/routes";
-import { api } from "@/trpc/react";
 import Link from "next/link";
 import { type FC } from "react";
 
@@ -28,33 +27,8 @@ function AddExtraLink({ episode }: { episode: CompleteEpisode }) {
   );
 }
 
-function SqlAddExtraToNext({
-  episode,
-  authenticated,
-}: {
-  episode: CompleteEpisode;
-  authenticated: boolean;
-}) {
-  const { data: isSqlHost } = api.auth.isHost.useQuery(undefined, {
-    enabled: authenticated,
-    retry: false,
-  });
-  if (isSqlHost !== true) return null;
-  return <AddExtraLink episode={episode} />;
-}
-
 export const AddExtraToNext: FC<AddExtraToNextProps> = ({ episode }) => {
-  const { backend, status, user } = useBbpcAuth();
+  const { user } = useBbpcAuth();
   if (!episode) return null;
-  if (backend === "convex") {
-    return user?.isHost === true ? (
-      <AddExtraLink episode={episode} />
-    ) : null;
-  }
-  return (
-    <SqlAddExtraToNext
-      episode={episode}
-      authenticated={status === "authenticated"}
-    />
-  );
+  return user?.isHost === true ? <AddExtraLink episode={episode} /> : null;
 };

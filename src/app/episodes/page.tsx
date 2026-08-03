@@ -1,50 +1,9 @@
 import { Episode } from "@/components/Episode";
 import Link from "next/link";
-import { env } from "@/env.mjs";
 import { listEpisodeHistory } from "@/server/convex/episodes";
 
 async function loadEpisodes() {
-  if (env.NEXT_PUBLIC_BBPC_BACKEND === "convex") {
-    return listEpisodeHistory();
-  }
-
-  const { db } = await import("@/server/db");
-  return db.episode.findMany({
-    orderBy: {
-      date: "desc",
-    },
-    include: {
-      assignments: {
-        include: {
-          movie: true,
-          user: true,
-          assignmentReviews: {
-            include: {
-              review: {
-                include: {
-                  user: true,
-                  movie: true,
-                  show: true,
-                },
-              },
-            },
-          },
-        },
-      },
-      extras: {
-        include: {
-          review: {
-            include: {
-              user: true,
-              movie: true,
-              show: true,
-            },
-          },
-        },
-      },
-      links: true,
-    },
-  });
+  return listEpisodeHistory();
 }
 
 export default async function EpisodesPage() {

@@ -39,11 +39,8 @@ test("game participation exposes quote writes only after canonical identity reso
   assert.match(participation, /user\.appUserId === null/u);
   assert.match(
     participation,
-    /backend === "convex"[\s\S]*<ConvexQuotabungaSubmission/u
+    /<ConvexQuotabungaSubmission/u
   );
   assert.match(participation, /<ConvexPredictionGame/u);
-  assert.match(
-    participation,
-    /<PredictionGame[\s\S]*<QuotabungaSubmission \/>/u
-  );
+  assert.doesNotMatch(participation, /backend|<PredictionGame|<QuotabungaSubmission \/>/u);
 });

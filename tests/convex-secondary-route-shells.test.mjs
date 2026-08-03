@@ -12,13 +12,10 @@ const [callRoute, convexCall, gamesPage] = await Promise.all([
   read("src/app/games/page.tsx"),
 ]);
 
-test("the call route chooses Clerk before importing the NextAuth controller", () => {
-  assert.match(
-    callRoute,
-    /NEXT_PUBLIC_BBPC_BACKEND === "convex"[\s\S]*import\("\.\/ConvexCallPage"\)/u
-  );
-  assert.match(callRoute, /import\("\.\/SqlCallPage"\)/u);
-  assert.doesNotMatch(callRoute, /server\/auth|next-auth/u);
+test("the call route uses only the Clerk and Convex controller", () => {
+  assert.match(callRoute, /import \{ ConvexCallPage \}/u);
+  assert.match(callRoute, /<ConvexCallPage \/>/u);
+  assert.doesNotMatch(callRoute, /SqlCallPage|server\/auth|next-auth/u);
   assert.match(convexCall, /useBbpcAuth/u);
   assert.match(convexCall, /status === "unauthenticated"/u);
   assert.doesNotMatch(convexCall, /server\/auth|next-auth|trpc|prisma/u);

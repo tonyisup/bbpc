@@ -1,9 +1,7 @@
 import { LatestEpisode } from "@/components/LatestEpisode";
-import { NextEpisode } from "@/components/NextEpisode";
 import { Episode } from "@/components/Episode";
 import { EpisodeSkeleton } from "@/components/EpisodeSkeleton";
 import { Suspense } from "react";
-import { env } from "@/env.mjs";
 import {
   getLatestPublishedEpisode,
   getNextScheduledEpisode,
@@ -11,86 +9,19 @@ import {
 import { hasSignedInUserWonForEpisode } from "@/server/convex/gambling";
 import { getPacificTodayPlainDate } from "@/lib/dates";
 
-async function loadSqlLatestEpisode() {
-  const { db } = await import("@/server/db");
-  const latestEpisode = await db.episode.findFirst({
-    where: {
-      status: "Published",
-      date: {
-        lte: new Date(),
-      },
-    },
-    include: {
-      assignments: {
-        include: {
-          movie: true,
-          user: true,
-          assignmentReviews: {
-            include: {
-              review: {
-                include: {
-                  rating: true,
-                },
-              },
-            },
-          },
-        },
-      },
-      extras: {
-        include: {
-          review: {
-            include: {
-              movie: true,
-              user: true,
-              show: true,
-            },
-          },
-        },
-      },
-      links: true,
-    },
-    orderBy: {
-      date: "desc",
-    },
-  });
-  return { db, latestEpisode };
-}
-
 async function loadHomeEpisode() {
-  if (env.NEXT_PUBLIC_BBPC_BACKEND === "convex") {
-    const [latestEpisode, nextEpisode] = await Promise.all([
-      getLatestPublishedEpisode(getPacificTodayPlainDate()),
-      getNextScheduledEpisode(),
-    ]);
-    return {
-      latestEpisode,
-      nextEpisode,
-      hasWon:
-        latestEpisode === null
-          ? false
-          : await hasSignedInUserWonForEpisode(latestEpisode.id),
-    };
-  }
-
-  const [{ db, latestEpisode }, { getServerAuthSession }] = await Promise.all([
-    loadSqlLatestEpisode(),
-    import("@/server/auth"),
+  const [latestEpisode, nextEpisode] = await Promise.all([
+    getLatestPublishedEpisode(getPacificTodayPlainDate()),
+    getNextScheduledEpisode(),
   ]);
-  const session = await getServerAuthSession();
-  let hasWon = false;
-  if (session?.user && latestEpisode) {
-    const win = await db.gamblingPoints.findFirst({
-      where: {
-        userId: session.user.id,
-        status: "won",
-        assignment: {
-          episodeId: latestEpisode.id,
-        },
-      },
-    });
-    hasWon = !!win;
-  }
-  return { latestEpisode, nextEpisode: null, hasWon };
+  return {
+    latestEpisode,
+    nextEpisode,
+    hasWon:
+      latestEpisode === null
+        ? false
+        : await hasSignedInUserWonForEpisode(latestEpisode.id),
+  };
 }
 
 export default async function HomePage() {
@@ -126,13 +57,7 @@ export default async function HomePage() {
           </h2>
         </div>
         <Suspense fallback={<EpisodeSkeleton />}>
-          {env.NEXT_PUBLIC_BBPC_BACKEND === "convex" ? (
-            nextEpisode && (
-              <Episode episode={nextEpisode} allowGuesses />
-            )
-          ) : (
-            <NextEpisode allowGuesses />
-          )}
+          {nextEpisode && <Episode episode={nextEpisode} allowGuesses />}
         </Suspense>
       </section>
     </div>

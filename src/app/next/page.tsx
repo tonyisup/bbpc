@@ -1,6 +1,5 @@
 import { type Metadata } from "next";
 import { Episode } from "@/components/Episode";
-import { env } from "@/env.mjs";
 import { getNextScheduledEpisode } from "@/server/convex/episodes";
 
 // Structured data types for schema.org
@@ -49,11 +48,7 @@ export const metadata: Metadata = {
 };
 
 async function loadNextEpisode() {
-  if (env.NEXT_PUBLIC_BBPC_BACKEND === "convex") {
-    return getNextScheduledEpisode();
-  }
-
-  return (await import("@/server/sql/episodes")).getSqlNextEpisode();
+  return getNextScheduledEpisode();
 }
 
 export default async function NextPage() {
