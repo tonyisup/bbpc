@@ -16,6 +16,13 @@ import { useBbpcAuth } from "@/components/auth/BbpcAuthContext";
 const VoiceMailRecorder = dynamic(() => import("./voice-mail-recorder"), {
   ssr: false,
 });
+const ConvexVoiceMailRecorder = dynamic(
+  () =>
+    import("./ConvexVoiceMailRecorder").then(
+      (module) => module.ConvexVoiceMailRecorder
+    ),
+  { ssr: false }
+);
 
 function SqlMessageContent({
   isModalOpen,
@@ -105,10 +112,7 @@ const LeaveMessage: FC = () => {
           </DialogTitle>
         </DialogHeader>
         {backend === "convex" ? (
-          <div className="p-8 text-center text-muted-foreground" role="status">
-            Voice messages are temporarily unavailable while their storage
-            workflow is migrated.
-          </div>
+          <ConvexVoiceMailRecorder enabled={isModalOpen} />
         ) : (
           <SqlMessageContent
             isModalOpen={isModalOpen}

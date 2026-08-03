@@ -86,6 +86,13 @@ const leaveMessage = await readFile(
   new URL("../src/components/LeaveMessage.tsx", import.meta.url),
   "utf8"
 );
+const convexVoiceMailRecorder = await readFile(
+  new URL(
+    "../src/components/ConvexVoiceMailRecorder.tsx",
+    import.meta.url
+  ),
+  "utf8"
+);
 const addExtraToNext = await readFile(
   new URL("../src/components/AddExtraToNext.tsx", import.meta.url),
   "utf8"
@@ -179,7 +186,19 @@ test("the SQL-default consumer scaffold pins and fail-closes Clerk plus Convex",
   );
   assert.match(
     leaveMessage,
-    /backend === "convex"[\s\S]*Voice messages are temporarily unavailable[\s\S]*<SqlMessageContent/u
+    /backend === "convex"[\s\S]*<ConvexVoiceMailRecorder enabled=\{isModalOpen\} \/>[\s\S]*<SqlMessageContent/u
+  );
+  assert.match(
+    convexVoiceMailRecorder,
+    /episodes\/public:nextScheduled[\s\S]*episodes\/audio:listMine[\s\S]*episodes\/audio:createMine[\s\S]*episodes\/audio:discardMyUpload/u
+  );
+  assert.match(
+    convexVoiceMailRecorder,
+    /useUploadThing\("audioUploader"\)[\s\S]*BBPC_CLIENT_API_VERSION/u
+  );
+  assert.doesNotMatch(
+    convexVoiceMailRecorder,
+    /trpc|next-auth|@prisma|DATABASE_URL/u
   );
   assert.match(
     addExtraToNext,
